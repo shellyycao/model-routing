@@ -1,0 +1,104 @@
+We need to produce JSON with fields python_code (script), output_filename "cleaned.csv", cleaning_logic description.
+
+We must write a script that follows all cleaning steps.
+
+Let's outline steps:
+
+- import os, pandas, numpy, json, re, csv maybe.
+
+- Define missing values list: ["", "NA", "N/A", "null", "None", "-"] after stripping whitespace.
+
+- Read tickets.csv as text: use pandas.read_csv with dtype=str, keep default, then strip whitespace from all string columns, replace missing values with np.nan.
+
+- Same for agents.csv.
+
+- R2: remove duplicate ticket_id rows, keep first. Use drop_duplicates(subset='ticket_id', keep='first').
+
+- R3: normalize agent_id to upper case in agents, then drop duplicates.
+
+- R4: Clean agents roster:
+
+   - team mapping: case-insensitive mapping: if team contains "Alpha" or "Team Alpha" -> "Alpha". Similarly Beta, Gamma. Use lower and check if contains 'alpha', etc.
+
+   - region mapping: case-insensitive: East/E -> "East", West/W -> "West". Use lower.
+
+   - hourly_cost: remove $ , USD, commas, spaces. Use regex to extract numeric part. Convert to float. If conversion fails or <=0, drop row.
+
+   - Also ensure after mapping, team and region not null.
+
+- R5: tickets: normalize agent_id to upper case. Join with cleaned agents on agent_id (inner). Drop tickets without match.
+
+- R6: channel mapping: case-insensitive mapping: Email/E-mail -> email, Chat/Live Chat -> chat, Phone/Call -> phone. Drop invalid.
+
+- R7: resolution_minutes: remove trailing 'min' or 'minutes' (case-insensitive). Extract integer. Must be 1-480 inclusive. Drop invalid.
+
+- R8: satisfaction_score: parse integer 1-5. If invalid or missing, set NaN (empty cell). Keep row.
+
+- R9: reopened mapping: map Yes/Y/True/1 to 1, No/N/False/0 to 0. Case-insensitive. Drop rows where missing or invalid.
+
+- R10: labor_cost = resolution_minutes / 60 * hourly_cost, round 2.
+
+- R11: Output columns in order, sort by ticket_id, write CSV without index.
+
+- Also produce cleaning_summary.json with raw_rows (tickets rows read), cleaned_rows (rows written), plus counts per rule maybe: duplicates_removed, agents_invalid, tickets_no_agent, invalid_channels, invalid_resolution, invalid_reopened, etc.
+
+Implementation details:
+
+- When reading CSV, we need raw rows count: number of rows read from tickets (excluding header). Use len(df_tickets_raw).
+
+- After each step we can compute counts.
+
+Edge Cases: missing values handling: after reading, we can replace missing strings with np.nan using df.replace(missing_vals, np.nan, regex=False). Also strip whitespace: apply lambda x: x.strip() if isinstance(x,str) else x.
+
+- For numeric parsing: use regex to find digits.
+
+- For satisfaction_score: if value is NaN, keep NaN; else try int conversion and check range; else set NaN.
+
+- For reopened: similar mapping; if after mapping not 0/1, drop.
+
+- Ensure final dtypes: ticket_id str, agent_id str, team category (we can keep as string), region string, channel string, resolution_minutes int, satisfaction_score int (or NaN), reopened int, hourly_cost float, labor_cost float.
+
+- Use pandas to cast.
+
+Now produce script as a string.
+
+Let's craft code.
+
+Potential pitfalls: reading as text and stripping whitespace: after read_csv, we can apply df = df.applymap(lambda x: x.strip() if isinstance(x,str) else x). Then replace missing.
+
+Now produce summary JSON.
+
+We'll compute counts:
+
+- duplicate_tickets_removed = raw_rows - after_dedup.shape[0]
+
+- duplicate_agents_removed = raw_agents_rows - after_agent_dedup.shape[0]
+
+- invalid_agent_rows = number of agents dropped due to invalid fields (team/region missing or cost <=0). We'll compute before dropping.
+
+- tickets_no_agent = number of tickets dropped after join.
+
+- invalid_channels = number of tickets dropped due to channel mapping.
+
+- invalid_resolution = number dropped due to resolution parsing.
+
+- invalid_reopened = number dropped due to reopened mapping.
+
+- final_cleaned_rows = final df shape[0].
+
+Now produce script.
+
+Make sure to write cleaning_summary.json.
+
+Write cleaned.csv.
+
+Set output_filename variable.
+
+Now produce final JSON.
+
+Let's craft python_code string with triple quotes inside JSON; need to escape properly. We'll embed as raw string.
+
+We'll output as a JSON object with fields.
+
+Let's write script.
+

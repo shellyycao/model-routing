@@ -1,0 +1,9 @@
+{
+  "fixed_code": "def rotate(xs, k):\n    \"\"\"Return a new list rotated right by *k* positions.\n    A negative *k* rotates left. An empty input returns an empty list.\n    \"\"\"\n    # Return early for empty input to avoid ZeroDivisionError on modulo.\n    if not xs:\n        return []\n    n = len(xs)\n    # Convert any k (positive, negative, or larger than n) to an equivalent\n    # right‑rotation amount in the range [0, n).\n    r = k % n\n    # Perform the right rotation using slicing. When r == 0 the slices produce\n    # the original list, satisfying the \"no change\" case.\n    return list(xs[-r:] + xs[:-r])\n",
+  "bug_locations": [
+    "rotate function: incorrect slicing direction (left rotation instead of right)",
+    "rotate function: missing handling for empty list before modulo (potential ZeroDivisionError)",
+    "rotate function: lack of documentation and clarity on k handling"
+  ],
+  "explanation": "The original implementation sliced `xs[k:] + xs[:k]`, which rotates the list left by *k*. The specification requires a right rotation, with negative *k* meaning a left rotation. By converting *k* to a non‑negative right‑rotation offset using `k % n` (which also correctly maps negative values to the equivalent right rotation) and then slicing with `xs[-r:] + xs[:-r]`, the function now matches the spec. An early return for empty input prevents a division‑by‑zero error when applying modulo."
+}

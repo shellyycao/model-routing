@@ -1,0 +1,21 @@
+TASK: Information extraction (independent benchmark A2, prompt independent_v1)
+
+Extract the fields defined below from the document. Rules:
+- Use EXACTLY these field names as keys (no extra keys).
+- Use null when the document does not state the value. Do not guess.
+- Follow each field's description; it resolves ambiguous cases.
+- Dates as YYYY-MM-DD, numbers as plain numbers (no currency symbols or thousands separators), booleans as true/false.
+
+FIELDS:
+- application_deadline: date YYYY-MM-DD; null if not stated
+- city: string: work location city; null if fully remote with no city
+- company: string: the hiring company (not a client or partner mentioned)
+- job_title: string
+- salary_max_usd: number: upper bound of the ANNUAL base salary in USD; null if not stated
+- salary_min_usd: number: lower bound of the ANNUAL base salary in USD; null if not stated
+- years_experience: integer: minimum years of experience required
+
+DOCUMENT:
+"""
+Quarry Bio is hiring a Product Analyst to support projects for clients such as Halden & Rowe. The role is based in Austin (hybrid). You need at least 6 years of experience; 8+ years is preferred. Apply by September 7, 2026.
+"""

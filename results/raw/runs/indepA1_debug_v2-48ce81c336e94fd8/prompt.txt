@@ -1,0 +1,23 @@
+You are debugging a Python module. The specification is authoritative.
+
+Specification:
+dependency_order(deps) returns a deterministic topological order over every key and referenced node, choosing alphabetically among available nodes; raise ValueError on a cycle.
+
+Buggy module:
+```python
+def dependency_order(deps):
+                 nodes=set(deps);out=[]
+                 while nodes:
+                     ready=sorted(n for n in nodes if not set(deps.get(n,[])) & nodes)
+                     if not ready:break
+                     out += ready;nodes -= set(ready)
+                 return out
+
+```
+
+Visible checks:
+```python
+assert dependency_order({'b':['a'],'a':[]}) == ['a','b']
+```
+
+Return the complete corrected module. There may be multiple interacting defects. Do not hard-code the visible examples.

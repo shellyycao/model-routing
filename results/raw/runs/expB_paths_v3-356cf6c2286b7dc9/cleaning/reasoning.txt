@@ -1,0 +1,298 @@
+We need to produce JSON with fields python_code (script), output_filename ("cleaned.csv"), cleaning_logic (brief explanation). The script must implement all cleaning steps.
+
+We need to read raw.csv from INPUT_DIR, treat all columns as text, strip whitespace, treat missing values as per list. Then deduplicate by reading_id (keep first). Then parse reading_date with given formats, drop rows missing/unparseable. Then meter_id uppercase, drop missing. building_type mapping case-insensitive, drop missing or unmapped. tariff mapping, drop missing/unmapped. energy conversion: remove commas, handle units MWh/kWh, convert to kWh, drop rows missing, not number, <0 or >100000 after conversion. Round to 2 decimals. temperature conversion: remove trailing degree sign and unit, handle F to C conversion, else C, round to 1 decimal. If missing/not number/out of range, set to missing (empty) but keep row. Output columns in order, sort by reading_id ascending. Write cleaned.csv with header, no index. Also write cleaning_summary.json with raw_rows, cleaned_rows, and per-rule counts.
+
+We need to track counts: maybe duplicates_removed, date_invalid, meter_missing, building_invalid, tariff_invalid, energy_invalid, etc.
+
+Implementation details:
+
+- Use pandas read_csv with dtype=str, keep default quoting. Use na_values? But we need custom missing detection after stripping. So read as strings, then apply strip and replace missing values with None/np.nan.
+
+- After reading, raw_rows = len(df).
+
+- Strip whitespace: df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)
+
+- Define missing set = {'', 'na', 'n/a', 'null', 'none', '-'} case-insensitive. Replace any cell that after strip lower in set with np.nan.
+
+- Deduplicate: before other filters. Use duplicated on reading_id column, keep='first'. Count duplicates_removed = sum(duplicated). Then df = df[~df['reading_id'].duplicated(keep='first')].
+
+- reading_date parsing: define function that tries each format using datetime.strptime. For month abbreviation format: %d-%b-%Y. For 'Month D, YYYY': %B %d, %Y. Also handle possible leading/trailing spaces already stripped. If parsing fails, return None. Then drop rows where parsed is None. Count date_invalid.
+
+- Convert to string format YYYY-MM-DD.
+
+- meter_id: uppercase, drop missing (np.nan). Count meter_missing.
+
+- building_type mapping: define dict mapping lower variants to canonical. Use .lower() to map. If not in mapping, drop. Count building_invalid.
+
+- tariff mapping: similar.
+
+- energy: function: if value is NaN -> invalid. Remove commas. Use regex to detect unit. Example: "36.37 kWh", "498.85kwh", "1.2 MWh". Remove spaces. Use lower. If endswith 'mwh' after removing spaces, multiply number by 1000. If endswith 'kwh', just number. Else assume kWh. Remove unit, parse float. If fails or out of range, invalid. Round to 2 decimals.
+
+- temperature: function: if NaN -> set to NaN (missing). Else strip spaces. Remove trailing degree sign and unit. Use regex to capture number and optional unit. Cases: "33.62 °F", "29.48F", "1.9", "0.1C". We'll extract numeric part and unit if any. If unit is F, convert. If unit is C or none, keep. Round to 1 decimal. If after conversion not numeric or out of -40 to 50, set to NaN (missing). Keep row.
+
+- After processing, select columns, rename energy to energy_kwh, temperature to temperature_c.
+
+- Sort by reading_id ascending (string sort). Write cleaned.csv.
+
+- Build summary dict: raw_rows, cleaned_rows, duplicates_removed, date_invalid, meter_missing, building_invalid, tariff_invalid, energy_invalid, temperature_missing (maybe count rows where temperature set to missing). Write JSON.
+
+- Ensure script uses os, pandas, json, datetime, re, numpy.
+
+- No prints large data.
+
+- Set output_filename variable.
+
+Now produce final JSON with script as string.
+
+Let's craft script.
+
+Potential pitfalls: reading_date column name is 'reading_date' in raw. We'll rename after processing.
+
+Implementation details:
+
+```
+import os, pandas as pd, numpy as np, json, re
+from datetime import datetime
+
+INPUT_DIR = os.getenv('INPUT_DIR')
+OUTPUT_DIR = os.getenv('OUTPUT_DIR')
+RAW_PATH = os.path.join(INPUT_DIR, 'raw.csv')
+CLEANED_PATH = os.path.join(OUTPUT_DIR, 'cleaned.csv')
+SUMMARY_PATH = os.path.join(OUTPUT_DIR, 'cleaning_summary.json')
+output_filename = 'cleaned.csv'
+```
+
+Read:
+
+```
+df = pd.read_csv(RAW_PATH, dtype=str, keep_default_na=False)
+raw_rows = len(df)
+```
+
+Strip and missing:
+
+```
+def clean_cell(x):
+    if isinstance(x, str):
+        x = x.strip()
+        if x.lower() in {'', 'na', 'n/a', 'null', 'none', '-'}:
+            return np.nan
+        return x
+    return x
+
+df = df.applymap(clean_cell)
+```
+
+Dedup:
+
+```
+duplicates_removed = df['reading_id'].duplicated(keep='first').sum()
+df = df[~df['reading_id'].duplicated(keep='first')]
+```
+
+Reading date parse:
+
+```
+date_formats = [
+    "%Y-%m-%d",
+    "%m/%d/%Y",
+    "%d-%b-%Y",
+    "%Y/%m/%d",
+    "%B %d, %Y"
+]
+
+def parse_date(val):
+    if pd.isna(val):
+        return None
+    for fmt in date_formats:
+        try:
+            dt = datetime.strptime(val, fmt)
+            return dt.strftime('%Y-%m-%d')
+        except ValueError:
+            continue
+    return None
+
+df['reading_date_parsed'] = df['reading_date'].apply(parse_date)
+date_invalid = df['reading_date_parsed'].isna().sum()
+df = df[~df['reading_date_parsed'].isna()]
+df = df.drop(columns=['reading_date'])
+df = df.rename(columns={'reading_date_parsed':'reading_date'})
+```
+
+Meter id:
+
+```
+df['meter_id'] = df['meter_id'].apply(lambda x: x.upper() if pd.notna(x) else x)
+meter_missing = df['meter_id'].isna().sum()
+df = df[~df['meter_id'].isna()]
+```
+
+Building type mapping:
+
+```
+building_map = {
+    'residential':'Residential',
+    'res':'Residential',
+    'resi':'Residential',
+    'commercial':'Commercial',
+    'comm':'Commercial',
+    'industrial':'Industrial',
+    'ind':'Industrial'
+}
+def map_building(val):
+    if pd.isna(val):
+        return np.nan
+    key = val.lower()
+    return building_map.get(key, np.nan)
+
+df['building_type'] = df['building_type'].apply(map_building)
+building_invalid = df['building_type'].isna().sum()
+df = df[~df['building_type'].isna()]
+```
+
+Tariff mapping:
+
+```
+tariff_map = {
+    'peak':'peak',
+    'off-peak':'off-peak',
+    'offpeak':'off-peak',
+    'off peak':'off-peak'
+}
+def map_tariff(val):
+    if pd.isna(val):
+        return np.nan
+    key = val.lower().replace(' ', '')
+    # need to handle spaces: we can just lower and strip spaces
+    # but mapping includes 'off-peak' with hyphen.
+    # We'll normalize: replace spaces with '' and hyphens with ''
+    norm = val.lower().replace(' ', '').replace('-', '')
+    if norm == 'peak':
+        return 'peak'
+    if norm == 'offpeak':
+        return 'off-peak'
+    return np.nan
+
+df['tariff'] = df['tariff'].apply(map_tariff)
+tariff_invalid = df['tariff'].isna().sum()
+df = df[~df['tariff'].isna()]
+```
+
+Energy conversion:
+
+```
+def parse_energy(val):
+    if pd.isna(val):
+        return np.nan
+    s = str(val).replace(',', '').strip()
+    # regex to capture number and optional unit
+    m = re.match(r'^([-+]?[0-9]*\.?[0-9]+)\s*([a-zA-Z]*)$', s, re.I)
+    if not m:
+        return np.nan
+    num = float(m.group(1))
+    unit = m.group(2).lower()
+    if unit == 'mwh':
+        num *= 1000
+    elif unit == 'kwh' or unit == '':
+        pass
+    else:
+        # unknown unit
+        return np.nan
+    return round(num, 2)
+
+df['energy_kwh'] = df['energy'].apply(parse_energy)
+energy_invalid = df['energy_kwh'].isna().sum()
+df = df[~df['energy_kwh'].isna()]
+# also enforce range
+out_of_range = ((df['energy_kwh'] < 0) | (df['energy_kwh'] > 100000)).sum()
+energy_invalid += out_of_range
+df = df[(df['energy_kwh'] >= 0) & (df['energy_kwh'] <= 100000)]
+```
+
+Temperature conversion:
+
+```
+def parse_temp(val):
+    if pd.isna(val):
+        return np.nan
+    s = str(val).strip()
+    # remove degree sign
+    s = s.replace('°', '')
+    # regex number + optional unit
+    m = re.match(r'^([-+]?[0-9]*\.?[0-9]+)\s*([cCfF]?)$', s)
+    if not m:
+        return np.nan
+    num = float(m.group(1))
+    unit = m.group(2).lower()
+    if unit == 'f':
+        c = (num - 32) * 5.0 / 9.0
+    else:  # C or empty
+        c = num
+    c = round(c, 1)
+    if c < -40 or c > 50:
+        return np.nan
+    return c
+
+df['temperature_c'] = df['temperature'].apply(parse_temp)
+temperature_missing = df['temperature_c'].isna().sum()
+```
+
+Now select columns:
+
+```
+final_cols = ['reading_id','reading_date','meter_id','building_type','tariff','energy_kwh','temperature_c']
+df = df[final_cols]
+df = df.sort_values('reading_id')
+df.to_csv(CLEANED_PATH, index=False, float_format='%.2f')
+```
+
+But need to ensure temperature column formatting: float with one decimal, but we can let pandas default; we can set float_format for both columns? Use format for all floats: maybe use df.to_csv with float_format='%.2f' will affect temperature (should be 1 decimal). Better to format after rounding: we already rounded to 1 decimal; but float_format will still show two decimals. Could convert temperature column to string with format.
+
+Simpler: after rounding, we can set:
+
+```
+df['temperature_c'] = df['temperature_c'].apply(lambda x: '' if pd.isna(x) else f"{x:.1f}")
+df['energy_kwh'] = df['energy_kwh'].apply(lambda x: f"{x:.2f}")
+```
+
+But energy_kwh should be numeric in schema; but CSV can have numeric strings. It's okay.
+
+But they said numbers are written without units or thousands separators; missing temperature empty cell. So we can keep numeric values; pandas will output as e.g., 36.37 (two decimals). For temperature, we can let pandas output 1 decimal automatically? Not guaranteed. We'll convert to string with appropriate formatting.
+
+Implementation:
+
+```
+df['energy_kwh'] = df['energy_kwh'].map(lambda x: f"{x:.2f}")
+df['temperature_c'] = df['temperature_c'].apply(lambda x: '' if pd.isna(x) else f"{x:.1f}")
+```
+
+Now write.
+
+Summary JSON:
+
+```
+summary = {
+    "raw_rows": raw_rows,
+    "cleaned_rows": len(df),
+    "duplicates_removed": int(duplicates_removed),
+    "date_invalid": int(date_invalid),
+    "meter_missing": int(meter_missing),
+    "building_invalid": int(building_invalid),
+    "tariff_invalid": int(tariff_invalid),
+    "energy_invalid": int(energy_invalid),
+    "temperature_missing": int(temperature_missing)
+}
+with open(SUMMARY_PATH, 'w') as f:
+    json.dump(summary, f, indent=2)
+```
+
+Make sure to import re.
+
+Edge Cases: reading_date column may have quotes; pandas will handle.
+
+Now produce final JSON with script string.
+
+Need to ensure script is self-contained and uses only allowed libs.
+
+Now craft final answer.
+

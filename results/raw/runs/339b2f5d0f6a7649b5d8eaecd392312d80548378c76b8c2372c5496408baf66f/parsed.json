@@ -1,0 +1,9 @@
+{
+  "fixed_code": "def rolling_mean(xs, window, min_periods=1):\n    if window <= 0:\n        raise ValueError('window must be positive')\n    if not (1 <= min_periods <= window):\n        raise ValueError('min_periods must satisfy 1 <= min_periods <= window')\n    result = []\n    for i in range(len(xs)):\n        segment = xs[max(0, i - window + 1):i + 1]\n        if len(segment) >= min_periods:\n            result.append(sum(segment) / len(segment))\n        else:\n            result.append(None)\n    return result\n",
+  "bug_locations": [
+    "rolling_mean function - missing min_periods validation",
+    "rolling_mean function - missing null (None) return when fewer than min_periods values are available",
+    "rolling_mean function - missing validation that 1 <= min_periods <= window"
+  ],
+  "explanation": "Three bugs were present: (1) The original code only validated window > 0 but did not validate that 1 <= min_periods <= window as required by the spec. (2) The original code never returned null/None for positions where the number of available values is less than min_periods; it always computed a mean. (3) The logic needed to check len(segment) >= min_periods before computing the mean, otherwise return None. The fix adds proper validation of min_periods and conditionally returns None when the segment length is below min_periods."
+}

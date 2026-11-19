@@ -1,0 +1,130 @@
+We need to produce JSON with fields python_code (script), output_filename "cleaned.csv", cleaning_logic description.
+
+The script must read raw.csv from INPUT_DIR, apply cleaning steps exactly as described, write cleaned.csv and cleaning_summary.json to OUTPUT_DIR.
+
+We need to implement steps:
+
+R1: read all columns as text, strip whitespace, treat missing values: empty string, 'NA', 'N/A', 'null', 'None', '-'. So after stripping, if lowercased value in set {'', 'na', 'n/a', 'null', 'none', '-'} treat as missing (NaN). We'll use pandas read_csv with dtype=str, keep default, then apply strip and replace.
+
+R2: remove duplicate order_id, keep first occurrence. So after cleaning missing values? It says before applying any other row filter: rows that share same order_id are duplicates; keep only first occurrence in raw-file order and discard later ones. So after reading and stripping, before other filters, drop duplicates based on order_id, keep='first'.
+
+R3: order_date parsing with multiple formats. We'll define list of formats and try parse with datetime.strptime. If missing (NaN) drop. If cannot parse, drop. Then format to YYYY-MM-DD.
+
+Formats:
+- %Y-%m-%d
+- %m/%d/%Y
+- %d-%b-%Y (e.g., 05-Mar-2024) month abbreviation case-insensitive; need to handle capitalized.
+- %Y/%m/%d
+- %B %d, %Y (full month name). Note there may be extra spaces.
+
+We'll attempt each.
+
+R4: region mapping case-insensitively. Accept N,S,E,W single letters. Map to full names. Drop rows missing or not in mapping.
+
+R5: product_category mapping. Provide mapping dict with lowercased keys to target. We'll handle variants.
+
+R6: unit_price cleaning: remove '$', 'USD', ',' and surrounding spaces. Then parse float. Drop rows missing, not number, <=0, >5000.
+
+R7: quantity parse as number, allow decimal but must be whole number integer after conversion. Must be >=1 <=50. Store as int.
+
+R8: discount_pct: remove trailing '%' (maybe also spaces). If missing (NaN) set to 0. Parse float. Drop rows not number or <0 >100.
+
+R9: customer_id: uppercase; missing set to 'UNKNOWN'.
+
+R10: revenue = quantity * unit_price * (1 - discount_pct/100), round to 2 decimals.
+
+R11: output columns order, sort by order_id ascending (string). Write CSV with header, no index.
+
+Also produce cleaning_summary.json with raw_rows, cleaned_rows, and per-rule counts maybe.
+
+We'll track counts: raw_rows = len(df_raw). After duplicate removal, rows_dup_removed = raw_rows - len(df_no_dup). After each filter we can count rows dropped.
+
+Implementation steps:
+
+- import os, pandas as pd, json, datetime.
+
+- read raw.csv: df = pd.read_csv(path, dtype=str, keep_default_na=False) (so empty strings not NaN). Then strip whitespace: df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)
+
+- Define missing set: {'', 'na', 'n/a', 'null', 'none', '-'}; replace with pd.NA: df = df.replace(missing_set, pd.NA, regex=False)
+
+- Count raw_rows.
+
+- Duplicate removal: before any other filter. Use df_before_dup = df; df = df.drop_duplicates(subset='order_id', keep='first'); dup_removed = raw_rows - len(df)
+
+- Then apply each rule sequentially, tracking rows before each rule.
+
+We'll create a dict summary = {'raw_rows': raw_rows, 'duplicate_rows_removed': dup_removed, ...}
+
+Implement functions for parsing date.
+
+Edge Cases: order_date may be 'None' etc already set to NA.
+
+After all filters, cleaned_rows = len(df_cleaned).
+
+Write cleaned.csv.
+
+Write summary json.
+
+Make sure to convert types: unit_price float, quantity int, discount_pct float, revenue float.
+
+Sorting order_id ascending: string sort.
+
+Now produce script as a string.
+
+Let's craft script.
+
+Potential pitfalls: When reading, we need to ensure all columns present. Use df.columns.
+
+Implement date parsing:
+
+def parse_date(s):
+    for fmt in formats:
+        try:
+            dt = datetime.datetime.strptime(s, fmt)
+            return dt.strftime('%Y-%m-%d')
+        except Exception:
+            continue
+    return None
+
+But need to handle case-insensitive month abbreviation; strptime is case-insensitive for month names? It expects proper case; we can .title() maybe. We'll just try as is; but we can .capitalize for month abbreviation? We'll just use s = s.strip().
+
+Now implement region mapping:
+
+region_map = {'n':'North','north':'North','s':'South','south':'South','e':'East','east':'East','w':'West','west':'West'}
+
+product mapping:
+
+mapping = {
+    'electronics':'Electronics',
+    'electronic':'Electronics',
+    'clothing':'Clothing',
+    'apparel':'Clothing',
+    'home & garden':'Home & Garden',
+    'home and garden':'Home & Garden',
+    'home&garden':'Home & Garden',
+    'sports':'Sports',
+    'sport':'Sports',
+    'books':'Books',
+    'book':'Books'
+}
+
+We'll lower and strip.
+
+Now unit_price cleaning: if value is NA, drop. else: val = re.sub(r'[\$,]', '', val) also remove 'USD' case-insensitively. Use regex: re.sub(r'\s*USD\s*', '', val, flags=re.I). Then strip spaces. Then parse float.
+
+Quantity: parse float, check is integer (abs(val - round(val)) < 1e-9). Then int.
+
+Discount_pct: if NA set 0. else remove '%' and spaces, parse float.
+
+Customer_id: if NA set 'UNKNOWN', else upper.
+
+Revenue compute.
+
+Now produce script.
+
+Also ensure we import re.
+
+Write summary JSON with counts.
+
+Now produce final JSON output.
+

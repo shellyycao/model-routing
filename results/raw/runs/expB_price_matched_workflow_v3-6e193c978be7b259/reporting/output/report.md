@@ -1,0 +1,31 @@
+# 2023-2024 Retail Sales Performance Report
+
+This report analyzes verified retail sales data from 2023-2024. Total revenue reached $445,325.07 across 520 orders. The business experienced a 10.1% year-over-year revenue increase. East region leads regional performance, and 2024 quarterly trends show revenue peaking in Q3. High-discount electronics orders represent a notable revenue segment, and customer concentration remains moderate with the top customer contributing 6.2% of total revenue.
+
+## Key findings
+- [q1] Overall performance totaled $445,325.07 in revenue across 520 orders, resulting in an average order value of $856.39.
+  - Reported values: total_revenue=445325.07, order_count=520.0, average_order_value=856.3943653846154
+- [q2] Regional revenue performance ranks East highest at $130,516.68, followed by North ($124,845.75), West ($99,428.16), and South ($90,534.48).
+  - Reported values: revenue_north=124845.75, revenue_south=90534.48, revenue_east=130516.68000000001, revenue_west=99428.16
+  - Ranking: East, North, West, South
+- [q3] In 2024, quarterly revenue trended upward through Q3 before a slight dip in Q4. Revenue progressed from $36,108.32 in Q1 to $56,616.79 in Q2, peaked at $71,674.98 in Q3, and settled at $68,948.70 in Q4.
+  - Reported values: revenue_2024_q1=36108.32, revenue_2024_q2=56616.79, revenue_2024_q3=71674.98, revenue_2024_q4=68948.7
+  - Ranking: Q3, Q4, Q2, Q1
+- [q4] Year-over-year revenue increased by 10.08%, rising from $211,976.28 in 2023 to $233,348.79 in 2024.
+  - Reported values: revenue_2023=211976.28, revenue_2024=233348.78999999998, revenue_yoy_change_pct=10.082500740177146
+  - Direction: increase
+- [q5] High-discount electronics orders (discount ≥20%) accounted for 22 orders generating $50,035.32 in revenue.
+  - Reported values: electronics_high_discount_orders=22.0, electronics_high_discount_revenue=50035.32
+  - Derived share(electronics_high_discount_revenue, total_revenue): 11.2
+- [q6] Order revenue distribution shows a mean of $856.39 and median of $313.28, indicating a right-skewed distribution with a standard deviation of $1,295.74. Values ranged from a minimum of $5.27 to a maximum of $7,844.02.
+  - Reported values: order_revenue_mean=856.3943653846154, order_revenue_median=313.275, order_revenue_std=1295.7423548861245, order_revenue_min=5.27, order_revenue_max=7844.02
+- [q7] The customer base includes 222 unique customers. The top customer contributed $27,793.12, representing 6.24% of total revenue.
+  - Reported values: unique_customer_count=222.0, top_customer_revenue=27793.12, top_customer_revenue_share_pct=6.241085865657642
+
+## Limitations
+- The dataset covers only 2023-2024; trends may not reflect long-term patterns.
+- Analysis assumes data cleaning was accurate; any residual data quality issues could affect results.
+- Regional analysis does not account for market size differences or population density.
+
+## Conclusion
+The retail business shows healthy growth with a 10.1% year-over-year increase. The East region is the strongest performer, and 2024 Q3 was the peak quarter. High-discount electronics orders contribute over 11% of revenue, suggesting promotional pricing drives significant volume. Customer concentration is not a major risk, as the largest customer accounts for only 6.2% of revenue.

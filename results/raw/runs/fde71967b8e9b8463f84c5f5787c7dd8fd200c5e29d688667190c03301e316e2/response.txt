@@ -1,0 +1,11 @@
+```json
+{
+  "fixed_code": "def shortest_path(graph, start, goal):\n    queue = [(start, [start])]\n    seen = set()\n    while queue:\n        node, path = queue.pop(0)\n        if node in seen:\n            continue\n        seen.add(node)\n        if node == goal:\n            return path\n        queue += [(n, path + [n]) for n in graph.get(node, []) if n not in seen]\n    return None\n",
+  "bug_locations": [
+    "shortest_path function - stack replaced with queue (BFS instead of DFS)",
+    "shortest_path function - pop(0) instead of pop() for FIFO order",
+    "shortest_path function - seen check moved to after pop to handle nodes added multiple times before being visited"
+  ],
+  "explanation": "The original code uses a stack (LIFO via pop()) which implements DFS, not BFS. DFS does not guarantee shortest paths in unweighted graphs. The fix changes it to a queue (FIFO via pop(0)) to implement BFS, which guarantees shortest paths. Additionally, nodes can be added to the queue multiple times before being visited, so the seen check is moved to after the pop (with a continue) rather than only at insertion time, preventing stale paths from being processed incorrectly."
+}
+```

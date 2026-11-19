@@ -1,0 +1,11 @@
+```json
+{
+  "fixed_code": "def dependency_order(deps):\n    \"\"\"\n    Return a deterministic topological ordering of all nodes appearing as keys\n    or as dependencies in ``deps``.  Among nodes that are ready (i.e. all of\n    their dependencies have already been emitted) the alphabetically smallest\n    name is chosen first.  If the graph contains a cycle a ``ValueError`` is\n    raised.\n    \"\"\"\n    # Gather every node that is either a key or appears in a dependency list.\n    all_nodes = set(deps) | {node for targets in deps.values() for node in targets}\n    remaining = set(all_nodes)\n    order = []\n\n    while remaining:\n        # Nodes whose dependencies are all already removed from ``remaining``.\n        ready = sorted(\n            n for n in remaining if not (set(deps.get(n, [])) & remaining)\n        )\n        if not ready:\n            # No node can be emitted → a cycle exists.\n            raise ValueError(\"Cyclic dependency detected\")\n        order.extend(ready)\n        remaining.difference_update(ready)\n\n    return order",
+  "bug_locations": [
+    "Initialization of node set – only keys were considered, missing referenced nodes.",
+    "Missing cycle detection – function silently broke on cycles instead of raising.",
+    "Loop termination – used break leading to incomplete ordering without error."
+  ],
+  "explanation": "The original implementation built the working set from ``set(deps)`` which omitted nodes that only appear as dependencies, causing them to be omitted from the result. It also broke out of the main loop when no ready node was found, returning a partial order instead of signalling the cycle required by the specification. By constructing ``all_nodes`` as the union of keys and all referenced nodes, iterating until no nodes remain, and raising a ``ValueError`` when no node is ready, the function now produces a deterministic alphabetically‑chosen topological order and correctly handles cycles."
+}
+```

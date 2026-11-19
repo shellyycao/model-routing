@@ -1,0 +1,25 @@
+TASK: Python debugging (independent benchmark A1, prompt independent_v1)
+
+The function below contains exactly one bug. Fix it so that it satisfies the specification.
+
+SPECIFICATION:
+top_k(counts, k) returns the k (word, count) pairs with the highest counts from dict counts, ordered by count descending and, for equal counts, by word ascending (alphabetical). rank_key(item) is the helper used for sorting. k larger than len(counts) returns all pairs.
+
+BUGGY CODE:
+```python
+def rank_key(item):
+    word, count = item
+    return (count, word)
+
+def top_k(counts, k):
+    return sorted(counts.items(), key=rank_key, reverse=True)[:max(k, 0)]
+
+```
+
+EXAMPLE TESTS (these must pass; additional hidden tests will also be run):
+```python
+assert top_k({'a': 3, 'b': 1}, 1) == [('a', 3)]
+```
+
+Return the COMPLETE corrected source code (keep the same function names and signatures; standard library only),
+the location of the bug, and a short explanation.

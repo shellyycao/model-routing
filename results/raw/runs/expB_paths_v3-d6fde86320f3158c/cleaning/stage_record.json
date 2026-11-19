@@ -1,0 +1,119 @@
+{
+  "stage": "cleaning",
+  "model_alias": "B",
+  "model_id": "us.amazon.nova-pro-v1:0",
+  "prompt_version": "v3",
+  "prompt_hash": "54fccecaa4539ea6f9bf17463a0da069f9e72816d3512b9a1510b4481adbcc9d",
+  "invocation_ids": [
+    "91fe7e26-a274-46f7-99de-9e870228e07f"
+  ],
+  "cache_hit": false,
+  "shared_with_run_ids": [],
+  "status": "failed",
+  "structural_ok": false,
+  "failure_type": "execution_error",
+  "failure_detail": "execution runtime_error (exit 1): ated. Use DataFrame.map instead.\n  df = df.applymap(lambda x: x.strip() if pd.notna(x) else x)\nTraceback (most recent call last):\n  File \"/sandbox/code/main.py\", line 31, in <module>\n    df['reading_date'] = df['reading_date'].apply(parse_date)\n                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/series.py\", line 4924, in apply\n    ).apply()\n      ^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/apply.py\", line 1427, in apply\n    return self.apply_standard()\n           ^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/apply.py\", line 1507, in apply_standard\n    mapped = obj._map_values(\n             ^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/base.py\", line 921, in _map_values\n    return algorithms.map_array(arr, mapper, na_action=na_action, convert=convert)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/algorithms.py\", line 1743, in map_array\n    return lib.map_infer(values, mapper, convert=convert)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"lib.pyx\", line 2972, in pandas._libs.lib.map_infer\n  File \"/sandbox/code/main.py\", line 27, in parse_date\n    return datetime.strptime(date_str, fmt).strftime('%Y-%m-%d')\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: strptime() argument 1 must be str, not float\n",
+  "parse_ok": true,
+  "execution": {
+    "status": "runtime_error",
+    "exit_code": 1,
+    "stdout": "",
+    "stderr": "/sandbox/code/main.py:17: FutureWarning: DataFrame.applymap has been deprecated. Use DataFrame.map instead.\n  df = df.applymap(lambda x: x.strip() if pd.notna(x) else x)\nTraceback (most recent call last):\n  File \"/sandbox/code/main.py\", line 31, in <module>\n    df['reading_date'] = df['reading_date'].apply(parse_date)\n                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/series.py\", line 4924, in apply\n    ).apply()\n      ^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/apply.py\", line 1427, in apply\n    return self.apply_standard()\n           ^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/apply.py\", line 1507, in apply_standard\n    mapped = obj._map_values(\n             ^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/base.py\", line 921, in _map_values\n    return algorithms.map_array(arr, mapper, na_action=na_action, convert=convert)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/algorithms.py\", line 1743, in map_array\n    return lib.map_infer(values, mapper, convert=convert)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"lib.pyx\", line 2972, in pandas._libs.lib.map_infer\n  File \"/sandbox/code/main.py\", line 27, in parse_date\n    return datetime.strptime(date_str, fmt).strftime('%Y-%m-%d')\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: strptime() argument 1 must be str, not float\n",
+    "runtime_ms": 708.5420000003069,
+    "output_files": [],
+    "sandbox_image": "sha256:88988a15503bdb96538c3dd62244a79879d5c7848397db18b1267ccfd0a9727a"
+  },
+  "validation": {
+    "stage": "cleaning",
+    "hard_pass": false,
+    "checks": [
+      {
+        "name": "output_exists",
+        "passed": false,
+        "mandatory": true,
+        "detail": "cleaned CSV not found: /Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expB_paths_v3-d6fde86320f3158c/cleaning/output/cleaned.csv",
+        "value": null
+      },
+      {
+        "name": "output_parses",
+        "passed": false,
+        "mandatory": true,
+        "detail": "no output",
+        "value": null
+      },
+      {
+        "name": "required_columns_present",
+        "passed": false,
+        "mandatory": true,
+        "detail": "no output",
+        "value": null
+      },
+      {
+        "name": "schema_constraints",
+        "passed": false,
+        "mandatory": true,
+        "detail": "no output",
+        "value": null
+      },
+      {
+        "name": "no_duplicate_keys",
+        "passed": false,
+        "mandatory": true,
+        "detail": "no output",
+        "value": null
+      },
+      {
+        "name": "row_set_matches_reference",
+        "passed": false,
+        "mandatory": true,
+        "detail": "no output",
+        "value": null
+      },
+      {
+        "name": "values_match_reference",
+        "passed": false,
+        "mandatory": true,
+        "detail": "no output",
+        "value": null
+      }
+    ],
+    "quality": {
+      "cleaning_correctness": 0.0,
+      "data_integrity": 0.0,
+      "schema_compliance": 0.0
+    },
+    "quality_basis": "ground_truth",
+    "validator_version": "1.0"
+  },
+  "conditional_validation": null,
+  "input_artifacts": [
+    "datasets/projects/energy_consumption/raw.csv"
+  ],
+  "output_artifacts": [
+    "results/raw/runs/expB_paths_v3-d6fde86320f3158c/cleaning/prompt.txt",
+    "results/raw/runs/expB_paths_v3-d6fde86320f3158c/cleaning/response.txt",
+    "results/raw/runs/expB_paths_v3-d6fde86320f3158c/cleaning/parsed.json",
+    "results/raw/runs/expB_paths_v3-d6fde86320f3158c/cleaning/code.py"
+  ],
+  "input_artifact_hashes": {
+    "datasets/projects/energy_consumption/raw.csv": "615e9dd3f351c49e26a813e2a6b47e6c9e2c812b579dae7b15497467a0d01572"
+  },
+  "output_artifact_hashes": {
+    "results/raw/runs/expB_paths_v3-d6fde86320f3158c/cleaning/prompt.txt": "54fccecaa4539ea6f9bf17463a0da069f9e72816d3512b9a1510b4481adbcc9d",
+    "results/raw/runs/expB_paths_v3-d6fde86320f3158c/cleaning/response.txt": "77e7348cde0ccee6a67291be11118fee6a47c0731a6e4b3a1adf9b9f06591c72",
+    "results/raw/runs/expB_paths_v3-d6fde86320f3158c/cleaning/parsed.json": "e5744b5ebb9abe5f645fadb84f2086582338e8902679bd566cd6305ac8d82c16",
+    "results/raw/runs/expB_paths_v3-d6fde86320f3158c/cleaning/code.py": "4a8295a49b2f407b2af6069f13eb4407810163aee902f672d38ed0300f0c0433"
+  },
+  "handoff_in_path": "results/raw/runs/expB_paths_v3-d6fde86320f3158c/cleaning/handoff_in.json",
+  "handoff_size_bytes": 616,
+  "input_tokens": 2078,
+  "output_tokens": 1993,
+  "cost_usd": null,
+  "cost_status": "unavailable",
+  "timings": {
+    "generation_ms": 9461.230832999718,
+    "execution_ms": 708.5420000003069,
+    "validation_ms": 0.8900829998310655,
+    "handoff_ms": 0.23879199943621643
+  }
+}

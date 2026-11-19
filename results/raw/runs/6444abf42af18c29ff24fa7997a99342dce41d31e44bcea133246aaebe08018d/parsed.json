@@ -1,0 +1,7 @@
+{
+  "fixed_code": "def invoice_total(lines, discount_pct=0, tax_pct=0):\n    subtotal = sum(row['qty'] * row['unit_price'] for row in lines)\n    discounted = subtotal * (1 - discount_pct / 100)\n    total = discounted * (1 + tax_pct / 100)\n    return round(total, 2)\n",
+  "bug_locations": [
+    "invoice_total: the final return expression that combined discount and tax (subtotal*(1+tax_pct/100) - subtotal*discount_pct/100)"
+  ],
+  "explanation": "Root cause: discount and tax were applied additively against the original subtotal, so tax was charged on the pre-discount amount and the discount was not compounded with tax (the buggy total equals subtotal*(1 + tax/100 - discount/100), missing the discount*tax interaction). Per the authoritative spec, the discount must reduce the base first and tax must then be applied to that discounted amount, with rounding only at the end. Fix: compute subtotal, then discounted = subtotal*(1 - discount_pct/100), then total = discounted*(1 + tax_pct/100), and round only that final value to 2 decimals. The body was also re-indented to standard 4 spaces (cosmetic only; the original indentation was syntactically valid)."
+}

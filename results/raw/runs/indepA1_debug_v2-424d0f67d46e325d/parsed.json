@@ -1,0 +1,10 @@
+{
+  "fixed_code": "import heapq\n\ndef dependency_order(deps):\n    # Collect all nodes: keys and all referenced dependencies\n    nodes = set(deps.keys())\n    for vals in deps.values():\n        nodes.update(vals)\n    \n    # Build incoming sets for all nodes\n    incoming = {n: set() for n in nodes}\n    for n, deps_list in deps.items():\n        for d in deps_list:\n            incoming[n].add(d)\n    \n    # Initialize heap with nodes that have no dependencies\n    ready = [n for n in nodes if not incoming[n]]\n    heapq.heapify(ready)\n    \n    in_ready = set(ready)\n    out = []\n    out_set = set()\n    \n    while ready:\n        n = heapq.heappop(ready)\n        in_ready.discard(n)\n        out.append(n)\n        out_set.add(n)\n        \n        for m in nodes:\n            if n in incoming[m]:\n                incoming[m].remove(n)\n                if not incoming[m] and m not in out_set and m not in in_ready:\n                    heapq.heappush(ready, m)\n                    in_ready.add(m)\n    \n    if len(out) != len(nodes):\n        raise ValueError('Cycle detected in dependencies')\n    \n    return out\n",
+  "bug_locations": [
+    "dependency_order function - nodes collection (missing referenced nodes)",
+    "dependency_order function - incoming dict construction (missing referenced nodes)",
+    "dependency_order function - ready membership check (using set for O(1) tracking)",
+    "dependency_order function - cycle detection (missing ValueError raise)"
+  ],
+  "explanation": "Four bugs: (1) `nodes` only included dict keys, missing nodes that appear only as dependency values — fixed by also adding all values. (2) `incoming` was only built for keys, so referenced-only nodes had no entry — fixed by initializing for all nodes. (3) `m not in ready` on a heap list is unreliable and could cause duplicates — fixed with an `in_ready` set for O(1) membership. (4) No cycle detection existed — fixed by checking if output length equals node count and raising ValueError if not."
+}

@@ -1,0 +1,9 @@
+```json
+{
+  "fixed_code": "def rotate(xs, k):\n    if not xs:\n        return []\n    n = len(xs)\n    k %= n\n    return list(xs[n - k:] + xs[:n - k])\n",
+  "bug_locations": [
+    "rotate: return statement sliced at k from the front (xs[k:] + xs[:k]), producing a left rotation; changed the split point to n - k so the last k elements move to the front (right rotation)."
+  ],
+  "explanation": "After k %= len(xs), k is the effective right-rotation amount in [0, n-1]; this modulo also correctly converts a negative k into the equivalent right rotation (i.e., a left rotation). The defect was the split point: xs[k:] + xs[:k] rotates left, so rotate([1,2,3], 1) returned [2,3,1] instead of [3,1,2]. Splitting at n - k yields xs[n-k:] + xs[:n-k], which moves the final k elements to the front for a proper right rotation (and is a no-op when k == 0). Empty input still returns [] before the modulo, avoiding ZeroDivisionError, and slicing plus concatenation always produces a new list."
+}
+```

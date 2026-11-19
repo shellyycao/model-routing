@@ -1,0 +1,11 @@
+```json
+{
+  "fixed_code": "import heapq\n\n\ndef dependency_order(deps):\n    # Include every key and every referenced node.\n    nodes = set(deps)\n    for dependencies in deps.values():\n        nodes.update(dependencies)\n\n    # incoming[n] = prerequisites of n; dependents[d] = nodes that need d.\n    incoming = {n: set(deps.get(n, ())) for n in nodes}\n    dependents = {n: set() for n in nodes}\n    for n, dependencies in incoming.items():\n        for d in dependencies:\n            dependents[d].add(n)\n\n    ready = [n for n in nodes if not incoming[n]]\n    heapq.heapify(ready)\n    out = []\n\n    while ready:\n        n = heapq.heappop(ready)\n        out.append(n)\n        for m in dependents[n]:\n            incoming[m].remove(n)\n            if not incoming[m]:\n                heapq.heappush(ready, m)\n\n    if len(out) != len(nodes):\n        raise ValueError(\"dependency graph contains a cycle\")\n\n    return out\n",
+  "bug_locations": [
+    "dependency_order: node set construction (nodes=set(deps) only collected keys, dropping referenced-only nodes)",
+    "dependency_order: readiness/edge traversal loop (re-scanned all nodes with linear membership checks instead of tracking dependents)",
+    "dependency_order: function exit (no cycle detection; silently returned a partial order instead of raising ValueError)"
+  ],
+  "explanation": "Two spec violations plus a structural weakness. (1) nodes was built only from deps.keys(), so a node that appears only in a dependency list was never ordered, violating 'every key and referenced node'; fixed by unioning all dependency lists into the node set (deps.get(n, ()) still gives such nodes an empty prerequisite set). (2) There was no cycle detection: with a cycle (including self-loops) the ready heap empties before all nodes are emitted and the old code silently returned a partial order; fixed by raising ValueError when len(out) != len(nodes). (3) The inner loop re-scanned every node and used list membership tests on out/ready; replaced with a dependents adjacency map so each node's prerequisites are decremented exactly when a prerequisite completes and each node is pushed exactly once. The heap still guarantees the alphabetically-smallest available node is chosen at each step, so output remains deterministic, e.g. dependency_order({'b':['a'],'a':[]}) == ['a','b']."
+}
+```

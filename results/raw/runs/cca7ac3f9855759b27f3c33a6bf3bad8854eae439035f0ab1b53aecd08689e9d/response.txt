@@ -1,0 +1,10 @@
+```json
+{
+  "fixed_code": "def dependency_order(deps):\n    # Collect all nodes: keys and any nodes referenced in dependency lists\n    nodes = set(deps)\n    for dependencies in deps.values():\n        nodes.update(dependencies)\n    \n    out = []\n    while nodes:\n        # Find nodes with no dependencies remaining in the 'nodes' set\n        # Use get() to handle nodes that are referenced but not keys in the dict\n        ready = sorted(n for n in nodes if not set(deps.get(n, [])) & nodes)\n        \n        if not ready:\n            # If no nodes are ready, but nodes remain, there is a cycle\n            raise ValueError(\"Cycle detected\")\n        \n        out += ready\n        nodes -= set(ready)\n        \n    return out",
+  "bug_locations": [
+    "nodes=set(deps)",
+    "if not ready:break"
+  ],
+  "explanation": "The original code contained two defects. First, `nodes=set(deps)` only included dictionary keys, ignoring nodes that appeared only in dependency lists (leaf nodes without their own entries). This caused the visible test to fail because 'a' was excluded. Second, the cycle detection logic `if not ready:break` caused the function to return a partial list instead of raising a `ValueError` as required by the specification. The fix initializes `nodes` by unioning keys and referenced values, and replaces the break with an exception."
+}
+```

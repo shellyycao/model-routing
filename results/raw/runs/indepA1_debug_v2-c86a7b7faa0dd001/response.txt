@@ -1,0 +1,9 @@
+```json
+{
+  "fixed_code": "def running_total(xs):\n    out=[]; total=0\n    for value in xs:\n        total += value; out.append(total)\n    return out\n",
+  "bug_locations": [
+    "for loop slice: xs[:-1] should be xs"
+  ],
+  "explanation": "The loop used xs[:-1], which skips the last element of the input. Changing it to xs ensures all elements are included in the cumulative sum."
+}
+```

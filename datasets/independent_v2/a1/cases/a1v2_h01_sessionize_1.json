@@ -1,0 +1,27 @@
+{
+  "bug_locations": [
+    "sessionize sort",
+    "sessionize boundary comparison"
+  ],
+  "buggy": "def sessionize(events,gap):\n                 out={}\n                 for user,t in events:\n                     sessions=out.setdefault(user,[])\n                     if not sessions or t-sessions[-1][-1]>=gap:sessions.append([t])\n                     else:sessions[-1].append(t)\n                 return out\n",
+  "case_id": "a1v2_h01_sessionize_1",
+  "difficulty": "hard",
+  "family": "sessionize",
+  "hidden": [
+    "sessionize([('u',5),('u',1),('u',3)],2)=={'u':[[1,3,5]]}",
+    "sessionize([('a',1),('b',2),('a',10)],3)=={'a':[[1],[10]],'b':[[2]]}",
+    "sessionize([('a',1),('b',9),('a',10)],3)=={'a':[[1],[10]],'b':[[9]]}",
+    "sessionize([],2)=={}",
+    "(lambda x:(sessionize(x,2),x)[1]==[('u',2),('u',1)])([('u',2),('u',1)])"
+  ],
+  "label_source": "executable reference plus independently checked tests",
+  "reference": "def sessionize(events,gap):\n             out={}\n             for user,t in sorted(events,key=lambda x:(x[0],x[1])):\n                 sessions=out.setdefault(user,[])\n                 if not sessions or t-sessions[-1][-1]>gap:sessions.append([t])\n                 else:sessions[-1].append(t)\n             return out\n",
+  "spec": "sessionize(events, gap) sorts (user,timestamp) pairs, groups each user into sessions, and starts a new session when the gap is strictly greater than gap. Return user->list of timestamp lists without mutating input.",
+  "verification": {
+    "buggy_fails": 1,
+    "reference_passes": 5
+  },
+  "visible": [
+    "sessionize([('u',1),('u',3)],2) == {'u':[[1,3]]}"
+  ]
+}

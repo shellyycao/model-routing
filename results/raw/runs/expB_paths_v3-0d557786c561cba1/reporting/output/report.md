@@ -1,0 +1,31 @@
+# Support Operations Analysis Report
+
+The support ticket dataset comprises 220 tickets with an average resolution time of about 75.7 minutes and total labor cost of $17,445.07. Team Alpha, Beta, and Gamma differ in labor spend, with Beta leading. Resolution speed varies by channel, chat being the slowest (longest) and email the quickest. Email tickets have a markedly higher reopen rate than chat (122.5% increase). A small high‑cost, low‑satisfaction segment (9 tickets) shows an 11.1% reopen rate. Resolution times are moderately dispersed (SD ≈ 51.3 min) and satisfaction averages 4.14, though 14 records lack scores. Ticket handling involves 18 agents; the top agent accounts for 7.27% of tickets.
+
+## Key findings
+- [q1] The dataset contains 220 tickets with an average resolution time of 75.66 minutes and total labor cost of $17,445.07.
+  - Reported values: ticket_count=220.0, mean_resolution_minutes=75.6590909090909, total_labor_cost=17445.07
+- [q2] Team labor cost ranking (high to low): Beta ($6,928.72), Gamma ($5,911.44), Alpha ($4,604.91).
+  - Reported values: labor_cost_alpha=4604.91, labor_cost_beta=6928.72, labor_cost_gamma=5911.44
+  - Ranking: Beta, Gamma, Alpha
+- [q3] Average resolution time by channel ranks (high to low): chat (82.23 min), phone (74.07 min), email (71.72 min).
+  - Reported values: resolution_email=71.72380952380952, resolution_chat=82.23287671232876, resolution_phone=74.07142857142857
+  - Ranking: chat, phone, email
+- [q4] Reopen rate for email tickets is 15.24%, for chat 6.85%; email’s rate is 122.48% higher than chat, indicating an increase.
+  - Reported values: reopen_rate_email_pct=15.238095238095239, reopen_rate_chat_pct=6.8493150684931505, email_vs_chat_reopen_change_pct=122.47619047619051
+  - Direction: increase
+- [q5] The high‑cost, low‑satisfaction segment contains 9 tickets, with an 11.11% reopen rate.
+  - Reported values: high_cost_low_sat_count=9.0, high_cost_low_sat_reopen_pct=11.11111111111111
+- [q6] Resolution time median is 65 min, standard deviation 51.30 min; average satisfaction score is 4.14, with 14 tickets missing satisfaction data.
+  - Reported values: resolution_median=65.0, resolution_std=51.302729053162466, satisfaction_mean=4.140776699029126, satisfaction_missing_count=14.0
+- [q7] Tickets were handled by 18 distinct agents; the most active agent handled 16 tickets, representing 7.27% of all tickets.
+  - Reported values: unique_agent_count=18.0, top_agent_ticket_count=16.0, top_agent_ticket_share_pct=7.2727272727272725
+
+## Limitations
+- The cleaning stage failed, so residual data quality issues (e.g., duplicate rows, inconsistent formats) may remain.
+- Fourteen tickets lack satisfaction scores, limiting the completeness of satisfaction analysis.
+- Labor cost and resolution time are aggregated at ticket level; underlying activity logs were not examined.
+- The analysis assumes the exported fields are accurate and that the agent roster join was successful.
+
+## Conclusion
+Overall, the support operation handles a moderate volume of tickets with reasonable resolution times but exhibits notable cost differences across teams and higher reopen rates for email channels. Targeted interventions—such as reviewing email handling processes and addressing the small high‑cost, low‑satisfaction segment—could improve efficiency and customer experience. Further data cleaning and enrichment would strengthen future analyses.

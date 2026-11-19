@@ -1,0 +1,165 @@
+Let me analyze the requirements:
+
+1. Read cleaned.csv from INPUT_DIR
+2. Compute metrics q1-q7
+3. Write findings.json (flat JSON object) to OUTPUT_DIR
+4. All values must be finite numbers (no NaN, null, strings, lists)
+5. Don't round results
+
+Key considerations:
+- reading_count, hot_commercial_reading_count, temperature_missing_count, unique_meter_count should probably be written as numbers (int is fine — JSON numbers).
+- Edge cases: if there are no hot commercial readings, mean would be NaN — need fallback. But schema requires finite numbers. I should guard with 0.0 fallback or handle gracefully. But presumably the data has values. Still, safer to handle.
+- Pearson correlation: use pandas .corr() which uses pairwise complete observations; filter Commercial with non-missing temperature first. If fewer than 2 rows or zero variance, corr is NaN — fallback needed. But keep full precision.
+- Sample std: pandas .std() default ddof=1, which matches n-1.
+- Quarters: parse reading_date, derive quarter.
+- H1: months 1-6, H2: months 7-12.
+- peak share: kwh_peak / total_kwh * 100.
+- highest_use_meter_kwh: groupby meter_id sum, max.
+
+Write the script self-contained, using os.environ["INPUT_DIR"] and os.environ["OUTPUT_DIR"].
+
+For JSON serialization, ensure all values are Python floats/ints (not numpy types) — json module can't serialize numpy types by default (actually it raises TypeError). Convert with float()/int(). But note: counts could be ints; the schema says finite number — int is a number, fine. I'll convert counts to int and others to float. Actually safer to just make everything float? reading_count as 1428.0 — acceptable as a number. Either works. I'll use int for counts and float for others; both are valid JSON numbers.
+
+Handle NaN: define a helper `finite(x)` that returns 0.0 if NaN/inf? But that could mask real issues; still required by contract. I'll implement a helper that converts to float and replaces non-finite with 0.0 as a last resort. For correlation with insufficient data, fallback 0.0.
+
+Sorting etc. not needed.
+
+Let me write the code:
+
+```python
+import json
+import math
+import os
+
+import numpy as np
+import pandas as pd
+
+
+def main():
+    input_path = os.path.join(os.environ["INPUT_DIR"], "cleaned.csv")
+    output_path = os.path.join(os.environ["OUTPUT_DIR"], "findings.json")
+
+    df = pd.read_csv(input_path)
+
+    # Parse dates and numeric columns defensively (data is already cleaned,
+    # but ensure correct dtypes for the computations).
+    df["reading_date"] = pd.to_datetime(df["reading_date"], format="%Y-%m-%d", errors="coerce")
+    df["energy_kwh"] = pd.to_numeric(df["energy_kwh"], errors="coerce")
+    df["temperature_c"] = pd.to_numeric(df["temperature_c"], errors="coerce")
+
+    def num(value):
+        """Convert to a finite float; fall back to 0.0 if NaN/inf."""
+        try:
+            v = float(value)
+        except (TypeError, ValueError):
+            return 0.0
+        if math.isnan(v) or math.isinf(v):
+            return 0.0
+        return v
+
+    findings = {}
+
+    # q1: overall
+    total_kwh = num(df["energy_kwh"].sum())
+    reading_count = int(len(df))
+    findings["total_kwh"] = total_kwh
+    findings["reading_count"] = reading_count
+    findings["mean_kwh_per_reading"] = num(total_kwh / reading_count) if reading_count else 0.0
+
+    # q2: by building type
+    by_type = df.groupby("building_type")["energy_kwh"].sum()
+    findings["kwh_residential"] = num(by_type.get("Residential", 0.0))
+    findings["kwh_commercial"] = num(by_type.get("Commercial", 0.0))
+    findings["kwh_industrial"] = num(by_type.get("Industrial", 0.0))
+
+    # q3: quarters
+    month = df["reading_date"].dt.month
+    quarter = ((month - 1) // 3) + 1
+    qsum = df.groupby(quarter)["energy_kwh"].sum()
+    for i, key in enumerate(["kwh_q1", "kwh_q2", "kwh_q3", "kwh_q4"], start=1):
+        findings[key] = num(qsum.get(i, 0.0))
+
+    # q4: halves
+    h1 = num(df.loc[month <= 6, "energy_kwh"].sum())
+    h2 = num(df.loc[month >= 7, "energy_kwh"].sum())
+    findings["kwh_h1"] = h1
+    findings["kwh_h2"] = h2
+    findings["kwh_h2_vs_h1_change_pct"] = num((h2 - h1) / h1 * 100.0) if h1 != 0.0 else 0.0
+
+    # q5: hot commercial days
+    hot_comm = df[(df["building_type"] == "Commercial") & (df["temperature_c"].notna()) & (df["temperature_c"] >= 25)]
+    findings["hot_commercial_reading_count"] = int(len(hot_comm))
+    findings["hot_commercial_mean_kwh"] = num(hot_comm["energy_kwh"].mean()) if len(hot_comm) else 0.0
+
+    # q6: distribution
+    findings["kwh_median"] = num(df["energy_kwh"].median())
+    findings["kwh_std"] = num(df["energy_kwh"].std(ddof=1))
+    temp_nonmiss = df["temperature_c"].dropna()
+    findings["temperature_mean"] = num(temp_nonmiss.mean())
+    findings["temperature_missing_count"] = int(df["temperature_c"].isna().sum())
+    comm = df[(df["building_type"] == "Commercial") & (df["temperature_c"].notna())]
+    if len(comm) >= 2 and comm["temperature_c"].nunique() > 1 and comm["energy_kwh"].nunique() > 1:
+        corr = num(comm["temperature_c"].corr(comm["energy_kwh"], method="pearson"))
+    else:
+        corr = 0.0
+    findings["commercial_temp_kwh_corr"] = corr
+
+    # q7: tariff and meters
+    by_tariff = df.groupby("tariff")["energy_kwh"].sum()
+    kwh_peak = num(by_tariff.get("peak", 0.0))
+    kwh_off_peak = num(by_tariff.get("off-peak", 0.0))
+    findings["kwh_peak"] = kwh_peak
+    findings["kwh_off_peak"] = kwh_off_peak
+    findings["peak_kwh_share_pct"] = num(kwh_peak / total_kwh * 100.0) if total_kwh != 0.0 else 0.0
+    findings["unique_meter_count"] = int(df["meter_id"].nunique())
+    by_meter = df.groupby("meter_id")["energy_kwh"].sum()
+    findings["highest_use_meter_kwh"] = num(by_meter.max()) if len(by_meter) else 0.0
+
+    # Ensure flat dict of finite numbers only
+    clean = {}
+    for k, v in findings.items():
+        if isinstance(v, bool):
+            v = float(v)
+        if isinstance(v, int):
+            clean[k] = v
+        else:
+            clean[k] = num(v)
+
+    os.makedirs(os.environ["OUTPUT_DIR"], exist_ok=True)
+    with open(output_path, "w") as f:
+        json.dump(clean, f, indent=2)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+Wait — mean_kwh_per_reading: spec says total_kwh / reading_count. Note sum of energy_kwh — if any NaN in energy_kwh (shouldn't be, since not nullable), pandas sum skips NaN. len(df) counts rows. Should be fine.
+
+One nuance: groupby on quarter with NaT dates — quarter would be NaN, groupby drops NaN keys. Fine since dates are not nullable.
+
+Also month for NaT is NaN; comparisons with NaN yield False, so those rows excluded from h1/h2 — fine.
+
+For qsum.get(i, 0.0) — qsum index is from `((month - 1) // 3) + 1` which is float (since month from dt.month is int64... actually Int64 or int64; (month-1)//3+1 yields int). If there are NaN months, quarter is float with NaN. groupby key float — .get(1, 0.0) should work if index values are 1.0? .get with int 1 on float index 1.0 works because hashing 1 == 1.0. OK.
+
+Actually, to be safe, cast quarter to pandas "Int64"? Not necessary. I'll keep it simple but maybe use df["reading_date"].dt.quarter. That's cleaner. dt.quarter gives int. Use that.
+
+For temperature mean: pandas mean of dropna — fine.
+
+Sample std ddof=1 default.
+
+Pearson correlation: pandas .corr default pearson.
+
+reading_count should be number of rows — 1428 presumably.
+
+Everything looks good. expected_artifacts: ["findings.json"].
+
+methods_description: brief description.
+
+Let me finalize the JSON response. Code must be a string with escaped newlines — I'll write it normally in the JSON block.
+
+One more check: "Write nowhere else" — only findings.json. os.makedirs on OUTPUT_DIR is fine (creates dir if needed, not a file). Probably OUTPUT_DIR exists; makedirs with exist_ok=True is harmless. Keep it.
+
+json.dump with ints and floats — ints serialize fine.
+
+Final answer.

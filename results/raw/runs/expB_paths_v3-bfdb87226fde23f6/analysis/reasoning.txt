@@ -1,0 +1,96 @@
+We need to produce JSON with fields python_code (string containing script), expected_artifacts (list of filenames), methods_description (string). The script must read cleaned.csv from INPUT_DIR env var, compute metrics, write findings.json to OUTPUT_DIR, and list expected_artifacts as ["findings.json"].
+
+We must compute metrics as per definitions.
+
+Let's outline calculations:
+
+Read CSV with pandas.
+
+ticket_count = len(df)
+
+mean_resolution_minutes = df['resolution_minutes'].mean() (float)
+
+total_labor_cost = df['labor_cost'].sum()
+
+Team labor cost sums: filter by team.
+
+labor_cost_alpha = df.loc[df['team']=='Alpha','labor_cost'].sum()
+
+Similarly Beta, Gamma.
+
+Channel mean resolution minutes:
+
+resolution_email = df.loc[df['channel']=='email','resolution_minutes'].mean()
+
+resolution_chat = ... 'chat'
+
+resolution_phone = ... 'phone'
+
+Reopen rates: reopened percentage for email and chat.
+
+For email: subset where channel=='email', compute mean of reopened (since reopened is 0/1) *100.
+
+reopen_rate_email_pct = df_email['reopened'].mean()*100
+
+Similarly chat.
+
+email_vs_chat_reopen_change_pct = ((email_rate - chat_rate)/chat_rate)*100
+
+If chat_rate is zero, need to handle division by zero; maybe set to 0 or NaN? Must be finite number. If chat_rate zero, we can set change_pct = 0 (or maybe inf). Safer to set 0.
+
+High-cost low-satisfaction segment: tickets with labor_cost >=100 and satisfaction_score not missing and <=2.
+
+Condition: (df['labor_cost']>=100) & (df['satisfaction_score'].notna()) & (df['satisfaction_score']<=2)
+
+high_cost_low_sat_df = df[cond]
+
+high_cost_low_sat_count = len(high_cost_low_sat_df)
+
+high_cost_low_sat_reopen_pct = high_cost_low_sat_df['reopened'].mean()*100 if count>0 else 0.0
+
+Distribution: median and sample std (ddof=1) of resolution_minutes.
+
+resolution_median = df['resolution_minutes'].median()
+
+resolution_std = df['resolution_minutes'].std(ddof=1)
+
+satisfaction_mean = df['satisfaction_score'].mean() (ignores NaN)
+
+satisfaction_missing_count = df['satisfaction_score'].isna().sum()
+
+Agent concentration:
+
+unique_agent_count = df['agent_id'].nunique()
+
+top_agent_ticket_count = df['agent_id'].value_counts().iloc[0] (max)
+
+top_agent_ticket_share_pct = top_agent_ticket_count / ticket_count * 100
+
+All metrics must be finite numbers, not NaN. Ensure we convert to Python float.
+
+Edge cases: If any metric results in NaN (e.g., mean of empty subset), we need to set to 0.0.
+
+Implement safe functions.
+
+Write findings dict with all metric_keys.
+
+Write json with json.dump with ensure_ascii=False.
+
+Add expected_artifacts list.
+
+Now produce final JSON.
+
+Let's craft script.
+
+Will import os, pandas as pd, json, numpy as np.
+
+Define helper safe_mean(series): if series.empty: return 0.0 else return series.mean()
+
+Similarly safe_std.
+
+Now produce.
+
+Make sure to convert to Python native types (float, int). For counts, int.
+
+Now produce final JSON.
+

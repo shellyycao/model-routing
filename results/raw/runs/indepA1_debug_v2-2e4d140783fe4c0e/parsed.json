@@ -1,0 +1,8 @@
+{
+  "fixed_code": "def clamp(x, low, high):\n    \"\"\"Clamp *x* to the inclusive range [low, high].\n\n    Raises:\n        ValueError: If *low* is greater than *high*.\n    \"\"\"\n    if low > high:\n        raise ValueError(\"low must not be greater than high\")\n    return min(max(x, low), high)\n",
+  "bug_locations": [
+    "Added validation for low > high to raise ValueError",
+    "Adjusted indentation and added docstring for clarity"
+  ],
+  "explanation": "The original implementation never checked the relationship between *low* and *high*, violating the specification that a ValueError must be raised when low > high. A guard clause was added to enforce this rule. The indentation was also normalised and a docstring was introduced to document the behavior."
+}

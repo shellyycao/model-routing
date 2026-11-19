@@ -1,0 +1,9 @@
+{
+  "fixed_code": "def sessionize(events, gap):\n    out = {}\n    last = None\n    last_user = None\n    for user, t in sorted(events, key=lambda x: (x[0], x[1])):\n        if user not in out:\n            out[user] = [[]]\n        if last is not None and user == last_user and t - last > gap:\n            out[user].append([])\n        out[user][-1].append(t)\n        last = t\n        last_user = user\n    return out",
+  "bug_locations": [
+    "sorted(event, key=lambda x:x[1])",
+    "if last is not None and t-last>gap:out[user].append([])",
+    "last=t"
+  ],
+  "explanation": "The original code had three defects: 1) Sorting by timestamp alone (x[1]) instead of (user, timestamp) caused incorrect grouping. 2) The gap check didn't verify the user was the same, potentially creating new sessions across different users. 3) The 'last' timestamp wasn't tracked per-user, causing incorrect gap calculations when switching between users. The fix sorts by (user, timestamp), adds a last_user check, and properly tracks the last timestamp per-user."
+}

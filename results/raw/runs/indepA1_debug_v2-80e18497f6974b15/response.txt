@@ -1,0 +1,10 @@
+```json
+{
+  "fixed_code": "from collections import deque\n\ndef shortest_path(graph, start, goal):\n    q = deque([(start, [start])])  # Include the start node in the path\n    seen = set()\n    while q:\n        node, path = q.popleft()\n        if node == goal:\n            return path  # Return the full path when goal is reached\n        for nxt in graph.get(node, []):\n            if nxt not in seen:\n                q.append((nxt, path + [nxt]))  # Append the next node to the path\n                seen.add(nxt)\n    return None",
+  "bug_locations": [
+    "Line 2: The initial path in the deque should include the start node.",
+    "Line 6: Return the full path when the goal is reached, not just the goal node."
+  ],
+  "explanation": "The original code had two issues: 1) The initial path in the deque did not include the start node, which is necessary for constructing the correct path. 2) When the goal node was reached, the function returned only the goal node instead of the full path from start to goal. These changes ensure that the function adheres to the specification by returning a shortest node list."
+}
+```

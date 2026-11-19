@@ -1,0 +1,76 @@
+We need to produce JSON with fields python_code (script), output_filename "cleaned.csv", cleaning_logic description.
+
+Script must read raw.csv from INPUT_DIR, apply cleaning steps in order, write cleaned.csv and cleaning_summary.json to OUTPUT_DIR.
+
+Implement steps:
+
+- Use pandas read_csv with dtype=str, keep default. But need to treat all values as text, strip whitespace, treat missing values list.
+
+We can read raw.csv with pandas read_csv dtype=str, keep default na_filter=False to avoid automatic NaN. Then apply strip to all cells.
+
+Define missing set: {'', 'na', 'n/a', 'null', 'none', '-'} after lower.
+
+Replace missing with None (np.nan) for processing.
+
+R2 duplicate reading_id: drop duplicates keep first.
+
+R3 parse reading_date: we need to try multiple formats. Use datetime.strptime with list of formats. For 'Month D, YYYY' we can use %B %d, %Y. Also need to handle possible extra spaces. For 'DD-Mon-YYYY' with 3-letter month abbreviation: %d-%b-%Y. For MM/DD/YYYY: %m/%d/%Y. For YYYY/MM/DD: %Y/%m/%d. For YYYY-MM-DD: %Y-%m-%d.
+
+If parsing fails, drop row.
+
+After parsing, format to %Y-%m-%d string.
+
+R4 meter_id uppercase, drop if missing.
+
+R5 building_type mapping: define dict mapping lower stripped to canonical. Use case-insensitive mapping.
+
+Variants: 'res', 'resi' -> Residential; 'residential' -> Residential; 'comm' -> Commercial; 'commercial' -> Commercial; 'ind' -> Industrial; 'industrial' -> Industrial.
+
+Drop rows where mapping fails or missing.
+
+R6 tariff mapping: lower stripped. 'peak' -> 'peak'; 'off-peak', 'offpeak', 'off peak' -> 'off-peak'. Drop others.
+
+R7 energy: process string. Remove commas. Strip. If endswith case-insensitive 'mwh' possibly with space: we can use regex. Use re.sub to remove commas. Then detect unit: if re.search(r'(?i)^\s*([\d\.]+)\s*mwh\s*$', value) etc. Simpler: use regex to extract number and unit. If unit is MWh multiply by 1000. If kWh or no unit, just number. After conversion, check numeric, >=0 <=100000. Round to 2 decimals.
+
+Drop rows failing.
+
+R8 temperature: similar. Remove trailing degree sign and unit. Use regex to capture number and optional unit. If unit is F, convert. If C or none, keep. Round to 1 decimal. If missing or not numeric or out of -40 to 50 after conversion, set temperature_c to np.nan (empty). Keep row.
+
+R9 output columns order, sort by reading_id ascending (string). Write CSV with header, no index.
+
+Also produce cleaning_summary.json with raw_rows, cleaned_rows, and counts per rule maybe.
+
+Implement counts: raw_rows = len(df_raw). After each step we can compute rows dropped.
+
+We'll track counts: duplicates_removed, date_invalid, meter_missing, building_invalid, tariff_invalid, energy_invalid, etc.
+
+Implementation details:
+
+- Use os.getenv('INPUT_DIR') and 'OUTPUT_DIR'.
+
+- Use pandas to write csv.
+
+- For summary, create dict and json.dump.
+
+Edge Cases: reading_id may have whitespace; after strip we keep.
+
+Make sure to treat missing values after strip: we can replace with np.nan.
+
+Implementation steps:
+
+Read raw.csv with dtype=str, keep default.
+
+Strip whitespace: df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)
+
+Replace missing: df = df.replace(to_replace=r'^\s*$', value=np.nan, regex=True) then also replace case-insensitive missing list: for val in missing_set: df = df.replace(val, np.nan, case=False). Simpler: define function to normalize each cell: if isinstance(str) then stripped = s.strip(); if stripped.lower() in missing_set: return np.nan else return stripped.
+
+We'll applymap.
+
+Proceed.
+
+Now code.
+
+Return JSON.
+
+Let's craft script.
+

@@ -1,0 +1,106 @@
+We need to produce JSON with python_code string, expected_artifacts list, methods_description.
+
+The script must read cleaned.csv from INPUT_DIR env var, compute metrics, write findings.json to OUTPUT_DIR. Must output flat JSON with all metric keys as numbers (float or int). No NaN, Infinity. Must not round; full precision.
+
+We need to compute metrics using pandas.
+
+Potential issues: satisfaction_score column may be float (e.g., 2.0). In cleaned data, they are floats but integer values. We'll treat as numeric.
+
+Missing satisfaction_score: null values. In CSV, missing may be empty. pandas will read as NaN.
+
+Compute:
+
+customer_count = number of rows (int)
+
+churn_rate_pct = (sum churned / count) * 100
+
+avg_monthly_fee = mean monthly_fee
+
+Churn by plan: for each plan, compute churn rate percent.
+
+Churn by cohort: year of signup_date. Need to compute for years 2021-2024. If no customers for a year, churn rate should be 0? But we need a number; maybe NaN not allowed. We'll compute 0 if count==0.
+
+Contract effect: churn_rate_monthly_pct, churn_rate_annual_pct, then relative difference: (monthly - annual)/annual *100. If annual churn rate is 0, then maybe set change to inf? Not allowed. Could set to 0. But likely there is some churn for annual. We'll compute safely: if annual ==0, set change to 0.
+
+At-risk segment: support_tickets >=5 AND satisfaction_score not missing AND <=2. Count and churn rate percent.
+
+Tenure summary: mean, median, std (sample). Use pandas .mean(), .median(), .std(ddof=1). Provide as float.
+
+Satisfaction mean: mean of non-missing satisfaction_score.
+
+Missing count: count of NaN.
+
+Lifetime value by plan: mean lifetime_value per plan.
+
+premium_vs_basic_ltv_change_pct = (ltv_premium - ltv_basic)/ltv_basic *100. If ltv_basic ==0, set to 0.
+
+Write findings.json with all keys.
+
+Also need expected_artifacts list: ["findings.json"].
+
+Methods description: brief.
+
+Now produce JSON with code string.
+
+Write script with imports, read env vars, load csv, compute metrics, create dict, dump to json.
+
+Make sure to convert numpy types to python native via float() or int().
+
+Potential large numbers: keep full precision; json dumps default will convert to Python float representation.
+
+Now craft code.
+
+Edge Cases: satisfaction_score column may be float; we need to treat as numeric.
+
+Implementation steps:
+
+import os, json, pandas as pd, numpy as np
+
+input_path = os.path.join(os.environ["INPUT_DIR"], "cleaned.csv")
+df = pd.read_csv(input_path, parse_dates=["signup_date"])
+
+customer_count = int(len(df))
+
+churn_rate_pct = df["churned"].mean() * 100
+
+avg_monthly_fee = df["monthly_fee"].mean()
+
+Plan churn rates:
+
+def churn_rate_by_plan(plan):
+    sub = df[df["plan"] == plan]
+    if len(sub)==0: return 0.0
+    return sub["churned"].mean()*100
+
+Compute for Basic, Standard, Premium.
+
+Cohort churn rates: extract year = df["signup_date"].dt.year
+
+For each year 2021-2024 compute similarly.
+
+Contract churn rates: monthly vs annual.
+
+At-risk: mask = (df["support_tickets"] >=5) & (df["satisfaction_score"].notna()) & (df["satisfaction_score"] <=2)
+
+at_risk_customer_count = int(mask.sum())
+
+at_risk_churn_rate_pct = df.loc[mask, "churned"].mean()*100 if mask.any() else 0.0
+
+Tenure stats: tenure_mean = df["tenure_months"].mean(); median; std = df["tenure_months"].std(ddof=1)
+
+Satisfaction mean: df["satisfaction_score"].mean(skipna=True)
+
+Missing count: df["satisfaction_score"].isna().sum()
+
+LTV by plan: similar to plan churn but mean lifetime_value.
+
+premium_vs_basic_ltv_change_pct = ((ltv_premium - ltv_basic)/ltv_basic)*100 if ltv_basic !=0 else 0.0
+
+Create dict with keys as specified.
+
+Write to output_path = os.path.join(os.environ["OUTPUT_DIR"], "findings.json")
+
+Ensure json.dump with ensure_ascii=False.
+
+Now produce final JSON.
+

@@ -1,0 +1,7 @@
+```json
+{
+  "fixed_code": "def merge_intervals(intervals):\n    if not intervals:\n        return []\n    intervals.sort(key=lambda x: x[0])\n    out = [intervals[0]]\n    for s, e in intervals[1:]:\n        if s <= out[-1][1]:\n            out[-1][1] = max(out[-1][1], e)\n        else:\n            out.append([s, e])\n    return out",
+  "bug_location": "The bug is in the condition check 'if out and s < out[-1][1]:'. It should check for 's <= out[-1][1]' to handle touching intervals correctly.",
+  "explanation": "The original code failed to correctly merge touching intervals because it used 's < out[-1][1]' instead of 's <= out[-1][1]'. This caused intervals that just touched (where the start of one is equal to the end of the previous) to not be merged. Additionally, the intervals were not sorted before processing, which is necessary to ensure correct merging."
+}
+```

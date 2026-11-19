@@ -1,0 +1,78 @@
+We need to produce JSON with fields python_code (string containing script), expected_artifacts (list with findings.json), methods_description (brief description). The script must compute all metrics as described, using pandas.
+
+We need to ensure no rounding, full precision. Use pandas functions: count, mean, median, std (sample). For percentages, compute (churned sum / count) * 100.
+
+Need to handle missing satisfaction_score: it's NaN in cleaned data (since they set NaN for invalid). So we can compute satisfaction_mean over non-missing using .mean(skipna=True). Count missing using isna().sum().
+
+At-risk segment: support_tickets >=5 AND satisfaction_score not missing AND <=2. Count rows, compute churn rate among them.
+
+Cohort by signup year: extract year from signup_date (datetime). Compute churn rate per year for years present (2021-2024). If a year missing, we still need metric key; maybe set to 0 or NaN? Must be finite number. Should compute 0 if no customers? But there may be no rows for 2024 (maybe). To be safe, compute for each year; if count==0, set churn_rate to 0.0.
+
+Similarly for plan churn rates: compute per plan; if no rows, 0.
+
+Contract churn rates: monthly vs annual.
+
+Lifetime value by plan: mean of lifetime_value per plan.
+
+Premium vs basic LTV change pct: (ltv_premium - ltv_basic) / ltv_basic * 100. If ltv_basic zero (unlikely), handle division by zero: set to inf? Must be finite. Could set to 0. But ltv_basic >0 because monthly_fee>0 and tenure>0 maybe some zero tenure? Tenure can be 0, then lifetime_value 0. Could be zero. To avoid division by zero, if ltv_basic ==0, set change_pct to 0.0.
+
+All metrics must be numbers (int or float). Use Python float.
+
+Write findings.json with json.dump.
+
+Script must import os, pandas, json, numpy maybe.
+
+Read cleaned.csv path: os.path.join(os.environ["INPUT_DIR"], "cleaned.csv").
+
+Write findings.json path: os.path.join(os.environ["OUTPUT_DIR"], "findings.json").
+
+Now produce code.
+
+Edge Cases: satisfaction_score column appears as float (e.g., 2.00). Should treat as numeric; we can convert to numeric.
+
+Implementation steps:
+
+- df = pd.read_csv(path, parse_dates=['signup_date'])
+
+- Ensure correct dtypes: but not needed.
+
+- Compute total_customers = len(df)
+
+- churn_rate_pct = df['churned'].mean() * 100
+
+- avg_monthly_fee = df['monthly_fee'].mean()
+
+- For plan churn rates: for each plan in ['Basic','Standard','Premium']:
+
+    subset = df[df['plan']==plan]; churn_rate = subset['churned'].mean()*100 if len>0 else 0.0
+
+- Cohort churn rates: df['signup_year'] = df['signup_date'].dt.year; for years 2021-2024 compute similarly.
+
+- Contract churn rates: for contract_type in ['Monthly','Annual'].
+
+- churn_monthly_vs_annual_change_pct = (monthly_rate - annual_rate) / annual_rate * 100 if annual_rate !=0 else 0.0
+
+- At-risk: mask = (df['support_tickets'] >=5) & (df['satisfaction_score'].notna()) & (df['satisfaction_score'] <=2)
+
+    at_risk_customer_count = mask.sum()
+
+    at_risk_churn_rate_pct = df.loc[mask, 'churned'].mean()*100 if at_risk_customer_count>0 else 0.0
+
+- Tenure stats: tenure_mean = df['tenure_months'].mean(); tenure_median = df['tenure_months'].median(); tenure_std = df['tenure_months'].std(ddof=1) (default). Use .std() default ddof=1.
+
+- satisfaction_mean = df['satisfaction_score'].mean() (skipna). satisfaction_missing_count = df['satisfaction_score'].isna().sum()
+
+- LTV by plan: similar to plan churn but using 'lifetime_value'.
+
+- premium_vs_basic_ltv_change_pct = (ltv_premium - ltv_basic) / ltv_basic * 100 if ltv_basic !=0 else 0.0
+
+Collect all metrics into dict with keys exactly as required.
+
+Write json.
+
+Make sure to convert numpy types to Python float via float().
+
+Potential issue: pandas returns numpy.float64; json can handle it but may produce NaN if missing; but we ensure finite.
+
+Now produce final JSON.
+

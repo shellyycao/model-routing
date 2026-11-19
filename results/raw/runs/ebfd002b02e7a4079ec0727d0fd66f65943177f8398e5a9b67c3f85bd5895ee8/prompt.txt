@@ -1,0 +1,15 @@
+Extract the requested fields from the document. Resolve conflicts using each field description, perform required unit conversions, and use null when the document does not support a value.
+
+Schema:
+- currency: ISO currency
+- invoice_date: date YYYY-MM-DD
+- invoice_id: string current invoice
+- terms_days: integer or null
+- total_due_usd: number after discount and conversion
+- vendor: string
+
+Document:
+EMAIL
+Old quote Q-100: $9,999. Current invoice INV-101 from Northwind 1, dated 2026-01-11. List total $1101.00; approved discount 5%. Currency USD. Payment terms: net 30 days. Final due is the discounted amount, not the old quote.
+
+Return exactly one object with the required `fields` wrapper and no extra schema keys. Content correctness and schema/operational compliance are scored separately.

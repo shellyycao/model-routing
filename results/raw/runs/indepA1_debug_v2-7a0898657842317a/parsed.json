@@ -1,0 +1,9 @@
+{
+  "fixed_code": "def invoice_total(lines, discount_pct=0, tax_pct=0):\n    subtotal = sum(row['qty'] * row['unit_price'] for row in lines)\n    return round(subtotal * (1 - discount_pct / 100) * (1 + tax_pct / 100), 2)\n",
+  "bug_locations": [
+    "invoice_total: subtotal calculation (premature rounding of individual line items)",
+    "invoice_total: discount_pct//100 uses integer division instead of float division",
+    "invoice_total: tax_pct//100 uses integer division instead of float division"
+  ],
+  "explanation": "Two bugs were present: (1) `//` (integer/floor division) was used instead of `/` (true division) for both `discount_pct//100` and `tax_pct//100`. With integer division, values like 10//100 and 5//100 both equal 0, making the discount and tax factors always 1 and 1 respectively. They must be `/` to get 0.10 and 0.05. (2) Individual line totals were rounded before summing, which violates the spec that says only the final result should be rounded. Removing the inner `round()` fixes this."
+}

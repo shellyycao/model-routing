@@ -1,0 +1,21 @@
+You are debugging a Python module. The specification is authoritative.
+
+Specification:
+allocate_stock(stock, requests) processes (request_id, sku, qty) in order. Duplicate request_ids are ignored. Fulfil only whole requests with positive qty and sufficient stock. Return (fulfilled_ids, remaining_stock) without mutating stock.
+
+Buggy module:
+```python
+def allocate_stock(stock,requests):
+                 remaining=stock;fulfilled=[]
+                 for rid,sku,qty in requests:
+                     if remaining.get(sku,0)>=qty:remaining[sku]-=qty;fulfilled.append(rid)
+                 return fulfilled,remaining
+
+```
+
+Visible checks:
+```python
+assert allocate_stock({'x':2}, [('r','x',2)]) == (['r'], {'x':0})
+```
+
+Return the complete corrected module. There may be multiple interacting defects. Do not hard-code the visible examples.

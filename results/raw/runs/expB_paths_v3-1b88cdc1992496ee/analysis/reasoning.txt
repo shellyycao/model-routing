@@ -1,0 +1,154 @@
+We need to produce JSON with fields python_code (string containing script), expected_artifacts (list of filenames), methods_description (string). The script must read cleaned.csv from INPUT_DIR env var, compute metrics, write findings.json to OUTPUT_DIR. Must output flat JSON with all metric keys and numeric values (no NaN). Use pandas.
+
+We need to ensure we compute all metrics correctly.
+
+Let's outline steps:
+
+- import os, pandas, numpy, json
+- input_path = os.path.join(os.getenv('INPUT_DIR'), 'cleaned.csv')
+- df = pd.read_csv(input_path, parse_dates=['order_date']) (order_date already in YYYY-MM-DD)
+- total_revenue = df['revenue'].sum()
+- order_count = len(df)
+- average_order_value = total_revenue / order_count if order_count else 0
+
+Regional revenue: groupby region sum revenue. Ensure all four regions present; if missing, set 0.
+
+- revenue_north = sum where region == 'North', etc.
+
+Quarterly 2024: filter df where order_date year == 2024. Then quarter: use dt.quarter. Compute sum per quarter. If missing quarter, set 0.
+
+- revenue_2024_q1 etc.
+
+Yearly revenue: revenue_2023 sum where year 2023; revenue_2024 sum where year 2024. yoy change pct: if revenue_2023 !=0 else maybe set to np.inf? But we need finite number. If revenue_2023 is zero, yoy change undefined; but dataset likely has some 2023 revenue. We'll compute (rev2024 - rev2023) / rev2023 * 100.
+
+High-discount electronics: filter product_category == 'Electronics' and discount_pct >= 20. Count rows, sum revenue.
+
+Order revenue distribution: compute mean, median, std (sample), min, max.
+
+Customer concentration: unique_customer_count = df['customer_id'].nunique(). top_customer_revenue = df.groupby('customer_id')['revenue'].sum().max(). top_customer_revenue_share_pct = top_customer_revenue / total_revenue * 100.
+
+Write findings dict with all metric keys.
+
+Make sure to use float values (numpy types convert to python float via .item()).
+
+Write json with json.dump with ensure_ascii=False.
+
+expected_artifacts: ["findings.json"]
+
+methods_description: brief description.
+
+Edge Cases: Ensure we handle missing region groups: use dict get default 0.
+
+Implementation details: Use pandas .dt.year, .dt.quarter.
+
+Now produce JSON output.
+
+Need to embed script as string; ensure proper escaping of newlines.
+
+We'll produce script with triple quotes inside string? We'll just include raw script lines with \n.
+
+Let's craft script:
+
+```python
+import os, json
+import pandas as pd
+import numpy as np
+
+def main():
+    input_dir = os.getenv('INPUT_DIR')
+    output_dir = os.getenv('OUTPUT_DIR')
+    if not input_dir or not output_dir:
+        raise EnvironmentError('INPUT_DIR and OUTPUT_DIR must be set')
+    df = pd.read_csv(os.path.join(input_dir, 'cleaned.csv'), parse_dates=['order_date'])
+
+    # Overall metrics
+    total_revenue = df['revenue'].sum()
+    order_count = len(df)
+    average_order_value = total_revenue / order_count if order_count else 0.0
+
+    # Regional revenue
+    region_rev = df.groupby('region')['revenue'].sum()
+    revenue_north = region_rev.get('North', 0.0)
+    revenue_south = region_rev.get('South', 0.0)
+    revenue_east = region_rev.get('East', 0.0)
+    revenue_west = region_rev.get('West', 0.0)
+
+    # Yearly revenue
+    df['year'] = df['order_date'].dt.year
+    revenue_2023 = df.loc[df['year'] == 2023, 'revenue'].sum()
+    revenue_2024 = df.loc[df['year'] == 2024, 'revenue'].sum()
+    revenue_yoy_change_pct = ((revenue_2024 - revenue_2023) / revenue_2023 * 100) if revenue_2023 != 0 else 0.0
+
+    # Quarterly 2024 revenue
+    df_2024 = df[df['year'] == 2024].copy()
+    df_2024['quarter'] = df_2024['order_date'].dt.quarter
+    quarterly_rev = df_2024.groupby('quarter')['revenue'].sum()
+    revenue_2024_q1 = quarterly_rev.get(1, 0.0)
+    revenue_2024_q2 = quarterly_rev.get(2, 0.0)
+    revenue_2024_q3 = quarterly_rev.get(3, 0.0)
+    revenue_2024_q4 = quarterly_rev.get(4, 0.0)
+
+    # High-discount electronics
+    high_disc_elec = df[(df['product_category'] == 'Electronics') & (df['discount_pct'] >= 20)]
+    electronics_high_discount_orders = len(high_disc_elec)
+    electronics_high_discount_revenue = high_disc_elec['revenue'].sum()
+
+    # Order revenue distribution
+    order_revenue_mean = df['revenue'].mean()
+    order_revenue_median = df['revenue'].median()
+    order_revenue_std = df['revenue'].std(ddof=1)  # sample std
+    order_revenue_min = df['revenue'].min()
+    order_revenue_max = df['revenue'].max()
+
+    # Customer concentration
+    unique_customer_count = df['customer_id'].nunique()
+    customer_rev = df.groupby('customer_id')['revenue'].sum()
+    top_customer_revenue = customer_rev.max()
+    top_customer_revenue_share_pct = (top_customer_revenue / total_revenue * 100) if total_revenue != 0 else 0.0
+
+    findings = {
+        "total_revenue": float(total_revenue),
+        "order_count": int(order_count),
+        "average_order_value": float(average_order_value),
+        "revenue_north": float(revenue_north),
+        "revenue_south": float(revenue_south),
+        "revenue_east": float(revenue_east),
+        "revenue_west": float(revenue_west),
+        "revenue_2024_q1": float(revenue_2024_q1),
+        "revenue_2024_q2": float(revenue_2024_q2),
+        "revenue_2024_q3": float(revenue_2024_q3),
+        "revenue_2024_q4": float(revenue_2024_q4),
+        "revenue_2023": float(revenue_2023),
+        "revenue_2024": float(revenue_2024),
+        "revenue_yoy_change_pct": float(revenue_yoy_change_pct),
+        "electronics_high_discount_orders": int(electronics_high_discount_orders),
+        "electronics_high_discount_revenue": float(electronics_high_discount_revenue),
+        "order_revenue_mean": float(order_revenue_mean),
+        "order_revenue_median": float(order_revenue_median),
+        "order_revenue_std": float(order_revenue_std),
+        "order_revenue_min": float(order_revenue_min),
+        "order_revenue_max": float(order_revenue_max),
+        "unique_customer_count": int(unique_customer_count),
+        "top_customer_revenue": float(top_customer_revenue),
+        "top_customer_revenue_share_pct": float(top_customer_revenue_share_pct)
+    }
+
+    output_path = os.path.join(output_dir, 'findings.json')
+    with open(output_path, 'w') as f:
+        json.dump(findings, f, allow_nan=False)
+
+if __name__ == "__main__":
+    main()
+```
+
+Make sure to import numpy? Not needed but okay.
+
+Now produce JSON output with fields.
+
+expected_artifacts: ["findings.json"]
+
+methods_description: "The script loads the cleaned CSV, computes overall, regional, yearly, quarterly, category‑specific and customer‑level metrics using pandas group‑by and basic statistics, and writes a flat JSON file with the numeric results."
+
+Now produce final JSON block. Ensure proper escaping of newlines in python_code string. In JSON, we can embed newline characters directly; they will be escaped automatically. We'll just include the script as a raw string with newline characters.
+
+Let's craft final answer.

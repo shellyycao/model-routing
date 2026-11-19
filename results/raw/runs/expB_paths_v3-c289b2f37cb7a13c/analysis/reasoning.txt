@@ -1,0 +1,62 @@
+We need to produce JSON with python_code string, expected_artifacts list, methods_description.
+
+The script must read cleaned.csv from INPUT_DIR env var, compute metrics, write findings.json to OUTPUT_DIR, and list that file.
+
+We must ensure all metric_keys present, values finite numbers (no NaN). Need to handle cases where denominator zero (e.g., no customers in a plan). But dataset likely has all plans. Still we should guard: if count zero, set metric to 0.0 maybe.
+
+Compute:
+
+- customer_count: total rows.
+
+- churn_rate_pct: (sum churned)/customer_count * 100.
+
+- avg_monthly_fee: mean monthly_fee.
+
+- churn_rate_basic_pct: among plan == Basic, churn rate *100.
+
+- similarly for Standard, Premium.
+
+- churn_rate_cohort_2021_pct etc: based on signup_date year. Need to compute for years 2021-2024. If no customers for a year, set 0.
+
+- churn_rate_monthly_pct: contract_type Monthly.
+
+- churn_rate_annual_pct: contract_type Annual.
+
+- churn_monthly_vs_annual_change_pct: (monthly - annual)/annual *100. If annual rate zero, maybe set to inf? But must be finite. Could set to 0 or maybe None. Safer: if annual_rate ==0, set change_pct = 0.0.
+
+- at_risk: support_tickets >=5 AND satisfaction_score not missing AND <=2. Count and churn rate.
+
+- tenure_mean, median, std (sample). Use pandas .mean(), .median(), .std(ddof=1). Ensure std finite; if only one row, std will be NaN; set to 0.
+
+- satisfaction_mean: mean of non-missing satisfaction_score. If none, set 0.
+
+- satisfaction_missing_count: count where satisfaction_score is NaN.
+
+- ltv_basic etc: mean lifetime_value per plan.
+
+- premium_vs_basic_ltv_change_pct: (ltv_premium - ltv_basic)/ltv_basic *100. If ltv_basic zero, set 0.
+
+All values as numbers (float). Use Python's json dump.
+
+Write findings.json.
+
+Also include expected_artifacts: ["findings.json"].
+
+Methods description: brief.
+
+Now produce JSON with code string.
+
+Need to ensure script is self-contained, imports os, pandas, numpy, json.
+
+Read path: os.path.join(os.environ["INPUT_DIR"], "cleaned.csv").
+
+Write path: os.path.join(os.environ["OUTPUT_DIR"], "findings.json").
+
+Now craft code.
+
+Potential pitfalls: satisfaction_score column may be float (e.g., 2.00). In cleaned sample, they have 2.00 etc. So treat as numeric; missing values are NaN.
+
+Compute at_risk: condition = (df['support_tickets'] >=5) & (df['satisfaction_score'].notna()) & (df['satisfaction_score'] <=2). Count = condition.sum(). churn rate = df.loc[condition, 'churned'].mean()*100 (if count>0 else 0).
+
+Now produce final JSON.
+

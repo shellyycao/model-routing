@@ -1,0 +1,56 @@
+We need to produce JSON with fields: title, executive_summary, key_findings (array of objects per q1..q7), limitations, conclusion.
+
+Each key_finding must include finding_id, statement, evidence_refs, reported_values (include every metric_key of that question), optional direction, ranking, derived_values.
+
+We must follow ranking requirements:
+
+- q2 ranking_required true, ranking_metric_key_to_label mapping: churn_rate_basic_pct -> "Basic", churn_rate_premium_pct -> "Premium", churn_rate_standard_pct -> "Standard". Need ranking from highest to lowest value. Values: basic 38.8724, standard 36.6795, premium 36.6013. Highest is Basic, then Standard, then Premium. So ranking list: ["Basic", "Standard", "Premium"].
+
+- q3 ranking_required true, mapping years. Values: 2021 38.0208, 2022 36.7442, 2023 37.0536, 2024 39.8305. Highest is 2024, then 2021, then 2023, then 2022. So ranking: ["2024", "2021", "2023", "2022"].
+
+- q4 direction_required true, direction_metric_key churn_monthly_vs_annual_change_pct = 121.11 positive, so direction "increase". Provide direction field.
+
+- q7 direction_required true, metric premium_vs_basic_ltv_change_pct = 292.005 positive, direction "increase". Also ranking_required true with mapping ltv_basic, ltv_premium, ltv_standard to labels Basic, Premium, Standard. Need ranking from highest to lowest LTV: premium 1816.78, standard 868.83, basic 463.46. So ranking: ["Premium", "Standard", "Basic"].
+
+Other questions no direction/ranking.
+
+Now each key_finding must include reported_values for every metric_key of that question. So we need to list all metric_keys for each q.
+
+List:
+
+q1: customer_count, churn_rate_pct, avg_monthly_fee.
+
+q2: churn_rate_basic_pct, churn_rate_standard_pct, churn_rate_premium_pct.
+
+q3: churn_rate_cohort_2021_pct, churn_rate_cohort_2022_pct, churn_rate_cohort_2023_pct, churn_rate_cohort_2024_pct.
+
+q4: churn_rate_monthly_pct, churn_rate_annual_pct, churn_monthly_vs_annual_change_pct.
+
+q5: at_risk_customer_count, at_risk_churn_rate_pct.
+
+q6: tenure_mean, tenure_median, tenure_std, satisfaction_mean, satisfaction_missing_count.
+
+q7: ltv_basic, ltv_standard, ltv_premium, premium_vs_basic_ltv_change_pct.
+
+Now statements: need to be concise, include numbers (rounded). Also derived_values: any numbers we compute beyond the verified ones. For example, we might compute difference between churn rates of basic vs premium, but not required. However we need to include derived values for any numbers we state that are not directly verified. We can avoid extra derived numbers by only stating verified numbers. But we need to maybe state "Basic plan churn is highest at 38.9%" which uses verified value. That's fine.
+
+If we mention "Monthly contracts churn is 48.3%, which is 121% higher than Annual contracts (21.9%)" The 121% is the verified metric churn_monthly_vs_annual_change_pct, so we can just reference that metric, not compute derived. So no derived needed.
+
+Similarly for LTV: we can say premium LTV is 1816.78, which is 292% higher than basic (463.46). The 292% is verified metric premium_vs_basic_ltv_change_pct. So no derived.
+
+Thus derived_values can be empty arrays.
+
+Now produce executive summary: summarise key points.
+
+Limitations: mention data only snapshot, missing satisfaction scores, churn flag binary, etc.
+
+Conclusion: recommendations.
+
+Now ensure rounding: we can round to 1 decimal for percentages, maybe 2 decimals for LTV. Provide numbers as they appear in reported_values (full values). The statement can use rounded.
+
+Now construct JSON.
+
+Check that each key_finding includes evidence_refs list of metric_keys used. Should include all metric_keys for that question.
+
+Now produce final JSON.
+

@@ -1,0 +1,141 @@
+Let me analyze the requirements:
+
+1. Read cleaned.csv from INPUT_DIR
+2. Compute metrics:
+   - q1: total_kwh, reading_count, mean_kwh_per_reading
+   - q2: kwh_residential, kwh_commercial, kwh_industrial
+   - q3: kwh_q1, kwh_q2, kwh_q3, kwh_q4
+   - q4: kwh_h1, kwh_h2, kwh_h2_vs_h1_change_pct
+   - q5: hot_commercial_reading_count, hot_commercial_mean_kwh
+   - q6: kwh_median, kwh_std, temperature_mean, temperature_missing_count, commercial_temp_kwh_corr
+   - q7: kwh_peak, kwh_off_peak, peak_kwh_share_pct, unique_meter_count, highest_use_meter_kwh
+
+Write flat JSON to findings.json in OUTPUT_DIR. All values must be finite numbers. Don't round.
+
+Let me write the script:
+
+```python
+import json
+import os
+
+import numpy as np
+import pandas as pd
+
+
+def main():
+    input_path = os.path.join(os.environ["INPUT_DIR"], "cleaned.csv")
+    output_path = os.path.join(os.environ["OUTPUT_DIR"], "findings.json")
+
+    df = pd.read_csv(input_path)
+
+    df["reading_date"] = pd.to_datetime(df["reading_date"])
+
+    findings = {}
+
+    # q1
+    total_kwh = float(df["energy_kwh"].sum())
+    reading_count = int(len(df))
+    findings["total_kwh"] = total_kwh
+    findings["reading_count"] = float(reading_count)
+    findings["mean_kwh_per_reading"] = total_kwh / reading_count
+
+    # q2
+    by_building = df.groupby("building_type")["energy_kwh"].sum()
+    findings["kwh_residential"] = float(by_building.get("Residential", 0.0))
+    findings["kwh_commercial"] = float(by_building.get("Commercial", 0.0))
+    findings["kwh_industrial"] = float(by_building.get("Industrial", 0.0))
+
+    # q3
+    quarter = df["reading_date"].dt.quarter
+    by_quarter = df.groupby(quarter)["energy_kwh"].sum()
+    findings["kwh_q1"] = float(by_quarter.get(1, 0.0))
+    findings["kwh_q2"] = float(by_quarter.get(2, 0.0))
+    findings["kwh_q3"] = float(by_quarter.get(3, 0.0))
+    findings["kwh_q4"] = float(by_quarter.get(4, 0.0))
+
+    # q4
+    month = df["reading_date"].dt.month
+    kwh_h1 = float(df.loc[month <= 6, "energy_kwh"].sum())
+    kwh_h2 = float(df.loc[month >= 7, "energy_kwh"].sum())
+    findings["kwh_h1"] = kwh_h1
+    findings["kwh_h2"] = kwh_h2
+    findings["kwh_h2_vs_h1_change_pct"] = (kwh_h2 - kwh_h1) / kwh_h1 * 100.0
+
+    # q5
+    hot_commercial = df[(df["building_type"] == "Commercial") & (df["temperature_c"].notna()) & (df["temperature_c"] >= 25)]
+    findings["hot_commercial_reading_count"] = float(len(hot_commercial))
+    findings["hot_commercial_mean_kwh"] = float(hot_commercial["energy_kwh"].mean()) if len(hot_commercial) > 0 else 0.0
+
+    # q6
+    findings["kwh_median"] = float(df["energy_kwh"].median())
+    findings["kwh_std"] = float(df["energy_kwh"].std(ddof=1))
+    temp_nonmissing = df["temperature_c"].dropna()
+    findings["temperature_mean"] = float(temp_nonmissing.mean())
+    findings["temperature_missing_count"] = float(df["temperature_c"].isna().sum())
+    commercial_valid = df[(df["building_type"] == "Commercial") & (df["temperature_c"].notna())]
+    if len(commercial_valid) > 1:
+        corr = float(commercial_valid["temperature_c"].corr(commercial_valid["energy_kwh"], method="pearson"))
+    else:
+        corr = 0.0
+    findings["commercial_temp_kwh_corr"] = corr
+
+    # q7
+    by_tariff = df.groupby("tariff")["energy_kwh"].sum()
+    kwh_peak = float(by_tariff.get("peak", 0.0))
+    kwh_off_peak = float(by_tariff.get("off-peak", 0.0))
+    findings["kwh_peak"] = kwh_peak
+    findings["kwh_off_peak"] = kwh_off_peak
+    findings["peak_kwh_share_pct"] = kwh_peak / total_kwh * 100.0
+    findings["unique_meter_count"] = float(df["meter_id"].nunique())
+    findings["highest_use_meter_kwh"] = float(df.groupby("meter_id")["energy_kwh"].sum().max())
+
+    # Ensure all finite
+    for k, v in findings.items():
+        if not np.isfinite(v):
+            findings[k] = 0.0
+
+    with open(output_path, "w") as f:
+        json.dump(findings, f)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+Wait — a concern: groupby with observed parameter for categorical. groupby on categorical columns in newer pandas gives observed=False by default deprecation warning, but with .get() it's fine either way.
+
+Also `df["energy_kwh"].std(ddof=1)` — pandas default is ddof=1 already, but explicit is good.
+
+For correlation: pandas .corr uses pairwise complete; both non-missing here. Pearson default.
+
+For finite check — correlation could be NaN if std is zero, but unlikely. The guard handles it.
+
+Counts should be numbers — the spec says finite numbers; reading_count as float is fine. Actually could leave as int — json serializes ints fine and they're numbers. I'll cast to float to be safe? Either is fine. Let me just keep them as int for counts; JSON supports ints. The spec: "a single finite number". int is a number. I'll use int for counts actually... but to be extra safe with validators that check isinstance (int or float), either works. I'll use float for consistency? Hmm, reading_count 1428 as 1428.0 might be fine. Validators typically accept both. I'll use int for counts to keep it natural.
+
+Actually, let me just cast counts to float — safest with "Do not round results; write full precision" — either way no rounding. Int is fine. I'll keep int for counts.
+
+Let me double check q3 grouping: `df.groupby(quarter)` — quarter is a Series with same index, works.
+
+Date filtering: half year by month <=6 / >=7. Year is 2024 per spec; but could also filter year == 2024. The data is 2024 export, so all rows are 2024. To be safe, filter year == 2024 for quarters? The question says "readings dated in each calendar quarter of 2024". If there were dates outside 2024 they'd have been cleaned. I could add a year filter for robustness but groupby quarter alone would merge 2023 Q1 with 2024 Q1 if any existed. Let me filter to year 2024 for q3 and q4 to be precise. Actually cleaning produced a clean 2024 export; but adding the filter is harmless and more correct.
+
+For q4: "total energy_kwh for January-June -> kwh_h1; July-December -> kwh_h2" — month-based, year filter implicit. I'll filter year==2024 as well.
+
+Missing temperature count: `df["temperature_c"].isna().sum()`.
+
+One subtlety: reading CSV — temperature_c may have empty values which pandas parses as NaN automatically. Good.
+
+hot_commercial_mean_kwh: if no readings, mean is NaN — guard with 0.0, and the finite-check also catches NaN.
+
+Peak share uses total_kwh from q1.
+
+Write the JSON. expected_artifacts: ["findings.json"].
+
+Methods description: brief.
+
+Let me finalize the code. Also ensure json.dump writes full precision — default repr of floats in json gives full precision. Good.
+
+One more: `by_building.get("Residential", 0.0)` — groupby sum returns Series; .get works.
+
+Also, reading_date parsing: format is ISO, fine.
+
+I'll produce final answer.

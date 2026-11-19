@@ -1,0 +1,9 @@
+```json
+{
+  "fixed_code": "def dedupe(xs):\n    out = []\n    for item in xs:\n        if item not in out:\n            out.append(item)\n    return out",
+  "bug_locations": [
+    "for item in reversed(xs):"
+  ],
+  "explanation": "The original code iterated over the input list in reverse order, which caused the first occurrence of each item to be removed instead of later duplicates. The fix changes the iteration to proceed in the original order, ensuring that the first occurrence of each item is preserved while later duplicates are removed."
+}
+```

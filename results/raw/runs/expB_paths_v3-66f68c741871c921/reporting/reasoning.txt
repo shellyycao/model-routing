@@ -1,0 +1,66 @@
+We need to produce JSON conforming to schema. Must include title, executive_summary, key_findings (array of 7 entries q1..q7), limitations, conclusion.
+
+Each key_finding must have finding_id, statement, evidence_refs, reported_values (include every metric_key of that question), optional direction, ranking, derived_values.
+
+We must follow ranking requirements: q2 ranking required true, ranking_metric_key_to_label mapping Alpha, Beta, Gamma. So ranking should be list of labels ordered high to low based on labor_cost values. Values: labor_cost_alpha 4604.91, labor_cost_beta 6928.72, labor_cost_gamma 5911.44. Highest is Beta, then Gamma, then Alpha. So ranking: ["Beta","Gamma","Alpha"].
+
+q3 ranking required true, mapping chat, email, phone. Values: resolution_chat 82.2329, resolution_email 71.7238, resolution_phone 74.0714. Highest is chat, then phone, then email. So ranking: ["chat","phone","email"].
+
+q4 direction required true, metric key email_vs_chat_reopen_change_pct = 122.476... Positive indicates increase (email higher than chat). Direction should be "increase". Could also be "increase" relative to chat? The direction implied by metric: positive change indicates email's reopen rate is higher than chat, so direction "increase". We'll set direction "increase". No ranking.
+
+Other findings no ranking/direction.
+
+Need to include derived_values if any computed numbers beyond verified. For q4 we might compute that email reopen rate is 122.48% higher than chat. That's the metric itself, no derived needed. For q7 we might compute top_agent_ticket_share_pct already provided. No derived needed.
+
+But we might need to compute something like "top_agent_ticket_share_pct" is already given. So no derived.
+
+All statements must include at least one numeric value. Provide concise statements.
+
+Also need executive_summary summarizing overall.
+
+Limitations: mention cleaning failed, analysis failed, data quality, missing satisfaction, small sample, etc.
+
+Conclusion: wrap up.
+
+Now construct each key_finding.
+
+q1: metrics: ticket_count, mean_resolution_minutes, total_labor_cost. Provide statement: "The dataset contains 220 tickets with an average resolution time of 75.66 minutes and total labor cost of $17,445.07." Use rounding to two decimals.
+
+evidence_refs list those three keys.
+
+reported_values copy values: ticket_count 220.0, mean_resolution_minutes 75.6590909090909, total_labor_cost 17445.07.
+
+No direction, ranking, derived.
+
+q2: metrics: labor_cost_alpha, labor_cost_beta, labor_cost_gamma. Statement: "Team labor costs vary, with Beta incurring the highest cost ($6,928.72), followed by Gamma ($5,911.44) and Alpha ($4,604.91)." Provide ranking as above.
+
+evidence_refs list three keys.
+
+reported_values copy values.
+
+ranking list labels.
+
+q3: metrics: resolution_email, resolution_chat, resolution_phone. Statement: "Average resolution time is longest for chat (82.23 min), then phone (74.07 min), and shortest for email (71.72 min)." Provide ranking.
+
+evidence_refs list three keys.
+
+reported_values copy.
+
+ranking list.
+
+q4: metrics: reopen_rate_email_pct, reopen_rate_chat_pct, email_vs_chat_reopen_change_pct. Statement: "Email tickets have a reopen rate of 15.24%, which is 122.48% higher than the chat reopen rate of 6.85%." Direction "increase". evidence_refs list three keys. reported_values copy.
+
+q5: metrics: high_cost_low_sat_count, high_cost_low_sat_reopen_pct. Statement: "There are 9 high‑cost, low‑satisfaction tickets, with an 11.11% reopen rate within this segment." evidence_refs list two keys. reported_values copy.
+
+q6: metrics: resolution_median, resolution_std, satisfaction_mean, satisfaction_missing_count. Statement: "Resolution times have a median of 65 min and a standard deviation of 51.30 min. Customer satisfaction averages 4.14 on a 5‑point scale, with 14 tickets missing a score." evidence_refs list four keys. reported_values copy.
+
+q7: metrics: unique_agent_count, top_agent_ticket_count, top_agent_ticket_share_pct. Statement: "The tickets were handled by 18 distinct agents; the busiest agent resolved 16 tickets, representing 7.27% of all tickets." evidence_refs list three keys. reported_values copy.
+
+No derived values needed.
+
+Now produce JSON.
+
+Need to ensure numbers are numbers, not strings. Use rounding maybe but keep original values as given. For readability we can round in statement but reported_values must be exact as verified.
+
+Now craft JSON.
+

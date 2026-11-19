@@ -1,0 +1,11 @@
+```json
+{
+  "fixed_code": "def sessionize(events, gap):\n    out = {}\n    last = {}\n    for user, t in sorted(events, key=lambda x: (x[0], x[1])):\n        if user not in out:\n            out[user] = [[t]]\n        elif t - last[user] > gap:\n            out[user].append([t])\n        else:\n            out[user][-1].append(t)\n        last[user] = t\n    return out\n",
+  "bug_locations": [
+    "sessionize: sort key changed from timestamp-only (lambda x: x[1]) to the (user, timestamp) pair (lambda x: (x[0], x[1]))",
+    "sessionize: replaced the single shared `last` variable with a per-user `last` mapping so the gap is measured only between consecutive events of the same user",
+    "sessionize: the new-session test no longer runs on a user's first event (it previously compared that event to a different user's timestamp and could create an empty leading session or miss a split)"
+  ],
+  "explanation": "Three interacting defects. (1) Events were sorted only by timestamp, not by the (user, timestamp) pair as specified, so users interleaved. (2) A single global `last` was shared across users, so a user's gap was computed against whatever event (possibly another user's) came last, which could fail to split a real session. (3) After initializing out[user]=[[]], the code still applied the `t-last>gap` test to that user's first event using the previous user's timestamp, which could append a spurious empty session. The fix sorts by (user, timestamp), tracks the previous timestamp per user, only splits when t - last[user] is strictly greater than gap for an already-seen user, and seeds a user's first session directly. `sorted` copies the input, so the input is not mutated."
+}
+```

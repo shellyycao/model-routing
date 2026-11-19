@@ -1,0 +1,56 @@
+We need to produce a JSON with fields python_code (string containing script), expected_artifacts (list of filenames), methods_description (string). The script must read cleaned.csv from INPUT_DIR env var, compute metrics, write findings.json to OUTPUT_DIR, no other files. Must output flat JSON with metric keys and numeric values (no NaN). Must not round results; full precision.
+
+We need to compute metrics as described.
+
+Let's outline calculations:
+
+Read CSV with pandas. Ensure appropriate dtypes: satisfaction_score may be NaN. Use pandas.
+
+Metrics:
+
+ticket_count = number of rows (int)
+
+mean_resolution_minutes = mean of resolution_minutes (float). Use .mean().
+
+total_labor_cost = sum of labor_cost (float).
+
+Team labor cost sums: filter team == 'Alpha', sum labor_cost; similarly Beta, Gamma.
+
+Channel mean resolution minutes: for each channel email, chat, phone compute mean resolution_minutes.
+
+Reopen rates: reopened is 0/1. For email channel, compute percentage of tickets where reopened == 1: (sum reopened / count) * 100. Same for chat. Then email_vs_chat_reopen_change_pct = (email_rate - chat_rate) / chat_rate * 100. Need to handle division by zero if chat_rate == 0; but likely not zero. If zero, set to 0 or maybe NaN but must be finite. We'll handle: if chat_rate == 0, set change_pct = 0.0.
+
+High-cost low-satisfaction segment: tickets where labor_cost >= 100 and satisfaction_score not missing and <=2. Count them. Also reopened percentage among those tickets: (sum reopened / count) * 100. If count ==0, reopened pct = 0.0.
+
+Distribution: median of resolution_minutes (float). Use .median(). Standard deviation sample (ddof=1) of resolution_minutes: .std(ddof=1). satisfaction_mean: mean of non-missing satisfaction_score. Use .mean() ignoring NaN. satisfaction_missing_count: count of rows where satisfaction_score is NaN.
+
+Agent concentration: unique_agent_count = number of distinct agent_id. top_agent_ticket_count = max tickets per agent. top_agent_ticket_share_pct = top_agent_ticket_count / ticket_count * 100.
+
+All metrics must be numeric (int or float). Ensure they are Python native types convertible to JSON.
+
+Write findings.json with json.dump.
+
+Edge Cases: Ensure we convert pandas types to Python scalars (int, float). Use .item().
+
+Now produce script.
+
+We'll import os, pandas, json, numpy.
+
+Read path: os.path.join(os.environ["INPUT_DIR"], "cleaned.csv").
+
+Compute.
+
+Write to output path.
+
+Add expected_artifacts list: ["findings.json"].
+
+Methods description: brief.
+
+Now produce final JSON.
+
+Need to ensure script is self-contained, no external dependencies beyond pandas, numpy, json, os.
+
+Make sure to set dtype for satisfaction_score as float? It is int but may have NaN, pandas will treat as float. We'll compute.
+
+Now produce final answer.
+

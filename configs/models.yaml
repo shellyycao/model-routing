@@ -1,0 +1,80 @@
+# Study models. IDs were verified with live Converse calls on 2026-11-17 (us-east-1).
+# See results/raw/model_discovery_*.json for the full discovery record.
+#
+# Pricing: USD per 1M tokens. A null price means "not verified" -> cost is recorded as
+# unavailable (never invented, never $0). Fill only from an official source.
+#
+# HOW TO FILL A PRICE MANUALLY (per model, under `pricing:`):
+#   1. Find the on-demand price for THIS model ID and THIS region (us-east-1) on an official
+#      AWS source (e.g. the Amazon Bedrock pricing page, or the AWS Pricing API output).
+#      Cross-region inference profiles (us.*) are billed at the source-region price.
+#   2. Convert to USD per 1,000,000 tokens (the page often lists per 1,000 tokens: x1000).
+#   3. Set BOTH input_per_mtok and output_per_mtok (one without the other is rejected).
+#   4. Set `source` to the exact URL or document you read (non-empty; required).
+#   5. Set `retrieved` to the date you read it, as an ISO date string: "YYYY-MM-DD" (required).
+#   Example (illustrative format only, NOT a real price):
+#     pricing:
+#       input_per_mtok: 1.23
+#       output_per_mtok: 4.56
+#       source: "https://aws.amazon.com/bedrock/pricing/ (On-Demand, us-east-1)"
+#       retrieved: "2026-11-20"
+#   load_registry() raises PricingConfigError if a price lacks source/retrieved, is partial,
+#   or is negative. Check the result with load_registry().pricing_status().
+#   The dollar guard stays inactive until every model is priced.
+
+region: us-east-1
+aws_profile: xai-bedrock
+
+# Shared inference settings, applied identically to every model unless a model
+# cannot support a setting (any per-model deviation must be documented below).
+default_inference:
+  max_tokens: 4096
+  temperature: 0.0
+
+# Client-side concurrency and pacing for independent invocations (src/bedrock/concurrency.py).
+# These are self-imposed, conservative settings, NOT account quotas (quotas were not queried).
+# Effective spacing between request starts per model = max(min_interval_s, 60 / requests_per_minute).
+# Pacing applies to every API attempt (including retries); cache hits are not paced.
+concurrency:
+  max_workers: 4
+  default:
+    min_interval_s: 0.0
+    requests_per_minute: 30
+  per_model: {}          # e.g.  C: {requests_per_minute: 10}
+
+models:
+  A:
+    name: Claude Sonnet 4.6
+    family: Anthropic
+    model_id: us.anthropic.claude-sonnet-4-6          # US cross-region inference profile
+    base_model_id: anthropic.claude-sonnet-4-6
+    pricing:
+      input_per_mtok: 3.30
+      output_per_mtok: 16.50
+      source: "https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AmazonBedrockFoundationModels/20261109224312/us-east-1/index.json (Regional CRIS, standard on-demand)"
+      retrieved: "2026-11-18"
+
+  B:
+    name: Amazon Nova Pro
+    family: Amazon
+    model_id: us.amazon.nova-pro-v1:0                 # US cross-region inference profile
+    base_model_id: amazon.nova-pro-v1:0
+    pricing:
+      input_per_mtok: 0.80
+      output_per_mtok: 3.20
+      source: "https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AmazonBedrock/20261111013037/us-east-1/index.json (standard on-demand)"
+      retrieved: "2026-11-18"
+
+  C:
+    name: OpenAI gpt-oss-120b
+    family: OpenAI (open-weight)
+    model_id: openai.gpt-oss-120b-1:0                 # in-region on-demand
+    base_model_id: openai.gpt-oss-120b-1:0
+    notes: >
+      Reasoning model: returns a reasoningContent block before the text answer.
+      Reasoning tokens count toward outputTokens and maxTokens.
+    pricing:
+      input_per_mtok: 0.15
+      output_per_mtok: 0.60
+      source: "https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AmazonBedrock/20261111013037/us-east-1/index.json (standard on-demand)"
+      retrieved: "2026-11-18"

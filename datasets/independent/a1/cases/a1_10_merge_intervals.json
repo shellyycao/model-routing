@@ -1,0 +1,26 @@
+{
+  "buggy": "def merge_intervals(intervals):\n    out = []\n    for s, e in [list(iv) for iv in intervals]:\n        if out and s < out[-1][1]:\n            out[-1][1] = max(out[-1][1], e)\n        else:\n            out.append([s, e])\n    return out\n",
+  "case_id": "a1_10_merge_intervals",
+  "difficulty": "hard",
+  "func": "merge_intervals",
+  "hidden": [
+    "merge_intervals([[1, 3], [2, 6]]) == [[1, 6]]",
+    "merge_intervals([[1, 2], [2, 3]]) == [[1, 3]]",
+    "merge_intervals([[5, 6], [1, 2]]) == [[1, 2], [5, 6]]",
+    "merge_intervals([[4, 8], [1, 5]]) == [[1, 8]]",
+    "merge_intervals([]) == []",
+    "merge_intervals([[1, 10], [2, 3]]) == [[1, 10]]",
+    "(lambda a: (merge_intervals(a), a)[1] == [[3, 4], [1, 2]])([[3, 4], [1, 2]])",
+    "merge_intervals([[1, 1]]) == [[1, 1]]"
+  ],
+  "operator": "unsorted_and_touching",
+  "reference": "def merge_intervals(intervals):\n    out = []\n    for s, e in sorted([list(iv) for iv in intervals]):\n        if out and s <= out[-1][1]:\n            out[-1][1] = max(out[-1][1], e)\n        else:\n            out.append([s, e])\n    return out\n",
+  "spec": "merge_intervals(intervals) merges overlapping or touching closed intervals [start, end] given in any order and returns them sorted by start as a list of [start, end] lists. Touching means next.start == current.end. The input must not be modified.",
+  "verification": {
+    "buggy_fails": 3,
+    "reference_passes": 8
+  },
+  "visible": [
+    "merge_intervals([[1, 3], [2, 6]]) == [[1, 6]]"
+  ]
+}

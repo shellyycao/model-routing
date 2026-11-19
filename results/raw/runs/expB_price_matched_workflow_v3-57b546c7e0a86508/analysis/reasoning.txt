@@ -1,0 +1,98 @@
+Let me write a self-contained Python script that:
+
+1. Reads cleaned.csv from INPUT_DIR
+2. Computes all metrics
+3. Writes findings.json to OUTPUT_DIR
+
+Key considerations:
+- Flat JSON, all finite numbers, no strings/lists/null/NaN/Inf
+- No rounding
+- order_count should be a number — JSON can encode int; the example shows 3.0. Probably safest to write counts as floats? "a single finite number" — ints are fine in JSON. But to be safe, I could convert counts to float? Actually "number" in JSON includes integers. The validator likely accepts both. But some validators may require float... The example shows {"metric_a": 12.5, "metric_b": 3.0}. I'll cast everything to float to be uniform and safe. Counts as floats like 520.0 are still numbers. Hmm, but unique_customer_count = 250.0 is a number. Fine. Float conversion is safest against NaN anyway; also ensures json serialization works (numpy types aren't JSON serializable by default — must convert to Python floats/ints).
+
+Metrics:
+- total_revenue = sum of revenue
+- order_count = len(df)
+- average_order_value = total/count
+- revenue per region
+- 2024 quarterly revenue
+- revenue_2023, revenue_2024, yoy change pct
+- electronics high discount: category == 'Electronics' and discount_pct >= 20 → count, revenue sum
+- order revenue distribution: mean, median, sample std (ddof=1), min, max
+- unique customers, top customer revenue, share pct
+
+Parse order_date with pd.to_datetime. Quarter via dt.quarter.
+
+Guard: use float() conversion everywhere; ensure finite via np.isfinite check (raise if not).
+
+Write JSON with json.dump.
+
+Also only write findings.json — expected_artifacts = ["findings.json"].
+
+Let me write the code carefully.
+
+```python
+import json
+import os
+import math
+
+import numpy as np
+import pandas as pd
+
+
+def main():
+    input_path = os.path.join(os.environ["INPUT_DIR"], "cleaned.csv")
+    output_path = os.path.join(os.environ["OUTPUT_DIR"], "findings.json")
+
+    df = pd.read_csv(input_path, dtype={"order_id": str, "customer_id": str})
+    df["order_date"] = pd.to_datetime(df["order_date"], format="%Y-%m-%d", errors="coerce")
+    df["revenue"] = pd.to_numeric(df["revenue"], errors="coerce")
+    df["discount_pct"] = pd.to_numeric(df["discount_pct"], errors="coerce")
+
+    # Drop rows that fail to parse defensively (should not happen per schema)
+    df = df.dropna(subset=["order_date", "revenue", "discount_pct"])
+
+    total_revenue = float(df["revenue"].sum())
+    order_count = float(len(df))
+    average_order_value = total_revenue / order_count if order_count else 0.0
+
+    # q2 regional
+    region_rev = df.groupby("region")["revenue"].sum()
+    revenue_north = float(region_rev.get("North", 0.0))
+    revenue_south = float(region_rev.get("South", 0.0))
+    revenue_east = float(region_rev.get("East", 0.0))
+    revenue_west = float(region_rev.get("West", 0.0))
+
+    # q3 quarterly 2024
+    df["year"] = df["order_date"].dt.year
+    df["quarter"] = df["order_date"].dt.quarter
+    d2024 = df[df["year"] == 2024]
+    q_rev = d2024.groupby("quarter")["revenue"].sum()
+    revenue_2024_q1 = float(q_rev.get(1, 0.0))
+    ...
+```
+
+etc.
+
+q4: revenue_2023, revenue_2024, yoy = (rev2024 - rev2023)/rev2023*100 — guard division by zero (won't happen, but guard with np.nan → then finite check would fail; better to let it be 0? The contract says finite numbers; assume data fine; but guard anyway: if revenue_2023 != 0 else 0.0).
+
+q5: mask electronics & discount >= 20.
+
+q6: mean, median, std(ddof=1), min, max.
+
+q7: groupby customer_id sum revenue; unique count = nunique; top = max; share.
+
+Build dict with all keys, validate all finite with math.isfinite, cast float.
+
+json.dump with allow_nan=False.
+
+Methods description: brief.
+
+Counts: should I keep order_count as int or float? "a single finite number" — int is a number in JSON. Validators in these workflows typically check isinstance(value, (int, float)) and not bool, plus finite. Either works. I'll use int for counts to be natural? The example shows 3.0 for a count-like metric. I'll just use float for everything for consistency — 520.0 is valid. Actually hmm, could a validator check order_count == 520 and 520.0 == 520 in Python anyway. Float is safe. I'll cast all to float.
+
+Write the full script now.
+
+Also ensure OUTPUT_DIR exists? It presumably exists. I'll os.makedirs with exist_ok=True just in case — allowed since writing only there.
+
+Full precision: no rounding. json.dump default repr gives full precision for floats.
+
+Let me finalize.

@@ -1,0 +1,86 @@
+We need to produce JSON with fields python_code (script), output_filename "cleaned.csv", cleaning_logic description.
+
+We must write a script that follows all cleaning steps.
+
+Let's outline steps:
+
+- import os, pandas, numpy, json, re, csv maybe.
+
+- Define missing values list: ["", "NA", "N/A", "null", "None", "-"] after stripping whitespace.
+
+- Read tickets.csv as text: use pandas.read_csv with dtype=str, keep default, then strip whitespace from all string columns, replace missing values with np.nan.
+
+- Same for agents.csv.
+
+- R2: remove duplicate ticket_id rows, keep first. Use drop_duplicates(subset='ticket_id', keep='first').
+
+- R3: normalize agent_id to upper case in agents, then drop duplicates.
+
+- R4: Clean agents roster:
+
+   - team mapping: case-insensitive mapping: if team contains "Alpha" or "Team Alpha" -> "Alpha". Similarly Beta, Gamma. Use lower and check if contains 'alpha', etc.
+
+   - region mapping: case-insensitive: East/E -> "East", West/W -> "West". Use lower.
+
+   - hourly_cost: remove $ , USD, commas, spaces. Use regex to extract numeric part. Convert to float. Exclude rows where parsing fails or cost <=0.
+
+   - Also ensure after mapping, team and region not null.
+
+- R5: tickets: normalize agent_id to upper case. Join with cleaned agents on agent_id (inner). Drop tickets without match.
+
+- R6: channel mapping: case-insensitive mapping: Email/E-mail -> email, Chat/Live Chat -> chat, Phone/Call -> phone. Drop invalid.
+
+- R7: resolution_minutes: remove trailing 'min' or 'minutes' (case-insensitive). Extract integer. Must be 1-480 inclusive. Drop invalid.
+
+- R8: satisfaction_score: parse integer 1-5. If invalid or missing, set NaN (empty cell). Keep row.
+
+- R9: reopened mapping: map Yes/Y/True/1 to 1, No/N/False/0 to 0. Case-insensitive. Drop rows where missing or invalid.
+
+- R10: labor_cost = resolution_minutes / 60 * hourly_cost, round 2.
+
+- R11: Output columns in order, sort by ticket_id.
+
+- Write cleaned.csv without index.
+
+- Write cleaning_summary.json with raw_rows (tickets rows read), cleaned_rows (rows written), plus counts per rule maybe.
+
+We need to track counts: duplicates removed, agents excluded, tickets dropped due to missing agent, invalid channel, invalid resolution, invalid reopened, etc.
+
+Implement counters.
+
+Edge Cases: Ensure ticket_id as string, keep leading zeros.
+
+Implementation details:
+
+- When reading CSV, use keep_default_na=False to avoid pandas default NA detection, then manually replace missing values.
+
+- After reading, strip whitespace: df.applymap(lambda x: x.strip() if isinstance(x, str) else x)
+
+- Replace missing strings with np.nan: df.replace(missing_vals, np.nan, inplace=True)
+
+- For numeric columns, we will parse later.
+
+Now produce script.
+
+Let's craft code.
+
+Will use functions for cleaning.
+
+Will compute raw_rows = len(tickets_df_original) before dedup.
+
+After all cleaning, cleaned_rows = len(final_df).
+
+Add summary dict.
+
+Write JSON using json.dump.
+
+Now produce final JSON output.
+
+Let's write script as a multi-line string.
+
+Be careful to escape triple quotes inside JSON? The python_code string will be inside JSON value, so we need to ensure proper escaping. We'll embed script as raw string with newline characters; JSON will handle them.
+
+We'll output final JSON block.
+
+Let's craft script.
+

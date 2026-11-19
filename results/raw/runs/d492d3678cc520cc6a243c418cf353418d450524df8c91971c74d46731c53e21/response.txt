@@ -1,0 +1,12 @@
+```json
+{
+  "fixed_code": "def summarize_logs(lines):\n    counts = {}\n    first_error = None\n    for line in lines:\n        parts = line.split('|', 3)\n        if len(parts) != 4:\n            continue\n        ts, level, service, message = parts\n        level = level.upper()\n        service_counts = counts.setdefault(service, {})\n        service_counts[level] = service_counts.get(level, 0) + 1\n        if level == 'ERROR' and (first_error is None or ts < first_error):\n            first_error = ts\n    return {'counts': counts, 'first_error': first_error}\n",
+  "bug_locations": [
+    "Line splitting/unpacking inside the loop: changed `line.split('|')` to `line.split('|', 3)` with a length check so malformed lines are skipped instead of raising ValueError (and messages containing '|' are preserved).",
+    "Level handling in the loop: added `level = level.upper()` so levels are normalized to uppercase before counting and comparison.",
+    "first_error update logic: changed from setting only when `first_error is None` to comparing `ts < first_error` so the lexicographically earliest ERROR timestamp is kept rather than the first one seen.",
+    "Counts update: replaced the duplicated `counts.setdefault(service, {})` calls with a single `service_counts` lookup (cleanup of the original redundant expression)."
+  ],
+  "explanation": "The original code had three interacting defects. (1) It unpacked `line.split('|')` directly, so any line with fewer (or more) than four fields raised ValueError instead of being skipped as the spec requires; using `split('|', 3)` and verifying exactly four parts skips malformed lines safely while allowing pipes inside the message. (2) Levels were counted and compared as-is, so 'error' and 'ERROR' became separate keys and lowercase errors never matched the 'ERROR' check; the level is now normalized with `.upper()` before use. (3) `first_error` was only assigned the first time an ERROR appeared, returning the chronologically first-seen timestamp rather than the lexicographically earliest; it is now updated whenever a smaller timestamp is found, and remains None (null) when no valid ERROR lines exist."
+}
+```

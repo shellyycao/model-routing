@@ -1,0 +1,10 @@
+```json
+{
+  "fixed_code": "from collections import deque\n\ndef shortest_path(graph, start, goal):\n    q = deque([(start, [start])])\n    seen = {start}\n    while q:\n        node, path = q.popleft()\n        if node == goal:\n            return path\n        for nxt in graph.get(node, []):\n            if nxt not in seen:\n                seen.add(nxt)\n                q.append((nxt, path + [nxt]))\n    return None\n",
+  "bug_locations": [
+    "shortest_path: initial BFS queue/seen state",
+    "shortest_path: goal check return value"
+  ],
+  "explanation": "The BFS path was seeded as [] and start was not marked seen, so returned paths omitted start, start == goal returned [], and cycles/self-loops could re-enqueue start. Seed the queue with (start, [start]) and seen = {start}, then return the accumulated path when goal is popped. Enqueue-time seen marking with listed-order neighbour iteration preserves BFS shortest-path behaviour."
+}
+```

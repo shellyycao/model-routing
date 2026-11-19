@@ -1,0 +1,146 @@
+We need to produce JSON matching schema. Include title, executive_summary, key_findings (array of 7 entries), limitations, conclusion.
+
+Each key_finding must have finding_id, statement, evidence_refs, reported_values (include every metric_key of that question), direction if required, ranking if required, derived_values (if any derived numbers). Use verified findings values.
+
+We must compute any derived values: For q4 direction required: direction based on kwh_h2_vs_h1_change_pct >0 => increase. Also we could include derived value maybe not needed because metric already gives pct. But we could include derived value for change? Not necessary but could include share? For q7 ranking required: need ranking of peak vs off-peak by kwh values. Highest to lowest: off-peak 608075.89 vs peak 599624.07, so ranking = ["off-peak","peak"].
+
+For q2 ranking required: building types values: industrial 995362.16, commercial 196367.15, residential 15970.65. Ranking highest to lowest: Industrial, Commercial, Residential.
+
+For q3 ranking required: quarters values: Q4 352881.81, Q1 319677.67, Q2 270277.36, Q3 264863.12. Ranking highest to lowest: Q4, Q1, Q2, Q3.
+
+Need to include ranking_metric_key_to_label mapping values as labels. Already defined.
+
+Now each key_finding's reported_values must include all metric_keys for that question. Provide numbers as in verified findings, maybe rounded to 2 decimals for readability but must be numbers. Use same values maybe rounded.
+
+Let's list metric keys per question:
+
+q1: total_kwh, reading_count, mean_kwh_per_reading.
+
+q2: kwh_residential, kwh_commercial, kwh_industrial.
+
+q3: kwh_q1, kwh_q2, kwh_q3, kwh_q4.
+
+q4: kwh_h1, kwh_h2, kwh_h2_vs_h1_change_pct.
+
+q5: hot_commercial_reading_count, hot_commercial_mean_kwh.
+
+q6: kwh_median, kwh_std, temperature_mean, temperature_missing_count, commercial_temp_kwh_corr.
+
+q7: kwh_peak, kwh_off_peak, peak_kwh_share_pct, unique_meter_count, highest_use_meter_kwh.
+
+Now statements: need to be concise, business-friendly.
+
+Derived values: maybe we can include share for peak share (already given as pct). Could compute share as ratio then pct but not needed. Could include derived value for difference between halves: kwh_h2 - kwh_h1 = 617744.93 - 589955.03 = 27,789.9 (approx). Let's compute: 617,744.93 - 589,955.03 = 27,789.9. Provide derived value with kind "difference", operands ["kwh_h2","kwh_h1"], value 27789.9.
+
+Also maybe compute ratio of commercial to total: but not required.
+
+Now direction for q4: "increase". Provide direction field "increase".
+
+For other findings direction null.
+
+Now produce JSON.
+
+Need to ensure numbers are numbers not strings. Use reasonable rounding maybe 2 decimals.
+
+Let's compute values rounded to 2 decimals:
+
+total_kwh: 1207699.96 (already 2 decimals)
+reading_count: 1428.0 (maybe 1428)
+mean_kwh_per_reading: 845.73 (rounded)
+kwh_residential: 15970.65
+kwh_commercial: 196367.15
+kwh_industrial: 995362.16
+kwh_q1: 319677.67
+kwh_q2: 270277.36
+kwh_q3: 264863.12
+kwh_q4: 352881.81
+kwh_h1: 589955.03
+kwh_h2: 617744.93
+kwh_h2_vs_h1_change_pct: 4.71 (rounded)
+hot_commercial_reading_count: 19
+hot_commercial_mean_kwh: 415.29
+kwh_median: 406.8
+kwh_std: 913.44
+temperature_mean: 11.61
+temperature_missing_count: 62
+commercial_temp_kwh_corr: -0.64 (rounded)
+kwh_peak: 599624.07
+kwh_off_peak: 608075.89
+peak_kwh_share_pct: 49.65
+unique_meter_count: 12
+highest_use_meter_kwh: 252241.26
+
+Now derived values:
+
+- difference_h2_h1: kind "difference", operands ["kwh_h2","kwh_h1"], value 27789.9 (rounded maybe 27789.9)
+- maybe share peak: kind "share", operands ["kwh_peak","total_kwh"], value = (599624.07/1207699.96)*100 = compute: 599,624.07 / 1,207,699.96 = 0.4965 approx *100 = 49.65 matches peak_kwh_share_pct. Could include but not required.
+
+Now produce each key_finding.
+
+q1 statement: "The dataset contains 1,428 readings with a total electricity consumption of 1,207,699.96 kWh, averaging 845.73 kWh per reading."
+
+evidence_refs list metric keys.
+
+ranking null.
+
+direction null.
+
+derived_values empty.
+
+q2 statement: "Industrial buildings dominate consumption, using 995,362.16 kWh, followed by Commercial at 196,367.15 kWh and Residential at 15,970.65 kWh."
+
+ranking: ["Industrial","Commercial","Residential"].
+
+derived_values none.
+
+q3 statement: "Quarterly consumption peaked in Q4 with 352,881.81 kWh, then Q1 (319,677.67 kWh), Q2 (270,277.36 kWh), and Q3 (264,863.12 kWh)."
+
+ranking: ["Q4","Q1","Q2","Q3"].
+
+q4 statement: "Second‑half consumption (617,744.93 kWh) was 4.71 % higher than the first half (589,955.03 kWh), an increase of 27,789.90 kWh."
+
+direction: "increase". derived_values include difference.
+
+q5 statement: "On hot days (≥25 °C) there were 19 Commercial readings, averaging 415.29 kWh each."
+
+q6 statement: "Overall consumption has a median of 406.8 kWh and a standard deviation of 913.44 kWh. The average temperature recorded is 11.61 °C, with 62 readings missing temperature data. Among Commercial meters, temperature correlates negatively with consumption (Pearson r = ‑0.64)."
+
+q7 statement: "Peak‑tariff usage accounts for 49.65 % of total consumption (599,624.07 kWh) versus 50.35 % off‑peak (608,075.89 kWh). The dataset includes 12 distinct meters, the highest‑use meter consuming 252,241.26 kWh."
+
+ranking: ["off-peak","peak"] (since off-peak higher). direction null.
+
+Now limitations: list bullet points.
+
+Conclusion: summarise.
+
+Now construct JSON.
+
+Need to ensure each key_finding includes reported_values with all metric keys and values.
+
+Let's prepare reported_values objects.
+
+q1 reported_values: total_kwh, reading_count, mean_kwh_per_reading.
+
+q2: kwh_residential, kwh_commercial, kwh_industrial.
+
+q3: kwh_q1, kwh_q2, kwh_q3, kwh_q4.
+
+q4: kwh_h1, kwh_h2, kwh_h2_vs_h1_change_pct.
+
+q5: hot_commercial_reading_count, hot_commercial_mean_kwh.
+
+q6: kwh_median, kwh_std, temperature_mean, temperature_missing_count, commercial_temp_kwh_corr.
+
+q7: kwh_peak, kwh_off_peak, peak_kwh_share_pct, unique_meter_count, highest_use_meter_kwh.
+
+Now derived_values arrays.
+
+q4 derived_values: one entry.
+
+Potentially also include derived for peak share but not needed.
+
+Now produce final JSON.
+
+Check schema: direction can be null or string. ranking can be null or array.
+
+Now produce final answer.

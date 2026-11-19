@@ -1,0 +1,9 @@
+```json
+{
+  "fixed_code": "def rotate(xs, k):\n    if not xs:\n        return []\n    k %= len(xs)\n    return list(xs[-k:] + xs[:-k])\n",
+  "bug_locations": [
+    "rotate: missing empty-input guard before `k %= len(xs)`, which raised ZeroDivisionError for empty input instead of returning []"
+  ],
+  "explanation": "Root cause: when xs is empty, len(xs) is 0, so `k %= len(xs)` raises ZeroDivisionError, violating the spec's requirement that empty input returns []. Fix: return [] early when xs is empty, before the modulo. No other changes were needed: Python's % yields a non-negative residue for negative k, so a left rotation by k is automatically converted into the equivalent right rotation (e.g., k=-1 on a length-3 list becomes a right rotation by 2); and when k reduces to 0, xs[-0:] is the entire list, so identity rotations are correct. Wrapping in list(...) still guarantees a new list is returned."
+}
+```

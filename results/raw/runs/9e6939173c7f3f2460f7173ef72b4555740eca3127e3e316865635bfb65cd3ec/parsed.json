@@ -1,0 +1,7 @@
+{
+  "fixed_code": "def rotate(xs, k):\n    if not xs:\n        return []\n    k %= len(xs)\n    return list(xs[-k:] + xs[:-k])",
+  "bug_locations": [
+    "def rotate(xs, k):"
+  ],
+  "explanation": "The original code fails when the input list is empty because it attempts to compute `len(xs)` and perform modulo arithmetic, which raises a ZeroDivisionError. The fix adds a check for an empty list at the start of the function, returning an empty list immediately as specified. The rest of the logic for rotation is correct."
+}

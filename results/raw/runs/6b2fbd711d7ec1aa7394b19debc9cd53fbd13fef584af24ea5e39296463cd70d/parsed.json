@@ -1,0 +1,8 @@
+{
+  "fixed_code": "def dependency_order(deps):\n    nodes = set(deps)\n    # Include all nodes referenced in dependency lists but not present as keys\n    for node_list in deps.values():\n        nodes.update(node_list)\n    out = []\n    while nodes:\n        # Find nodes with no dependencies within the remaining set\n        ready = sorted(n for n in nodes if not set(deps.get(n, [])) & nodes)\n        if not ready:\n            # If no nodes are ready, a cycle exists\n            raise ValueError(\"Cycle detected\")\n        out += ready\n        nodes -= set(ready)\n    return out",
+  "bug_locations": [
+    "nodes=set(deps)",
+    "if not ready:break"
+  ],
+  "explanation": "The original code had two defects. First, `nodes=set(deps)` only included keys from the input dictionary, missing nodes that were only referenced in dependency lists (like 'a' in `{'b': ['a']}`). This was fixed by iterating through values to add all referenced nodes. Second, the code silently exited with `break` when no ready nodes were found, which indicates a cycle. The specification requires raising a `ValueError` in this case, so the `break` was replaced with `raise ValueError(\"Cycle detected\")`."
+}

@@ -1,0 +1,254 @@
+{
+  "contract_version": "1.2",
+  "run_id": "expB_paths_v3-9c93380bb0dd3a1a",
+  "experiment_id": "expB_paths_v3",
+  "project_id": "energy_consumption",
+  "path_id": "B-A-C",
+  "models": [
+    "B",
+    "A",
+    "C"
+  ],
+  "repeat_index": 0,
+  "config_hash": "62a4156e13c9c5befb143fcceccc9fa38b682816491c17c4598f7d23b92ba379",
+  "failure_policy": "continue_with_actual_artifact",
+  "started_at": "2026-11-18T05:32:56.476476+00:00",
+  "finished_at": "2026-11-18T05:33:07.023551+00:00",
+  "stages": [
+    {
+      "stage": "cleaning",
+      "model_alias": "B",
+      "model_id": "us.amazon.nova-pro-v1:0",
+      "prompt_version": "v3",
+      "prompt_hash": "54fccecaa4539ea6f9bf17463a0da069f9e72816d3512b9a1510b4481adbcc9d",
+      "invocation_ids": [
+        "269c5983-f793-4581-a746-38655ecd0026"
+      ],
+      "cache_hit": false,
+      "shared_with_run_ids": [],
+      "status": "failed",
+      "structural_ok": false,
+      "failure_type": "execution_error",
+      "failure_detail": "execution runtime_error (exit 1): d.\n  raw_data = raw_data.applymap(lambda x: x.strip() if isinstance(x, str) else x)\nTraceback (most recent call last):\n  File \"/sandbox/code/main.py\", line 23, in <module>\n    raw_data['reading_date'] = pd.to_datetime(raw_data['reading_date'], errors='coerce', format=date_formats)\n                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/tools/datetimes.py\", line 1063, in to_datetime\n    cache_array = _maybe_cache(arg, format, cache, convert_listlike)\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/tools/datetimes.py\", line 247, in _maybe_cache\n    cache_dates = convert_listlike(unique_dates, format)\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/tools/datetimes.py\", line 433, in _convert_listlike_datetimes\n    return _array_strptime_with_fallback(arg, name, utc, format, exact, errors)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/tools/datetimes.py\", line 467, in _array_strptime_with_fallback\n    result, tz_out = array_strptime(arg, fmt, exact=exact, errors=errors, utc=utc)\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: Argument 'fmt' has incorrect type (expected str, got list)\n",
+      "parse_ok": true,
+      "execution": {
+        "status": "runtime_error",
+        "exit_code": 1,
+        "stdout": "",
+        "stderr": "/sandbox/code/main.py:16: FutureWarning: DataFrame.applymap has been deprecated. Use DataFrame.map instead.\n  raw_data = raw_data.applymap(lambda x: x.strip() if isinstance(x, str) else x)\nTraceback (most recent call last):\n  File \"/sandbox/code/main.py\", line 23, in <module>\n    raw_data['reading_date'] = pd.to_datetime(raw_data['reading_date'], errors='coerce', format=date_formats)\n                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/tools/datetimes.py\", line 1063, in to_datetime\n    cache_array = _maybe_cache(arg, format, cache, convert_listlike)\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/tools/datetimes.py\", line 247, in _maybe_cache\n    cache_dates = convert_listlike(unique_dates, format)\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/tools/datetimes.py\", line 433, in _convert_listlike_datetimes\n    return _array_strptime_with_fallback(arg, name, utc, format, exact, errors)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/tools/datetimes.py\", line 467, in _array_strptime_with_fallback\n    result, tz_out = array_strptime(arg, fmt, exact=exact, errors=errors, utc=utc)\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: Argument 'fmt' has incorrect type (expected str, got list)\n",
+        "runtime_ms": 702.1789589998662,
+        "output_files": [],
+        "sandbox_image": "sha256:88988a15503bdb96538c3dd62244a79879d5c7848397db18b1267ccfd0a9727a"
+      },
+      "validation": {
+        "stage": "cleaning",
+        "hard_pass": false,
+        "checks": [
+          {
+            "name": "output_exists",
+            "passed": false,
+            "mandatory": true,
+            "detail": "cleaned CSV not found: /Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expB_paths_v3-9c93380bb0dd3a1a/cleaning/output/cleaned.csv",
+            "value": null
+          },
+          {
+            "name": "output_parses",
+            "passed": false,
+            "mandatory": true,
+            "detail": "no output",
+            "value": null
+          },
+          {
+            "name": "required_columns_present",
+            "passed": false,
+            "mandatory": true,
+            "detail": "no output",
+            "value": null
+          },
+          {
+            "name": "schema_constraints",
+            "passed": false,
+            "mandatory": true,
+            "detail": "no output",
+            "value": null
+          },
+          {
+            "name": "no_duplicate_keys",
+            "passed": false,
+            "mandatory": true,
+            "detail": "no output",
+            "value": null
+          },
+          {
+            "name": "row_set_matches_reference",
+            "passed": false,
+            "mandatory": true,
+            "detail": "no output",
+            "value": null
+          },
+          {
+            "name": "values_match_reference",
+            "passed": false,
+            "mandatory": true,
+            "detail": "no output",
+            "value": null
+          }
+        ],
+        "quality": {
+          "cleaning_correctness": 0.0,
+          "data_integrity": 0.0,
+          "schema_compliance": 0.0
+        },
+        "quality_basis": "ground_truth",
+        "validator_version": "1.0"
+      },
+      "conditional_validation": null,
+      "input_artifacts": [
+        "datasets/projects/energy_consumption/raw.csv"
+      ],
+      "output_artifacts": [
+        "results/raw/runs/expB_paths_v3-9c93380bb0dd3a1a/cleaning/prompt.txt",
+        "results/raw/runs/expB_paths_v3-9c93380bb0dd3a1a/cleaning/response.txt",
+        "results/raw/runs/expB_paths_v3-9c93380bb0dd3a1a/cleaning/parsed.json",
+        "results/raw/runs/expB_paths_v3-9c93380bb0dd3a1a/cleaning/code.py"
+      ],
+      "input_artifact_hashes": {
+        "datasets/projects/energy_consumption/raw.csv": "615e9dd3f351c49e26a813e2a6b47e6c9e2c812b579dae7b15497467a0d01572"
+      },
+      "output_artifact_hashes": {
+        "results/raw/runs/expB_paths_v3-9c93380bb0dd3a1a/cleaning/prompt.txt": "54fccecaa4539ea6f9bf17463a0da069f9e72816d3512b9a1510b4481adbcc9d",
+        "results/raw/runs/expB_paths_v3-9c93380bb0dd3a1a/cleaning/response.txt": "a2adc00e61f68e45bac6de5ff3f0bdff45c23f504e99b8262b4e752016eae3d2",
+        "results/raw/runs/expB_paths_v3-9c93380bb0dd3a1a/cleaning/parsed.json": "9880edc022ff1d0c00bb6c35787b99a6aa8cd857a43ade65558418835e4700b6",
+        "results/raw/runs/expB_paths_v3-9c93380bb0dd3a1a/cleaning/code.py": "dec4da0601a0c73bb92f62895470efd949b9512bad01476af751f994846ebca9"
+      },
+      "handoff_in_path": "results/raw/runs/expB_paths_v3-9c93380bb0dd3a1a/cleaning/handoff_in.json",
+      "handoff_size_bytes": 616,
+      "input_tokens": 2078,
+      "output_tokens": 1654,
+      "cost_usd": null,
+      "cost_status": "unavailable",
+      "timings": {
+        "generation_ms": 8269.255999999586,
+        "execution_ms": 702.1789589998662,
+        "validation_ms": 1.7446249985368922,
+        "handoff_ms": 0.2776670007733628
+      }
+    },
+    {
+      "stage": "analysis",
+      "model_alias": "A",
+      "model_id": "us.anthropic.claude-sonnet-4-6",
+      "prompt_version": "v3",
+      "prompt_hash": null,
+      "invocation_ids": [],
+      "cache_hit": false,
+      "shared_with_run_ids": [],
+      "status": "blocked_by_invalid_artifact",
+      "structural_ok": null,
+      "failure_type": null,
+      "failure_detail": "upstream cleaning artifact 'cleaned_csv' unusable: failed structural checks output_exists, output_parses, required_columns_present",
+      "parse_ok": null,
+      "execution": null,
+      "validation": null,
+      "conditional_validation": null,
+      "input_artifacts": [],
+      "output_artifacts": [],
+      "input_artifact_hashes": {},
+      "output_artifact_hashes": {},
+      "handoff_in_path": null,
+      "handoff_size_bytes": null,
+      "input_tokens": null,
+      "output_tokens": null,
+      "cost_usd": null,
+      "cost_status": "not_incurred",
+      "timings": {
+        "generation_ms": null,
+        "execution_ms": null,
+        "validation_ms": null,
+        "handoff_ms": null
+      }
+    },
+    {
+      "stage": "reporting",
+      "model_alias": "C",
+      "model_id": "openai.gpt-oss-120b-1:0",
+      "prompt_version": "v3",
+      "prompt_hash": null,
+      "invocation_ids": [],
+      "cache_hit": false,
+      "shared_with_run_ids": [],
+      "status": "blocked_by_invalid_artifact",
+      "structural_ok": null,
+      "failure_type": null,
+      "failure_detail": "upstream cleaning artifact 'cleaned_csv' unusable: failed structural checks output_exists, output_parses, required_columns_present",
+      "parse_ok": null,
+      "execution": null,
+      "validation": null,
+      "conditional_validation": null,
+      "input_artifacts": [],
+      "output_artifacts": [],
+      "input_artifact_hashes": {},
+      "output_artifact_hashes": {},
+      "handoff_in_path": null,
+      "handoff_size_bytes": null,
+      "input_tokens": null,
+      "output_tokens": null,
+      "cost_usd": null,
+      "cost_status": "not_incurred",
+      "timings": {
+        "generation_ms": null,
+        "execution_ms": null,
+        "validation_ms": null,
+        "handoff_ms": null
+      }
+    }
+  ],
+  "feasibility": {
+    "outcome": "infeasible",
+    "stage_status": {
+      "cleaning": "failed",
+      "analysis": "blocked_by_invalid_artifact",
+      "reporting": "blocked_by_invalid_artifact"
+    },
+    "first_failure_stage": "cleaning",
+    "failure_type": "execution_error"
+  },
+  "quality": {
+    "cleaning": {
+      "cleaning_correctness": 0.0,
+      "data_integrity": 0.0,
+      "schema_compliance": 0.0
+    }
+  },
+  "conditional_quality": {},
+  "efficiency": {
+    "total_api_latency_ms": 8269.255999999586,
+    "total_execution_ms": 702.1789589998662,
+    "total_validation_ms": 1.7446249985368922,
+    "total_handoff_ms": 0.2776670007733628,
+    "end_to_end_ms": 10547.100415999012,
+    "input_tokens": 2078,
+    "output_tokens": 1654,
+    "cost_usd": null,
+    "cost_status": "unavailable",
+    "n_calls": 1,
+    "n_cache_hits": 0,
+    "n_switches": 2,
+    "handoff_bytes_total": 616
+  },
+  "propagation": {
+    "downstream_executable": {
+      "cleaning": false,
+      "analysis": false,
+      "reporting": false
+    },
+    "upstream_error_severity": {},
+    "end_to_end_accuracy": {},
+    "propagation_impact": {},
+    "blocked_stages": [
+      "analysis",
+      "reporting"
+    ]
+  },
+  "final_artifacts": []
+}

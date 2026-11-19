@@ -1,0 +1,8 @@
+{
+  "fixed_code": "def sessionize(events, gap):\n    # Sort events by user, then timestamp\n    sorted_events = sorted(events, key=lambda x: (x[0], x[1]))\n    out = {}\n    for user, t in sorted_events:\n        sessions = out.setdefault(user, [])\n        # Start new session if no sessions exist or gap is strictly greater than 'gap'\n        if not sessions or t - sessions[-1][-1] > gap:\n            sessions.append([t])\n        else:\n            sessions[-1].append(t)\n    return out",
+  "bug_locations": [
+    "Missing sorting of events by (user, timestamp)",
+    "Incorrect gap condition: used >= instead of >"
+  ],
+  "explanation": "The original code failed to sort events by (user, timestamp) as required by the specification, leading to incorrect session grouping. Additionally, the gap condition used >= instead of >, which contradicts the specification's requirement to start a new session only when the gap is strictly greater than 'gap'. The fixes include sorting events before processing and correcting the gap condition to use >."
+}

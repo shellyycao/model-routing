@@ -1,0 +1,109 @@
+We need to produce a JSON with fields python_code (string containing script), expected_artifacts (list with findings.json), methods_description (brief description). The script must read cleaned.csv from INPUT_DIR env var, compute metrics, write findings.json to OUTPUT_DIR, ensure flat JSON with numeric values only (no NaN). Must handle missing satisfaction_score (null). In pandas, missing values become NaN; we need to count missing, compute mean ignoring NaN.
+
+Metrics:
+
+- ticket_count: total rows
+- mean_resolution_minutes: mean of resolution_minutes (float)
+- total_labor_cost: sum of labor_cost
+
+Team labor cost sums: filter team == Alpha etc.
+
+Channel mean resolution minutes: per channel.
+
+Reopen rates: reopened percentage for email and chat. reopened column is 0/1. Percentage = (sum reopened / count) * 100? Usually percentage. We'll compute (mean * 100). For email and chat separately.
+
+email_vs_chat_reopen_change_pct = (email_rate - chat_rate) / chat_rate * 100. If chat_rate zero, handle division by zero: set to 0? But likely not zero. We'll compute safely: if chat_rate == 0, set to 0.
+
+High-cost low-satisfaction segment: tickets with labor_cost >= 100 and satisfaction_score not missing and <=2. Count them. reopened percentage among those: sum reopened / count * 100. If count zero, percentage 0.
+
+Distribution: median and sample standard deviation (ddof=1) of resolution_minutes. Use pandas .median() and .std(ddof=1). satisfaction_mean: mean of satisfaction_score ignoring NaN. satisfaction_missing_count: count of rows where satisfaction_score is NaN.
+
+Agent concentration: unique_agent_count = number of distinct agent_id. top_agent_ticket_count = max tickets per agent. top_agent_ticket_share_pct = top_agent_ticket_count / ticket_count * 100.
+
+All metrics must be numeric (int or float). Ensure we output as Python numbers; json dumps will convert.
+
+Edge Cases: Ensure we convert to Python native types (int for counts, float for others). Use .item().
+
+Write findings.json with json.dump.
+
+Also include expected_artifacts list: ["findings.json"].
+
+Now produce script.
+
+Script steps:
+
+import os, json, pandas as pd, numpy as np
+
+input_path = os.path.join(os.environ["INPUT_DIR"], "cleaned.csv")
+df = pd.read_csv(input_path)
+
+Compute metrics.
+
+Potential issues: satisfaction_score column may be float (e.g., 5.0). We'll treat as numeric.
+
+Compute missing count: df['satisfaction_score'].isna().sum()
+
+Now compute.
+
+Implementation details:
+
+ticket_count = len(df)
+
+mean_resolution_minutes = df['resolution_minutes'].mean()
+
+total_labor_cost = df['labor_cost'].sum()
+
+labor_cost_alpha = df.loc[df['team']=='Alpha','labor_cost'].sum()
+
+Similarly for Beta, Gamma.
+
+resolution_email = df.loc[df['channel']=='email','resolution_minutes'].mean()
+
+Similarly chat, phone.
+
+reopen_rate_email_pct = df.loc[df['channel']=='email','reopened'].mean() * 100
+
+reopen_rate_chat_pct = df.loc[df['channel']=='chat','reopened'].mean() * 100
+
+email_vs_chat_reopen_change_pct = ((reopen_rate_email_pct - reopen_rate_chat_pct) / reopen_rate_chat_pct * 100) if reopen_rate_chat_pct != 0 else 0.0
+
+High-cost low-sat:
+
+mask = (df['labor_cost'] >= 100) & (df['satisfaction_score'].notna()) & (df['satisfaction_score'] <= 2)
+
+high_cost_low_sat_count = mask.sum()
+
+if high_cost_low_sat_count > 0:
+    high_cost_low_sat_reopen_pct = df.loc[mask, 'reopened'].mean() * 100
+else:
+    high_cost_low_sat_reopen_pct = 0.0
+
+resolution_median = df['resolution_minutes'].median()
+
+resolution_std = df['resolution_minutes'].std(ddof=1)  # sample std
+
+satisfaction_mean = df['satisfaction_score'].mean()
+
+satisfaction_missing_count = df['satisfaction_score'].isna().sum()
+
+unique_agent_count = df['agent_id'].nunique()
+
+top_agent_ticket_count = df['agent_id'].value_counts().iloc[0]
+
+top_agent_ticket_share_pct = top_agent_ticket_count / ticket_count * 100
+
+Now create dict with keys exactly as required.
+
+Make sure to use float for percentages and means.
+
+Write json.
+
+Potential need to ensure no numpy types: convert to Python float via float().
+
+We'll build dict with values = (int or float). Use .item() for scalar.
+
+Now produce final JSON output.
+
+Also include methods_description summarizing steps.
+
+Now produce final answer.

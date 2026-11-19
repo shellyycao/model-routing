@@ -1,0 +1,5 @@
+{
+  "fixed_code": "def append_item(item, items=None):\n    if items is None:\n        items = []\n    items.append(item)\n    return items\n",
+  "bug_location": "Function append_item, default value of items",
+  "explanation": "The bug was due to the mutable default argument (items=[]) which caused the list to persist across calls. The fix initializes items to None and checks if it is None to create a new list on each call."
+}

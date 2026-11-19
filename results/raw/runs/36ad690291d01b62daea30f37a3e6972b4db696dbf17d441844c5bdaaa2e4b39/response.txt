@@ -1,0 +1,11 @@
+```json
+{
+  "fixed_code": "def sessionize(events, gap):\n    out = {}\n    last = {}\n    for user, t in sorted(events, key=lambda x: (x[0], x[1])):\n        if user not in out:\n            out[user] = [[]]\n            last[user] = None\n        if last[user] is not None and t - last[user] > gap:\n            out[user].append([])\n        out[user][-1].append(t)\n        last[user] = t\n    return out",
+  "bug_locations": [
+    "sorted(events, key=lambda x: x[1])",
+    "last = None",
+    "if last is not None and t - last > gap: out[user].append([])"
+  ],
+  "explanation": "The original code had three defects: 1) Sorting by timestamp only (x[1]) instead of (user, timestamp) caused incorrect ordering. 2) Using a single 'last' variable across all users caused incorrect session boundaries. 3) The session gap check used the global 'last' instead of per-user timestamps. The fix sorts by (user, timestamp), tracks 'last' per user, and checks gaps using per-user timestamps."
+}
+```

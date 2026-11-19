@@ -1,0 +1,9 @@
+{
+  "fixed_code": "def allocate_stock(stock, requests):\n    remaining = dict(stock)\n    seen = set()\n    fulfilled = []\n    for rid, sku, qty in requests:\n        if rid in seen:\n            continue\n        seen.add(rid)\n        if qty > 0 and remaining.get(sku, 0) >= qty:\n            remaining[sku] -= qty\n            fulfilled.append(rid)\n    return fulfilled, remaining\n",
+  "bug_locations": [
+    "allocate_stock: condition `remaining.get(sku,0)>qty` should be `remaining.get(sku,0)>=qty`",
+    "allocate_stock: missing `qty > 0` check for positive qty requirement",
+    "allocate_stock: `seen.add(rid)` was only called on fulfillment, not on every first occurrence of rid"
+  ],
+  "explanation": "Three bugs: (1) The stock check used strict greater-than (`> qty`) instead of greater-than-or-equal (`>= qty`), so a request for exactly the available quantity was rejected (failing the visible test). (2) There was no check that `qty > 0`, violating the spec requirement to fulfil only requests with positive qty. (3) `seen.add(rid)` was inside the fulfillment branch, so a request that failed the stock check would not be marked as seen and could be retried on a later duplicate — violating the duplicate-ignore rule. The fix moves `seen.add(rid)` to execute for every first-seen rid, adds the `qty > 0` guard, and changes `>` to `>=`."
+}

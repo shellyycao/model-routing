@@ -1,0 +1,11 @@
+```json
+{
+  "fixed_code": "from bisect import bisect_right, insort_right\nfrom collections import defaultdict\n\ndef allowed(events, limit, window):\n    allowed_times = defaultdict(list)\n    out = []\n    for user, t in events:\n        times = allowed_times[user]\n        start = t - window\n        if start < t:\n            count = bisect_right(times, t) - bisect_right(times, start)\n        else:\n            count = 0\n        ok = count < limit\n        out.append(ok)\n        if ok:\n            insort_right(times, t)\n    return out\n",
+  "bug_locations": [
+    "module imports: replaced the deque-only import with bisect helpers and defaultdict",
+    "allowed: replaced the single shared queue with per-user sorted lists of previously allowed timestamps",
+    "allowed: admission now counts only prior allowed timestamps in (t-window, t] and inserts only allowed events"
+  ],
+  "explanation": "The shared queue made the limit global across users and let unrelated users affect eviction and capacity. The corrected code tracks accepted timestamps independently per user. Because only previously processed accepted events are stored, bisect_right counts timestamps <= t and <= t-window; their difference is exactly the number in (t-window, t]. Rejected events are not inserted, and the count is zero when the interval is empty."
+}
+```

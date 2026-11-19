@@ -1,0 +1,8 @@
+{
+  "fixed_code": "def chunks(xs, size):\n    if size <= 0:\n        raise ValueError('size')\n    return [list(xs[i:i + size]) for i in range(0, len(xs), size)]\n",
+  "bug_locations": [
+    "Guard clauses in chunks(): 'if size < 0: raise ValueError' combined with 'if size == 0: return []'",
+    "Return comprehension in chunks(): '[xs[i:i+size] for i in range(0, len(xs), size)]'"
+  ],
+  "explanation": "The primary defect is the size validation: the specification requires ValueError whenever size <= 0, but the buggy code only raised for negative sizes and special-cased size == 0 to silently return an empty list. The fix replaces both branches with a single guard 'if size <= 0: raise ValueError(...)'. Secondarily, the comprehension now wraps each slice in list() so the result is always consecutive list chunks as specified, even if xs is another sequence type (e.g., a tuple). Slicing with range(0, len(xs), size) already yields the short final chunk correctly, and no operation mutates xs. The irregular indentation was also normalized."
+}

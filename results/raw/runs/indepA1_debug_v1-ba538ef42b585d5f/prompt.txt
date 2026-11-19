@@ -1,0 +1,23 @@
+TASK: Python debugging (independent benchmark A1, prompt independent_v1)
+
+The function below contains exactly one bug. Fix it so that it satisfies the specification.
+
+SPECIFICATION:
+moving_average(xs, k) returns the list of means of every contiguous window of length k in xs (len(xs) - k + 1 values). Return [] if k <= 0 or k > len(xs).
+
+BUGGY CODE:
+```python
+def moving_average(xs, k):
+    if k <= 0 or k > len(xs):
+        return []
+    return [sum(xs[i:i + k]) / k for i in range(len(xs) - k)]
+
+```
+
+EXAMPLE TESTS (these must pass; additional hidden tests will also be run):
+```python
+assert moving_average([1, 2, 3, 4], 2) == [1.5, 2.5, 3.5]
+```
+
+Return the COMPLETE corrected source code (keep the same function names and signatures; standard library only),
+the location of the bug, and a short explanation.

@@ -1,0 +1,179 @@
+{
+  "title": "Customer Churn Analysis Report",
+  "executive_summary": "Analysis of 749 customers reveals an overall churn rate of 37.7%. Monthly-contract customers churn at more than double the rate of annual-contract customers, and a high-risk segment (high support tickets, low satisfaction) churns at 71.0%. Premium plan customers generate nearly 4× the lifetime value of Basic customers, underscoring the financial importance of retaining higher-tier subscribers.",
+  "key_findings": [
+    {
+      "finding_id": "q1",
+      "statement": "The dataset contains 749 customers with an overall churn rate of 37.7% and an average monthly fee of $42.11.",
+      "evidence_refs": [
+        "customer_count",
+        "churn_rate_pct",
+        "avg_monthly_fee"
+      ],
+      "reported_values": {
+        "customer_count": 749.0,
+        "churn_rate_pct": 37.6502002670227,
+        "avg_monthly_fee": 42.106154873164215
+      },
+      "direction": null,
+      "ranking": null,
+      "derived_values": []
+    },
+    {
+      "finding_id": "q2",
+      "statement": "Churn rates differ modestly across plans: Basic is highest at 38.9%, followed by Standard at 36.7%, and Premium at 36.6%. The spread between Basic and Premium is approximately 2.3 percentage points.",
+      "evidence_refs": [
+        "churn_rate_basic_pct",
+        "churn_rate_standard_pct",
+        "churn_rate_premium_pct"
+      ],
+      "reported_values": {
+        "churn_rate_basic_pct": 38.87240356083086,
+        "churn_rate_standard_pct": 36.67953667953668,
+        "churn_rate_premium_pct": 36.60130718954248
+      },
+      "direction": null,
+      "ranking": [
+        "Basic",
+        "Standard",
+        "Premium"
+      ],
+      "derived_values": [
+        {
+          "kind": "difference",
+          "operands": [
+            "churn_rate_basic_pct",
+            "churn_rate_premium_pct"
+          ],
+          "value": 2.27
+        }
+      ]
+    },
+    {
+      "finding_id": "q3",
+      "statement": "Churn by signup cohort shows the 2024 cohort is highest at 39.8%, followed by 2021 at 38.0%, 2023 at 37.1%, and 2022 at 36.7%. No strong linear trend is evident across cohorts.",
+      "evidence_refs": [
+        "churn_rate_cohort_2021_pct",
+        "churn_rate_cohort_2022_pct",
+        "churn_rate_cohort_2023_pct",
+        "churn_rate_cohort_2024_pct"
+      ],
+      "reported_values": {
+        "churn_rate_cohort_2021_pct": 38.02083333333333,
+        "churn_rate_cohort_2022_pct": 36.74418604651163,
+        "churn_rate_cohort_2023_pct": 37.05357142857143,
+        "churn_rate_cohort_2024_pct": 39.83050847457627
+      },
+      "direction": null,
+      "ranking": [
+        "2024",
+        "2021",
+        "2023",
+        "2022"
+      ],
+      "derived_values": []
+    },
+    {
+      "finding_id": "q4",
+      "statement": "Monthly-contract customers churn at 48.3% versus 21.9% for annual-contract customers — a relative increase of 121.1%, meaning monthly customers churn at more than twice the rate of annual customers.",
+      "evidence_refs": [
+        "churn_rate_monthly_pct",
+        "churn_rate_annual_pct",
+        "churn_monthly_vs_annual_change_pct"
+      ],
+      "reported_values": {
+        "churn_rate_monthly_pct": 48.322147651006716,
+        "churn_rate_annual_pct": 21.85430463576159,
+        "churn_monthly_vs_annual_change_pct": 121.11043319097013
+      },
+      "direction": "increase",
+      "ranking": null,
+      "derived_values": []
+    },
+    {
+      "finding_id": "q5",
+      "statement": "100 customers meet the at-risk criteria (≥5 support tickets and satisfaction score ≤2). This segment churns at 71.0%, nearly double the overall rate, representing a critical intervention target.",
+      "evidence_refs": [
+        "at_risk_customer_count",
+        "at_risk_churn_rate_pct"
+      ],
+      "reported_values": {
+        "at_risk_customer_count": 100.0,
+        "at_risk_churn_rate_pct": 71.0
+      },
+      "direction": null,
+      "ranking": null,
+      "derived_values": [
+        {
+          "kind": "difference",
+          "operands": [
+            "at_risk_churn_rate_pct",
+            "churn_rate_pct"
+          ],
+          "value": 33.35
+        }
+      ]
+    },
+    {
+      "finding_id": "q6",
+      "statement": "Customer tenure averages 20.8 months (median 19.0, SD 13.2), indicating a wide spread. Mean satisfaction score is 3.42 out of 5 among the 722 customers with a valid score; 27 customers have a missing satisfaction score.",
+      "evidence_refs": [
+        "tenure_mean",
+        "tenure_median",
+        "tenure_std",
+        "satisfaction_mean",
+        "satisfaction_missing_count"
+      ],
+      "reported_values": {
+        "tenure_mean": 20.81041388518024,
+        "tenure_median": 19.0,
+        "tenure_std": 13.24739298193327,
+        "satisfaction_mean": 3.4168975069252077,
+        "satisfaction_missing_count": 27.0
+      },
+      "direction": null,
+      "ranking": null,
+      "derived_values": [
+        {
+          "kind": "difference",
+          "operands": [
+            "customer_count",
+            "satisfaction_missing_count"
+          ],
+          "value": 722.0
+        }
+      ]
+    },
+    {
+      "finding_id": "q7",
+      "statement": "Average lifetime value rises sharply by plan: Basic $463, Standard $869, Premium $1,817. Premium LTV is 292.0% higher than Basic, confirming that upselling to Premium has substantial revenue impact.",
+      "evidence_refs": [
+        "ltv_basic",
+        "ltv_standard",
+        "ltv_premium",
+        "premium_vs_basic_ltv_change_pct"
+      ],
+      "reported_values": {
+        "ltv_basic": 463.4573590504451,
+        "ltv_standard": 868.8301544401545,
+        "ltv_premium": 1816.7777124183006,
+        "premium_vs_basic_ltv_change_pct": 292.00536509779596
+      },
+      "direction": "increase",
+      "ranking": [
+        "Premium",
+        "Standard",
+        "Basic"
+      ],
+      "derived_values": []
+    }
+  ],
+  "limitations": [
+    "The dataset is a single snapshot; churn is a binary flag with no timestamp, so time-to-churn and survival analysis are not possible.",
+    "27 customers (3.6%) have missing satisfaction scores, which may introduce slight bias in satisfaction-based metrics and the at-risk segment definition.",
+    "The 2024 cohort likely has shorter observation windows than earlier cohorts, which may inflate its apparent churn rate.",
+    "Causality cannot be inferred from these associations; confounding factors (e.g., geography, product usage) are not captured in the dataset.",
+    "Lifetime value is a derived average and does not account for discount rates or variable usage patterns over time."
+  ],
+  "conclusion": "Churn is a significant business risk at 37.7% overall. The strongest lever identified is contract type: converting monthly customers to annual contracts could more than halve their churn rate. The 100-customer at-risk segment (71.0% churn) warrants immediate targeted intervention. Premium plan customers deliver nearly 4× the lifetime value of Basic customers, making their retention especially valuable. Cohort churn rates are broadly stable, suggesting no systemic onboarding deterioration, though the 2024 cohort should be monitored as it matures."
+}

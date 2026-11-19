@@ -1,0 +1,19 @@
+Extract the requested fields from the document. Resolve conflicts using each field description, perform required unit conversions, and use null when the document does not support a value.
+
+Schema:
+- closing_date: date or null
+- location: string
+- remote: boolean
+- requisition: string
+- salary_usd: annual number after conversion
+- title: string
+
+Document:
+JOB CARD
+Current requisition REQ-403 (archive REQ-402)
+Data Reliability Engineer — Boston, MA
+Compensation: $94.030k annual USD (not the €70k market benchmark).
+Work mode: hybrid/remote eligible
+Applications close: open until filled; no date stated
+
+Return exactly one object with the required `fields` wrapper and no extra schema keys. Content correctness and schema/operational compliance are scored separately.

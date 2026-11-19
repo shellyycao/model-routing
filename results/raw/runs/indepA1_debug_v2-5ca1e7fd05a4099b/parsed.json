@@ -1,0 +1,11 @@
+{
+  "fixed_code": "def shortest_path(graph, start, goal):\n    \"\"\"Return a shortest path from *start* to *goal* in an unweighted directed graph.\n\n    The graph is a mapping from node to an iterable of neighbour nodes.  Neighbours are\n    explored in the order they appear in the adjacency list.  If *goal* is unreachable,\n    ``None`` is returned.\n    \"\"\"\n    from collections import deque\n\n    # BFS queue holds tuples of (current_node, path_to_current_node)\n    queue = deque()\n    queue.append((start, [start]))\n    # Mark nodes as seen when they are enqueued to avoid duplicate work.\n    seen = {start}\n\n    while queue:\n        node, path = queue.popleft()\n        if node == goal:\n            return path\n        for neighbour in graph.get(node, []):\n            if neighbour not in seen:\n                seen.add(neighbour)\n                queue.append((neighbour, path + [neighbour]))\n    return None",
+  "bug_locations": [
+    "Replaced stack‑based DFS with a queue‑based BFS to guarantee shortest paths.",
+    "Moved visited‑set handling to the enqueue step to prevent revisiting nodes.",
+    "Added import of collections.deque for efficient FIFO queue operations.",
+    "Adjusted loop to use popleft() for BFS order and preserved neighbour iteration order.",
+    "Returned None (null) when no path exists, matching the specification."
+  ],
+  "explanation": "The original implementation used a depth‑first search (stack) which does not guarantee the shortest path in an unweighted graph. It also added nodes to the visited set only after popping, allowing duplicate enqueues and potentially longer paths. The fix replaces the stack with a FIFO queue (BFS), marks nodes as seen when they are enqueued, and iterates neighbours in their listed order, ensuring the first time the goal is reached yields a shortest path. The function now conforms to the specification and returns None when the goal is unreachable."
+}

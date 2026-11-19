@@ -1,0 +1,5 @@
+{
+  "fixed_code": "def moving_average(xs, k):\n    if k <= 0 or k > len(xs):\n        return []\n    return [sum(xs[i:i + k]) / k for i in range(len(xs) - k + 1)]",
+  "bug_location": "moving_average: list comprehension range uses len(xs) - k instead of len(xs) - k + 1, causing the last window to be omitted.",
+  "explanation": "The original code had an off‑by‑one error, generating only len(xs)-k windows. Adjusting the range to len(xs)-k+1 includes the final contiguous window, matching the specification."
+}

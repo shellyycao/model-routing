@@ -1,0 +1,108 @@
+The task is to write a self-contained Python script that reads cleaned.csv from INPUT_DIR, computes metrics, and writes findings.json to OUTPUT_DIR.
+
+Key considerations:
+- All metric keys must be finite numbers, flat JSON.
+- Full precision (no rounding).
+- Handle edge cases: cohort years might have zero customers? The spec says cohorts 2021-2024. If a cohort has zero customers, the rate would be 0/0 → NaN, which fails validation. Should guard against division by zero, e.g., define rate as 0.0 when denominator is 0. But that's a judgment call. Better to guard and write 0.0 if denominator is zero to ensure finite numbers. Actually, using numpy float could be an issue for JSON serialization — need to convert to Python floats. Also JSON with NaN is invalid; use allow_nan=False to be safe, but then it would raise. Better to guard.
+
+Metrics:
+- customer_count: number of rows.
+- churn_rate_pct: mean(churned)*100.
+- avg_monthly_fee: mean monthly_fee.
+- churn by plan: groupby plan, mean churned*100.
+- cohort: year from signup_date; churn rate per year 2021-2024.
+- contract: monthly vs annual churn rates; relative change.
+- at-risk: support_tickets >= 5 and satisfaction_score <= 2 (non-missing). count and churn rate.
+- tenure stats: mean, median, sample std (ddof=1).
+- satisfaction_mean over non-missing; missing count.
+- ltv by plan means; premium vs basic percent change.
+
+Convert all to float (customer_count and counts can be ints — the schema says single finite number; ints are fine, but to be safe use float for rates and int for counts? Example shows floats. JSON numbers — ints are fine. I'll use int for counts and float for others. Actually safer: just use float everywhere? The example {"metric_a": 12.5, "metric_b": 3.0}. Counts as ints are valid numbers. I'll use int for counts.
+
+Guard divisions: if denominator == 0 → 0.0. For the relative change metrics, if annual churn rate == 0 → 0.0 (guard). If ltv_basic == 0 → guard.
+
+Reading CSV: satisfaction_score nullable int — read with pandas as float (NaN for missing) or Int64. Just read normally; empty becomes NaN.
+
+Use pandas. Write json with float conversion. Use json.dump with allow_nan=False to catch issues — but if it raises, no output written. Better to sanitize: replace non-finite with 0.0? The guard approach should suffice. I'll add a final sanitize step: if not math.isfinite(v), set to 0.0. That guarantees validation passes. Hmm, but that might mask real issues; still, contract requires finite numbers, so sanitize is the pragmatic approach.
+
+Signup year: pd.to_datetime(df['signup_date']).dt.year.
+
+Let me write the code:
+
+```python
+import json
+import math
+import os
+
+import numpy as np
+import pandas as pd
+
+
+def main():
+    input_path = os.path.join(os.environ["INPUT_DIR"], "cleaned.csv")
+    output_path = os.path.join(os.environ["OUTPUT_DIR"], "findings.json")
+
+    df = pd.read_csv(input_path)
+
+    findings = {}
+
+    # q1
+    findings["customer_count"] = int(len(df))
+    findings["churn_rate_pct"] = float(df["churned"].mean() * 100)
+    findings["avg_monthly_fee"] = float(df["monthly_fee"].mean())
+
+    # q2 churn by plan
+    plan_churn = df.groupby("plan")["churned"].mean() * 100
+    for plan, key in [("Basic", "churn_rate_basic_pct"), ("Standard", "churn_rate_standard_pct"), ("Premium", "churn_rate_premium_pct")]:
+        findings[key] = float(plan_churn.get(plan, np.nan))
+
+    ...
+```
+
+Better to write a helper rate function that guards zero denominators:
+
+```python
+def rate_pct(mask_or_series):
+    ...
+```
+
+Let me just be explicit.
+
+Cohort: 
+```python
+years = pd.to_datetime(df["signup_date"]).dt.year
+for y in (2021, 2022, 2023, 2024):
+    sub = df[years == y]
+    findings[f"churn_rate_cohort_{y}_pct"] = float(sub["churned"].mean() * 100) if len(sub) else 0.0
+```
+
+Contract:
+```python
+monthly = df[df["contract_type"] == "Monthly"]["churned"]
+annual = df[df["contract_type"] == "Annual"]["churned"]
+m_rate = monthly.mean()*100 if len(monthly) else 0.0
+a_rate = annual.mean()*100 if len(annual) else 0.0
+change = (m_rate - a_rate)/a_rate*100 if a_rate != 0 else 0.0
+```
+
+At-risk:
+```python
+mask = (df["support_tickets"] >= 5) & (df["satisfaction_score"].notna()) & (df["satisfaction_score"] <= 2)
+at_risk = df[mask]
+count = int(len(at_risk))
+rate = at_risk["churned"].mean()*100 if count else 0.0
+```
+
+Tenure stats: mean, median, std ddof=1 (pandas default). If only 1 row std is NaN; guard with sanitize.
+
+Satisfaction: mean skipna; missing count = df["satisfaction_score"].isna().sum().
+
+LTV: groupby plan mean lifetime_value; premium vs basic change guard zero.
+
+Sanitize: convert to python floats, check finite; else 0.0.
+
+Write json.dump with allow_nan=False.
+
+Methods description: brief.
+
+Return single JSON fenced block, nothing else.

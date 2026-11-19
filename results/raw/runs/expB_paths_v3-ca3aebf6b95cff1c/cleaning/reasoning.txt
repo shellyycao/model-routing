@@ -1,0 +1,135 @@
+We need to produce JSON with fields python_code (script), output_filename "cleaned.csv", cleaning_logic description.
+
+The script must implement all cleaning steps, produce cleaned.csv and cleaning_summary.json with raw_rows, cleaned_rows, and per-rule counts.
+
+We need to read raw.csv as text, treat all columns as strings, strip whitespace, treat missing values as defined.
+
+Implementation plan:
+
+- import os, pandas as pd, numpy as np, json, datetime.
+
+- input_path = os.path.join(os.environ["INPUT_DIR"], "raw.csv")
+- output_path = os.path.join(os.environ["OUTPUT_DIR"], "cleaned.csv")
+- summary_path = os.path.join(os.environ["OUTPUT_DIR"], "cleaning_summary.json")
+
+- Read raw CSV using pandas read_csv with dtype=str, keep default. Use na_filter=False to keep as strings.
+
+- raw_rows = len(df)
+
+- Strip whitespace: df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)
+
+- Define function to treat missing values: after stripping, if lower in set {'', 'na', 'n/a', 'null', 'none', '-'} then set to None (np.nan). We'll replace with np.nan.
+
+- Apply to all cells.
+
+- R2 duplicate removal: keep first occurrence of order_id. Use df.drop_duplicates(subset='order_id', keep='first', inplace=True). Count duplicates removed.
+
+- Then apply row filters sequentially, tracking counts per rule.
+
+We'll create a dict summary_counts = {'raw_rows': raw_rows, 'duplicates_removed': dup_count, ...}
+
+Processing steps:
+
+R3 order_date parsing:
+
+Define list of formats:
+
+- "%Y-%m-%d"
+- "%m/%d/%Y"
+- "%d-%b-%Y" (e.g., 05-Mar-2024) need to ensure month abbreviation case-insensitive; use datetime.strptime with locale? We'll use %d-%b-%Y and lower case month abbreviation? strptime expects proper case; we can .title() maybe. We'll attempt parse with each format.
+
+- "%Y/%m/%d"
+- "%B %d, %Y" (full month name)
+
+We'll write a function parse_date(s): if s is NaN -> return None. Try each format; for %d-%b-%Y we can use .capitalize? Actually strptime expects month abbreviation with first letter capital, rest lower. We'll use s = s.strip() then maybe .title() for month abbreviation? We'll just try as is; if fails, try with .title().
+
+If none succeed, return None.
+
+Create new column order_date_parsed; drop rows where None.
+
+Then format to YYYY-MM-DD string via .strftime('%Y-%m-%d').
+
+R4 region mapping:
+
+Define mapping dict: {'n':'North','north':'North','s':'South','south':'South','e':'East','east':'East','w':'West','west':'West'}
+
+Take region value lower stripped; map; else None.
+
+Drop rows where mapping fails.
+
+R5 product_category mapping:
+
+Define mapping dict for lower stripped values:
+
+{
+'electronics':'Electronics',
+'electronic':'Electronics',
+'clothing':'Clothing',
+'apparel':'Clothing',
+'home & garden':'Home & Garden',
+'home and garden':'Home & Garden',
+'home&garden':'Home & Garden',
+'sports':'Sports',
+'sport':'Sports',
+'books':'Books',
+'book':'Books'
+}
+
+Also ensure case-insensitive.
+
+Drop rows where mapping fails.
+
+R6 unit_price cleaning:
+
+Take string, if NaN -> None. Remove '$', 'USD', ',' and surrounding spaces. Use regex: re.sub(r'[\$,]', '', s). Also remove 'USD' case-insensitively. Then strip. If resulting empty -> None.
+
+Parse float. If fails or <=0 or >5000 -> drop.
+
+R7 quantity:
+
+Parse as float, then check if integer (value.is_integer()), >=1 <=50. Convert to int.
+
+R8 discount_pct:
+
+If missing (NaN) -> set 0. Else remove trailing '%' (if present). Strip. Parse float. If fails or <0 or >100 -> drop.
+
+R9 customer_id:
+
+If missing (NaN) -> set 'UNKNOWN'. Else upper case.
+
+R10 revenue: compute quantity * unit_price * (1 - discount_pct/100). Round to 2 decimals.
+
+R11 output columns order, sort by order_id ascending (string). Write CSV.
+
+Also ensure types: unit_price float with two decimals? Keep as original (maybe keep as float). Write without formatting.
+
+Implementation details:
+
+- Use pandas DataFrame operations for speed.
+
+- For per-rule counts: we can compute number of rows dropped at each step: after each filter, compute before and after counts.
+
+- For duplicate removal count: raw_rows - after dup rows.
+
+- For missing/invalid rows per rule: we can compute counts.
+
+We'll store summary dict with raw_rows, cleaned_rows, duplicates_removed, rows_dropped_order_date, rows_dropped_region, rows_dropped_product_category, rows_dropped_unit_price, rows_dropped_quantity, rows_dropped_discount_pct.
+
+Now produce script.
+
+Edge Cases: The raw data includes 'None' for region etc. Our missing detection will treat 'None' as missing.
+
+Parsing date: need to handle 'None' as missing.
+
+Implementation of parse_date: use try/except.
+
+Now produce final JSON.
+
+Let's craft python_code string with triple quotes inside JSON; need to escape properly. We'll embed script as a raw string.
+
+Make sure script does not print large data; maybe prints summary to stdout? Not required.
+
+We'll write summary JSON file.
+
+Now produce final answer.
+

@@ -1,0 +1,10 @@
+```json
+{
+  "fixed_code": "def overlap_minutes(a, b):\n    a_start, a_end = a\n    b_start, b_end = b\n\n    if a_end < a_start:\n        raise ValueError(\"interval end must not be before start\")\n    if b_end < b_start:\n        raise ValueError(\"interval end must not be before start\")\n\n    overlap_start = max(a_start, b_start)\n    overlap_end = min(a_end, b_end)\n    return max(0, overlap_end - overlap_start)\n",
+  "bug_locations": [
+    "overlap_minutes: missing rejection of intervals with end < start",
+    "overlap_minutes: returned negative lengths for disjoint intervals instead of zero"
+  ],
+  "explanation": "The original formula only computed min(end) - max(start), which is correct for overlapping or touching half-open intervals but goes negative when intervals are disjoint. It also failed to validate the authoritative requirement that end < start is rejected. The fixed function validates both input intervals and clamps the computed overlap to zero, preserving zero overlap for touching intervals."
+}
+```

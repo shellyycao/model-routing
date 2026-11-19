@@ -1,0 +1,10 @@
+{
+  "fixed_code": "def paginate(items, size, cursor=None):\n    if size <= 0: raise ValueError('size')\n    try:\n        start = 0 if cursor is None else int(cursor)\n    except (ValueError, TypeError):\n        raise ValueError('cursor')\n    if cursor is not None and (int(cursor) < 0 or str(int(cursor)) != str(cursor).strip()):\n        raise ValueError('cursor')\n    end = min(start + size, len(items))\n    next_cursor = str(end) if end < len(items) else None\n    return list(items[start:end]), next_cursor\n",
+  "bug_locations": [
+    "size validation: changed `size < 0` to `size <= 0` to reject nonpositive sizes",
+    "start index: changed `start=1` to `start=0` for zero-based indexing when cursor is None",
+    "start index with cursor: changed `int(cursor)+1` to `int(cursor)` since cursor is already the start index",
+    "invalid cursor handling: added try/except to raise ValueError on non-integer cursor strings"
+  ],
+  "explanation": "1. The size check `size < 0` allowed size=0, but the spec says nonpositive sizes raise ValueError, so it must be `size <= 0`. 2. When cursor is None, start should be 0 (zero-based), not 1. 3. When cursor is provided, it IS the start index, so `int(cursor)+1` was wrong — it should just be `int(cursor)`. 4. Invalid (non-integer) cursor strings were not caught; added try/except to raise ValueError for those cases."
+}

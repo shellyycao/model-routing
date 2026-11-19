@@ -1,0 +1,24 @@
+{
+  "buggy": "def append_item(item, items=[]):\n    items.append(item)\n    return items\n",
+  "case_id": "a1_05_append_item",
+  "difficulty": "medium",
+  "func": "append_item",
+  "hidden": [
+    "append_item(1) == [1]",
+    "(append_item(1), append_item(2))[1] == [2]",
+    "append_item('a', ['x']) == ['x', 'a']",
+    "(lambda l: append_item(3, l) is l)([0])",
+    "[append_item(i) for i in range(3)] == [[0], [1], [2]]",
+    "append_item(None) == [None]"
+  ],
+  "operator": "mutable_default",
+  "reference": "def append_item(item, items=None):\n    if items is None:\n        items = []\n    items.append(item)\n    return items\n",
+  "spec": "append_item(item, items=None) appends item to items and returns the list. When items is not given, a NEW empty list is used on every call (calls must not share state).",
+  "verification": {
+    "buggy_fails": 3,
+    "reference_passes": 6
+  },
+  "visible": [
+    "append_item(1) == [1]"
+  ]
+}

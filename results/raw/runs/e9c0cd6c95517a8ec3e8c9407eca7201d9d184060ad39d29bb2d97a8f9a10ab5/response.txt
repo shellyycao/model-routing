@@ -1,0 +1,11 @@
+```json
+{
+  "fixed_code": "def summarize_logs(lines):\n    counts = {}\n    errors = []\n    for line in lines:\n        parts = line.split('|')\n        if len(parts) < 4:\n            continue\n        ts, level, service = parts[:3]\n        level = level.upper()\n        counts.setdefault(service, {})\n        counts[service][level] = counts[service].get(level, 0) + 1\n        if level == 'ERROR':\n            errors.append(ts)\n    return {'counts': counts, 'first_error': min(errors) if errors else None}",
+  "bug_locations": [
+    "counts.setdefault(service,{})[level.upper()]=counts.setdefault(service,{}).get(level,0)+1",
+    "if level.upper()=='ERROR':errors.append(ts)",
+    "'first_error': max(errors) if errors else None"
+  ],
+  "explanation": "There were three defects. First, the count update logic failed to normalize the level key used in the `get` lookup, causing counts to be split (e.g., 'info' vs 'INFO'). Second, the error detection logic checked the original `level` string instead of the normalized uppercase version, potentially missing errors in mixed-case logs. Third, the specification requires the lexicographically *earliest* error timestamp, but the code used `max()` which returns the latest."
+}
+```

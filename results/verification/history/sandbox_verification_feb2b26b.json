@@ -1,0 +1,29 @@
+{
+  "all_controls_verified": true,
+  "image": "model-routing-xai-sandbox:1.0",
+  "image_id": "sha256:feb2b26b9e232d36de89459d43cd986db4e7efa6dab5119b76d68842097a0eb3",
+  "base_image": "python:3.12.8-slim-bookworm (pinned by tag; rebuilt with --pull=false)",
+  "packages": {
+    "numpy": "2.2.6",
+    "pandas": "2.2.3"
+  },
+  "verified_at": "2026-11-18T04:34:57Z",
+  "verified_by": "codex-offline-repair",
+  "docker": "Docker Desktop 28.3.3 (macOS host, LinuxKit VM)",
+  "test_command": ".venv/bin/python -m pytest -v -rs tests/test_executor.py",
+  "result": "20 passed, 0 failed, 0 skipped",
+  "controls": {
+    "no_network": "verified (no routes; only lo up; connect + DNS blocked; cannot raise interfaces)",
+    "no_aws_env_or_credentials": "verified",
+    "no_write_outside_output_dir": "verified",
+    "inputs_read_only": "verified",
+    "non_root_no_privilege_escalation": "verified",
+    "memory_limit": "verified",
+    "timeout_kill": "verified",
+    "runtime_error_mapping": "verified",
+    "reference_solutions_end_to_end": "verified for retail_sales, customer_churn, energy_consumption",
+    "verified_image_lease": "verified: restricted holder pins the exact image ID for the run and is removed afterward"
+  },
+  "historical_record": "results/raw/sandbox_verification.json",
+  "notes": "Valid only for this image_id. The historical raw verification record is preserved unchanged. Rebuilding or retagging the image requires a new verification."
+}

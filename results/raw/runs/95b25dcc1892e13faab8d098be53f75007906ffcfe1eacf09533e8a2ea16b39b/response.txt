@@ -1,0 +1,7 @@
+```json
+{
+  "fixed_code": "def rotate(xs, k):\n    if not xs:\n        return []\n    k %= len(xs)\n    return list(xs[-k:] + xs[:-k])\n",
+  "bug_locations": ["rotate: rotation slice expression (return statement)", "rotate: function body indentation"],
+  "explanation": "The core defect was that the slice expression `xs[k:] + xs[:k]` performs a LEFT rotation by k, while the spec requires a RIGHT rotation for positive k (e.g., rotate([1,2,3], 1) returned [2,3,1] instead of [3,1,2]). After normalizing k with `k %= len(xs)` (which also correctly maps negative k, i.e., left rotations, to an equivalent right rotation), the correct right-rotation expression is `xs[-k:] + xs[:-k]`, which moves the last k elements to the front. The empty-input guard was already correct and also guards against modulo-by-zero. The abnormally indented body was normalized to standard indentation."
+}
+```

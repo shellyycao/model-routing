@@ -1,0 +1,598 @@
+Let me write a Python script that follows all the cleaning rules R1-R9.
+
+Key points:
+- Read all columns as text (dtype=str)
+- Strip whitespace, treat missing values case-insensitively: '', 'NA', 'N/A', 'null', 'None', '-'
+- R2: dedupe on reading_id keeping first occurrence in raw-file order, BEFORE other filters
+- R3: parse dates with specific formats: YYYY-MM-DD, MM/DD/YYYY, DD-Mon-YYYY, YYYY/MM/DD, 'Month D, YYYY'. Drop rows missing/unparseable. Output YYYY-MM-DD.
+- R4: meter_id uppercase, drop missing.
+- R5: building_type mapping with variants.
+- R6: tariff mapping.
+- R7: energy parsing: remove commas, handle MWh (×1000) and kWh suffixes, drop invalid, <0 or >100000, round 2 decimals.
+- R8: temperature: remove trailing degree sign and unit; F converts; range -40 to 50 else set missing but keep row; round 1 decimal.
+- R9: output columns order, sort by reading_id ascending, CSV with header, no index.
+
+Track counts for summary: raw_rows, cleaned_rows, duplicates_removed, dropped per rule, temp set to missing.
+
+Date parsing: use datetime.strptime with formats:
+- "%Y-%m-%d"
+- "%m/%d/%Y"
+- "%d-%b-%Y" (English 3-letter month, case-insensitive? e.g., '05-Mar-2024' — strptime %b handles case-insensitive matching of month names in C locale). Actually strptime is case-insensitive for month names. Good.
+- "%Y/%m/%d"
+- "%B %d, %Y" (Month D, YYYY). Note "March 5, 2024" — %d handles "5"? strptime with %d accepts zero-padded and non-padded? Yes, strptime %d accepts "5" I believe. Actually in Python, strptime can parse non-zero-padded day with %d. Yes.
+
+Strict parsing: should we reject things like "2024-13-45"? strptime raises ValueError. Good.
+
+One concern: "01-Jan-2024" parses with %d-%b-%Y. Good.
+
+Careful about format order: try each format; exactly one. Fine.
+
+Energy parsing: remove commas. Then check endswith 'mwh' case-insensitive with optional space before unit: strip trailing whitespace then check lower().endswith('mwh'); remove last 3 chars, strip. Then check 'kwh' similarly. Then float(). If fail, drop.
+
+Order matters: check 'mwh' first (since 'mwh' doesn't end with 'kwh', but check MWh first to avoid confusion—actually "kwh" check on "5 mwh" would fail since it ends with 'mwh' not 'kwh'. Still check MWh first for clarity).
+
+Value like "498.85kwh" — no space. endswith handles.
+
+Temperature: remove trailing degree sign and unit. Approach: strip whitespace; if ends with '°f' or 'f' (case-insensitive) → Fahrenheit; strip those chars and also strip '°' and whitespace. If ends with '°c' or 'c' → Celsius; strip. Else no unit → Celsius.
+
+Careful: value "33.62 °F" → strip → lower endswith 'f' → remove 'f', then strip, then remove trailing '°' if present, strip. Then float.
+
+Edge: a plain number like "999.0" → float 999.0 > 50 → set to missing, keep row.
+
+Negative numbers: "-1.4" fine.
+
+After conversion, round to 1 decimal. If outside [-40, 50], set to NaN (empty cell).
+
+Note rounding: round first or check range first? "outside -40 to 50 °C after conversion" — check after conversion; rounding to 1 decimal wouldn't push out of range meaningfully. I'll check range on converted value (maybe after rounding—either fine). I'll convert, check range, then round.
+
+Missing temp: value missing per R1 → set temperature_c missing, keep row. Not a number → missing, keep.
+
+Output: temperature_c missing → empty cell. Use df.to_csv with na_rep="".
+
+Energy_kwh rounding to 2 decimals. Write floats: pandas may write 36.37 fine. But values like 406.45 etc. Formatting: to_csv default float formatting. Could have e.g. 2730.2 instead of 2730.20 — that's fine ("numbers written without units or thousands separators").
+
+Sort by reading_id ascending: string sort. reading_ids like E000001 — zero-padded, so lexicographic works.
+
+Sort after dedupe? Sort at the end before writing.
+
+Column types: keep as strings during processing; final energy_kwh as float, temperature_c float with NaN.
+
+Counts: raw_rows = rows read (1561 lines total includes header → 1560 data rows, but just report what we read). cleaned_rows final.
+
+Per-rule counts: duplicates_removed, dropped_reading_date, dropped_meter_id, dropped_building_type, dropped_tariff, dropped_energy, temp_set_missing.
+
+Order of application: R1 (normalize), R2 dedupe, then R3-R8 filters. I'll apply sequentially.
+
+Implementation details:
+
+```python
+import os, json, re
+import pandas as pd
+import numpy as np
+from datetime import datetime
+
+INPUT_DIR = os.environ["INPUT_DIR"]
+OUTPUT_DIR = os.environ["OUTPUT_DIR"]
+
+raw_path = os.path.join(INPUT_DIR, "raw.csv")
+df = pd.read_csv(raw_path, dtype=str, keep_default_na=False, na_filter=False)
+```
+
+keep_default_na=False and na_filter=False ensures everything read as literal strings (so "NA" stays "NA" string, and empty stays ""). Then we strip and normalize.
+
+raw_rows = len(df)
+
+R1: strip all values; missing set → NaN.
+
+```python
+MISSING = {"", "na", "n/a", "null", "none", "-"}
+def norm(v):
+    if v is None: return np.nan
+    s = str(v).strip()
+    if s.lower() in MISSING: return np.nan
+    return s
+for c in df.columns:
+    df[c] = df[c].map(norm)
+```
+
+R2: dedupe:
+```python
+before = len(df)
+df = df.drop_duplicates(subset="reading_id", keep="first")
+dups = before - len(df)
+```
+Note: reading_id missing? Not specified to drop missing reading_id. Dedupe on NaN reading_id: drop_duplicates treats NaN values as equal? In pandas, NaN values in subset are considered duplicates of each other. Hmm — keep_default... drop_duplicates considers NaNs equal. If multiple rows have missing reading_id, they'd be deduped to one. Spec doesn't say to drop missing reading_id, but schema says not nullable. Raw sample shows all have reading_id. I'll not add extra handling; but to be safe regarding dedupe semantics, that's per spec — rows sharing same reading_id are duplicates. Missing isn't a shared reading_id strictly. But unlikely to occur. Keep simple.
+
+R3 dates:
+
+```python
+DATE_FORMATS = ["%Y-%m-%d", "%m/%d/%Y", "%d-%b-%Y", "%Y/%m/%d", "%B %d, %Y"]
+def parse_date(s):
+    if s is None or (isinstance(s, float) and np.isnan(s)): return None
+    for fmt in DATE_FORMATS:
+        try:
+            return datetime.strptime(s, fmt).strftime("%Y-%m-%d")
+        except (ValueError, TypeError):
+            continue
+    return None
+```
+
+Careful: strptime with %B %d, %Y — "January 2, 2024" works. %d accepts unpadded? Let me verify: datetime.strptime("January 2, 2024", "%B %d, %Y") — yes, Python's strptime handles non-padded numbers for %d, %m. Good.
+
+Also note: %Y-%m-%d could parse weird things like "2024-1-1"? strptime accepts non-padded month/day. That's acceptable — the format is still YYYY-MM-DD pattern family. Fine.
+
+Apply: mask = parsed notna; count drops; df = df[mask]; df["reading_date"] = parsed.
+
+R4: meter_id upper; drop missing:
+```python
+df["meter_id"] = df["meter_id"].str.upper() — but NaN stays NaN with str accessor. Then drop na.
+```
+
+R5 building_type:
+```python
+BT_MAP = {
+ "residential":"Residential","res":"Residential","resi":"Residential",
+ "commercial":"Commercial","comm":"Commercial",
+ "industrial":"Industrial","ind":"Industrial",
+}
+df["building_type"] = df["building_type"].map(lambda s: BT_MAP.get(s.lower()) if isinstance(s,str) else np.nan)
+```
+
+R6 tariff:
+```python
+TARIFF_MAP = {"peak":"peak","off-peak":"off-peak","offpeak":"off-peak","off peak":"off-peak"}
+```
+
+R7 energy:
+```python
+def parse_energy(s):
+    if not isinstance(s, str): return None
+    t = s.replace(",", "").strip()
+    mult = 1.0
+    low = t.lower()
+    if low.endswith("mwh"):
+        t = t[:-3].strip(); mult = 1000.0
+    elif low.endswith("kwh"):
+        t = t[:-3].strip()
+    try:
+        v = float(t) * mult
+    except ValueError:
+        return None
+    return v
+```
+Then filter: not None, 0 <= v <= 100000. Round 2.
+
+Note: negative sign handled by float. "not a number" → ValueError → None → drop.
+
+Also empty after removing unit → float('') ValueError → drop. Good.
+
+R8 temperature:
+```python
+def parse_temp(s):
+    if not isinstance(s, str): return np.nan
+    t = s.strip()
+    low = t.lower()
+    unit_f = False
+    if low.endswith("f"):
+        unit_f = True
+        t = t[:-1]
+    elif low.endswith("c"):
+        t = t[:-1]
+    t = t.strip()
+    if t.endswith("°"):
+        t = t[:-1].strip()
+    try:
+        v = float(t)
+    except ValueError:
+        return np.nan
+    if unit_f:
+        v = (v - 32) * 5 / 9
+    if v < -40 or v > 50:
+        return np.nan
+    return round(v, 1)
+```
+
+Wait: "33.62 °F" → ends 'f' → t="33.62 °" → strip → ends "°" → remove → "33.62". Good. "1.1C" → t="1.1". Good. "29.48F" → F → 29.48 F → (29.48-32)*5/9 = -1.4. Good.
+
+Careful: a value like "°F" only → t becomes "" → float fails → NaN. Fine.
+
+Round half-to-even with Python round — acceptable.
+
+Count temp set missing: rows where original temperature not missing but parse resulted NaN? Or count all NaN temperature_c in final? Spec: "set temperature_c to missing (empty cell) and KEEP the row" — count of temperatures set to missing. I'll count rows where cleaned temperature_c is NaN (including originally-missing). Maybe track both: temp_invalid_set_missing (originally present but invalid/out of range) and temp_missing_total. Simpler: count final NaN as temperature_missing.
+
+R9: select columns, sort by reading_id, write.
+
+```python
+out = df[["reading_id","reading_date","meter_id","building_type","tariff","energy_kwh","temperature_c"]].sort_values("reading_id")
+out.to_csv(os.path.join(OUTPUT_DIR,"cleaned.csv"), index=False, na_rep="")
+```
+
+energy_kwh round(2): df["energy_kwh"] = values rounded.
+
+Summary JSON:
+```python
+summary = {
+ "raw_rows": raw_rows,
+ "cleaned_rows": len(out),
+ "duplicates_removed": dups,
+ "dropped_reading_date": ...,
+ "dropped_meter_id": ...,
+ "dropped_building_type": ...,
+ "dropped_tariff": ...,
+ "dropped_energy": ...,
+ "temperature_set_missing": ...,
+}
+with open(..., "w") as f: json.dump(summary, f, indent=2)
+```
+
+Ensure OUTPUT_DIR exists: os.makedirs(OUTPUT_DIR, exist_ok=True).
+
+Sort stability: sort_values on string column fine.
+
+Also reading_id should be stripped (done in R1). Keep as string.
+
+One nuance: when writing floats, energy_kwh values like 36.4 might print "36.4". Fine.
+
+temperature_c with values like 1.9 → "1.9". NaN → "" via na_rep="" (default na_rep is "" actually, but explicit is fine).
+
+Let me also make sure dedupe BEFORE other filters — yes, applied right after normalization.
+
+Potential issue: pd.read_csv with dtype=str and na_filter=False — quoted fields like "January 2, 2024" handled by CSV parser. Good.
+
+Now compose the JSON response with python_code string, output_filename "cleaned.csv", cleaning_logic brief explanation.
+
+Write the script cleanly.
+
+```python
+import os
+import json
+import numpy as np
+import pandas as pd
+from datetime import datetime
+
+INPUT_DIR = os.environ["INPUT_DIR"]
+OUTPUT_DIR = os.environ["OUTPUT_DIR"]
+os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+MISSING_TOKENS = {"", "na", "n/a", "null", "none", "-"}
+
+DATE_FORMATS = ["%Y-%m-%d", "%m/%d/%Y", "%d-%b-%Y", "%Y/%m/%d", "%B %d, %Y"]
+
+BUILDING_MAP = {...}
+TARIFF_MAP = {...}
+
+def normalize(v):
+    if v is None:
+        return np.nan
+    s = str(v).strip()
+    return np.nan if s.lower() in MISSING_TOKENS else s
+
+def parse_date(s):
+    if not isinstance(s, str):
+        return np.nan
+    for fmt in DATE_FORMATS:
+        try:
+            return datetime.strptime(s, fmt).strftime("%Y-%m-%d")
+        except ValueError:
+            pass
+    return np.nan
+```
+
+Note: isinstance(np.nan, str) is False → returns NaN. Good.
+
+parse_energy returns float or None; use np.nan for invalid and distinguish? For drop counting just mask.
+
+```python
+def parse_energy(s):
+    if not isinstance(s, str):
+        return np.nan
+    t = s.replace(",", "").strip()
+    low = t.lower()
+    factor = 1.0
+    if low.endswith("mwh"):
+        t = t[:-3].strip()
+        factor = 1000.0
+    elif low.endswith("kwh"):
+        t = t[:-3].strip()
+    try:
+        return float(t) * factor
+    except ValueError:
+        return np.nan
+```
+
+Then:
+```python
+df["energy_kwh"] = df["energy"].map(parse_energy)
+mask = df["energy_kwh"].notna() & (df["energy_kwh"] >= 0) & (df["energy_kwh"] <= 100000)
+```
+
+round: df["energy_kwh"] = df["energy_kwh"].round(2)
+
+parse_temp:
+```python
+def parse_temp(s):
+    if not isinstance(s, str):
+        return np.nan
+    t = s.strip()
+    is_f = False
+    low = t.lower()
+    if low.endswith("f"):
+        is_f = True
+        t = t[:-1]
+    elif low.endswith("c"):
+        t = t[:-1]
+    t = t.strip()
+    if t.endswith("°"):
+        t = t[:-1].strip()
+    try:
+        v = float(t)
+    except ValueError:
+        return np.nan
+    if is_f:
+        v = (v - 32.0) * 5.0 / 9.0
+    if v < -40.0 or v > 50.0:
+        return np.nan
+    return round(v, 1)
+```
+
+Hmm: round(v,1) returns float.
+
+Count temperature missing: temp_missing = int(df["temperature_c"].isna().sum()) after applying.
+
+Pipeline with counts:
+
+```python
+df = pd.read_csv(os.path.join(INPUT_DIR, "raw.csv"), dtype=str, keep_default_na=False, na_filter=False)
+raw_rows = len(df)
+
+for col in df.columns:
+    df[col] = df[col].map(normalize)
+
+before = len(df)
+df = df.drop_duplicates(subset="reading_id", keep="first")
+duplicates_removed = before - len(df)
+
+df["reading_date"] = df["reading_date"].map(parse_date)
+n = df["reading_date"].notna()
+dropped_date = len(df) - n.sum()
+df = df[n]
+
+# meter
+m = df["meter_id"].notna()
+dropped_meter = (~m).sum()
+df = df[m]
+df["meter_id"] = df["meter_id"].str.upper()
+```
+
+Careful with boolean alignment — using masks derived from df before filtering, indices align since same df. After df = df[n], next mask computed on filtered df. Fine.
+
+```python
+df["building_type"] = df["building_type"].map(lambda v: BUILDING_MAP.get(v.lower(), np.nan) if isinstance(v, str) else np.nan)
+mask = df["building_type"].notna()
+dropped_bt = int((~mask).sum()); df = df[mask]
+```
+
+similar tariff.
+
+energy: map parse; mask valid range.
+
+temperature: map parse_temp (no row drop).
+
+Final columns, sort, write.
+
+Summary counts as ints.
+
+Also mention rule order.
+
+Now the JSON output. Ensure python_code is a single string with escaped newlines — in the JSON block I'll write it with actual newlines inside the string? JSON strings cannot contain literal newlines. I need to escape them as \n. Since I'm producing a JSON object in a fenced block, I must output valid JSON — newlines in string must be \n escapes. That's tedious but required. I'll write the code with \n escapes. Let me construct carefully.
+
+Actually, many of these tasks accept the JSON with \n escapes. I'll produce valid JSON with \n and \" escapes. Use double quotes inside code carefully or use single quotes in Python to reduce escaping. I'll use double quotes in Python where needed; JSON requires escaping them. Alternatively write Python mostly with single quotes. But strings like "%Y-%m-%d" can use single quotes. Environment keys os.environ["INPUT_DIR"] can use single quotes. Let me write Python with single quotes throughout to minimize escaping.
+
+Let me write the full script:
+
+```python
+import os
+import json
+from datetime import datetime
+
+import numpy as np
+import pandas as pd
+
+INPUT_DIR = os.environ['INPUT_DIR']
+OUTPUT_DIR = os.environ['OUTPUT_DIR']
+os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+MISSING_TOKENS = {'', 'na', 'n/a', 'null', 'none', '-'}
+DATE_FORMATS = ['%Y-%m-%d', '%m/%d/%Y', '%d-%b-%Y', '%Y/%m/%d', '%B %d, %Y']
+BUILDING_MAP = {
+    'residential': 'Residential', 'res': 'Residential', 'resi': 'Residential',
+    'commercial': 'Commercial', 'comm': 'Commercial',
+    'industrial': 'Industrial', 'ind': 'Industrial',
+}
+TARIFF_MAP = {'peak': 'peak', 'off-peak': 'off-peak', 'offpeak': 'off-peak', 'off peak': 'off-peak'}
+
+
+def normalize(value):
+    if value is None:
+        return np.nan
+    s = str(value).strip()
+    return np.nan if s.lower() in MISSING_TOKENS else s
+
+
+def parse_date(value):
+    if not isinstance(value, str):
+        return np.nan
+    for fmt in DATE_FORMATS:
+        try:
+            return datetime.strptime(value, fmt).strftime('%Y-%m-%d')
+        except ValueError:
+            continue
+    return np.nan
+
+
+def parse_energy(value):
+    if not isinstance(value, str):
+        return np.nan
+    t = value.replace(',', '').strip()
+    low = t.lower()
+    factor = 1.0
+    if low.endswith('mwh'):
+        t = t[:-3].strip()
+        factor = 1000.0
+    elif low.endswith('kwh'):
+        t = t[:-3].strip()
+    try:
+        return float(t) * factor
+    except ValueError:
+        return np.nan
+
+
+def parse_temperature(value):
+    if not isinstance(value, str):
+        return np.nan
+    t = value.strip()
+    low = t.lower()
+    is_fahrenheit = False
+    if low.endswith('f'):
+        is_fahrenheit = True
+        t = t[:-1]
+    elif low.endswith('c'):
+        t = t[:-1]
+    t = t.strip()
+    if t.endswith('\u00b0'):
+        t = t[:-1].strip()
+    try:
+        v = float(t)
+    except ValueError:
+        return np.nan
+    if is_fahrenheit:
+        v = (v - 32.0) * 5.0 / 9.0
+    if v < -40.0 or v > 50.0:
+        return np.nan
+    return round(v, 1)
+```
+
+The degree sign: '\u00b0' — in JSON I can include the actual ° character or \u00b0 escape in Python string. Using '°' directly in Python source is fine (UTF-8 default). In JSON string, I can include ° as a literal character — valid JSON (UTF-8). I'll use '°'.
+
+Main:
+
+```python
+def main():
+    raw_path = os.path.join(INPUT_DIR, 'raw.csv')
+    df = pd.read_csv(raw_path, dtype=str, keep_default_na=False, na_filter=False)
+    raw_rows = int(len(df))
+
+    # R1: strip whitespace and normalise missing tokens
+    for col in df.columns:
+        df[col] = df[col].map(normalize)
+
+    # R2: drop duplicate reading_id, keep first in raw order
+    before = len(df)
+    df = df.drop_duplicates(subset='reading_id', keep='first')
+    duplicates_removed = int(before - len(df))
+
+    # R3: reading_date
+    df['reading_date'] = df['reading_date'].map(parse_date)
+    mask = df['reading_date'].notna()
+    dropped_reading_date = int((~mask).sum())
+    df = df[mask]
+
+    # R4: meter_id
+    mask = df['meter_id'].notna()
+    dropped_meter_id = int((~mask).sum())
+    df = df[mask].copy()
+    df['meter_id'] = df['meter_id'].str.upper()
+
+    # R5: building_type
+    df['building_type'] = df['building_type'].map(
+        lambda v: BUILDING_MAP.get(v.lower(), np.nan) if isinstance(v, str) else np.nan)
+    mask = df['building_type'].notna()
+    dropped_building_type = int((~mask).sum())
+    df = df[mask].copy()
+
+    # R6: tariff
+    df['tariff'] = df['tariff'].map(
+        lambda v: TARIFF_MAP.get(v.lower(), np.nan) if isinstance(v, str) else np.nan)
+    mask = df['tariff'].notna()
+    dropped_tariff = int((~mask).sum())
+    df = df[mask].copy()
+
+    # R7: energy -> energy_kwh
+    df['energy_kwh'] = df['energy'].map(parse_energy)
+    mask = (df['energy_kwh'].notna()
+            & (df['energy_kwh'] >= 0.0)
+            & (df['energy_kwh'] <= 100000.0))
+    dropped_energy = int((~mask).sum())
+    df = df[mask].copy()
+    df['energy_kwh'] = df['energy_kwh'].round(2)
+
+    # R8: temperature -> temperature_c (invalid becomes missing, row kept)
+    df['temperature_c'] = df['temperature'].map(parse_temperature)
+    temperature_missing = int(df['temperature_c'].isna().sum())
+
+    # R9: final columns, sort, write
+    out = df[['reading_id', 'reading_date', 'meter_id', 'building_type',
+              'tariff', 'energy_kwh', 'temperature_c']].sort_values('reading_id')
+    cleaned_rows = int(len(out))
+    out_path = os.path.join(OUTPUT_DIR, 'cleaned.csv')
+    out.to_csv(out_path, index=False, na_rep='')
+
+    summary = {
+        'raw_rows': raw_rows,
+        'cleaned_rows': cleaned_rows,
+        'duplicates_removed': duplicates_removed,
+        'dropped_reading_date': dropped_reading_date,
+        'dropped_meter_id': dropped_meter_id,
+        'dropped_building_type': dropped_building_type,
+        'dropped_tariff': dropped_tariff,
+        'dropped_energy': dropped_energy,
+        'temperature_c_missing': temperature_missing,
+    }
+    summary_path = os.path.join(OUTPUT_DIR, 'cleaning_summary.json')
+    with open(summary_path, 'w') as fh:
+        json.dump(summary, fh, indent=2)
+
+
+if __name__ == '__main__':
+    main()
+```
+
+One subtlety: tarif map — normalize already stripped, so "Off peak" → "Off peak" lower "off peak" → mapped. Good.
+
+Another: energy negative check: ">= 0" keeps 0. Spec: drop < 0. Good.
+
+Energy > 100000 dropped. 999.0 temperature → out of range → missing, keep row. Good.
+
+Potential edge: energy string like "1,234.5 kWh" → replace commas → "1234.5 kWh" → parse. Good.
+
+Edge: parse_date with value " 2024-01-01 " already stripped in R1.
+
+Edge: reading_id dedupe before filters — yes.
+
+Sort: sort_values('reading_id') lexicographic ascending. Default kind quicksort; stable not needed since unique ids.
+
+na_rep='' writes empty for NaN temperature. Default is '' anyway.
+
+Float formatting: to_csv writes e.g. 36.37; round(2) ensures no long decimals; but float repr might give e.g. 469.1. Fine.
+
+One thing: energy_kwh round then to_csv — pandas uses str(float) which can produce e.g. 0.1 fine. round(2730.20,2)=2730.2 → "2730.2". OK.
+
+temperature_c round(1) — e.g., -1.4. NaN empty.
+
+Also should ensure no SettingWithCopyWarning issues — I use .copy().
+
+Reading CSV: if raw.csv has columns reading_id, reading_date, meter_id, building_type, tariff, energy, temperature — all read.
+
+Now counts sum check: cleaned = raw - dups - dropped_date - dropped_meter - dropped_bt - dropped_tariff - dropped_energy. Good for summary consistency.
+
+Now produce JSON. Escape newlines as \n, double quotes — I'm using single quotes in Python, so minimal double quotes. There are none I think. The '°' char is fine as UTF-8 in JSON.
+
+cleaning_logic: brief explanation.
+
+Let me now write out the JSON with \n escapes. I must be careful to make it valid JSON. I'll assemble the python_code string with \n between lines. Indentation spaces included.
+
+Also note json.dump summary — write with indent=2.
+
+Double-check: "must not print large amounts of data" — we print nothing. Good.
+
+Let me write the final answer.

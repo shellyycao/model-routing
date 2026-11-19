@@ -1,0 +1,11 @@
+```json
+{
+  "fixed_code": "def paginate(items, size, cursor=None):\n    if size <= 0:\n        raise ValueError(\"size must be positive\")\n    try:\n        start = 0 if cursor is None else int(cursor)\n    except ValueError:\n        raise ValueError(\"invalid cursor\")\n    if start < 0:\n        raise ValueError(\"invalid cursor\")\n    end = start + size\n    page = items[start:end]\n    next_cursor = None if end >= len(items) else str(end)\n    return page, next_cursor",
+  "bug_locations": [
+    "size validation",
+    "cursor validation",
+    "next_cursor calculation"
+  ],
+  "explanation": "The original code lacked validation for nonpositive sizes and invalid cursors (non-integer strings or negative indices). It also incorrectly returned a next_cursor even at the end of the list. The fixes add proper validation and ensure next_cursor is null when pagination is complete."
+}
+```

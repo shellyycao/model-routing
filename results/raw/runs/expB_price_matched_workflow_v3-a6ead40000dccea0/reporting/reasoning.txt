@@ -1,0 +1,140 @@
+Let me work through this carefully.
+
+I need to produce a report JSON with key_findings for q1-q7, each with reported_values including every metric_key of that question with verified values.
+
+Verified findings:
+- ticket_count: 347.0
+- mean_resolution_minutes: 75.19308357348703
+- total_labor_cost: 27422.9
+- labor_cost_alpha: 7787.81
+- labor_cost_beta: 10247.36
+- labor_cost_gamma: 9387.73
+- resolution_email: 73.01724137931035
+- resolution_chat: 83.03921568627452
+- resolution_phone: 69.25352112676056
+- reopen_rate_email_pct: 17.24137931034483
+- reopen_rate_chat_pct: 7.8431372549019605
+- email_vs_chat_reopen_change_pct: 119.82758620689657
+- high_cost_low_sat_count: 12.0
+- high_cost_low_sat_reopen_pct: 8.333333333333332
+- resolution_median: 65.0
+- resolution_std: 51.92574910613114
+- satisfaction_mean: 4.152439024390244
+- satisfaction_missing_count: 19.0
+- unique_agent_count: 18.0
+- top_agent_ticket_count: 26.0
+- top_agent_ticket_share_pct: 7.492795389048991
+
+Requirements:
+- q2 ranking required: labor cost Alpha 7787.81, Beta 10247.36, Gamma 9387.73. High to low: Beta (10247.36), Gamma (9387.73), Alpha (7787.81). Labels: "Beta", "Gamma", "Alpha".
+- q3 ranking required: resolution_chat 83.04, resolution_email 73.02, resolution_phone 69.25. High to low: chat, email, phone. Labels: "chat", "email", "phone".
+- q4 direction required: email_vs_chat_reopen_change_pct = +119.83 → increase.
+
+Derived values: any numbers I compute in text must be declared. I should minimize derived numbers to keep it simple, but a few useful ones:
+- q2: maybe difference between Beta and Alpha: 10247.36 - 7787.81 = 2459.55. Could include as derived difference. Or share: Beta share of total = 10247.36/27422.9*100 = 37.37%. Let me compute: 10247.36/27422.9 = 0.37368... *100 = 37.368%. Hmm, labor costs across teams sum: 7787.81+10247.36+9387.73 = 27422.9. Yes, sums exactly to total. So shares are clean. But I could keep it simpler and just state values without derived numbers. The rules say each key_findings statement MUST state at least one verified numeric value. Derived values only needed if I compute numbers.
+
+Let me decide what derived values to include:
+
+q1: statement with 347 tickets, mean 75.2 min, total cost $27,422.90. No derived needed.
+
+q2: ranking Beta > Gamma > Alpha. Could add difference Beta-Alpha = 2459.55 as derived difference. Let me compute precisely: 10247.36 - 7787.81 = 2459.55. Declare derived kind difference operands [labor_cost_beta, labor_cost_alpha], value 2459.55.
+
+q3: ranking chat > email > phone. Could add difference chat - phone = 83.03921568627452 - 69.25352112676056 = 13.78569455951396 ≈ 13.79. Declare derived difference operands [resolution_chat, resolution_phone], value ~13.79. Or maybe minutes difference chat vs email: 83.04-73.02 = 10.02. I'll include one: chat slowest, ~13.8 min above phone. Declare.
+
+q4: direction increase. Statement: email reopen rate 17.24% vs chat 7.84%; relative change +119.83% (increase). The email_vs_chat_reopen_change_pct is a verified metric itself, so no derived needed. Also absolute difference 17.24 - 7.84 = 9.40 pct points — if I state it, declare difference [reopen_rate_email_pct, reopen_rate_chat_pct] = 9.398... ≈ 9.4. Compute precisely: 17.24137931034483 - 7.8431372549019605 = 9.39824205544287 ≈ 9.40. I could include.
+
+q5: 12 tickets, reopen 8.33%. Compare to overall? Overall reopen rate isn't a metric. Skip derived. Maybe note share of total tickets: 12/347*100 = 3.457% ≈ 3.46%. Could declare share [high_cost_low_sat_count, ticket_count] = 3.46. Compute: 12/347 = 0.034582... *100 = 3.4582%. ≈3.46. I'll include.
+
+q6: median 65, std 51.93, satisfaction mean 4.15, missing 19. Maybe missing share: 19/347*100 = 5.4755% ≈ 5.48. Declare share [satisfaction_missing_count, ticket_count]. Compute: 19/347 = 0.054755... *100 = 5.4755%. ≈5.48.
+
+q7: 18 agents, top agent 26 tickets, 7.49% share. No derived needed (share is verified metric). 
+
+Direction field: only q4 needs direction "increase"; others null or "not_applicable". The schema allows null or enum. I'll set null for others (or "not_applicable"). I'll use null for non-direction findings; q4 = "increase".
+
+Ranking: q2: ["Beta", "Gamma", "Alpha"]; q3: ["chat", "email", "phone"]; others null.
+
+reported_values: include every metric_key of the question with verified values. Should I copy full precision or rounded? "include EVERY metric_key of that question with its verified value (copy it)". Copy as-is full precision to be safe. The statement text can use rounded values. But rounding in text while reported_values full precision is fine: "Rounding to a sensible precision is fine". Derived values: "value: The number as stated in the report" — so derived value should match the rounded number stated in text. E.g., if text says "$2,459.55", value 2459.55.
+
+Word count under 650 for title, summary, statements, limitations, conclusion. Keep concise.
+
+Let me draft:
+
+Title: "Support Operations Report: Cost, Speed, Reopening, Satisfaction & Agent Concentration"
+
+Executive summary (~80 words):
+"Analysis of 347 cleaned support tickets shows total labor cost of $27,422.90 and a mean resolution time of 75.2 minutes (median 65.0). Team Beta carries the highest labor cost ($10,247.36), chat is the slowest channel (83.0 minutes mean), and email reopens 119.8% more often than chat (17.24% vs 7.84%). Satisfaction averages 4.15/5 with 19 missing scores. Workload is well distributed across 18 agents; the top agent handles 7.49% of tickets. Twelve high-cost, low-satisfaction tickets (3.46% of volume) warrant targeted review."
+
+Wait — 12/347 share 3.46% is derived; declared in q5 derived_values. Mentioning in summary too — the derived_values declaration is per-finding in q5. That's fine; the rule says derived_values must declare every number computed from findings. Declaring once in q5 where it appears. But it also appears in summary. Hmm, safest: avoid derived numbers in summary, or declare them in the finding where they appear. The derived_values array is per KeyFinding. Summary-level derived numbers can't be declared. To be safe, avoid derived numbers in executive summary. So don't say 3.46% in summary, or say "12 high-cost, low-satisfaction tickets" without share. Actually I could keep share only in q5 statement with derived declared. Let me remove derived numbers from summary.
+
+Revised summary: "...Twelve high-cost, low-satisfaction tickets were flagged for targeted review."
+
+Key findings:
+
+q1: "The dataset contains 347 tickets with a mean resolution time of 75.2 minutes and a total labor cost of $27,422.90."
+evidence_refs: ticket_count, mean_resolution_minutes, total_labor_cost.
+reported_values: all three full precision.
+
+q2: "Team Beta accounts for the highest labor cost at $10,247.36, followed by Gamma ($9,387.73) and Alpha ($7,787.81); Beta exceeds Alpha by $2,459.55."
+derived: difference [labor_cost_beta, labor_cost_alpha] = 2459.55.
+ranking: ["Beta","Gamma","Alpha"].
+
+q3: "Chat is the slowest channel with a mean resolution time of 83.0 minutes, ahead of email (73.0 minutes) and phone (69.3 minutes) — chat runs about 13.8 minutes slower than phone."
+derived: difference [resolution_chat, resolution_phone] = 13.79 (stated as 13.8). Hmm value should match stated. State 13.8, value 13.8. Compute precise 13.7857 → rounds to 13.8. OK.
+
+ranking: ["chat","email","phone"].
+
+q4: "Email tickets reopen at 17.24% versus 7.84% for chat — a relative increase of 119.8% (about 9.4 percentage points higher), making email the reopening hotspot."
+direction: increase.
+derived: difference [reopen_rate_email_pct, reopen_rate_chat_pct] = 9.4 (stated 9.4). Precise 9.398 → 9.4 OK.
+
+q5: "Twelve tickets combine labor cost of at least $100 with a satisfaction score of 2 or lower — 3.46% of all tickets — and their reopen rate is 8.33%, below the email channel average."
+Hmm "below the email channel average" compares to 17.24 — that's a comparison but not a computed number. Fine.
+derived: share [high_cost_low_sat_count, ticket_count] = 3.46. Precise 3.4582 → 3.46.
+
+Actually wait — is 8.33% "below email average" relevant? It's fine as qualitative comparison using verified numbers. Keep.
+
+q6: "Resolution time is right-skewed with a median of 65.0 minutes versus a mean of 75.2 and a standard deviation of 51.9 minutes. Satisfaction averages 4.15 out of 5, with 19 scores missing (5.48% of tickets)."
+Comparing median vs mean — mean is q1 metric; fine to reference. "right-skewed" inference from median<mean — acceptable qualitative. derived: share [satisfaction_missing_count, ticket_count] = 5.48. Precise 5.4755 → 5.48.
+evidence_refs: resolution_median, resolution_std, satisfaction_mean, satisfaction_missing_count (and maybe mean_resolution_minutes if I cite 75.2 — add it to evidence_refs to be safe). I'll include mean_resolution_minutes in evidence refs.
+
+q7: "Work is spread across 18 distinct agents; the busiest agent handled 26 tickets, only 7.49% of total volume, indicating low concentration risk."
+No derived.
+
+Limitations:
+- "Satisfaction scores are missing for 19 tickets (5.48%), so satisfaction-related results cover only respondents and may be biased." — derived number 5.48 appears again; declared in q6. Hmm, derived_values are per finding; limitations can't declare. To be safe avoid derived numbers in limitations: "Satisfaction scores are missing for 19 tickets, so satisfaction results may be subject to non-response bias."
+- "Findings are descriptive; no statistical significance testing was performed, so differences (e.g., channel reopen rates) may reflect chance."
+- "Labor cost and resolution time are analyzed as totals/means only; per-channel or per-team cost drivers were not broken down."
+- "A single export snapshot; no time dimension, so trends over time cannot be assessed."
+- "The high-cost low-satisfaction segment is small (12 tickets), limiting the reliability of its reopen rate."
+
+Conclusion: "Operations are broadly healthy: satisfaction is high (4.15/5) and workload is evenly distributed. Priorities are (1) investigating email's elevated reopen rate (17.24%), (2) reducing chat resolution times (83.0 minutes mean), and (3) reviewing the 12 high-cost, low-satisfaction tickets. Addressing email reopening offers the largest measurable efficiency gain."
+
+Word count check: title ~10, summary ~75, statements ~180, limitations ~90, conclusion ~55 → ~410. Good.
+
+reported_values copy full precision values as given (e.g., 75.19308357348703). But statements round. The rule: "reported_values: metric_key -> number as stated in the report. Required for EVERY metric_key of the finding." and earlier: "include EVERY metric_key of that question with its verified value (copy it)." Copy full precision to be safe.
+
+q4 direction_metric_key: email_vs_chat_reopen_change_pct is positive → increase. Yes.
+
+derived_values values must match stated numbers:
+- q2: 2459.55 stated "$2,459.55" → value 2459.55. Exact: 10247.36-7787.81 = 2459.55 exactly. Good.
+- q3: stated 13.8 → value 13.8.
+- q4: stated 9.4 → value 9.4.
+- q5: stated 3.46 → value 3.46.
+- q6: stated 5.48 → value 5.48.
+
+Check q5 share precise: 12/347*100 = 3.45821... → 3.46. Good.
+q6: 19/347*100 = 5.47550... → 5.48. Good.
+
+For q6 statement I mention "median of 65.0 minutes versus a mean of 75.2" — evidence_refs should include mean_resolution_minutes. And reported_values only needs the question's own metric keys; mean_resolution_minutes is q1's key, not required in q6 reported_values. Including it in reported_values could be considered fine but spec says include every metric_key of that question; extra keys probably okay but I'll keep only q6 keys and add mean_resolution_minutes to evidence_refs.
+
+Also ensure no other undeclared computed numbers: "17.24% vs 7.84%" are verified. "119.8%" verified (119.82758 → 119.8). "83.0", "73.0", "69.3" verified rounded. "75.2" verified rounded. "65.0" verified. "51.9" verified. "4.15" verified. "7.49%" verified. "$27,422.90" verified. "$10,247.36" etc verified. 347 verified. 18 verified. 26 verified. 12 verified. 8.33% verified. 19 verified. Good.
+
+Executive summary uses only verified values: 347, $27,422.90, 75.2, 65.0, $10,247.36, 83.0, 119.8%, 17.24%, 7.84%, 4.15, 19, 18, 7.49%, 12. All verified. Good.
+
+JSON structure: single fenced block, nothing outside.
+
+Direction for others: null. Ranking null for others.
+
+Let me finalize word count. Fine.
+
+Write the JSON.

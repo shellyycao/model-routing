@@ -1,0 +1,188 @@
+Let me carefully work through this task.
+
+I need to write a structured report as JSON conforming to the schema. Let me go through each question.
+
+Verified findings:
+- customer_count: 749.0
+- churn_rate_pct: 37.6502002670227
+- avg_monthly_fee: 42.106154873164215
+- churn_rate_basic_pct: 38.87240356083086
+- churn_rate_standard_pct: 36.67953667953668
+- churn_rate_premium_pct: 36.60130718954248
+- churn_rate_cohort_2021_pct: 38.02083333333333
+- churn_rate_cohort_2022_pct: 36.74418604651163
+- churn_rate_cohort_2023_pct: 37.05357142857143
+- churn_rate_cohort_2024_pct: 39.83050847457627
+- churn_rate_monthly_pct: 48.322147651006716
+- churn_rate_annual_pct: 21.85430463576159
+- churn_monthly_vs_annual_change_pct: 121.11043319097013
+- at_risk_customer_count: 100.0
+- at_risk_churn_rate_pct: 71.0
+- tenure_mean: 20.81041388518024
+- tenure_median: 19.0
+- tenure_std: 13.24739298193327
+- satisfaction_mean: 3.4168975069252077
+- satisfaction_missing_count: 27.0
+- ltv_basic: 463.4573590504451
+- ltv_standard: 868.8301544401545
+- ltv_premium: 1816.7777124183006
+- premium_vs_basic_ltv_change_pct: 292.00536509779596
+
+Requirements per question:
+
+q1: no direction, no ranking. Metrics: customer_count, churn_rate_pct, avg_monthly_fee.
+q2: ranking required: churn rates by plan. Basic 38.87 > Standard 36.68 > Premium 36.60. Ranking: ["Basic", "Standard", "Premium"].
+q3: ranking required (trend): 2024: 39.83 > 2021: 38.02 > 2023: 37.05 > 2022: 36.74. Ranking: ["2024", "2021", "2023", "2022"].
+q4: direction required: churn_monthly_vs_annual_change_pct = 121.11 → increase. Monthly churn 48.32% vs annual 21.85%; monthly is 121.1% higher.
+q5: at-risk: 100 customers, 71.0% churn.
+q6: tenure mean 20.81, median 19, std 13.25; satisfaction mean 3.42, missing 27.
+q7: ranking required: ltv_premium 1816.78 > ltv_standard 868.83 > ltv_basic 463.46. Ranking: ["Premium", "Standard", "Basic"]. Direction required: premium_vs_basic_ltv_change_pct = 292.0 → increase.
+
+Derived values: any number in my text computed from findings must be declared. I should minimize derived values but a few are useful:
+- q2: difference between Basic and Premium churn: 38.8724 - 36.6013 = 2.2711 percentage points. Let me compute: 38.87240356083086 - 36.60130718954248 = 2.27109637128838. Round to 2.27.
+- q4: the verified findings already include the change pct, so I don't need to derive it. But maybe a ratio: 48.32/21.85 = 2.211. Could include as ratio. Not necessary. I could keep it simple and just state verified numbers. But derived_values are only required for numbers I state that are computed. I can avoid derived numbers entirely, or include a couple with declarations.
+
+Let me think about what's genuinely useful:
+- q3: spread between highest (2024, 39.83) and lowest (2022, 36.74): difference = 39.83050847457627 - 36.74418604651163 = 3.08632242806464 ≈ 3.09 points. Could mention "roughly 3.1 percentage points apart". Declare as difference with operands [churn_rate_cohort_2024_pct, churn_rate_cohort_2022_pct].
+- q5: at-risk share of customer base: 100/749*100 = 13.35%. share with operands [at_risk_customer_count, customer_count]. Compute: 100/749 = 0.13351134... *100 = 13.3511... ≈ 13.35%. Also at-risk churn vs overall: 71.0 - 37.6502 = 33.35 points difference. Could declare.
+- q7: premium_vs_basic change is verified (292.0), no derivation needed. Maybe ratio premium/basic = 3.92. 1816.7777124183006/463.4573590504451 = 3.9200... Let me compute: 463.4573590504451 * 3.92 = 1816.752... 463.4573590504451 * 3.92 = 1816.7528. Close. 1816.7777124183006/463.4573590504451 = 3.92005... Let me be precise: 463.4573590504451 * 3.92 = 1816.752847... Difference 1816.777712 - 1816.752847 = 0.024865. 0.024865/463.457 = 0.0000536. So ratio ≈ 3.9201. Round to 3.92. If I state "about 3.9×", declare ratio 3.92.
+
+I should keep derived values minimal to reduce risk. But the rule says any derived number in text must be declared — it's fine to include some.
+
+Let me decide the statements:
+
+q1 statement: "The cleaned dataset contains 749 customers with an overall churn rate of 37.65% and an average monthly fee of $42.11." No derived values. reported_values: all three metrics. direction: not_applicable? Schema allows "not_applicable" or null. For non-direction findings, null is fine. Actually direction has default null; the contract says direction only required when direction_required true. I'll set null for others, "increase" for q4 and q7.
+
+q2 statement: "Churn is highest on Basic (38.87%), slightly above Standard (36.68%) and Premium (36.60%) — a spread of only 2.27 percentage points between Basic and Premium." Derived: difference 2.2711 with operands [churn_rate_basic_pct, churn_rate_premium_pct]. Ranking: ["Basic","Standard","Premium"].
+
+q3 statement: "Churn by signup cohort is fairly flat: 2024 (39.83%) highest, then 2021 (38.02%), 2023 (37.05%), 2022 (36.74%) lowest — a 3.09-point spread, with the newest 2024 cohort churning most." Derived: difference 3.0863 → 3.09 with operands [churn_rate_cohort_2024_pct, churn_rate_cohort_2022_pct]. Ranking: ["2024","2021","2023","2022"].
+
+q4 statement: "Contract type is the strongest differentiator: Monthly contracts churn at 48.32% vs 21.85% for Annual — a 121.11% higher churn rate for Monthly (about 2.21× the Annual rate)." Direction: increase. Derived: ratio 48.322147651006716/21.85430463576159 = 2.2111... compute: 21.85430463576159*2.21 = 48.298... 21.85430463576159*2.211 = 48.31986... let me compute precisely: 21.85430463576159 * 2.211 = 48.31986... 21.85430463576159*2 = 43.70860927152318; *0.2 = 4.370860927152318; *0.011 = 0.240397351. Sum: 43.70860927152318+4.370860927152318+0.240397351 = 48.31986755. Target 48.32214765. Difference 0.0022801. /21.8543 = 0.0001043. So ratio ≈ 2.2111. Round 2.21. Declare ratio 2.21 with operands [churn_rate_monthly_pct, churn_rate_annual_pct]. Also the 121.11% is verified so no need to derive. Also a difference 26.47 points: 48.3221-21.8543 = 26.4678. If I mention "26.47 percentage points", declare difference. I'll mention both maybe. Keep it: "26.47 percentage points higher (121.11% relatively)". Declare difference 26.4678 → 26.47.
+
+Hmm, keep text concise. Statement: "Monthly-contract customers churn at 48.32% versus 21.85% for Annual contracts — 26.47 percentage points higher, a 121.11% relative increase (2.21× the Annual rate)." Derived: difference 26.47, ratio 2.21. Direction: increase.
+
+q5 statement: "The at-risk segment (≥5 support tickets and satisfaction ≤2) contains 100 customers — 13.35% of the base — and churns at 71.0%, nearly double the overall rate (33.35 points above the 37.65% average)." Derived: share 13.35 (100/749*100 = 13.3511 → 13.35), difference 33.35 (71.0-37.6502 = 33.3498 → 33.35). Operands: share [at_risk_customer_count, customer_count]; difference [at_risk_churn_rate_pct, churn_rate_pct].
+
+q6 statement: "Typical tenure is ~20.8 months on average (median 19.0, SD 13.2), showing a wide spread; average satisfaction is 3.42 (on customers with a score), with 27 customers missing a satisfaction score." No derived values. reported_values: tenure_mean, tenure_median, tenure_std, satisfaction_mean, satisfaction_missing_count.
+
+q7 statement: "Lifetime value rises sharply with plan tier: Premium averages $1,816.78 vs $868.83 for Standard and $463.46 for Basic — Premium LTV is 292.01% higher than Basic (about 3.92×)." Direction: increase. Ranking: ["Premium","Standard","Basic"]. Derived: ratio 3.92 [ltv_premium, ltv_basic]. The 292.01% is verified.
+
+Rounding: reported_values should copy the verified values. The rule says "include EVERY metric_key of that question with its verified value (copy it)." So I should copy exact values (full precision) into reported_values. The text statements can round.
+
+Word count: keep everything under 600 words for title, summary, statements, limitations, conclusion. Let me write concise text.
+
+Executive summary: "In a cleaned base of 749 customers, 37.65% have churned. Plan tier barely matters (churn 36.6–38.9% across Basic/Standard/Premium) and cohort churn is flat (36.7–39.8%), but contract type is decisive: Monthly customers churn at 48.32% vs 21.85% for Annual (+121.11%). A defined at-risk segment of 100 customers (≥5 tickets, satisfaction ≤2) churns at 71.0%. Premium plans deliver 292% higher lifetime value than Basic. Priorities: migrate Monthly customers to Annual contracts and intervene early with the high-ticket, low-satisfaction segment."
+
+Limitations:
+- Satisfaction scores missing for 27 customers; satisfaction-based metrics exclude them, which may bias satisfaction and at-risk results.
+- Single snapshot in time; churn drivers are associational, not causal (e.g., contract type may correlate with customer commitment rather than cause retention).
+- Lifetime value is a derived field whose calculation method isn't described here; small plan/cohort differences may not be statistically significant (no significance testing performed).
+- The 2024 cohort has had less time to mature... actually 2024 has highest churn; tenure effects could confound cohort comparisons. Also rounding: no.
+
+Conclusion: "Churn is concentrated among Monthly-contract and high-support, low-satisfaction customers rather than any plan tier. Shifting Monthly customers to Annual contracts and proactively addressing the 100-customer at-risk segment (71.0% churn) offer the largest retention upside, while Premium customers represent the most valuable segment to protect (LTV $1,816.78, ~3.92× Basic)."
+
+Word count check — fine.
+
+Now derived values declared in each finding. Note the executive summary contains derived numbers too (e.g., "+121.11%" is verified; "292%" verified; "~3.92×" derived — appears in q7 derived values; "36.6–38.9%" are rounded verified values, not derived; "71.0%" verified). The rule: "derived_values must declare every number in your text computed from findings" — the KeyFinding's derived_values field covers that finding's statement. Executive summary derived numbers... The schema only has derived_values per finding. To be safe, avoid derived numbers in the summary that aren't declared anywhere. "3.92×" is declared in q7. "2.21×" declared in q4. "13.35%" declared in q5. "33.35 points" declared in q5. "2.27" declared in q2. "3.09" declared in q3. "26.47" declared in q4. I'll make sure any derived number in summary is also declared in the corresponding finding. Keep summary using verified numbers mostly.
+
+Ranges like "36.6–38.9%" are just rounded verified values, fine.
+
+Now construct JSON.
+
+q1:
+- finding_id: "q1"
+- statement: "The cleaned dataset comprises 749 customers; 37.65% have churned and the average monthly fee is $42.11."
+- evidence_refs: ["customer_count","churn_rate_pct","avg_monthly_fee"]
+- reported_values: {customer_count: 749.0, churn_rate_pct: 37.6502002670227, avg_monthly_fee: 42.106154873164215}
+- direction: null, ranking: null, derived_values: []
+
+q2:
+- statement: "Churn varies little by plan: Basic is highest at 38.87%, followed by Standard at 36.68% and Premium at 36.60% — only 2.27 percentage points separate the highest (Basic) and lowest (Premium) tiers."
+- evidence_refs: the three churn keys
+- reported_values: all three
+- ranking: ["Basic","Standard","Premium"]
+- derived_values: [{kind:"difference", operands:["churn_rate_basic_pct","churn_rate_premium_pct"], value: 2.27}]
+
+q3:
+- statement: "Churn by signup cohort is essentially flat: 2024 is highest at 39.83%, then 2021 at 38.02%, 2023 at 37.05% and 2022 lowest at 36.74% — a spread of 3.09 percentage points, with the newest cohort churning most."
+- ranking: ["2024","2021","2023","2022"]
+- derived: difference operands ["churn_rate_cohort_2024_pct","churn_rate_cohort_2022_pct"] value 3.09
+
+q4:
+- statement: "Contract type is the strongest churn differentiator: Monthly contracts churn at 48.32% versus 21.85% for Annual contracts — 26.47 percentage points higher, equivalent to a 121.11% relative increase (2.21× the Annual rate)."
+- direction: "increase"
+- derived: difference ["churn_rate_monthly_pct","churn_rate_annual_pct"] 26.47; ratio same operands 2.21
+
+q5:
+- statement: "The at-risk segment (support_tickets ≥ 5 and satisfaction_score ≤ 2) numbers 100 customers, 13.35% of the base, and churns at 71.0% — 33.35 percentage points above the overall 37.65% churn rate."
+- derived: share ["at_risk_customer_count","customer_count"] 13.35; difference ["at_risk_churn_rate_pct","churn_rate_pct"] 33.35
+
+q6:
+- statement: "Customer tenure averages 20.81 months (median 19.0; sample standard deviation 13.25), indicating a wide spread around a typical ~1.5-year relationship; mean satisfaction is 3.42 on a 1–5 scale among scored customers, with 27 customers missing a satisfaction score."
+
+Hmm "1–5 scale" — do I know the scale? Satisfaction ≤ 2 used for low; mean 3.42. The scale isn't stated in the verified findings. Saying "1–5 scale" would be inventing. Better to avoid: "mean satisfaction is 3.42 among customers with a score". Avoid inventing.
+
+- "~1.5-year relationship": 20.81 months / 12 = 1.73 years. That's a derived number not in declared metrics (operands would need a constant 12, not a metric key). Avoid. Just say "wide spread".
+
+Revised q6 statement: "Customer tenure averages 20.81 months with a median of 19.0 and a sample standard deviation of 13.25, a wide spread relative to the mean; average satisfaction is 3.42 among customers with a recorded score, and 27 customers are missing a satisfaction score."
+- derived_values: []
+
+q7:
+- statement: "Lifetime value rises steeply with plan tier: Premium averages $1,816.78, Standard $868.83 and Basic $463.46; Premium LTV is 292.01% above Basic, roughly 3.92× as high."
+- direction: "increase"
+- ranking: ["Premium","Standard","Basic"]
+- derived: ratio ["ltv_premium","ltv_basic"] 3.92
+
+reported_values for each must include every metric_key with verified value (full precision copy).
+
+Word count: Let me roughly count words in title + summary + statements + limitations + conclusion. Title ~8 words. Summary ~90 words. Statements: q1 ~20, q2 ~35, q3 ~40, q4 ~35, q5 ~35, q6 ~40, q7 ~30 = ~235. Limitations 3 bullets ~70 words. Conclusion ~60. Total ~470. Under 600. Good.
+
+Let me double-check computed values:
+
+q2 difference: 38.87240356083086 - 36.60130718954248 = 2.2710963712883804 → 2.27 ✓
+
+q3 difference: 39.83050847457627 - 36.74418604651163 = 3.086322428064644 → 3.09 ✓
+
+q4 difference: 48.322147651006716 - 21.85430463576159 = 26.467843015245126 → 26.47 ✓
+q4 ratio: 48.322147651006716 / 21.85430463576159 = ?
+21.85430463576159 × 2.2 = 48.07947... compute: 21.85430463576159×2 = 43.70860927152318; ×0.2 = 4.370860927152318; sum 48.0794701986755. Target 48.322147651006716. Difference 0.242677452331216. /21.8543 = 0.011104. So ratio = 2.211104 → 2.21 ✓
+
+q5 share: 100/749×100 = 13.3511348... compute: 749×0.1335 = 99.9915; remainder 0.0085 → 0.0085/749=0.00001135. So 0.13351135 → 13.351135 → 13.35 ✓
+q5 difference: 71.0 - 37.6502002670227 = 33.3497997329773 → 33.35 ✓
+
+q7 ratio: computed 3.9201 → 3.92 ✓
+
+Also summary: "36.6–38.9%" verified-derived rounding, fine. "36.7–39.8%" fine. "292%" — verified value is 292.005..., stating "292%" is rounding a verified value, fine (not a computed number requiring declaration; it's the verified metric rounded). "+121.11%" verified.
+
+In conclusion I mention "$1,816.78, ~3.92× Basic" — 3.92 declared in q7 derived values. OK.
+
+Direction values: q4 "increase", q7 "increase". Others null. Should I set "not_applicable" instead of null? Schema allows both; default null. The structured claim requirements say return direction for direction_required true findings. For others null is fine.
+
+Rankings for q2, q3, q7 as arrays of label strings exactly: "Basic", "Standard", "Premium"; "2021".."2024"; LTV labels "Basic","Premium","Standard".
+
+Check q3 ranking order: values: 2024 39.8305, 2021 38.0208, 2023 37.0536, 2022 36.7442. High→low: 2024, 2021, 2023, 2022 ✓.
+
+q2: Basic 38.8724, Standard 36.6795, Premium 36.6013 → Basic, Standard, Premium ✓.
+
+q7: Premium 1816.78, Standard 868.83, Basic 463.46 → Premium, Standard, Basic ✓.
+
+Executive summary draft:
+"Of 749 cleaned customers, 37.65% have churned, paying an average monthly fee of $42.11. Plan tier barely differentiates churn (36.60–38.87% across Premium, Standard and Basic) and cohort churn is flat (36.74–39.83% for 2022–2024 signups, 2024 highest). Contract type is decisive: Monthly customers churn at 48.32% versus 21.85% for Annual — a 121.11% relative increase. A 100-customer at-risk segment (≥5 support tickets, satisfaction ≤2) churns at 71.0%. Premium plans generate $1,816.78 mean lifetime value, 292.01% above Basic. Retention efforts should target Monthly-contract migration and the at-risk segment."
+
+Word count ~95.
+
+Limitations:
+1. "Satisfaction scores are missing for 27 customers; satisfaction-dependent results (mean satisfaction, at-risk segment) exclude them and could be biased if missingness is non-random."
+2. "This is a single snapshot with descriptive statistics only; no significance testing was performed, so small differences (e.g., ~2–3 points between plans or cohorts) may not be statistically meaningful, and associations (e.g., contract type) are not proof of causation."
+3. "lifetime_value is treated as given; its derivation is not documented in this handoff, and currency/units are assumed."
+
+Conclusion:
+"Churn is driven less by plan or cohort than by contract type and service friction. Moving Monthly customers (48.32% churn) toward Annual contracts (21.85%) and intervening with the 100-customer at-risk segment (71.0% churn) are the highest-impact retention levers, while Premium customers — worth $1,816.78 on average, 3.92× Basic — merit the strongest protection."
+
+Now build final JSON. Ensure reported_values copy exact verified numbers.
+
+One more check: "avg monthly fee of $42.11" — currency assumption; the findings don't specify currency. Using "$" might be inventing. Limitations note currency assumed. It's common to write $ for fee/LTV. To be safe I could say "42.11 in currency units" but that reads awkward. I'll use "$" and note assumption in limitations. Acceptable.
+
+Title: "Customer Churn Analysis — Verified Findings Report".
+
+Final JSON assembly.

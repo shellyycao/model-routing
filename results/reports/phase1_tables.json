@@ -1,0 +1,1044 @@
+{
+  "experiment": "expA_stage_v3",
+  "n_records": 36,
+  "projects": [
+    "customer_churn",
+    "energy_consumption",
+    "retail_sales",
+    "support_operations"
+  ],
+  "sources": {
+    "results/raw/stage_benchmark/expA_stage_v3.jsonl": "52590257963be4754c2ed9ec259aca9df0c37663056954cfe990130d498c2bd1",
+    "results/raw/invocations.jsonl": "625bd72f828a5699b6c2caff7399105282c61764932520346d6b6d07ca718f13"
+  },
+  "cells": {
+    "analysis|A": {
+      "stage": "analysis",
+      "model": "A",
+      "model_name": "Claude Sonnet 4.6",
+      "n": 4,
+      "projects": [
+        "customer_churn",
+        "energy_consumption",
+        "retail_sales",
+        "support_operations"
+      ],
+      "passed": 4,
+      "pass_rate": 1.0,
+      "pass_rate_wilson95": [
+        0.51,
+        1
+      ],
+      "per_project": {
+        "customer_churn": "passed",
+        "energy_consumption": "passed",
+        "retail_sales": "passed",
+        "support_operations": "passed"
+      },
+      "parse_ok": 4,
+      "structural_ok": 4,
+      "execution_success": 4,
+      "execution_attempted": 4,
+      "execution_statuses": {
+        "success": 4
+      },
+      "quality": {
+        "numerical_accuracy": {
+          "n": 4,
+          "median": 1.0,
+          "mean": 1.0,
+          "min": 1.0,
+          "max": 1.0
+        },
+        "calculation_coverage": {
+          "n": 4,
+          "median": 1.0,
+          "mean": 1.0,
+          "min": 1.0,
+          "max": 1.0
+        },
+        "reproducibility": {
+          "n": 4,
+          "median": 1.0,
+          "mean": 1.0,
+          "min": 1.0,
+          "max": 1.0
+        }
+      },
+      "failure_types": {},
+      "failed_mandatory_checks": {},
+      "failure_examples": [],
+      "generation_s": {
+        "n": 4,
+        "median": 10.122,
+        "mean": 10.532,
+        "min": 9.187,
+        "max": 12.695
+      },
+      "execution_s": {
+        "n": 4,
+        "median": 0.9,
+        "mean": 0.903,
+        "min": 0.716,
+        "max": 1.095
+      },
+      "server_latency_s": {
+        "n": 4,
+        "median": 10.032,
+        "mean": 10.461,
+        "min": 9.144,
+        "max": 12.637
+      },
+      "input_tokens": {
+        "n": 4,
+        "median": 2150.5,
+        "mean": 2149,
+        "min": 1945,
+        "max": 2350
+      },
+      "output_tokens": {
+        "n": 4,
+        "median": 1716.5,
+        "mean": 1801.5,
+        "min": 1555,
+        "max": 2218
+      },
+      "reasoning_chars": null,
+      "truncated_calls": 0,
+      "near_cap_calls": 0,
+      "retries": 0,
+      "cost_status": [
+        "unavailable"
+      ]
+    },
+    "analysis|B": {
+      "stage": "analysis",
+      "model": "B",
+      "model_name": "Amazon Nova Pro",
+      "n": 4,
+      "projects": [
+        "customer_churn",
+        "energy_consumption",
+        "retail_sales",
+        "support_operations"
+      ],
+      "passed": 0,
+      "pass_rate": 0.0,
+      "pass_rate_wilson95": [
+        0,
+        0.49
+      ],
+      "per_project": {
+        "customer_churn": "failed",
+        "energy_consumption": "failed",
+        "retail_sales": "failed",
+        "support_operations": "failed"
+      },
+      "parse_ok": 4,
+      "structural_ok": 1,
+      "execution_success": 1,
+      "execution_attempted": 4,
+      "execution_statuses": {
+        "runtime_error": 3,
+        "success": 1
+      },
+      "quality": {
+        "numerical_accuracy": {
+          "n": 4,
+          "median": 0.0,
+          "mean": 0.208,
+          "min": 0.0,
+          "max": 0.833
+        },
+        "calculation_coverage": {
+          "n": 4,
+          "median": 0.0,
+          "mean": 0.25,
+          "min": 0.0,
+          "max": 1.0
+        },
+        "reproducibility": {
+          "n": 1,
+          "median": 1.0,
+          "mean": 1.0,
+          "min": 1.0,
+          "max": 1.0
+        }
+      },
+      "failure_types": {
+        "execution_error": 3,
+        "validation_failed": 1
+      },
+      "failed_mandatory_checks": {
+        "findings_exists": 2,
+        "findings_parses": 3,
+        "required_keys_present": 3,
+        "values_numeric": 3,
+        "values_within_tolerance": 4
+      },
+      "failure_examples": [
+        {
+          "project": "customer_churn",
+          "type": "execution_error",
+          "detail": "execution runtime_error (exit 1): Traceback (most recent call last):\n  File \"/sandbox/code/main.py\", line 16, in <module>\n    churn_rate_cohort_2021_pct = df[df['signup_date'].dt.year == 2021]['churned'].mean() * 100\n                                    ^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/pyt",
+          "run_dir": "results/raw/runs/expA_stage_v3-d2a04da34a3f274f/analysis"
+        },
+        {
+          "project": "energy_consumption",
+          "type": "execution_error",
+          "detail": "execution runtime_error (exit 1): Traceback (most recent call last):\n  File \"/sandbox/code/main.py\", line 18, in <module>\n    kwh_q1 = df[df['reading_date'].dt.quarter == 1]['energy_kwh'].sum()\n                ^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/generic.",
+          "run_dir": "results/raw/runs/expA_stage_v3-639ab7f22b33f02d/analysis"
+        },
+        {
+          "project": "retail_sales",
+          "type": "validation_failed",
+          "detail": "values_within_tolerance: revenue_2024_q1=0.0 (expected 36108.32); revenue_2024_q2=0.0 (expected 56616.79); revenue_2024_q3=0.0 (expected 71674.98); revenue_2024_q4=0.0 (expected 68948.7)",
+          "run_dir": "results/raw/runs/expA_stage_v3-4f9c1b5a5a5a3d13/analysis"
+        },
+        {
+          "project": "support_operations",
+          "type": "execution_error",
+          "detail": "execution runtime_error (exit 1): Traceback (most recent call last):\n  File \"/sandbox/code/main.py\", line 67, in <module>\n    pd.json.dump(findings, f)\n    ^^^^^^^\nAttributeError: module 'pandas' has no attribute 'json'\n",
+          "run_dir": "results/raw/runs/expA_stage_v3-095dae628c2ec1ba/analysis"
+        }
+      ],
+      "generation_s": {
+        "n": 4,
+        "median": 6.2,
+        "mean": 6.184,
+        "min": 5.395,
+        "max": 6.941
+      },
+      "execution_s": {
+        "n": 4,
+        "median": 0.825,
+        "mean": 0.802,
+        "min": 0.688,
+        "max": 0.871
+      },
+      "server_latency_s": {
+        "n": 4,
+        "median": 6.117,
+        "mean": 6.094,
+        "min": 5.244,
+        "max": 6.898
+      },
+      "input_tokens": {
+        "n": 4,
+        "median": 2275.0,
+        "mean": 2227.75,
+        "min": 1983,
+        "max": 2378
+      },
+      "output_tokens": {
+        "n": 4,
+        "median": 1501.5,
+        "mean": 1461.75,
+        "min": 1267,
+        "max": 1577
+      },
+      "reasoning_chars": null,
+      "truncated_calls": 0,
+      "near_cap_calls": 0,
+      "retries": 0,
+      "cost_status": [
+        "unavailable"
+      ]
+    },
+    "analysis|C": {
+      "stage": "analysis",
+      "model": "C",
+      "model_name": "OpenAI gpt-oss-120b",
+      "n": 4,
+      "projects": [
+        "customer_churn",
+        "energy_consumption",
+        "retail_sales",
+        "support_operations"
+      ],
+      "passed": 4,
+      "pass_rate": 1.0,
+      "pass_rate_wilson95": [
+        0.51,
+        1
+      ],
+      "per_project": {
+        "customer_churn": "passed",
+        "energy_consumption": "passed",
+        "retail_sales": "passed",
+        "support_operations": "passed"
+      },
+      "parse_ok": 4,
+      "structural_ok": 4,
+      "execution_success": 4,
+      "execution_attempted": 4,
+      "execution_statuses": {
+        "success": 4
+      },
+      "quality": {
+        "numerical_accuracy": {
+          "n": 4,
+          "median": 1.0,
+          "mean": 1.0,
+          "min": 1.0,
+          "max": 1.0
+        },
+        "calculation_coverage": {
+          "n": 4,
+          "median": 1.0,
+          "mean": 1.0,
+          "min": 1.0,
+          "max": 1.0
+        },
+        "reproducibility": {
+          "n": 4,
+          "median": 1.0,
+          "mean": 1.0,
+          "min": 1.0,
+          "max": 1.0
+        }
+      },
+      "failure_types": {},
+      "failed_mandatory_checks": {},
+      "failure_examples": [],
+      "generation_s": {
+        "n": 4,
+        "median": 7.69,
+        "mean": 7.689,
+        "min": 3.631,
+        "max": 11.745
+      },
+      "execution_s": {
+        "n": 4,
+        "median": 0.911,
+        "mean": 0.883,
+        "min": 0.79,
+        "max": 0.922
+      },
+      "server_latency_s": {
+        "n": 4,
+        "median": 7.643,
+        "mean": 7.62,
+        "min": 3.59,
+        "max": 11.603
+      },
+      "input_tokens": {
+        "n": 4,
+        "median": 1923.0,
+        "mean": 1879.75,
+        "min": 1660,
+        "max": 2013
+      },
+      "output_tokens": {
+        "n": 4,
+        "median": 2171.0,
+        "mean": 2125.25,
+        "min": 1877,
+        "max": 2282
+      },
+      "reasoning_chars": {
+        "n": 4,
+        "median": 2543.5,
+        "mean": 2548.75,
+        "min": 1762,
+        "max": 3346
+      },
+      "truncated_calls": 0,
+      "near_cap_calls": 0,
+      "retries": 0,
+      "cost_status": [
+        "unavailable"
+      ]
+    },
+    "cleaning|A": {
+      "stage": "cleaning",
+      "model": "A",
+      "model_name": "Claude Sonnet 4.6",
+      "n": 4,
+      "projects": [
+        "customer_churn",
+        "energy_consumption",
+        "retail_sales",
+        "support_operations"
+      ],
+      "passed": 3,
+      "pass_rate": 0.75,
+      "pass_rate_wilson95": [
+        0.301,
+        0.954
+      ],
+      "per_project": {
+        "customer_churn": "passed",
+        "energy_consumption": "passed",
+        "retail_sales": "passed",
+        "support_operations": "failed"
+      },
+      "parse_ok": 4,
+      "structural_ok": 4,
+      "execution_success": 4,
+      "execution_attempted": 4,
+      "execution_statuses": {
+        "success": 4
+      },
+      "quality": {
+        "cleaning_correctness": {
+          "n": 4,
+          "median": 1.0,
+          "mean": 0.909,
+          "min": 0.634,
+          "max": 1.0
+        },
+        "data_integrity": {
+          "n": 4,
+          "median": 1.0,
+          "mean": 0.909,
+          "min": 0.634,
+          "max": 1.0
+        },
+        "schema_compliance": {
+          "n": 4,
+          "median": 1.0,
+          "mean": 1.0,
+          "min": 1.0,
+          "max": 1.0
+        }
+      },
+      "failure_types": {
+        "validation_failed": 1
+      },
+      "failed_mandatory_checks": {
+        "row_set_matches_reference": 1
+      },
+      "failure_examples": [
+        {
+          "project": "support_operations",
+          "type": "validation_failed",
+          "detail": "row_set_matches_reference: 127 reference rows missing (e.g. ['T00004', 'T00006', 'T00016', 'T00017', 'T00019']); 0 unexpected rows (e.g. []); output rows=220, reference rows=347",
+          "run_dir": "results/raw/runs/expA_stage_v3-2272e41a39cf35b6/cleaning"
+        }
+      ],
+      "generation_s": {
+        "n": 4,
+        "median": 19.324,
+        "mean": 19.789,
+        "min": 16.222,
+        "max": 24.288
+      },
+      "execution_s": {
+        "n": 4,
+        "median": 1.005,
+        "mean": 1.135,
+        "min": 0.892,
+        "max": 1.636
+      },
+      "server_latency_s": {
+        "n": 4,
+        "median": 19.232,
+        "mean": 19.595,
+        "min": 16.052,
+        "max": 23.866
+      },
+      "input_tokens": {
+        "n": 4,
+        "median": 2045.5,
+        "mean": 2011.5,
+        "min": 1757,
+        "max": 2198
+      },
+      "output_tokens": {
+        "n": 4,
+        "median": 3035.5,
+        "mean": 3114.5,
+        "min": 2738,
+        "max": 3649
+      },
+      "reasoning_chars": null,
+      "truncated_calls": 0,
+      "near_cap_calls": 0,
+      "retries": 0,
+      "cost_status": [
+        "unavailable"
+      ]
+    },
+    "cleaning|B": {
+      "stage": "cleaning",
+      "model": "B",
+      "model_name": "Amazon Nova Pro",
+      "n": 4,
+      "projects": [
+        "customer_churn",
+        "energy_consumption",
+        "retail_sales",
+        "support_operations"
+      ],
+      "passed": 0,
+      "pass_rate": 0.0,
+      "pass_rate_wilson95": [
+        0,
+        0.49
+      ],
+      "per_project": {
+        "customer_churn": "failed",
+        "energy_consumption": "failed",
+        "retail_sales": "failed",
+        "support_operations": "failed"
+      },
+      "parse_ok": 3,
+      "structural_ok": 0,
+      "execution_success": 0,
+      "execution_attempted": 3,
+      "execution_statuses": {
+        "runtime_error": 3
+      },
+      "quality": {
+        "cleaning_correctness": {
+          "n": 3,
+          "median": 0.0,
+          "mean": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "data_integrity": {
+          "n": 3,
+          "median": 0.0,
+          "mean": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "schema_compliance": {
+          "n": 3,
+          "median": 0.0,
+          "mean": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        }
+      },
+      "failure_types": {
+        "parse_error": 1,
+        "execution_error": 3
+      },
+      "failed_mandatory_checks": {
+        "output_exists": 3,
+        "output_parses": 3,
+        "required_columns_present": 3,
+        "schema_constraints": 3,
+        "no_duplicate_keys": 3,
+        "row_set_matches_reference": 3,
+        "values_match_reference": 3
+      },
+      "failure_examples": [
+        {
+          "project": "customer_churn",
+          "type": "parse_error",
+          "detail": "structured output not parseable (invalid_json): Expecting ',' delimiter: line 3 column 3 (char 5324)",
+          "run_dir": "results/raw/runs/expA_stage_v3-d41a06710af4bd28/cleaning"
+        },
+        {
+          "project": "energy_consumption",
+          "type": "execution_error",
+          "detail": "execution runtime_error (exit 1): deprecated. Use DataFrame.map instead.\n  df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)\nTraceback (most recent call last):\n  File \"/sandbox/code/main.py\", line 24, in <module>\n    df['reading_date'] = pd.to_datetime(df['reading_date'], errors='co",
+          "run_dir": "results/raw/runs/expA_stage_v3-2723f96b76b58824/cleaning"
+        },
+        {
+          "project": "retail_sales",
+          "type": "execution_error",
+          "detail": "execution runtime_error (exit 1): cated. Use DataFrame.map instead.\n  df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)\nTraceback (most recent call last):\n  File \"/sandbox/code/main.py\", line 31, in <module>\n    df['order_date'] = df['order_date'].apply(parse_date)\n                 ",
+          "run_dir": "results/raw/runs/expA_stage_v3-b97052417474f51c/cleaning"
+        },
+        {
+          "project": "support_operations",
+          "type": "execution_error",
+          "detail": "execution runtime_error (exit 1): ckages/pandas/core/indexing.py\", line 2035, in _setitem_with_indexer_split_path\n    self._setitem_single_column(loc, value, pi)\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/indexing.py\", line 2175, in _setitem_single_column\n    self.obj._mgr.column_se",
+          "run_dir": "results/raw/runs/expA_stage_v3-473f4822aacb4016/cleaning"
+        }
+      ],
+      "generation_s": {
+        "n": 4,
+        "median": 9.984,
+        "mean": 9.909,
+        "min": 7.911,
+        "max": 11.759
+      },
+      "execution_s": {
+        "n": 3,
+        "median": 0.898,
+        "mean": 1.015,
+        "min": 0.89,
+        "max": 1.258
+      },
+      "server_latency_s": {
+        "n": 4,
+        "median": 9.904,
+        "mean": 9.844,
+        "min": 7.869,
+        "max": 11.699
+      },
+      "input_tokens": {
+        "n": 4,
+        "median": 2126.5,
+        "mean": 2077.25,
+        "min": 1826,
+        "max": 2230
+      },
+      "output_tokens": {
+        "n": 4,
+        "median": 1894.0,
+        "mean": 1901.5,
+        "min": 1614,
+        "max": 2204
+      },
+      "reasoning_chars": null,
+      "truncated_calls": 0,
+      "near_cap_calls": 0,
+      "retries": 0,
+      "cost_status": [
+        "unavailable"
+      ]
+    },
+    "cleaning|C": {
+      "stage": "cleaning",
+      "model": "C",
+      "model_name": "OpenAI gpt-oss-120b",
+      "n": 4,
+      "projects": [
+        "customer_churn",
+        "energy_consumption",
+        "retail_sales",
+        "support_operations"
+      ],
+      "passed": 2,
+      "pass_rate": 0.5,
+      "pass_rate_wilson95": [
+        0.15,
+        0.85
+      ],
+      "per_project": {
+        "customer_churn": "failed",
+        "energy_consumption": "passed",
+        "retail_sales": "failed",
+        "support_operations": "passed"
+      },
+      "parse_ok": 2,
+      "structural_ok": 2,
+      "execution_success": 2,
+      "execution_attempted": 2,
+      "execution_statuses": {
+        "success": 2
+      },
+      "quality": {
+        "cleaning_correctness": {
+          "n": 2,
+          "median": 1.0,
+          "mean": 1.0,
+          "min": 1.0,
+          "max": 1.0
+        },
+        "data_integrity": {
+          "n": 2,
+          "median": 1.0,
+          "mean": 1.0,
+          "min": 1.0,
+          "max": 1.0
+        },
+        "schema_compliance": {
+          "n": 2,
+          "median": 1.0,
+          "mean": 1.0,
+          "min": 1.0,
+          "max": 1.0
+        }
+      },
+      "failure_types": {
+        "truncated": 2
+      },
+      "failed_mandatory_checks": {},
+      "failure_examples": [
+        {
+          "project": "customer_churn",
+          "type": "truncated",
+          "detail": "output hit maxTokens and could not be parsed (invalid_json)",
+          "run_dir": "results/raw/runs/expA_stage_v3-dc9868ae5513db6e/cleaning"
+        },
+        {
+          "project": "retail_sales",
+          "type": "truncated",
+          "detail": "output hit maxTokens and could not be parsed (invalid_json)",
+          "run_dir": "results/raw/runs/expA_stage_v3-bd5b9be35ec2b2fa/cleaning"
+        }
+      ],
+      "generation_s": {
+        "n": 4,
+        "median": 22.844,
+        "mean": 22.047,
+        "min": 16.671,
+        "max": 25.83
+      },
+      "execution_s": {
+        "n": 2,
+        "median": 1.242,
+        "mean": 1.242,
+        "min": 1.237,
+        "max": 1.248
+      },
+      "server_latency_s": {
+        "n": 4,
+        "median": 22.781,
+        "mean": 21.969,
+        "min": 16.544,
+        "max": 25.77
+      },
+      "input_tokens": {
+        "n": 4,
+        "median": 1844.5,
+        "mean": 1817,
+        "min": 1583,
+        "max": 1996
+      },
+      "output_tokens": {
+        "n": 4,
+        "median": 4087.5,
+        "mean": 3836,
+        "min": 3073,
+        "max": 4096
+      },
+      "reasoning_chars": {
+        "n": 4,
+        "median": 5813.0,
+        "mean": 5952.25,
+        "min": 3758,
+        "max": 8425
+      },
+      "truncated_calls": 2,
+      "near_cap_calls": 3,
+      "retries": 0,
+      "cost_status": [
+        "unavailable"
+      ]
+    },
+    "reporting|A": {
+      "stage": "reporting",
+      "model": "A",
+      "model_name": "Claude Sonnet 4.6",
+      "n": 4,
+      "projects": [
+        "customer_churn",
+        "energy_consumption",
+        "retail_sales",
+        "support_operations"
+      ],
+      "passed": 3,
+      "pass_rate": 0.75,
+      "pass_rate_wilson95": [
+        0.301,
+        0.954
+      ],
+      "per_project": {
+        "customer_churn": "failed",
+        "energy_consumption": "passed",
+        "retail_sales": "passed",
+        "support_operations": "passed"
+      },
+      "parse_ok": 4,
+      "structural_ok": 4,
+      "execution_success": 0,
+      "execution_attempted": 0,
+      "execution_statuses": {},
+      "quality": {
+        "finding_coverage": {
+          "n": 4,
+          "median": 1.0,
+          "mean": 1.0,
+          "min": 1.0,
+          "max": 1.0
+        },
+        "numerical_consistency": {
+          "n": 4,
+          "median": 1.0,
+          "mean": 1.0,
+          "min": 1.0,
+          "max": 1.0
+        },
+        "unsupported_claim_count": {
+          "n": 4,
+          "median": 1.0,
+          "mean": 0.75,
+          "min": 0.0,
+          "max": 1.0
+        }
+      },
+      "failure_types": {
+        "validation_failed": 1
+      },
+      "failed_mandatory_checks": {
+        "prose_claims_consistent": 1
+      },
+      "failure_examples": [
+        {
+          "project": "customer_churn",
+          "type": "validation_failed",
+          "detail": "prose_claims_consistent: q7: number '292.0%' after 'ltv_premium' matches 'premium_vs_basic_ltv_change_pct'",
+          "run_dir": "results/raw/runs/expA_stage_v3-49add855b7968c6f/reporting"
+        }
+      ],
+      "generation_s": {
+        "n": 4,
+        "median": 14.363,
+        "mean": 14.36,
+        "min": 13.219,
+        "max": 15.495
+      },
+      "execution_s": null,
+      "server_latency_s": {
+        "n": 4,
+        "median": 14.299,
+        "mean": 14.285,
+        "min": 13.167,
+        "max": 15.377
+      },
+      "input_tokens": {
+        "n": 4,
+        "median": 3329.0,
+        "mean": 3307.25,
+        "min": 3052,
+        "max": 3519
+      },
+      "output_tokens": {
+        "n": 4,
+        "median": 1931.0,
+        "mean": 1926.75,
+        "min": 1747,
+        "max": 2098
+      },
+      "reasoning_chars": null,
+      "truncated_calls": 0,
+      "near_cap_calls": 0,
+      "retries": 0,
+      "cost_status": [
+        "unavailable"
+      ]
+    },
+    "reporting|B": {
+      "stage": "reporting",
+      "model": "B",
+      "model_name": "Amazon Nova Pro",
+      "n": 4,
+      "projects": [
+        "customer_churn",
+        "energy_consumption",
+        "retail_sales",
+        "support_operations"
+      ],
+      "passed": 2,
+      "pass_rate": 0.5,
+      "pass_rate_wilson95": [
+        0.15,
+        0.85
+      ],
+      "per_project": {
+        "customer_churn": "passed",
+        "energy_consumption": "failed",
+        "retail_sales": "failed",
+        "support_operations": "passed"
+      },
+      "parse_ok": 4,
+      "structural_ok": 4,
+      "execution_success": 0,
+      "execution_attempted": 0,
+      "execution_statuses": {},
+      "quality": {
+        "finding_coverage": {
+          "n": 4,
+          "median": 1.0,
+          "mean": 1.0,
+          "min": 1.0,
+          "max": 1.0
+        },
+        "numerical_consistency": {
+          "n": 4,
+          "median": 1.0,
+          "mean": 1.0,
+          "min": 1.0,
+          "max": 1.0
+        },
+        "unsupported_claim_count": {
+          "n": 4,
+          "median": 0.0,
+          "mean": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        }
+      },
+      "failure_types": {
+        "validation_failed": 2
+      },
+      "failed_mandatory_checks": {
+        "rankings_correct": 2
+      },
+      "failure_examples": [
+        {
+          "project": "energy_consumption",
+          "type": "validation_failed",
+          "detail": "rankings_correct: q7: stated order ['peak', 'off-peak'] is not descending",
+          "run_dir": "results/raw/runs/expA_stage_v3-a3523b97ad821a25/reporting"
+        },
+        {
+          "project": "retail_sales",
+          "type": "validation_failed",
+          "detail": "rankings_correct: q2: stated order ['East', 'North', 'South', 'West'] is not descending",
+          "run_dir": "results/raw/runs/expA_stage_v3-9a13a604edb72544/reporting"
+        }
+      ],
+      "generation_s": {
+        "n": 4,
+        "median": 8.053,
+        "mean": 8.008,
+        "min": 6.918,
+        "max": 9.007
+      },
+      "execution_s": null,
+      "server_latency_s": {
+        "n": 4,
+        "median": 7.951,
+        "mean": 7.921,
+        "min": 6.823,
+        "max": 8.958
+      },
+      "input_tokens": {
+        "n": 4,
+        "median": 3179.5,
+        "mean": 3132.5,
+        "min": 2844,
+        "max": 3327
+      },
+      "output_tokens": {
+        "n": 4,
+        "median": 1627.0,
+        "mean": 1587.5,
+        "min": 1334,
+        "max": 1762
+      },
+      "reasoning_chars": null,
+      "truncated_calls": 0,
+      "near_cap_calls": 0,
+      "retries": 0,
+      "cost_status": [
+        "unavailable"
+      ]
+    },
+    "reporting|C": {
+      "stage": "reporting",
+      "model": "C",
+      "model_name": "OpenAI gpt-oss-120b",
+      "n": 4,
+      "projects": [
+        "customer_churn",
+        "energy_consumption",
+        "retail_sales",
+        "support_operations"
+      ],
+      "passed": 2,
+      "pass_rate": 0.5,
+      "pass_rate_wilson95": [
+        0.15,
+        0.85
+      ],
+      "per_project": {
+        "customer_churn": "failed",
+        "energy_consumption": "passed",
+        "retail_sales": "failed",
+        "support_operations": "passed"
+      },
+      "parse_ok": 4,
+      "structural_ok": 4,
+      "execution_success": 0,
+      "execution_attempted": 0,
+      "execution_statuses": {},
+      "quality": {
+        "finding_coverage": {
+          "n": 4,
+          "median": 1.0,
+          "mean": 1.0,
+          "min": 1.0,
+          "max": 1.0
+        },
+        "numerical_consistency": {
+          "n": 4,
+          "median": 1.0,
+          "mean": 1.0,
+          "min": 1.0,
+          "max": 1.0
+        },
+        "unsupported_claim_count": {
+          "n": 4,
+          "median": 1.0,
+          "mean": 1.0,
+          "min": 0.0,
+          "max": 2.0
+        }
+      },
+      "failure_types": {
+        "validation_failed": 2
+      },
+      "failed_mandatory_checks": {
+        "prose_claims_consistent": 1,
+        "finding_statements_substantive": 1
+      },
+      "failure_examples": [
+        {
+          "project": "customer_churn",
+          "type": "validation_failed",
+          "detail": "prose_claims_consistent: q7: number '292.0%' after 'ltv_premium' matches 'premium_vs_basic_ltv_change_pct'",
+          "run_dir": "results/raw/runs/expA_stage_v3-2dee6c3e04f04ff3/reporting"
+        },
+        {
+          "project": "retail_sales",
+          "type": "validation_failed",
+          "detail": "finding_statements_substantive: q2: statement contains no supported numeric finding; q3: statement contains no supported numeric finding",
+          "run_dir": "results/raw/runs/expA_stage_v3-d18710df22b857b4/reporting"
+        }
+      ],
+      "generation_s": {
+        "n": 4,
+        "median": 7.596,
+        "mean": 8.077,
+        "min": 4.86,
+        "max": 12.255
+      },
+      "execution_s": null,
+      "server_latency_s": {
+        "n": 4,
+        "median": 7.534,
+        "mean": 7.978,
+        "min": 4.709,
+        "max": 12.136
+      },
+      "input_tokens": {
+        "n": 4,
+        "median": 2849.0,
+        "mean": 2778.75,
+        "min": 2520,
+        "max": 2897
+      },
+      "output_tokens": {
+        "n": 4,
+        "median": 2902.5,
+        "mean": 2882.75,
+        "min": 2583,
+        "max": 3143
+      },
+      "reasoning_chars": {
+        "n": 4,
+        "median": 5582.0,
+        "mean": 5346.75,
+        "min": 4056,
+        "max": 6167
+      },
+      "truncated_calls": 0,
+      "near_cap_calls": 0,
+      "retries": 0,
+      "cost_status": [
+        "unavailable"
+      ]
+    }
+  }
+}

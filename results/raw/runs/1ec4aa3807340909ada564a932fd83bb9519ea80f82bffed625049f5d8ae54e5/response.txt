@@ -1,0 +1,10 @@
+```json
+{
+  "fixed_code": "def sessionize(events, gap):\n    # Sort events by user, then timestamp to ensure correct session grouping\n    sorted_events = sorted(events, key=lambda x: (x[0], x[1]))\n    out = {}\n    for user, t in sorted_events:\n        sessions = out.setdefault(user, [])\n        # Start new session if no sessions exist or gap is strictly greater than `gap`\n        if not sessions or t - sessions[-1][-1] > gap:\n            sessions.append([t])\n        else:\n            sessions[-1].append(t)\n    return out",
+  "bug_locations": [
+    "Missing sorting of input events",
+    "Incorrect gap comparison operator (>= instead of >)"
+  ],
+  "explanation": "The original code had two defects: 1) It didn't sort the input events by user and timestamp, which could lead to incorrect session grouping if events were out of order. 2) It used >= for the gap comparison, but the specification requires starting a new session only when the gap is strictly greater than the specified gap. The fixes include sorting the events first and changing the comparison to >."
+}
+```

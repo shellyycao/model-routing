@@ -1,0 +1,52 @@
+# Post-hoc cost-aware Router variant, approved 2026-11-19.
+# Evidence level: POST-HOC / EXPLORATORY. Never present as a prospective Router result.
+# Frozen comparator: configs/routing.yaml (must not be modified).
+
+router_version: "0.1.0-cost-posthoc.1"
+rules_version: "cost-aware-router-posthoc-1.0"
+evidence_level: "post-hoc / exploratory"
+
+objective:
+  # A distinct ID prevents trace/prediction identifier collisions with the frozen Router.
+  objective_id: default_v1_cost_posthoc
+  description: >-
+    Post-hoc variant of default_v1: identical feasibility and quality constraints,
+    with verified repriced cost active before end-to-end time and total tokens.
+  min_feasibility_prob: 0.5
+  quality_constraints:
+    - {stage: analysis, metric: numerical_accuracy, op: ">=", threshold: 0.9}
+    - {stage: reporting, metric: unsupported_claim_count, op: "<=", threshold: 1.0}
+  preference_order: [cost_usd, end_to_end_ms, total_tokens]
+  tie_tolerance: 0.05
+
+pareto:
+  quality_keys: all
+
+estimation:
+  uncertainty: project_range
+  interaction_shrinkage_k: 2.0
+
+# Additive metadata for the CP6 implementation. Existing frozen quantities keep their
+# estimators; these fields define only the new derived cost dimension.
+cost_estimation:
+  price_source: configs/models.yaml
+  formula: separate_input_output_tokens
+  primary_record_scope: all_non_void_executed
+  primary_included_statuses: [passed, failed]
+  excluded_statuses:
+    - infra_error
+    - blocked_by_invalid_artifact
+    - not_run_upstream_failure
+  exclude_cache_hits: true
+  missing_usage: propagate_unavailable
+  pooling: unweighted_training_project_mean
+  uncertainty: training_project_range
+  s1_path_cost: stage_additive
+  s2_path_cost: stage_additive
+  s3_path_cost: stage_additive_no_cost_interaction
+  sensitivity_record_scope: passed_only
+
+outputs:
+  routing_dir: results/routing/v3_cost_posthoc
+  processed_json: results/processed/cost_aware_router_posthoc.json
+  report: results/reports/cost_aware_router_posthoc.md

@@ -1,0 +1,10 @@
+```json
+{
+  "fixed_code": "def dedupe(xs):\n    \"\"\"Return a list with duplicates removed, keeping the first occurrence of each element.\n\n    The function works with any iterable and supports unhashable items because it\n    uses linear ``in`` checks rather than a set or dict.\n    \"\"\"\n    out = []\n    for item in xs:\n        if item not in out:\n            out.append(item)\n    return out\n",
+  "bug_locations": [
+    "Changed iteration order: removed reversed(xs) and iterated forward to preserve first‑occurrence order.",
+    "Adjusted algorithm comment and added docstring for clarity."
+  ],
+  "explanation": "The original implementation iterated over ``reversed(xs)`` and appended items not already in ``out``. This produced a list of unique items in reverse order, violating the specification that the first occurrence should be kept. By iterating over ``xs`` in its original order and appending an item only if it hasn't been seen before, we correctly preserve the first‑occurrence ordering while still supporting unhashable values via linear containment checks."
+}
+```

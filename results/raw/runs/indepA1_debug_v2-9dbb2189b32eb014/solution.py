@@ -1,0 +1,1 @@
+from collections import deque\ndef allowed(events,limit,window):\n    q=deque();out=[]\n    for user,t in events:\n        while q and q[0][1]<=t-window:q.popleft()\n        ok=len(q)<limit;out.append(ok)\n        if ok:q.append((user,t))\n    return out\n

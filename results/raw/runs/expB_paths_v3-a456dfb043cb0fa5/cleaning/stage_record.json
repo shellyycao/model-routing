@@ -1,0 +1,119 @@
+{
+  "stage": "cleaning",
+  "model_alias": "B",
+  "model_id": "us.amazon.nova-pro-v1:0",
+  "prompt_version": "v3",
+  "prompt_hash": "75d018237537d053a761286adc2946865bc568d7563b334eb22d7222cdd285d5",
+  "invocation_ids": [
+    "351e2d0f-909d-4ad6-9697-258f8c79b795"
+  ],
+  "cache_hit": false,
+  "shared_with_run_ids": [],
+  "status": "failed",
+  "structural_ok": false,
+  "failure_type": "execution_error",
+  "failure_detail": "execution runtime_error (exit 1): wncasting', True)`\n  df.replace(to_replace=MISSING_VALUES, value=np.nan, inplace=True, regex=True)\nTraceback (most recent call last):\n  File \"/sandbox/code/main.py\", line 31, in <module>\n    df['signup_date'] = df['signup_date'].apply(parse_date)\n                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/series.py\", line 4924, in apply\n    ).apply()\n      ^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/apply.py\", line 1427, in apply\n    return self.apply_standard()\n           ^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/apply.py\", line 1507, in apply_standard\n    mapped = obj._map_values(\n             ^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/base.py\", line 921, in _map_values\n    return algorithms.map_array(arr, mapper, na_action=na_action, convert=convert)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/algorithms.py\", line 1743, in map_array\n    return lib.map_infer(values, mapper, convert=convert)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"lib.pyx\", line 2972, in pandas._libs.lib.map_infer\n  File \"/sandbox/code/main.py\", line 27, in parse_date\n    return datetime.strptime(date_str, fmt).strftime('%Y-%m-%d')\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: strptime() argument 1 must be str, not float\n",
+  "parse_ok": true,
+  "execution": {
+    "status": "runtime_error",
+    "exit_code": 1,
+    "stdout": "",
+    "stderr": "/sandbox/code/main.py:17: FutureWarning: DataFrame.applymap has been deprecated. Use DataFrame.map instead.\n  df = df.applymap(lambda x: x.strip() if pd.notna(x) else x)\n/sandbox/code/main.py:18: FutureWarning: Downcasting behavior in `replace` is deprecated and will be removed in a future version. To retain the old behavior, explicitly call `result.infer_objects(copy=False)`. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`\n  df.replace(to_replace=MISSING_VALUES, value=np.nan, inplace=True, regex=True)\nTraceback (most recent call last):\n  File \"/sandbox/code/main.py\", line 31, in <module>\n    df['signup_date'] = df['signup_date'].apply(parse_date)\n                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/series.py\", line 4924, in apply\n    ).apply()\n      ^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/apply.py\", line 1427, in apply\n    return self.apply_standard()\n           ^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/apply.py\", line 1507, in apply_standard\n    mapped = obj._map_values(\n             ^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/base.py\", line 921, in _map_values\n    return algorithms.map_array(arr, mapper, na_action=na_action, convert=convert)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/algorithms.py\", line 1743, in map_array\n    return lib.map_infer(values, mapper, convert=convert)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"lib.pyx\", line 2972, in pandas._libs.lib.map_infer\n  File \"/sandbox/code/main.py\", line 27, in parse_date\n    return datetime.strptime(date_str, fmt).strftime('%Y-%m-%d')\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: strptime() argument 1 must be str, not float\n",
+    "runtime_ms": 762.807334001991,
+    "output_files": [],
+    "sandbox_image": "sha256:88988a15503bdb96538c3dd62244a79879d5c7848397db18b1267ccfd0a9727a"
+  },
+  "validation": {
+    "stage": "cleaning",
+    "hard_pass": false,
+    "checks": [
+      {
+        "name": "output_exists",
+        "passed": false,
+        "mandatory": true,
+        "detail": "cleaned CSV not found: /Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expB_paths_v3-a456dfb043cb0fa5/cleaning/output/cleaned.csv",
+        "value": null
+      },
+      {
+        "name": "output_parses",
+        "passed": false,
+        "mandatory": true,
+        "detail": "no output",
+        "value": null
+      },
+      {
+        "name": "required_columns_present",
+        "passed": false,
+        "mandatory": true,
+        "detail": "no output",
+        "value": null
+      },
+      {
+        "name": "schema_constraints",
+        "passed": false,
+        "mandatory": true,
+        "detail": "no output",
+        "value": null
+      },
+      {
+        "name": "no_duplicate_keys",
+        "passed": false,
+        "mandatory": true,
+        "detail": "no output",
+        "value": null
+      },
+      {
+        "name": "row_set_matches_reference",
+        "passed": false,
+        "mandatory": true,
+        "detail": "no output",
+        "value": null
+      },
+      {
+        "name": "values_match_reference",
+        "passed": false,
+        "mandatory": true,
+        "detail": "no output",
+        "value": null
+      }
+    ],
+    "quality": {
+      "cleaning_correctness": 0.0,
+      "data_integrity": 0.0,
+      "schema_compliance": 0.0
+    },
+    "quality_basis": "ground_truth",
+    "validator_version": "1.0"
+  },
+  "conditional_validation": null,
+  "input_artifacts": [
+    "datasets/projects/customer_churn/raw.csv"
+  ],
+  "output_artifacts": [
+    "results/raw/runs/expB_paths_v3-a456dfb043cb0fa5/cleaning/prompt.txt",
+    "results/raw/runs/expB_paths_v3-a456dfb043cb0fa5/cleaning/response.txt",
+    "results/raw/runs/expB_paths_v3-a456dfb043cb0fa5/cleaning/parsed.json",
+    "results/raw/runs/expB_paths_v3-a456dfb043cb0fa5/cleaning/code.py"
+  ],
+  "input_artifact_hashes": {
+    "datasets/projects/customer_churn/raw.csv": "85dac8de024e160a903ebbe93296e8559aac12a30deb203e3eb85937afc2e281"
+  },
+  "output_artifact_hashes": {
+    "results/raw/runs/expB_paths_v3-a456dfb043cb0fa5/cleaning/prompt.txt": "75d018237537d053a761286adc2946865bc568d7563b334eb22d7222cdd285d5",
+    "results/raw/runs/expB_paths_v3-a456dfb043cb0fa5/cleaning/response.txt": "58e2b784f076ea10dec8dc02d6a818112c9cd8039f9179a664838c6704a2fa8e",
+    "results/raw/runs/expB_paths_v3-a456dfb043cb0fa5/cleaning/parsed.json": "00c0afd9d86b0e5a3bf6c3a77b6fa51b6ef42968ee6ceb9bdb69ad50c78e0fcb",
+    "results/raw/runs/expB_paths_v3-a456dfb043cb0fa5/cleaning/code.py": "a0604d8c044c7813f598fd6577a896c29af64476635e596b65c0e04231089e45"
+  },
+  "handoff_in_path": "results/raw/runs/expB_paths_v3-a456dfb043cb0fa5/cleaning/handoff_in.json",
+  "handoff_size_bytes": 595,
+  "input_tokens": 2230,
+  "output_tokens": 1891,
+  "cost_usd": null,
+  "cost_status": "unavailable",
+  "timings": {
+    "generation_ms": 9150.89191700099,
+    "execution_ms": 762.807334001991,
+    "validation_ms": 0.8174169997801073,
+    "handoff_ms": 0.5289580003591254
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "fixed_code": "def invoice_total(lines, discount_pct=0, tax_pct=0):\n    subtotal = sum(row['qty'] * row['unit_price'] for row in lines)\n    return round(subtotal * (1 - discount_pct / 100) * (1 + tax_pct / 100), 2)\n",
+  "bug_locations": [
+    "invoice_total: subtotal = sum(...) — removed the per-line round(row['qty']*row['unit_price'], 2) so no intermediate rounding occurs before the final result",
+    "invoice_total: return expression — replaced floor division discount_pct//100 and tax_pct//100 with true division /100 for both percentage factors",
+    "invoice_total: normalized function body indentation to standard 4 spaces"
+  ],
+  "explanation": "Two interacting defects broke the spec. (1) Each line's qty*unit_price was rounded to 2 decimals inside the sum, but the spec requires rounding only the final result; the fix sums raw products and rounds once at the end. (2) Percentages used floor division (discount_pct//100, tax_pct//100), so any pct under 100 became 0 and discount/tax were effectively ignored; the fix uses true division (/100). Together these made the visible check return 20.0 instead of 18.9. After summing unrounded products, applying discount then tax with /100, and rounding only the final value, invoice_total([{'qty':2,'unit_price':10}],10,5) == 18.9."
+}

@@ -1,0 +1,81 @@
+We need to produce JSON with fields python_code (script), output_filename "cleaned.csv", cleaning_logic description.
+
+The script must implement all cleaning steps, produce cleaned.csv and cleaning_summary.json with raw_rows, cleaned_rows, and per-rule counts.
+
+We need to read raw.csv as text, treat all columns as strings, strip whitespace, treat missing values as defined.
+
+Implementation plan:
+
+- import os, pandas as pd, numpy as np, json, datetime.
+
+- input_path = os.path.join(os.environ["INPUT_DIR"], "raw.csv")
+- raw_df = pd.read_csv(input_path, dtype=str, keep_default_na=False) # read as strings, no NA conversion.
+
+- raw_rows = len(raw_df)
+
+- Strip whitespace: raw_df = raw_df.applymap(lambda x: x.strip() if isinstance(x, str) else x)
+
+- Define function to treat missing: after stripping, if lower in set {'', 'na', 'n/a', 'null', 'none', '-'} then set to None (np.nan). We'll convert to np.nan.
+
+- Apply to all cells.
+
+- R2 duplicate removal: keep first occurrence based on customer_id. Use duplicated(subset='customer_id').
+
+- Count duplicates removed.
+
+- Then apply row filters sequentially, tracking counts per rule.
+
+We'll create a copy df = df after duplicates.
+
+Define counters dict.
+
+Processing each column:
+
+R3 signup_date parsing: define list of formats and attempt parse. Use datetime.strptime. For 'Month D, YYYY' we need format "%B %d, %Y". For 'DD-Mon-YYYY' with abbreviation: "%d-%b-%Y". For 'MM/DD/YYYY': "%m/%d/%Y". For 'YYYY/MM/DD': "%Y/%m/%d". For 'YYYY-MM-DD': "%Y-%m-%d". We'll attempt each. If fails, row dropped.
+
+R4 plan mapping: map dict with lower keys to standardized. Use .lower().
+
+R5 contract_type mapping similarly.
+
+R6 monthly_fee: remove '$','USD',',' and surrounding spaces. Use regex: replace r'[\$,USD]'? Actually need to remove substrings "$", "USD", "," and surrounding spaces. Simpler: replace "$", "USD", "," with '' then strip. Then parse float. Drop if not number or <=0 or >500.
+
+R7 tenure_months: remove trailing word 'months' or 'month' case-insensitive and spaces. Use regex: r'\s*(months?|Months?)$' maybe. Then strip, parse int, ensure whole number, >=0 <=120.
+
+R8 support_tickets: missing -> 0. Else parse int, ensure 0-100.
+
+R9 satisfaction_score: parse int, if missing or invalid set to np.nan (empty). Keep row.
+
+R10 churned mapping: map dict lower to 0/1. Drop if missing.
+
+R11 lifetime_value = monthly_fee * tenure_months, round 2.
+
+R12 output columns order, sort by customer_id ascending (string sort). Write CSV with header, index=False, na_rep='' to have empty cells.
+
+Write cleaning_summary.json with raw_rows, cleaned_rows, and counts per rule (e.g., duplicates_removed, signup_date_invalid, plan_invalid, contract_invalid, monthly_fee_invalid, tenure_invalid, support_invalid, churn_invalid). Also maybe satisfaction_invalid (set to missing) but not dropped.
+
+Implement counters.
+
+Edge Cases: need to treat missing values after stripping as np.nan.
+
+Implementation details:
+
+- After initial missing conversion, we have NaN for missing.
+
+- For support_tickets: if NaN, set to 0.
+
+- For satisfaction_score: we will attempt conversion; if fails, set to np.nan.
+
+- For churned mapping: need to treat missing as drop.
+
+- Ensure types: monthly_fee float, tenure_months int, support_tickets int, satisfaction_score int or NaN, churned int, lifetime_value float.
+
+Write cleaned.csv.
+
+Write summary JSON.
+
+Now produce script as string.
+
+Make sure script uses only allowed libs.
+
+Now produce final JSON.
+

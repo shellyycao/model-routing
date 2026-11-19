@@ -1,0 +1,7 @@
+{
+  "fixed_code": "def rotate(xs, k):\n    if not xs: return []\n    k %= len(xs)\n    return list(xs[-k:] + xs[:-k]) if k else list(xs)\n",
+  "bug_locations": [
+    "return list(xs[k:] + xs[:k])"
+  ],
+  "explanation": "A right rotation by k means the last k elements move to the front. The original code does xs[k:] + xs[:k], which is a LEFT rotation by k. The fix is xs[-k:] + xs[:-k] for a right rotation. When k is 0 (after modulo), -0 is still 0 so xs[-0:] would be the full list and xs[:-0] would be empty, so we handle k==0 as a special case returning the list unchanged."
+}

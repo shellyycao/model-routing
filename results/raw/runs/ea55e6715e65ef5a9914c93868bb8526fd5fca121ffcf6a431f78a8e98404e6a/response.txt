@@ -1,0 +1,7 @@
+```json
+{
+  "fixed_code": "def rotate(xs, k):\n    if not xs:\n        return []\n    n = len(xs)\n    k %= n\n    return xs[-k:] + xs[:-k]",
+  "bug_locations": ["return list(xs[k:] + xs[:k])"],
+  "explanation": "The original code rotated left instead of right. For right rotation, the correct slicing is xs[-k:] + xs[:-k], which takes the last k elements and places them at the front. The list() wrapper was unnecessary since slicing already returns a list."
+}
+```

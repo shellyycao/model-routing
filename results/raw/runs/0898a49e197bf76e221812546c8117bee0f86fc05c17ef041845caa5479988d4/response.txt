@@ -1,0 +1,11 @@
+```json
+{
+  "fixed_code": "def allocate_stock(stock, requests):\n    remaining = dict(stock)\n    seen = set()\n    fulfilled = []\n    for rid, sku, qty in requests:\n        if rid in seen:\n            continue\n        seen.add(rid)\n        if qty > 0 and remaining.get(sku, 0) >= qty:\n            remaining[sku] -= qty\n            fulfilled.append(rid)\n    return fulfilled, remaining\n",
+  "bug_locations": [
+    "Condition `remaining.get(sku, 0) > qty`",
+    "Missing check for `qty > 0`",
+    "Placement of `seen.add(rid)` inside the fulfillment condition"
+  ],
+  "explanation": "The original code had three defects: 1) It used `>` instead of `>=` for stock comparison, preventing fulfillment when stock exactly equals the requested quantity. 2) It failed to check if `qty` was positive, potentially fulfilling invalid requests. 3) It only added request IDs to `seen` if they were fulfilled, causing duplicate request IDs that were skipped due to insufficient stock to be processed again if they appeared later in the list. The fixes correct the comparison operator, add the positivity check, and move the `seen.add(rid)` call to execute for every unique request ID."
+}
+```

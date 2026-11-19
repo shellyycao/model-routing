@@ -1,0 +1,120 @@
+We need to produce JSON with fields python_code (script), output_filename "cleaned.csv", cleaning_logic description.
+
+The script must implement all cleaning steps, produce cleaned.csv and cleaning_summary.json with raw_rows, cleaned_rows, and per-rule counts.
+
+We need to read raw.csv as text, treat all columns as strings, strip whitespace, treat missing values as defined.
+
+Implementation plan:
+
+- import os, pandas as pd, numpy as np, json, datetime.
+
+- input_path = os.path.join(os.environ["INPUT_DIR"], "raw.csv")
+- df_raw = pd.read_csv(input_path, dtype=str, keep_default_na=False) # read as strings, no NA conversion.
+
+- raw_rows = len(df_raw)
+
+- Strip whitespace: df = df_raw.applymap(lambda x: x.strip() if isinstance(x, str) else x)
+
+- Define missing set: {'', 'na', 'n/a', 'null', 'none', '-'} after lower.
+
+- Replace missing: df = df.replace(to_replace=lambda v: isinstance(v,str) and v.strip().lower() in missing_set, value=np.nan)
+
+- R2 duplicate removal: keep first occurrence based on customer_id. Ensure column exists. Use df.drop_duplicates(subset=['customer_id'], keep='first', inplace=True). Count duplicates removed.
+
+- Then apply row filters sequentially, tracking counts per rule.
+
+We'll create a function to parse date with given formats. Use datetime.strptime with list of formats.
+
+Formats:
+- "%Y-%m-%d"
+- "%m/%d/%Y"
+- "%d-%b-%Y" (e.g., 05-Mar-2024) note month abbreviation case-insensitive; strptime expects proper case; we can .title() maybe.
+- "%Y/%m/%d"
+- "%B %d, %Y" (full month name)
+
+We'll attempt each format; if fails, return None.
+
+After parsing, format to iso string.
+
+Rows where signup_date missing or unparsable are dropped.
+
+R4 plan mapping: define dict mapping lower stripped to canonical. Use .lower().
+
+Mapping dict:
+{
+'basic':'Basic',
+'basic plan':'Basic',
+'standard':'Standard',
+'std':'Standard',
+'standard plan':'Standard',
+'premium':'Premium',
+'prem':'Premium',
+'premium plan':'Premium'
+}
+
+Drop rows where plan missing or not in mapping.
+
+R5 contract_type mapping dict:
+{
+'monthly':'Monthly',
+'month-to-month':'Monthly',
+'m2m':'Monthly',
+'annual':'Annual',
+'yearly':'Annual',
+'1 year':'Annual'
+}
+
+R6 monthly_fee: remove '$','USD',',' and surrounding spaces. Use regex: replace r'[\$,]' and 'USD' case-insensitive. Then strip. Then try float. Drop if missing, not number, <=0 or >500.
+
+R7 tenure_months: remove trailing word 'months' or 'month' case-insensitive. Use regex: r'\s*(months?|Months?)$' after lower? Simpler: replace using regex: re.sub(r'\s*(months?|Months?)$', '', value, flags=re.I). Then strip. Then parse as float, ensure integer, between 0 and 120 inclusive. Store as int.
+
+R8 support_tickets: missing => 0. Else parse number, ensure integer, 0-100. Drop if invalid.
+
+R9 satisfaction_score: parse number; if missing or invalid (not integer 1-5) set to np.nan (empty). Keep row.
+
+R10 churned mapping dict:
+{
+'yes':1,'y':1,'true':1,'1':1,'churned':1,
+'no':0,'n':0,'false':0,'0':0,'active':0
+}
+
+Drop rows missing or not in mapping.
+
+R11 lifetime_value = monthly_fee * tenure_months, round 2.
+
+R12 output columns order, sort by customer_id ascending (string sort). Write CSV with header, index=False, na_rep='' for empty satisfaction_score.
+
+Also produce cleaning_summary.json with raw_rows, cleaned_rows, and counts per rule: duplicates_removed, rows_dropped_signup_date, rows_dropped_plan, rows_dropped_contract_type, rows_dropped_monthly_fee, rows_dropped_tenure_months, rows_dropped_support_tickets, rows_dropped_churned (maybe also rows_invalid_satisfaction? but not dropped). Provide counts.
+
+Implementation details: We'll keep a mask series for rows to keep, start with all True after duplicate removal. Then apply each rule, updating mask and counting drops.
+
+Simplify: after duplicate removal, we can iterate rows using DataFrame.apply row-wise, but better to process column-wise.
+
+We'll create a copy df_clean = df after duplicate removal.
+
+Processing steps:
+
+- For each rule, create boolean mask of rows that satisfy condition; count rows that fail; then filter df_clean = df_clean[mask].
+
+Need to handle missing values (np.nan). Use pandas functions.
+
+Implementation details for monthly_fee: define function clean_fee(val) returns float or np.nan.
+
+Similarly for tenure, support, satisfaction, churn.
+
+After all filters, compute lifetime_value.
+
+Write cleaned.csv.
+
+Write summary JSON.
+
+Edge Cases: Ensure satisfaction_score missing becomes empty cell; pandas will write NaN as empty if na_rep=''.
+
+Now produce script as string.
+
+Let's craft code.
+
+Will import re, datetime.
+
+Now produce final JSON.
+

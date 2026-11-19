@@ -1,0 +1,26 @@
+{
+  "buggy": "def moving_average(xs, k):\n    if k <= 0 or k > len(xs):\n        return []\n    return [sum(xs[i:i + k]) / k for i in range(len(xs) - k)]\n",
+  "case_id": "a1_01_moving_average",
+  "difficulty": "easy",
+  "func": "moving_average",
+  "hidden": [
+    "moving_average([1, 2, 3, 4], 2) == [1.5, 2.5, 3.5]",
+    "moving_average([5], 1) == [5.0]",
+    "moving_average([1, 2, 3], 3) == [2.0]",
+    "moving_average([1, 2, 3], 4) == []",
+    "moving_average([], 1) == []",
+    "moving_average([1, 2], 0) == []",
+    "moving_average([2, 4, 6, 8, 10], 2) == [3.0, 5.0, 7.0, 9.0]",
+    "moving_average([1, 1, 1, 1], 1) == [1.0, 1.0, 1.0, 1.0]"
+  ],
+  "operator": "off_by_one_range",
+  "reference": "def moving_average(xs, k):\n    if k <= 0 or k > len(xs):\n        return []\n    return [sum(xs[i:i + k]) / k for i in range(len(xs) - k + 1)]\n",
+  "spec": "moving_average(xs, k) returns the list of means of every contiguous window of length k in xs (len(xs) - k + 1 values). Return [] if k <= 0 or k > len(xs).",
+  "verification": {
+    "buggy_fails": 5,
+    "reference_passes": 8
+  },
+  "visible": [
+    "moving_average([1, 2, 3, 4], 2) == [1.5, 2.5, 3.5]"
+  ]
+}

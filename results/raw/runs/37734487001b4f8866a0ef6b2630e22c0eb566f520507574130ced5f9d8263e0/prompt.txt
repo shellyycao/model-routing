@@ -1,0 +1,15 @@
+Extract the requested fields from the document. Resolve conflicts using each field description, perform required unit conversions, and use null when the document does not support a value.
+
+Schema:
+- affected_users: integer
+- duration_minutes: number
+- incident_id: string
+- root_cause: string or null
+- severity: integer final severity
+- started_at: ISO timestamp
+
+Document:
+INCIDENT TIMELINE
+INC-503 opened 2026-07-03T03:00:00Z. Initial severity SEV-4; final commander classification SEV-1. Restored after 4.5 hours. Impact counter: 5030 distinct users (requests affected: 99,999). Root cause: pending; not established.
+
+Return exactly one object with the required `fields` wrapper and no extra schema keys. Content correctness and schema/operational compliance are scored separately.

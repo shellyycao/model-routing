@@ -1,0 +1,10 @@
+```json
+{
+  "fixed_code": "def dedupe(xs):\n    out = []\n    for item in xs:\n        if item not in out:\n            out.append(item)\n    return out\n",
+  "bug_locations": [
+    "dedupe: loop traversed reversed(xs)",
+    "dedupe: missing final order restoration / kept last occurrences instead of first occurrences"
+  ],
+  "explanation": "The buggy code iterated over reversed(xs) and returned the accumulated list directly, so unique inputs came back reversed and duplicate resolution favored later occurrences. Iterating xs in original order and appending only items not already in out preserves first-occurrence order. Using list membership instead of a set keeps support for unhashable values."
+}
+```

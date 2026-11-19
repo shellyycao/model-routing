@@ -1,0 +1,68 @@
+We need to produce JSON with fields python_code (script), output_filename ("cleaned.csv"), cleaning_logic (brief explanation). The script must implement all cleaning steps.
+
+We need to read raw.csv as text, treat all columns as strings, strip whitespace, treat missing values as per list.
+
+Implementation plan:
+
+- import os, pandas as pd, numpy as np, json, datetime.
+
+- Input path: os.path.join(os.environ["INPUT_DIR"], "raw.csv").
+
+- Read CSV with dtype=str, keep default parsing but we need to read all as strings. Use pd.read_csv(..., dtype=str, keep_default_na=False, na_values=[]). Then we will manually handle missing.
+
+- After reading, strip whitespace from all cells: df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)
+
+- Define missing set: {'', 'na', 'n/a', 'null', 'none', '-'} after lower.
+
+- Replace those with np.nan: df = df.replace(to_replace=lambda v: isinstance(v,str) and v.strip().lower() in missing_set, value=np.nan)
+
+- Count raw_rows = len(df)
+
+- R2 duplicate removal: based on reading_id column. Keep first occurrence. Use df.drop_duplicates(subset='reading_id', keep='first', inplace=True). Count duplicates removed.
+
+- R3 reading_date parsing: define function parse_date(s). Try each format using datetime.strptime. For 'Month D, YYYY' we can use %B %d, %Y. For 'DD-Mon-YYYY' with abbreviation: %d-%b-%Y. For 'MM/DD/YYYY': %m/%d/%Y. For 'YYYY/MM/DD': %Y/%m/%d. For 'YYYY-MM-DD': %Y-%m-%d. Also need to handle possible leading/trailing spaces already stripped. If parsing fails, return None. Apply to column, drop rows where result is NaT.
+
+- Convert to string format YYYY-MM-DD.
+
+- R4 meter_id: upper case, drop rows where missing. So after missing replacement earlier, meter_id may be NaN. Use df['meter_id'] = df['meter_id'].str.upper().
+
+- Drop rows where meter_id is NaN.
+
+- R5 building_type mapping: define mapping dict with lower keys: 'residential','res','resi' -> 'Residential', 'commercial','comm' -> 'Commercial', 'industrial','ind' -> 'Industrial'. Apply lower, map, else NaN. Drop rows where result is NaN.
+
+- R6 tariff mapping: lower, map 'peak' -> 'peak', 'off-peak','offpeak','off peak' -> 'off-peak'. Drop rows where missing.
+
+- R7 energy conversion: function to clean energy string. Steps: if NaN -> None. Remove commas. Strip. Check for unit suffix: use regex. If endswith 'MWh' (case-insensitive, optional space). Use re.search(r'(?i)^\s*([\d.,]+)\s*mwh\s*$', value). If matches, number *1000. If endswith 'kWh' (case-insensitive) remove unit. If no unit, just number. Convert to float. If conversion fails or out of range (<0 or >100000) drop row. Round to 2 decimals.
+
+- R8 temperature conversion: function. If NaN -> return np.nan. Strip. Remove trailing degree sign and unit. Use regex to capture number and optional unit. Cases: endswith 'F' or '°F' (case-insensitive). If F, convert to C. If endswith 'C' or '°C' or no unit, treat as C. After conversion, round to 1 decimal. If after conversion not numeric or outside -40 to 50, set to np.nan (keep row). So we keep row regardless.
+
+- R9 output columns order, sort by reading_id ascending (string). Write CSV with header, index=False, float format: for energy_kwh we want 2 decimals, temperature 1 decimal maybe default. Use df.to_csv(..., float_format='%.2f'?) but temperature needs 1 decimal. Could format after rounding; pandas will output as default representation. We'll ensure dtype.
+
+- Write cleaning_summary.json with raw_rows, cleaned_rows, duplicate_rows_removed, rows_dropped_due_to_date, meter_id_missing, building_type_invalid, tariff_invalid, energy_invalid, etc.
+
+Implementation details:
+
+- Keep counters: start raw_rows = len(df). After duplicate removal, dup_removed = raw_rows - len(df). After each drop, track counts.
+
+- At the end cleaned_rows = len(df_cleaned).
+
+- Write summary dict to json file.
+
+Edge Cases: reading_date missing after missing replacement (NaN) -> drop.
+
+Implementation of parse_date: try each format; if success return date string.
+
+Now produce script as a string.
+
+Make sure to import re.
+
+Write to output path: cleaned_path = os.path.join(os.environ["OUTPUT_DIR"], "cleaned.csv").
+
+Write summary path similarly.
+
+Set output_filename variable = "cleaned.csv" (as required). The script may set a variable at end.
+
+Now produce JSON with fields.
+
+Let's craft script.
+

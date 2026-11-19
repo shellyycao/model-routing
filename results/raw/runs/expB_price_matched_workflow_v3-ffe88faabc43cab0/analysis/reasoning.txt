@@ -1,0 +1,196 @@
+Let me think carefully about this task. I need to write a single self-contained Python 3 script that:
+
+1. Reads cleaned.csv from INPUT_DIR
+2. Computes 21 metrics
+3. Writes findings.json to OUTPUT_DIR as a flat JSON object with finite numbers
+
+Metrics:
+- ticket_count: number of tickets (int)
+- mean_resolution_minutes: mean of resolution_minutes
+- total_labor_cost: sum of labor_cost
+- labor_cost_alpha, labor_cost_beta, labor_cost_gamma: sum of labor_cost by team
+- resolution_email, resolution_chat, resolution_phone: mean resolution_minutes by channel
+- reopen_rate_email_pct: reopened percentage for email (mean of reopened * 100)
+- reopen_rate_chat_pct: reopened percentage for chat
+- email_vs_chat_reopen_change_pct: (email rate - chat rate) / chat rate * 100. Note: if chat rate is 0, division by zero. Should handle — if chat rate is 0, what to do? The metric must be finite. Need to guard. Likely chat rate > 0 in practice. But to be safe, guard with fallback 0.0 if chat rate is 0? Actually the spec says finite numbers required. I'll compute with a guard: if chat_pct == 0, set change to 0.0 (or maybe if both zero, 0). Let me handle: if chat_pct == 0: change = 0.0. Hmm, but that could mask. It's safest for validation.
+
+Wait — careful: should the percentage rates be computed as reopened mean * 100? "reopened percentage for email and chat" — yes, percentage = 100 * sum(reopened)/count.
+
+- high_cost_low_sat_count: count of tickets with labor_cost >= 100 AND satisfaction_score <= 2 (non-missing)
+- high_cost_low_sat_reopen_pct: reopened percentage within that segment. If count is 0, guard → 0.0.
+- resolution_median: median of resolution_minutes
+- resolution_std: sample standard deviation (ddof=1)
+- satisfaction_mean: mean of non-missing satisfaction_score
+- satisfaction_missing_count: count of missing satisfaction_score
+- unique_agent_count: distinct agent_id count
+- top_agent_ticket_count: max tickets per agent
+- top_agent_ticket_share_pct: top_agent_ticket_count / ticket_count * 100
+
+Edge considerations:
+- satisfaction_score is nullable Int64 in CSV — when read by pandas, will be float64 with NaN (since CSV has empty cells). Read with dtype? Just let pandas infer; empty becomes NaN float.
+- reopened is int 0/1.
+- All numbers must be finite. Convert numpy types to Python native via float()/int().
+- Do not round results; write full precision. Use float().
+
+Important: "Do not round results" — so total_labor_cost should be the raw sum of the labor_cost column (which was rounded to 2 decimals in cleaning). Sum as float. Note float sums may have precision artifacts; that's fine, write full precision. Could use math.fsum for accuracy, but plain sum is fine. Actually, to give the most accurate full precision, math.fsum is nicer. But either acceptable. I'll use float(df["labor_cost"].sum()).
+
+JSON serialization: use json.dump with allow_nan=False to catch issues. Convert all to float except counts which can be int (int is fine as a number). The spec says "single finite number" — ints are fine.
+
+Let me write the script:
+
+```python
+import json
+import os
+
+import numpy as np
+import pandas as pd
+
+def main():
+    input_path = os.path.join(os.environ["INPUT_DIR"], "cleaned.csv")
+    output_path = os.path.join(os.environ["OUTPUT_DIR"], "findings.json")
+
+    df = pd.read_csv(input_path)
+
+    # Ensure expected dtypes for computation
+    df["resolution_minutes"] = pd.to_numeric(df["resolution_minutes"])
+    df["labor_cost"] = pd.to_numeric(df["labor_cost"])
+    df["reopened"] = pd.to_numeric(df["reopened"])
+    df["satisfaction_score"] = pd.to_numeric(df["satisfaction_score"], errors="coerce")
+
+    findings = {}
+
+    # q1
+    ticket_count = int(len(df))
+    findings["ticket_count"] = ticket_count
+    findings["mean_resolution_minutes"] = float(df["resolution_minutes"].mean())
+    findings["total_labor_cost"] = float(df["labor_cost"].sum())
+
+    # q2
+    team_cost = df.groupby("team")["labor_cost"].sum()
+    findings["labor_cost_alpha"] = float(team_cost.get("Alpha", 0.0))
+    findings["labor_cost_beta"] = float(team_cost.get("Beta", 0.0))
+    findings["labor_cost_gamma"] = float(team_cost.get("Gamma", 0.0))
+
+    # q3
+    chan_res = df.groupby("channel")["resolution_minutes"].mean()
+    findings["resolution_email"] = float(chan_res.get("email", 0.0))
+    findings["resolution_chat"] = float(chan_res.get("chat", 0.0))
+    findings["resolution_phone"] = float(chan_res.get("phone", 0.0))
+
+    # q4
+    def reopen_pct(sub):
+        if len(sub) == 0:
+            return 0.0
+        return float(sub["reopened"].mean() * 100.0)
+
+    email = df[df["channel"] == "email"]
+    chat = df[df["channel"] == "chat"]
+    email_pct = reopen_pct(email)
+    chat_pct = reopen_pct(chat)
+    findings["reopen_rate_email_pct"] = email_pct
+    findings["reopen_rate_chat_pct"] = chat_pct
+    if chat_pct == 0.0:
+        findings["email_vs_chat_reopen_change_pct"] = 0.0
+    else:
+        findings["email_vs_chat_reopen_change_pct"] = (email_pct - chat_pct) / chat_pct * 100.0
+
+    # q5
+    mask = (df["labor_cost"] >= 100) & (df["satisfaction_score"] <= 2)
+    # note: NaN <= 2 is False, so non-missing condition handled
+    seg = df[mask]
+    seg_count = int(len(seg))
+    findings["high_cost_low_sat_count"] = seg_count
+    findings["high_cost_low_sat_reopen_pct"] = float(seg["reopened"].mean() * 100.0) if seg_count > 0 else 0.0
+
+    # q6
+    findings["resolution_median"] = float(df["resolution_minutes"].median())
+    findings["resolution_std"] = float(df["resolution_minutes"].std(ddof=1))
+    findings["satisfaction_mean"] = float(df["satisfaction_score"].mean())  # skipna default
+    findings["satisfaction_missing_count"] = int(df["satisfaction_score"].isna().sum())
+
+    # q7
+    findings["unique_agent_count"] = int(df["agent_id"].nunique())
+    top_count = int(df["agent_id"].value_counts().max())
+    findings["top_agent_ticket_count"] = top_count
+    findings["top_agent_ticket_share_pct"] = top_count / ticket_count * 100.0
+
+    # safety: ensure finite
+    for k, v in findings.items():
+        fv = float(v)
+        if not np.isfinite(fv):
+            raise ValueError(f"Non-finite metric {k}: {v}")
+
+    with open(output_path, "w") as f:
+        json.dump(findings, f, indent=2, allow_nan=False)
+
+if __name__ == "__main__":
+    main()
+```
+
+Wait — one consideration on q5: "tickets with labor_cost >= 100 and a non-missing satisfaction_score <= 2". With NaN, `NaN <= 2` evaluates False in pandas, so mask handles it. Good. But to be explicit, could add `.notna()`. I'll add explicit notna for clarity.
+
+Edge: satisfaction_mean if all missing → NaN → would raise. Guard: if count of non-missing is 0, set 0.0? The data surely has values, but for finite-safety I could guard. But raising an error would fail the run entirely. Better to guard to 0.0? Hmm — but that would produce a wrong metric silently. Given the sample data shows satisfaction values present, mean will be fine. Still, let me add a guard that defaults to 0.0 if no non-missing values. Actually, I'd rather keep the code robust for validation: produce finite numbers always. I'll add the guard.
+
+Similarly resolution_std: with n>=2 fine. 347 rows, fine.
+
+For q4 guard on chat_pct == 0: what if email also 0? Then change would be 0/0. Setting 0.0 is a reasonable convention. Alternatively, could define as email rate... but 0.0 is the simplest finite fallback. I'll note it in methods description.
+
+Also for team groupby: team is categorical per schema, but after read_csv it's object dtype. groupby works. Use .get with default 0.0 to be safe if a category absent.
+
+One nuance: pandas groupby on categorical with observed=False could include empty categories; but since read_csv gives object dtype, no issue.
+
+expected_artifacts: ["findings.json"].
+
+methods_description: brief description.
+
+Now check the JSON response format: single JSON object in a fenced block, with python_code, expected_artifacts, methods_description.
+
+Let me double check metric list of 21:
+1. ticket_count ✓
+2. mean_resolution_minutes ✓
+3. total_labor_cost ✓
+4. labor_cost_alpha ✓
+5. labor_cost_beta ✓
+6. labor_cost_gamma ✓
+7. resolution_email ✓
+8. resolution_chat ✓
+9. resolution_phone ✓
+10. reopen_rate_email_pct ✓
+11. reopen_rate_chat_pct ✓
+12. email_vs_chat_reopen_change_pct ✓
+13. high_cost_low_sat_count ✓
+14. high_cost_low_sat_reopen_pct ✓
+15. resolution_median ✓
+16. resolution_std ✓
+17. satisfaction_mean ✓
+18. satisfaction_missing_count ✓
+19. unique_agent_count ✓
+20. top_agent_ticket_count ✓
+21. top_agent_ticket_share_pct ✓
+
+All covered.
+
+Full precision: json.dump of Python floats writes full repr precision. Good.
+
+Counts as ints — "a single finite number" — ints are valid JSON numbers. Fine.
+
+One thing: the finiteness check loop — I raise ValueError on non-finite, but I've guarded all divisions. The satisfaction_mean guard: 
+
+```python
+sat_nonmissing = df["satisfaction_score"].dropna()
+findings["satisfaction_mean"] = float(sat_nonmissing.mean()) if len(sat_nonmissing) > 0 else 0.0
+```
+
+Also resolution std with ddof=1 requires n≥2; n=347, fine, but guard anyway? If n<2, std is NaN → raise. Could guard: if ticket_count >= 2 else 0.0. I'll include for robustness.
+
+Let me also think about whether "reopened percentage" should be computed on all tickets of that channel — yes.
+
+Should top_agent_ticket_share use ticket_count from q1 — yes.
+
+I'll write the final script cleanly. Also only write to OUTPUT_DIR findings.json — no other files.
+
+One more consideration: reading CSV — the cleaned file has satisfaction_score possibly empty; pd.read_csv will infer float64 with NaN. pd.to_numeric with errors="coerce" is safe regardless.
+
+Also, team/channel columns: strip? Cleaning already normalized. No need.
+
+Let me finalize.

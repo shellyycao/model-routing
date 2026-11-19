@@ -1,0 +1,571 @@
+{
+  "computational_faithfulness": {
+    "all_claims_consistent": true,
+    "all_replay_matches": true,
+    "checks": 20
+  },
+  "counterfactual_robustness": {
+    "S2_greedy_task_only": {
+      "feasibility_agreement:alternative": {
+        "direction_or_agreement_rate": 0.75,
+        "interval_coverage_rate": null,
+        "max_abs_error": null,
+        "mean_abs_error": null,
+        "n": 16
+      },
+      "feasibility_agreement:selected": {
+        "direction_or_agreement_rate": 0.0,
+        "interval_coverage_rate": null,
+        "max_abs_error": null,
+        "mean_abs_error": null,
+        "n": 16
+      },
+      "feasible": {
+        "direction_or_agreement_rate": 0.125,
+        "interval_coverage_rate": 1.0,
+        "max_abs_error": 1.4444444444444444,
+        "mean_abs_error": 0.5138888888888888,
+        "n": 16
+      },
+      "n_switches": {
+        "direction_or_agreement_rate": 1.0,
+        "interval_coverage_rate": 1.0,
+        "max_abs_error": 0.0,
+        "mean_abs_error": 0.0,
+        "n": 16
+      }
+    },
+    "S3_workflow_aware": {
+      "feasibility_agreement:alternative": {
+        "direction_or_agreement_rate": 0.6470588235294118,
+        "interval_coverage_rate": null,
+        "max_abs_error": null,
+        "mean_abs_error": null,
+        "n": 34
+      },
+      "feasibility_agreement:selected": {
+        "direction_or_agreement_rate": 0.7647058823529411,
+        "interval_coverage_rate": null,
+        "max_abs_error": null,
+        "mean_abs_error": null,
+        "n": 34
+      },
+      "feasible": {
+        "direction_or_agreement_rate": 0.5882352941176471,
+        "interval_coverage_rate": 0.9411764705882353,
+        "max_abs_error": 0.9777777777777777,
+        "mean_abs_error": 0.45751633986928103,
+        "n": 34
+      },
+      "n_switches": {
+        "direction_or_agreement_rate": 1.0,
+        "interval_coverage_rate": 1.0,
+        "max_abs_error": 0.0,
+        "mean_abs_error": 0.0,
+        "n": 34
+      }
+    }
+  },
+  "criteria": {
+    "feasibility_only": {
+      "analysis_min": null,
+      "min_feasibility": 0.5,
+      "preference": [
+        "end_to_end_ms",
+        "total_tokens"
+      ],
+      "unsupported_max": null
+    },
+    "frozen_v3": {
+      "analysis_min": 0.9,
+      "min_feasibility": 0.5,
+      "preference": [
+        "end_to_end_ms",
+        "total_tokens"
+      ],
+      "unsupported_max": 1.0
+    },
+    "maximum_reliability": {
+      "analysis_min": null,
+      "min_feasibility": 0.0,
+      "preference": [
+        "neg_feasibility",
+        "end_to_end_ms",
+        "total_tokens"
+      ],
+      "unsupported_max": null
+    },
+    "strict_quality": {
+      "analysis_min": 1.0,
+      "min_feasibility": 0.6666666666666666,
+      "preference": [
+        "end_to_end_ms",
+        "total_tokens"
+      ],
+      "unsupported_max": 0.0
+    },
+    "token_first": {
+      "analysis_min": 0.9,
+      "min_feasibility": 0.5,
+      "preference": [
+        "total_tokens",
+        "end_to_end_ms"
+      ],
+      "unsupported_max": 1.0
+    }
+  },
+  "frozen_router_modified": false,
+  "limitations": [
+    "Alternative selections reuse frozen candidate estimates; they are not new prospective traces.",
+    "v3.1 was designed after outputs were observed and is shown only as a secondary sensitivity view.",
+    "Counterfactual quality metrics are often undefined when executed paths are infeasible; feasibility conclusions are substantially less accurate than switch-count conclusions."
+  ],
+  "mode": "post-hoc sensitivity; not prospective validation",
+  "summary": {
+    "feasibility_only": {
+      "changes_vs_frozen": 0,
+      "no_feasible": 12,
+      "path_counts": {
+        "A-A-A": 2,
+        "A-C-A": 2,
+        "A-C-B": 2,
+        "C-C-B": 2
+      },
+      "selected": 8
+    },
+    "frozen_v3": {
+      "changes_vs_frozen": 0,
+      "no_feasible": 12,
+      "path_counts": {
+        "A-A-A": 2,
+        "A-C-A": 2,
+        "A-C-B": 2,
+        "C-C-B": 2
+      },
+      "selected": 8
+    },
+    "maximum_reliability": {
+      "changes_vs_frozen": 13,
+      "no_feasible": 0,
+      "path_counts": {
+        "A-A-A": 4,
+        "A-C-A": 2,
+        "A-C-B": 4,
+        "B-B-B": 4,
+        "C-C-B": 2,
+        "C-C-C": 4
+      },
+      "selected": 20
+    },
+    "strict_quality": {
+      "changes_vs_frozen": 7,
+      "no_feasible": 19,
+      "path_counts": {
+        "C-C-B": 1
+      },
+      "selected": 1
+    },
+    "token_first": {
+      "changes_vs_frozen": 0,
+      "no_feasible": 12,
+      "path_counts": {
+        "A-A-A": 2,
+        "A-C-A": 2,
+        "A-C-B": 2,
+        "C-C-B": 2
+      },
+      "selected": 8
+    }
+  },
+  "trace_comparison": [
+    {
+      "changed_vs_frozen": {
+        "feasibility_only": false,
+        "maximum_reliability": false,
+        "strict_quality": true,
+        "token_first": false
+      },
+      "selections": {
+        "feasibility_only": "A-A-A",
+        "frozen_v3": "A-A-A",
+        "maximum_reliability": "A-A-A",
+        "strict_quality": null,
+        "token_first": "A-A-A"
+      },
+      "strategy": "S1_single_model",
+      "target_project": "customer_churn",
+      "trace_id": "S1_single_model:customer_churn:default_v1:632cdd3c12a0:A-A-A"
+    },
+    {
+      "changed_vs_frozen": {
+        "feasibility_only": false,
+        "maximum_reliability": true,
+        "strict_quality": false,
+        "token_first": false
+      },
+      "selections": {
+        "feasibility_only": null,
+        "frozen_v3": null,
+        "maximum_reliability": "B-B-B",
+        "strict_quality": null,
+        "token_first": null
+      },
+      "strategy": "S1_single_model",
+      "target_project": "customer_churn",
+      "trace_id": "S1_single_model:customer_churn:default_v1:11ac6ab4c248:B-B-B"
+    },
+    {
+      "changed_vs_frozen": {
+        "feasibility_only": false,
+        "maximum_reliability": true,
+        "strict_quality": false,
+        "token_first": false
+      },
+      "selections": {
+        "feasibility_only": null,
+        "frozen_v3": null,
+        "maximum_reliability": "C-C-C",
+        "strict_quality": null,
+        "token_first": null
+      },
+      "strategy": "S1_single_model",
+      "target_project": "customer_churn",
+      "trace_id": "S1_single_model:customer_churn:default_v1:425cb9e0e018:C-C-C"
+    },
+    {
+      "changed_vs_frozen": {
+        "feasibility_only": false,
+        "maximum_reliability": false,
+        "strict_quality": true,
+        "token_first": false
+      },
+      "selections": {
+        "feasibility_only": "A-C-A",
+        "frozen_v3": "A-C-A",
+        "maximum_reliability": "A-C-A",
+        "strict_quality": null,
+        "token_first": "A-C-A"
+      },
+      "strategy": "S2_greedy_task_only",
+      "target_project": "customer_churn",
+      "trace_id": "S2_greedy_task_only:customer_churn:default_v1:bc2f278d27af"
+    },
+    {
+      "changed_vs_frozen": {
+        "feasibility_only": false,
+        "maximum_reliability": false,
+        "strict_quality": true,
+        "token_first": false
+      },
+      "selections": {
+        "feasibility_only": "A-C-B",
+        "frozen_v3": "A-C-B",
+        "maximum_reliability": "A-C-B",
+        "strict_quality": null,
+        "token_first": "A-C-B"
+      },
+      "strategy": "S3_workflow_aware",
+      "target_project": "customer_churn",
+      "trace_id": "S3_workflow_aware:customer_churn:default_v1:d360c862f7bc"
+    },
+    {
+      "changed_vs_frozen": {
+        "feasibility_only": false,
+        "maximum_reliability": true,
+        "strict_quality": false,
+        "token_first": false
+      },
+      "selections": {
+        "feasibility_only": null,
+        "frozen_v3": null,
+        "maximum_reliability": "A-A-A",
+        "strict_quality": null,
+        "token_first": null
+      },
+      "strategy": "S1_single_model",
+      "target_project": "energy_consumption",
+      "trace_id": "S1_single_model:energy_consumption:default_v1:be7fc7642f39:A-A-A"
+    },
+    {
+      "changed_vs_frozen": {
+        "feasibility_only": false,
+        "maximum_reliability": true,
+        "strict_quality": false,
+        "token_first": false
+      },
+      "selections": {
+        "feasibility_only": null,
+        "frozen_v3": null,
+        "maximum_reliability": "B-B-B",
+        "strict_quality": null,
+        "token_first": null
+      },
+      "strategy": "S1_single_model",
+      "target_project": "energy_consumption",
+      "trace_id": "S1_single_model:energy_consumption:default_v1:2c3ae27618dc:B-B-B"
+    },
+    {
+      "changed_vs_frozen": {
+        "feasibility_only": false,
+        "maximum_reliability": true,
+        "strict_quality": false,
+        "token_first": false
+      },
+      "selections": {
+        "feasibility_only": null,
+        "frozen_v3": null,
+        "maximum_reliability": "C-C-C",
+        "strict_quality": null,
+        "token_first": null
+      },
+      "strategy": "S1_single_model",
+      "target_project": "energy_consumption",
+      "trace_id": "S1_single_model:energy_consumption:default_v1:3950886d3907:C-C-C"
+    },
+    {
+      "changed_vs_frozen": {
+        "feasibility_only": false,
+        "maximum_reliability": true,
+        "strict_quality": false,
+        "token_first": false
+      },
+      "selections": {
+        "feasibility_only": null,
+        "frozen_v3": null,
+        "maximum_reliability": "A-C-B",
+        "strict_quality": null,
+        "token_first": null
+      },
+      "strategy": "S2_greedy_task_only",
+      "target_project": "energy_consumption",
+      "trace_id": "S2_greedy_task_only:energy_consumption:default_v1:f9da8d2b7923"
+    },
+    {
+      "changed_vs_frozen": {
+        "feasibility_only": false,
+        "maximum_reliability": false,
+        "strict_quality": true,
+        "token_first": false
+      },
+      "selections": {
+        "feasibility_only": "A-C-B",
+        "frozen_v3": "A-C-B",
+        "maximum_reliability": "A-C-B",
+        "strict_quality": null,
+        "token_first": "A-C-B"
+      },
+      "strategy": "S3_workflow_aware",
+      "target_project": "energy_consumption",
+      "trace_id": "S3_workflow_aware:energy_consumption:default_v1:de5963898da0"
+    },
+    {
+      "changed_vs_frozen": {
+        "feasibility_only": false,
+        "maximum_reliability": true,
+        "strict_quality": false,
+        "token_first": false
+      },
+      "selections": {
+        "feasibility_only": null,
+        "frozen_v3": null,
+        "maximum_reliability": "A-A-A",
+        "strict_quality": null,
+        "token_first": null
+      },
+      "strategy": "S1_single_model",
+      "target_project": "retail_sales",
+      "trace_id": "S1_single_model:retail_sales:default_v1:c52844ac4e60:A-A-A"
+    },
+    {
+      "changed_vs_frozen": {
+        "feasibility_only": false,
+        "maximum_reliability": true,
+        "strict_quality": false,
+        "token_first": false
+      },
+      "selections": {
+        "feasibility_only": null,
+        "frozen_v3": null,
+        "maximum_reliability": "B-B-B",
+        "strict_quality": null,
+        "token_first": null
+      },
+      "strategy": "S1_single_model",
+      "target_project": "retail_sales",
+      "trace_id": "S1_single_model:retail_sales:default_v1:86b14b1ce3ed:B-B-B"
+    },
+    {
+      "changed_vs_frozen": {
+        "feasibility_only": false,
+        "maximum_reliability": true,
+        "strict_quality": false,
+        "token_first": false
+      },
+      "selections": {
+        "feasibility_only": null,
+        "frozen_v3": null,
+        "maximum_reliability": "C-C-C",
+        "strict_quality": null,
+        "token_first": null
+      },
+      "strategy": "S1_single_model",
+      "target_project": "retail_sales",
+      "trace_id": "S1_single_model:retail_sales:default_v1:be661918d410:C-C-C"
+    },
+    {
+      "changed_vs_frozen": {
+        "feasibility_only": false,
+        "maximum_reliability": true,
+        "strict_quality": false,
+        "token_first": false
+      },
+      "selections": {
+        "feasibility_only": null,
+        "frozen_v3": null,
+        "maximum_reliability": "C-C-B",
+        "strict_quality": null,
+        "token_first": null
+      },
+      "strategy": "S2_greedy_task_only",
+      "target_project": "retail_sales",
+      "trace_id": "S2_greedy_task_only:retail_sales:default_v1:cc35ac998cb2"
+    },
+    {
+      "changed_vs_frozen": {
+        "feasibility_only": false,
+        "maximum_reliability": false,
+        "strict_quality": true,
+        "token_first": false
+      },
+      "selections": {
+        "feasibility_only": "C-C-B",
+        "frozen_v3": "C-C-B",
+        "maximum_reliability": "C-C-B",
+        "strict_quality": null,
+        "token_first": "C-C-B"
+      },
+      "strategy": "S3_workflow_aware",
+      "target_project": "retail_sales",
+      "trace_id": "S3_workflow_aware:retail_sales:default_v1:38b5b168969e"
+    },
+    {
+      "changed_vs_frozen": {
+        "feasibility_only": false,
+        "maximum_reliability": false,
+        "strict_quality": true,
+        "token_first": false
+      },
+      "selections": {
+        "feasibility_only": "A-A-A",
+        "frozen_v3": "A-A-A",
+        "maximum_reliability": "A-A-A",
+        "strict_quality": null,
+        "token_first": "A-A-A"
+      },
+      "strategy": "S1_single_model",
+      "target_project": "support_operations",
+      "trace_id": "S1_single_model:support_operations:default_v1:19904e3196d2:A-A-A"
+    },
+    {
+      "changed_vs_frozen": {
+        "feasibility_only": false,
+        "maximum_reliability": true,
+        "strict_quality": false,
+        "token_first": false
+      },
+      "selections": {
+        "feasibility_only": null,
+        "frozen_v3": null,
+        "maximum_reliability": "B-B-B",
+        "strict_quality": null,
+        "token_first": null
+      },
+      "strategy": "S1_single_model",
+      "target_project": "support_operations",
+      "trace_id": "S1_single_model:support_operations:default_v1:1ee566b2ec31:B-B-B"
+    },
+    {
+      "changed_vs_frozen": {
+        "feasibility_only": false,
+        "maximum_reliability": true,
+        "strict_quality": false,
+        "token_first": false
+      },
+      "selections": {
+        "feasibility_only": null,
+        "frozen_v3": null,
+        "maximum_reliability": "C-C-C",
+        "strict_quality": null,
+        "token_first": null
+      },
+      "strategy": "S1_single_model",
+      "target_project": "support_operations",
+      "trace_id": "S1_single_model:support_operations:default_v1:856220dc76c6:C-C-C"
+    },
+    {
+      "changed_vs_frozen": {
+        "feasibility_only": false,
+        "maximum_reliability": false,
+        "strict_quality": true,
+        "token_first": false
+      },
+      "selections": {
+        "feasibility_only": "A-C-A",
+        "frozen_v3": "A-C-A",
+        "maximum_reliability": "A-C-A",
+        "strict_quality": null,
+        "token_first": "A-C-A"
+      },
+      "strategy": "S2_greedy_task_only",
+      "target_project": "support_operations",
+      "trace_id": "S2_greedy_task_only:support_operations:default_v1:3e7fc794e9d2"
+    },
+    {
+      "changed_vs_frozen": {
+        "feasibility_only": false,
+        "maximum_reliability": true,
+        "strict_quality": false,
+        "token_first": false
+      },
+      "selections": {
+        "feasibility_only": "C-C-B",
+        "frozen_v3": "C-C-B",
+        "maximum_reliability": "A-C-B",
+        "strict_quality": "C-C-B",
+        "token_first": "C-C-B"
+      },
+      "strategy": "S3_workflow_aware",
+      "target_project": "support_operations",
+      "trace_id": "S3_workflow_aware:support_operations:default_v1:7a94bb6aede2"
+    }
+  ],
+  "validator_v3_to_v3_1": {
+    "experiment_A": {
+      "reports_rescored": 12,
+      "skipped_no_report": 0,
+      "transitions": {
+        "v3_False_to_v31_False": 3,
+        "v3_False_to_v31_True": 2,
+        "v3_True_to_v31_True": 7
+      },
+      "v31_conditional_passed": 8,
+      "v31_ground_truth_passed": 9,
+      "v3_conditional_passed": 6,
+      "v3_ground_truth_passed": 7
+    },
+    "experiment_B": {
+      "reports_rescored": 82,
+      "skipped_no_report": 74,
+      "transitions": {
+        "v3_False_to_v31_False": 39,
+        "v3_False_to_v31_True": 11,
+        "v3_True_to_v31_True": 32
+      },
+      "v31_conditional_passed": 53,
+      "v31_ground_truth_passed": 43,
+      "v3_conditional_passed": 41,
+      "v3_ground_truth_passed": 32
+    },
+    "interpretation": "v3.1 changes reporting pass labels, so any route based on strict end-to-end feasibility may change; frozen prospective traces and counterfactuals remain primary and were not recomputed."
+  }
+}

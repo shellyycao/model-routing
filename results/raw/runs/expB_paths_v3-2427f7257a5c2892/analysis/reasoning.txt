@@ -1,0 +1,66 @@
+We need to produce JSON with fields python_code (script), expected_artifacts (list), methods_description (string). The script must read cleaned.csv from INPUT_DIR env var, compute metrics, write findings.json to OUTPUT_DIR. Must output flat JSON with metric keys and numeric values (no NaN). Must not round; full precision.
+
+We need to compute many metrics.
+
+Let's outline steps:
+
+- import pandas, numpy, os, json
+- read csv: df = pd.read_csv(path, dtype=...), parse dates? signup_date column is already in YYYY-MM-DD string; we can parse to datetime.
+
+- Compute overall metrics:
+customer_count = len(df)
+churn_rate_pct = df['churned'].mean() * 100 (since churned is 0/1)
+avg_monthly_fee = df['monthly_fee'].mean()
+
+- Churn by plan:
+group = df.groupby('plan')['churned'].mean()*100
+Map to keys: Basic, Standard, Premium.
+
+- Churn by signup cohort (year):
+df['signup_year'] = pd.to_datetime(df['signup_date']).dt.year
+group_year = df.groupby('signup_year')['churned'].mean()*100
+We need keys for 2021-2024. If a year missing, we should still output metric with NaN? Must be finite number. Could output 0? But better compute and if missing, set to 0.0? The dataset likely includes 2021-2024. We'll compute and for each year, if not present, set to 0.0.
+
+- Contract effect:
+monthly_rate = df[df['contract_type']=='Monthly']['churned'].mean()*100
+annual_rate = df[df['contract_type']=='Annual']['churned'].mean()*100
+change_pct = (monthly_rate - annual_rate) / annual_rate * 100 if annual_rate !=0 else np.inf? Must be finite. If annual_rate zero, set change_pct to np.nan? But must be finite. Could set to 0.0? But unlikely zero. We'll handle division by zero: if annual_rate ==0: change_pct = 0.0.
+
+- At-risk segment:
+condition = (df['support_tickets'] >=5) & (df['satisfaction_score'].notna()) & (df['satisfaction_score'] <=2)
+at_risk_df = df[condition]
+at_risk_customer_count = len(at_risk_df)
+at_risk_churn_rate_pct = at_risk_df['churned'].mean()*100 if at_risk_customer_count>0 else 0.0
+
+- Tenure and satisfaction summary:
+tenure_mean = df['tenure_months'].mean()
+tenure_median = df['tenure_months'].median()
+tenure_std = df['tenure_months'].std(ddof=1)  # sample std
+satisfaction_mean = df['satisfaction_score'].mean()  # automatically excludes NaN
+satisfaction_missing_count = df['satisfaction_score'].isna().sum()
+
+- Lifetime value by plan:
+ltv_means = df.groupby('plan')['lifetime_value'].mean()
+ltv_basic = ltv_means.get('Basic', np.nan)
+ltv_standard = ltv_means.get('Standard', np.nan)
+ltv_premium = ltv_means.get('Premium', np.nan)
+premium_vs_basic_ltv_change_pct = (ltv_premium - ltv_basic) / ltv_basic * 100 if ltv_basic !=0 else 0.0
+
+All metrics must be numbers (float). Ensure they are Python native types (float/int). Use .item() to convert.
+
+Write findings dict with all keys.
+
+Write json.dump with ensure_ascii=False.
+
+expected_artifacts: ["findings.json"]
+
+methods_description: brief description.
+
+Edge Cases: Ensure satisfaction_score column may be float but stored as int; we treat as numeric.
+
+Now produce script as a string.
+
+Make sure script uses os.path.join(os.environ["INPUT_DIR"], "cleaned.csv") and similarly for output.
+
+Now produce final JSON.
+

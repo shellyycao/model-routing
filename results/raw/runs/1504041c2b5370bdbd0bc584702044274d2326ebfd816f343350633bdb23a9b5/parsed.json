@@ -1,0 +1,8 @@
+{
+  "fixed_code": "def clamp(x, low, high):\n    if low > high:\n        raise ValueError(\"low must be less than or equal to high\")\n    return min(max(x, low), high)\n",
+  "bug_locations": [
+    "clamp function body: missing validation for low > high",
+    "clamp function body: normalized return-statement indentation while preserving inclusive min/max clamping"
+  ],
+  "explanation": "The clamping expression min(max(x, low), high) is inclusive and correct only when low <= high. The defect was that inverted bounds were silently accepted and could return a boundary value instead of failing. The fix validates low > high first and raises ValueError, then uses the same inclusive clamp expression; indentation was normalized without changing behavior."
+}

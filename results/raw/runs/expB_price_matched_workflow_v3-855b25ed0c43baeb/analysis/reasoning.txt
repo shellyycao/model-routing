@@ -1,0 +1,224 @@
+The task is straightforward: write a Python script that reads cleaned.csv, computes the metrics, writes findings.json as a flat JSON object.
+
+Let me carefully go through the metrics:
+
+q1:
+- total_kwh = sum of energy_kwh
+- reading_count = number of rows
+- mean_kwh_per_reading = total / count
+
+q2:
+- kwh_residential, kwh_commercial, kwh_industrial = groupby building_type sum of energy_kwh
+
+q3:
+- Quarter totals. reading_date is YYYY-MM-DD string. Parse with pd.to_datetime, compute quarter.
+
+q4:
+- kwh_h1 = Jan-Jun, kwh_h2 = Jul-Dec, change pct.
+
+q5:
+- Commercial & temperature_c >= 25 (non-missing). Count and mean energy.
+
+q6:
+- kwh_median = median energy_kwh
+- kwh_std = sample std (ddof=1)
+- temperature_mean = mean of non-missing temperature_c
+- temperature_missing_count = count of missing temperature
+- commercial_temp_kwh_corr = Pearson corr between temperature_c and energy_kwh over Commercial readings with non-missing temp.
+
+q7:
+- kwh_peak, kwh_off_peak = sums by tariff
+- peak_kwh_share_pct = kwh_peak / total_kwh * 100
+- unique_meter_count = distinct meter_id count
+- highest_use_meter_kwh = max groupby meter sum.
+
+Important: flat JSON, all finite numbers, no NaN. Need to handle potential NaN from correlation or mean of empty set — but data likely fine. Still, to be safe, I could use float() conversions and perhaps guard. But contract says values must be finite. The data presumably yields finite values. I'll just compute directly; but for robustness, maybe guard correlation with a check. Actually adding guards that return 0.0 might distort. Since cleaning summary indicates 62 missing temps and 1428 rows, commercial readings with non-missing temp will be plenty. I'll just compute directly but convert to float.
+
+reading_count and counts should be numbers — int is fine in JSON.
+
+Read CSV: temperature_c may be empty cells → pandas reads as NaN. That's fine.
+
+Parse reading_date with pd.to_datetime(df["reading_date"], format="%Y-%m-%d").
+
+Quarter: dt.quarter.
+
+H1: month <= 6.
+
+Write JSON with json.dump, ensure all values are Python floats/ints (not numpy types) — json can't serialize numpy types by default. Convert using float() / int().
+
+Let me write the script:
+
+```python
+import json
+import os
+
+import pandas as pd
+
+
+def main():
+    input_path = os.path.join(os.environ["INPUT_DIR"], "cleaned.csv")
+    output_path = os.path.join(os.environ["OUTPUT_DIR"], "findings.json")
+
+    df = pd.read_csv(input_path, dtype={"reading_id": str, "meter_id": str,
+                                        "building_type": str, "tariff": str})
+    # temperature_c has empty cells -> NaN automatically
+    dates = pd.to_datetime(df["reading_date"], format="%Y-%m-%d")
+
+    energy = df["energy_kwh"].astype(float)
+    temp = df["temperature_c"]  # float with NaN
+
+    total_kwh = float(energy.sum())
+    reading_count = int(len(df))
+    mean_kwh_per_reading = total_kwh / reading_count
+
+    by_type = df.groupby("building_type")["energy_kwh"].sum()
+    kwh_residential = float(by_type.get("Residential", 0.0))
+    kwh_commercial = float(by_type.get("Commercial", 0.0))
+    kwh_industrial = float(by_type.get("Industrial", 0.0))
+
+    quarter = dates.dt.quarter
+    q_sums = energy.groupby(quarter).sum()
+    kwh_q1 = float(q_sums.get(1, 0.0))
+    ...
+
+    month = dates.dt.month
+    h1 = float(energy[month <= 6].sum())
+    h2 = float(energy[month >= 7].sum())
+    change = (h2 - h1) / h1 * 100
+
+    hot_mask = (df["building_type"] == "Commercial") & temp.notna() & (temp >= 25)
+    hot = energy[hot_mask]
+    hot_count = int(len(hot))
+    hot_mean = float(hot.mean())
+
+    kwh_median = float(energy.median())
+    kwh_std = float(energy.std(ddof=1))
+    temp_mean = float(temp.mean())
+    temp_missing = int(temp.isna().sum())
+
+    comm_mask = (df["building_type"] == "Commercial") & temp.notna()
+    corr = float(pd.Series(energy[comm_mask]).corr(pd.Series(temp[comm_mask])))
+```
+
+Note: corr with aligned indices is fine since same df indices.
+
+Tariff sums:
+```python
+    by_tariff = df.groupby("tariff")["energy_kwh"].sum()
+    kwh_peak = float(by_tariff.get("peak", 0.0))
+    kwh_off_peak = float(by_tariff.get("off-peak", 0.0))
+    peak_share = kwh_peak / total_kwh * 100
+    unique_meters = int(df["meter_id"].nunique())
+    highest_meter = float(df.groupby("meter_id")["energy_kwh"].sum().max())
+```
+
+Then build findings dict, verify finite, dump.
+
+For safety on finiteness: import math, maybe assert. Could raise if not finite — but that would fail the stage. Better to just compute. I'll add a small guard: use math.isfinite check and raise — no, better to just write. Actually the validator expects finite; if something is NaN it fails anyway. I could replace NaN with 0.0 as a fallback but that hides errors. Given the data, everything will be finite. I'll just ensure float conversion and use `allow_nan=False` in json.dump to fail loudly? That would cause the stage to error rather than produce invalid output... Hmm. The instructions say values must be finite. Using allow_nan=False ensures we never write NaN silently; if it raised, the run fails. Either way it fails. I'll just do a straightforward dump without allow_nan. Actually, let me add a sanitization: if a value is not finite, convert to 0.0? That could pass validation but be wrong. The data guarantees non-empty groups. I'll keep it simple, but I can add a defensive helper that raises a clear error. I'll just compute directly.
+
+One nuance: pandas groupby of energy by quarter Series — need matching index, which is fine.
+
+Also note: df.groupby("building_type")["energy_kwh"].sum() — with observed default; building_type read as str, fine.
+
+JSON dump with indent maybe. Use `json.dump(findings, f, indent=2)`.
+
+Ensure ints remain ints — JSON numbers either way fine.
+
+Now write the response JSON: python_code string, expected_artifacts ["findings.json"], methods_description.
+
+Let me write the final script cleanly:
+
+```python
+"""Analysis stage: compute energy-consumption metrics from cleaned.csv."""
+
+import json
+import os
+
+import pandas as pd
+
+
+def main():
+    input_path = os.path.join(os.environ["INPUT_DIR"], "cleaned.csv")
+    output_path = os.path.join(os.environ["OUTPUT_DIR"], "findings.json")
+
+    df = pd.read_csv(input_path)
+    # reading_date is ISO YYYY-MM-DD after cleaning; temperature_c empty cells -> NaN.
+    dates = pd.to_datetime(df["reading_date"], format="%Y-%m-%d")
+    energy = df["energy_kwh"].astype(float)
+    temp = df["temperature_c"].astype(float)
+    btype = df["building_type"]
+    tariff = df["tariff"]
+
+    findings = {}
+
+    # q1: overall
+    total_kwh = float(energy.sum())
+    reading_count = int(len(df))
+    findings["total_kwh"] = total_kwh
+    findings["reading_count"] = reading_count
+    findings["mean_kwh_per_reading"] = total_kwh / reading_count
+
+    # q2: building types
+    by_type = energy.groupby(btype).sum()
+    findings["kwh_residential"] = float(by_type.get("Residential", 0.0))
+    findings["kwh_commercial"] = float(by_type.get("Commercial", 0.0))
+    findings["kwh_industrial"] = float(by_type.get("Industrial", 0.0))
+
+    # q3: quarterly trend
+    by_quarter = energy.groupby(dates.dt.quarter).sum()
+    findings["kwh_q1"] = float(by_quarter.get(1, 0.0))
+    findings["kwh_q2"] = float(by_quarter.get(2, 0.0))
+    findings["kwh_q3"] = float(by_quarter.get(3, 0.0))
+    findings["kwh_q4"] = float(by_quarter.get(4, 0.0))
+
+    # q4: half-year change
+    month = dates.dt.month
+    kwh_h1 = float(energy[month <= 6].sum())
+    kwh_h2 = float(energy[month >= 7].sum())
+    findings["kwh_h1"] = kwh_h1
+    findings["kwh_h2"] = kwh_h2
+    findings["kwh_h2_vs_h1_change_pct"] = (kwh_h2 - kwh_h1) / kwh_h1 * 100.0
+
+    # q5: hot-day commercial load
+    hot_mask = (btype == "Commercial") & temp.notna() & (temp >= 25.0)
+    hot_energy = energy[hot_mask]
+    findings["hot_commercial_reading_count"] = int(hot_mask.sum())
+    findings["hot_commercial_mean_kwh"] = float(hot_energy.mean())
+
+    # q6: distribution summary
+    findings["kwh_median"] = float(energy.median())
+    findings["kwh_std"] = float(energy.std(ddof=1))
+    findings["temperature_mean"] = float(temp.mean())
+    findings["temperature_missing_count"] = int(temp.isna().sum())
+    comm_mask = (btype == "Commercial") & temp.notna()
+    findings["commercial_temp_kwh_corr"] = float(
+        energy[comm_mask].corr(temp[comm_mask])
+    )
+
+    # q7: tariff and meter usage
+    by_tariff = energy.groupby(tariff).sum()
+    kwh_peak = float(by_tariff.get("peak", 0.0))
+    kwh_off_peak = float(by_tariff.get("off-peak", 0.0))
+    findings["kwh_peak"] = kwh_peak
+    findings["kwh_off_peak"] = kwh_off_peak
+    findings["peak_kwh_share_pct"] = kwh_peak / total_kwh * 100.0
+    findings["unique_meter_count"] = int(df["meter_id"].nunique())
+    findings["highest_use_meter_kwh"] = float(
+        energy.groupby(df["meter_id"]).sum().max()
+    )
+
+    with open(output_path, "w", encoding="utf-8") as f:
+        json.dump(findings, f, indent=2, allow_nan=False)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+Note: energy.groupby(btype) — grouping a Series by another Series works.
+
+allow_nan=False — if somehow NaN, raises ValueError, which fails the stage rather than writing invalid JSON. Since data ensures non-empty groups, fine. Actually let me double check: hot_commercial_mean_kwh — if there are no hot commercial readings, mean is NaN. Data presumably has some (commercial readings throughout year, temps up to 50, 1428 rows). With ~62 missing temps, plenty. Corr fine. I'll keep allow_nan=False as a safety assertion? If it raises, stage fails — but that's better than invalid output? Validation would fail either way. Keep it.
+
+One more consideration: `temp = df["temperature_c"].astype(float)` — pandas will read empty as NaN float already; astype(float) safe.
+
+Everything looks good. Write methods_description briefly.

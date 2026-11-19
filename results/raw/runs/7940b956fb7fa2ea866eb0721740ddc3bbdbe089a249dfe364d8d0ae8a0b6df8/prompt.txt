@@ -1,0 +1,16 @@
+Extract the requested fields from the document. Resolve conflicts using each field description, perform required unit conversions, and use null when the document does not support a value.
+
+Schema:
+- agency: string
+- deadline: date or null
+- eligible_region: string
+- grant_id: string
+- match_percent: number
+- maximum_award_usd: number
+
+Document:
+FUNDING NOTICE GR-702
+Agency: National Science Foundation (the NIH notice linked below is unrelated).
+Deadline: 2027-03-28 17:00 ET. Ceiling: $1.202M USD. Required cost share: 20%. Eligibility geography: United States.
+
+Return exactly one object with the required `fields` wrapper and no extra schema keys. Content correctness and schema/operational compliance are scored separately.

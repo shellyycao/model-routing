@@ -1,0 +1,7 @@
+{
+  "fixed_code": "def overlap_minutes(a, b):\n    if a[1] <= a[0] or b[1] <= b[0]:\n        raise ValueError('interval')\n    overlap_start = max(a[0], b[0])\n    overlap_end = min(a[1], b[1])\n    if overlap_start >= overlap_end:\n        return 0\n    return overlap_end - overlap_start",
+  "bug_locations": [
+    "overlap_minutes function"
+  ],
+  "explanation": "The original code incorrectly calculated the overlap by adding 1 to the difference between the minimum end and the maximum start of the intervals. This resulted in an incorrect overlap length. The correct approach is to calculate the start and end of the overlap and return the difference between them. If the calculated overlap start is greater than or equal to the overlap end, it means there is no overlap, and the function should return 0."
+}

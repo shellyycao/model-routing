@@ -1,0 +1,26 @@
+TASK: Python debugging (independent benchmark A1, prompt independent_v1)
+
+The function below contains exactly one bug. Fix it so that it satisfies the specification.
+
+SPECIFICATION:
+median(xs) returns the median of a non-empty list of numbers (mean of the two middle values for even length). The input list must not be modified. Raise ValueError for an empty list.
+
+BUGGY CODE:
+```python
+def median(xs):
+    if not xs:
+        raise ValueError("empty")
+    s = sorted(xs)
+    n = len(s)
+    mid = n // 2
+    return s[mid] if n % 2 else (s[mid] + s[mid + 1]) / 2 if mid + 1 < n else s[mid]
+
+```
+
+EXAMPLE TESTS (these must pass; additional hidden tests will also be run):
+```python
+assert median([3, 1, 2]) == 2
+```
+
+Return the COMPLETE corrected source code (keep the same function names and signatures; standard library only),
+the location of the bug, and a short explanation.

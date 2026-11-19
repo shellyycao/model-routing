@@ -1,0 +1,25 @@
+{
+  "buggy": "def normalize(scores):\n    total = sum(scores.values())\n    if total == 0:\n        return {k: 0.0 for k in scores}\n    return {k: v // total for k, v in scores.items()}\n",
+  "case_id": "a1_07_normalize",
+  "difficulty": "medium",
+  "func": "normalize",
+  "hidden": [
+    "normalize({'a': 1, 'b': 1}) == {'a': 0.5, 'b': 0.5}",
+    "normalize({'a': 3, 'b': 1}) == {'a': 0.75, 'b': 0.25}",
+    "normalize({'a': 0, 'b': 0}) == {'a': 0.0, 'b': 0.0}",
+    "normalize({}) == {}",
+    "normalize({'x': 5}) == {'x': 1.0}",
+    "abs(sum(normalize({'a': 1, 'b': 2, 'c': 3}).values()) - 1) < 1e-9",
+    "isinstance(normalize({'a': 2})['a'], float)"
+  ],
+  "operator": "integer_division",
+  "reference": "def normalize(scores):\n    total = sum(scores.values())\n    if total == 0:\n        return {k: 0.0 for k in scores}\n    return {k: v / total for k, v in scores.items()}\n",
+  "spec": "normalize(scores) takes a dict name->non-negative number and returns name->share of the total as a float (shares sum to 1). If the total is 0, every share is 0.0.",
+  "verification": {
+    "buggy_fails": 4,
+    "reference_passes": 7
+  },
+  "visible": [
+    "normalize({'a': 1, 'b': 1}) == {'a': 0.5, 'b': 0.5}"
+  ]
+}

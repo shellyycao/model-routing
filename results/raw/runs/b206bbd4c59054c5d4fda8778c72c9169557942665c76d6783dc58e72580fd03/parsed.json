@@ -1,0 +1,7 @@
+{
+  "fixed_code": "def clamp(x, low, high):\n    if low > high:\n        raise ValueError('bounds')\n    return max(min(x, high), low)\n",
+  "bug_locations": [
+    "clamp: return statement (max/min bound arguments swapped)"
+  ],
+  "explanation": "The ValueError guard for low > high was correct, but the return expression `max(min(x, low), high)` had the bounds swapped. Since low <= high, min(x, low) <= low <= high, so max(..., high) always returns high regardless of x (e.g., clamp(5, 0, 10) returned 10). The fix caps x at the upper bound first with min(x, high) and then raises it to at least the lower bound with max(..., low), yielding an inclusive clamp that satisfies the spec."
+}

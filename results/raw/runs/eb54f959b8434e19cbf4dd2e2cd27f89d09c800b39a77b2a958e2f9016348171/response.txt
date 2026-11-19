@@ -1,0 +1,11 @@
+```json
+{
+  "fixed_code": "def allocate_stock(stock, requests):\n    remaining = dict(stock)\n    fulfilled = []\n    seen = set()\n    for rid, sku, qty in requests:\n        if rid in seen:\n            continue\n        seen.add(rid)\n        if qty > 0 and remaining.get(sku, 0) >= qty:\n            remaining[sku] -= qty\n            fulfilled.append(rid)\n    return fulfilled, remaining\n",
+  "bug_locations": [
+    "allocate_stock: 'remaining=stock' aliases the input dict, so deductions mutate the caller's stock (must copy, e.g., dict(stock))",
+    "allocate_stock: the fulfillment condition 'remaining.get(sku,0)>=qty' lacks a positive-qty check, so zero/negative quantities are fulfilled (and negative qty increases stock)",
+    "allocate_stock: the request loop has no tracking of previously seen request_ids, so duplicate request_ids are processed instead of ignored"
+  ],
+  "explanation": "Three defects interacted. (1) Mutation: 'remaining = stock' bound the same dict object, and 'remaining[sku] -= qty' mutated the caller's stock, violating the non-mutation requirement; fixed by copying with dict(stock). (2) Missing positive-qty guard: requests with qty <= 0 passed the '>= qty' test (zero consumed nothing but was marked fulfilled; negative qty actually increased stock); fixed by requiring qty > 0 alongside the sufficient-stock check, preserving all-or-nothing ('whole request') fulfillment. (3) Duplicates not ignored: any repeated request_id was reprocessed; fixed with a 'seen' set that records each id on first encounter (regardless of whether it could be fulfilled) and skips later occurrences. Requests are still processed in order, and the function returns (fulfilled_ids, remaining_stock) with the input stock untouched."
+}
+```

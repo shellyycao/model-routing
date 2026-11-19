@@ -1,0 +1,21 @@
+TASK: Information extraction (independent benchmark A2, prompt independent_v1)
+
+Extract the fields defined below from the document. Rules:
+- Use EXACTLY these field names as keys (no extra keys).
+- Use null when the document does not state the value. Do not guess.
+- Follow each field's description; it resolves ambiguous cases.
+- Dates as YYYY-MM-DD, numbers as plain numbers (no currency symbols or thousands separators), booleans as true/false.
+
+FIELDS:
+- completion_year: integer; null if not stated
+- drug_name: string: the investigational drug (not the comparator)
+- enrolled_patients: integer: patients actually enrolled (not the planned target)
+- phase: integer: trial phase 1-4
+- primary_endpoint: string
+- sponsor: string
+- trial_id: string: format CT-#####
+
+DOCUMENT:
+"""
+Trial CT-88242 is a Phase 3 study of parsatide versus placebo-matched standard care, sponsored by Quarry Bio. The planned enrolment target was 500 patients; 452 patients were ultimately enrolled. The primary endpoint is time to first relapse; secondary endpoints include quality of life.
+"""

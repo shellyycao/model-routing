@@ -1,0 +1,96 @@
+We need to produce JSON with fields python_code (script), output_filename ("cleaned.csv"), cleaning_logic (brief explanation). The script must implement all cleaning steps.
+
+We need to read raw.csv from INPUT_DIR, treat all columns as text, strip whitespace, treat missing values as per list. Then deduplicate by reading_id (keep first). Then parse reading_date with multiple formats, drop rows missing/unparseable. Then meter_id uppercase, drop missing. building_type mapping case-insensitive, drop missing or unmapped. tariff mapping, drop missing/unmapped. energy conversion: remove commas, handle units MWh/kWh, convert to kWh, drop rows missing, not number, <0 or >100000 after conversion, round to 2 decimals. temperature conversion: remove trailing degree sign and unit, handle F to C conversion, else C, round to 1 decimal, if missing/not number/out of range set to missing (empty) but keep row. Output columns in order, sort by reading_id ascending (string). Write cleaned.csv with header, no index. Also write cleaning_summary.json with raw_rows, cleaned_rows, and per-rule counts.
+
+We need to track counts: maybe duplicates_removed, date_invalid, meter_missing, building_invalid, tariff_invalid, energy_invalid, etc.
+
+Implementation details:
+
+- Use pandas read_csv with dtype=str, keep default quoting. Use na_values? But we need custom missing detection after stripping. So read as strings, then apply strip to all cells.
+
+- After reading, raw_rows = len(df).
+
+- Apply strip: df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)
+
+- Define missing set = {'', 'na', 'n/a', 'null', 'none', '-'} after lower.
+
+- Replace those with np.nan: df = df.replace(to_replace=missing_set, value=np.nan, regex=False). But need case-insensitive; we can use applymap to set None.
+
+Simpler: define a function clean_val(v): if isinstance(v,str): v=v.strip(); if v.lower() in missing_set: return np.nan else return v; else return v.
+
+Apply to all cells.
+
+- Duplicate removal: keep first occurrence based on reading_id. Use df.drop_duplicates(subset='reading_id', keep='first', inplace=True). Count duplicates_removed = raw_rows - len(df).
+
+- Then start row filters, track counts.
+
+We'll create a copy of df for processing.
+
+- reading_date parsing: define list of formats: "%Y-%m-%d", "%m/%d/%Y", "%d-%b-%Y", "%Y/%m/%d", "%B %d, %Y". For each row, try parse with datetime.strptime after lower? month abbreviation case-insensitive; strptime handles case-insensitive for month names? It expects proper case but we can use .title? We'll just try each format; if fails, continue. Use pandas to_datetime with format and errors='coerce' but need multiple formats. We'll write a function parse_date(s): try each format; return date string in YYYY-MM-DD else None.
+
+- Drop rows where parsed date is None. Count date_invalid.
+
+- meter_id: uppercase, drop missing. Count meter_missing.
+
+- building_type mapping: dict mapping lower variants to proper. Use .lower() after strip. Map: 'residential','res','resi' -> Residential; 'commercial','comm' -> Commercial; 'industrial','ind' -> Industrial. Drop rows where mapping fails. Count building_invalid.
+
+- tariff mapping: lower variants: 'peak' -> 'peak'; 'off-peak','offpeak','off peak' -> 'off-peak'. Drop rows missing/unmapped. Count tariff_invalid.
+
+- energy: process column 'energy' to produce energy_kwh. Steps: if missing -> invalid. Remove commas. Use regex to extract number and unit. Approach: s = str(value).replace(',','').strip(). Then check for unit: if endswith case-insensitive 'mwh' possibly with space: use re.search(r'(?i)^\s*([\d\.]+)\s*mwh\s*$', s). If matches, number*1000. Else if endswith 'kwh' (case-insensitive) similar, number unchanged. Else assume number in kWh. Convert to float. If conversion fails or out of range (<0 or >100000) invalid. Round to 2 decimals. Count energy_invalid.
+
+- temperature: column 'temperature'. Process: if missing -> set NaN (empty). Else remove spaces, degree sign. Use regex to capture number and optional unit. s = str(value).strip().replace('°',''). Upper? We'll detect unit: if endswith 'F' (case-insensitive) then convert. If endswith 'C' then keep. If no unit, assume Celsius. Convert to float. After conversion, if not number or out of -40 to 50, set NaN. Else round to 1 decimal. Count temperature_invalid maybe.
+
+- After processing, create final DataFrame with required columns, rename energy_kwh, temperature_c.
+
+- Sort by reading_id ascending (string). Write cleaned.csv.
+
+- cleaning_summary.json: include raw_rows, cleaned_rows, duplicates_removed, date_invalid, meter_missing, building_invalid, tariff_invalid, energy_invalid, temperature_invalid (maybe count of rows where temperature set to missing). Also maybe total rows dropped.
+
+Implementation details: need to keep track of counts before dropping rows. For temperature, rows are not dropped, but we may count number of rows where temperature set to missing due to invalid.
+
+Implementation steps:
+
+We'll create df_original = df after initial cleaning (strip and missing). raw_rows = len(df_original).
+
+duplicate removal: duplicates_removed = raw_rows - len(df_nodup). df = df_nodup.
+
+Initialize counters dict.
+
+Processing each column with apply and using functions that return (value, flag). But easier: we can process sequentially, dropping rows as needed and increment counters.
+
+We'll use df = df.copy().
+
+Date parsing: define function parse_date; apply to column; create new column parsed_date; rows where parsed_date is NaT -> drop. Count date_invalid = number dropped.
+
+Meter_id: df['meter_id'] = df['meter_id'].str.upper(); missing: df['meter_id'].isna() -> drop; count meter_missing.
+
+Building_type: map using dict; apply lower; map; rows where result is NaN -> drop; count building_invalid.
+
+Tariff: similar.
+
+Energy: define function convert_energy; apply; rows where result is NaN -> drop; count energy_invalid.
+
+Temperature: define function convert_temp; apply; rows where result is NaN -> set to NaN; count temperature_invalid (rows where conversion failed or out of range). Keep rows.
+
+After all, final columns: reading_id, reading_date (as string), meter_id, building_type, tariff, energy_kwh, temperature_c.
+
+Set dtype categories? Not needed for CSV.
+
+Write CSV.
+
+Write summary JSON.
+
+Edge Cases: reading_id may have whitespace; after strip it's fine.
+
+Make sure to treat missing values after strip: we already replaced with np.nan.
+
+Implementation details for parse_date: use datetime module.
+
+Now produce script as a string.
+
+Also need to set output_filename variable to "cleaned.csv". The script should define that variable? The spec says "Write the cleaned CSV to ... and set output_filename to "cleaned.csv"." So script should assign variable output_filename = "cleaned.csv". Also maybe print nothing.
+
+We'll also write cleaning_summary.json.
+
+Now produce final JSON.
+

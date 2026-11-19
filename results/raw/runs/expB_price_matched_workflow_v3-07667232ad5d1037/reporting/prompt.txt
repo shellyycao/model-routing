@@ -1,0 +1,295 @@
+STAGE: reporting
+PROJECT: support_operations
+PROMPT_VERSION: v3-post-freeze
+
+You are the reporting stage of a three-stage data workflow (cleaning -> analysis -> reporting).
+The analysis stage has already run its code in a sandbox. Write a structured report of the VERIFIED
+findings below for business stakeholders.
+
+## Original objective
+Clean and join a support-ticket export with an agent roster, analyse cost, speed, reopening, satisfaction and agent concentration, then report verified findings.
+
+## Handoff from the previous stages
+Completed stages: cleaning, analysis
+Validation status of previous stages: {"cleaning": "failed", "analysis": "failed"}
+Methods reported by the analysis stage:
+Reads cleaned.csv produced by the cleaning stage and computes all required metrics with pandas. Overall metrics use count, mean and sum of resolution_minutes and labor_cost. Team labor cost and channel resolution means use groupby aggregation on the team and channel columns. Reopen rates are the mean of the reopened flag within email and chat multiplied by 100, with the relative change computed as (email - chat) / chat * 100 (guarded against a zero chat rate). The high-cost low-satisfaction segment filters labor_cost >= 100 with a non-missing satisfaction_score <= 2, then reports its count and reopen percentage. Distribution metrics use the median and sample standard deviation (ddof=1) of resolution_minutes, the NaN-skipping mean of satisfaction_score, and the count of missing satisfaction values. Agent concentration uses the number of distinct agent_ids, the maximum tickets handled by any single agent, and that agent's share of all tickets. All values are coerced to finite plain Python numbers, key completeness is asserted, and results are written as a flat findings.json with NaN/Infinity disallowed.
+
+## Analysis questions and their metric_keys
+- q1: Overall: number of tickets -> ticket_count; mean resolution_minutes -> mean_resolution_minutes; sum of labor_cost -> total_labor_cost.
+  metric_keys: ticket_count, mean_resolution_minutes, total_labor_cost
+- q2: Team comparison: total labor_cost for Alpha, Beta and Gamma -> labor_cost_alpha, labor_cost_beta, labor_cost_gamma.
+  metric_keys: labor_cost_alpha, labor_cost_beta, labor_cost_gamma
+- q3: Channel comparison: mean resolution_minutes by channel -> resolution_email, resolution_chat, resolution_phone.
+  metric_keys: resolution_email, resolution_chat, resolution_phone
+- q4: Reopening change: reopened percentage for email and chat -> reopen_rate_email_pct, reopen_rate_chat_pct; (email rate - chat rate) / chat rate * 100 -> email_vs_chat_reopen_change_pct.
+  metric_keys: reopen_rate_email_pct, reopen_rate_chat_pct, email_vs_chat_reopen_change_pct
+- q5: High-cost low-satisfaction segment: tickets with labor_cost >= 100 and a non-missing satisfaction_score <= 2 -> count and reopened percentage as high_cost_low_sat_count and high_cost_low_sat_reopen_pct.
+  metric_keys: high_cost_low_sat_count, high_cost_low_sat_reopen_pct
+- q6: Distribution: median and sample standard deviation of resolution_minutes -> resolution_median, resolution_std; mean non-missing satisfaction_score -> satisfaction_mean; missing satisfaction count -> satisfaction_missing_count.
+  metric_keys: resolution_median, resolution_std, satisfaction_mean, satisfaction_missing_count
+- q7: Agent concentration (derived step): distinct agent_id count -> unique_agent_count; largest ticket count for one agent -> top_agent_ticket_count; top_agent_ticket_count / ticket_count * 100 -> top_agent_ticket_share_pct.
+  metric_keys: unique_agent_count, top_agent_ticket_count, top_agent_ticket_share_pct
+
+## Structured claim requirements
+The following block is contract metadata, not answer data. For every `ranking_required: true`
+finding, return a complete high-to-low `ranking`. Use the display-label values in
+`ranking_metric_key_to_label` exactly. For every `direction_required: true` finding, return the
+direction implied by the named metric.
+```json
+{
+  "q1": {
+    "direction_required": false,
+    "direction_metric_key": null,
+    "ranking_required": false,
+    "ranking_metric_key_to_label": null
+  },
+  "q2": {
+    "direction_required": false,
+    "direction_metric_key": null,
+    "ranking_required": true,
+    "ranking_metric_key_to_label": {
+      "labor_cost_alpha": "Alpha",
+      "labor_cost_beta": "Beta",
+      "labor_cost_gamma": "Gamma"
+    }
+  },
+  "q3": {
+    "direction_required": false,
+    "direction_metric_key": null,
+    "ranking_required": true,
+    "ranking_metric_key_to_label": {
+      "resolution_chat": "chat",
+      "resolution_email": "email",
+      "resolution_phone": "phone"
+    }
+  },
+  "q4": {
+    "direction_required": true,
+    "direction_metric_key": "email_vs_chat_reopen_change_pct",
+    "ranking_required": false,
+    "ranking_metric_key_to_label": null
+  },
+  "q5": {
+    "direction_required": false,
+    "direction_metric_key": null,
+    "ranking_required": false,
+    "ranking_metric_key_to_label": null
+  },
+  "q6": {
+    "direction_required": false,
+    "direction_metric_key": null,
+    "ranking_required": false,
+    "ranking_metric_key_to_label": null
+  },
+  "q7": {
+    "direction_required": false,
+    "direction_metric_key": null,
+    "ranking_required": false,
+    "ranking_metric_key_to_label": null
+  }
+}
+```
+
+## Verified findings (computed by the analysis code; metric_key -> value)
+VERIFIED_FINDINGS_JSON
+```json
+{
+  "ticket_count": 235.0,
+  "mean_resolution_minutes": 75.29787234042553,
+  "total_labor_cost": 18704.1,
+  "labor_cost_alpha": 5254.6,
+  "labor_cost_beta": 6466.66,
+  "labor_cost_gamma": 6982.84,
+  "resolution_email": 73.47933884297521,
+  "resolution_chat": 83.54411764705883,
+  "resolution_phone": 67.8913043478261,
+  "reopen_rate_email_pct": 19.834710743801654,
+  "reopen_rate_chat_pct": 10.294117647058822,
+  "email_vs_chat_reopen_change_pct": 92.68004722550181,
+  "high_cost_low_sat_count": 8.0,
+  "high_cost_low_sat_reopen_pct": 12.5,
+  "resolution_median": 66.0,
+  "resolution_std": 53.34267341837612,
+  "satisfaction_mean": 4.128888888888889,
+  "satisfaction_missing_count": 10.0,
+  "unique_agent_count": 18.0,
+  "top_agent_ticket_count": 20.0,
+  "top_agent_ticket_share_pct": 8.51063829787234
+}
+```
+
+## Rules (mandatory)
+- Use ONLY the verified findings above. Do not invent or estimate numbers. Each `key_findings`
+  statement MUST state at least one verified numeric value for that finding. Rounding to a sensible
+  precision is fine; any number you derive must be declared in `derived_values`.
+- Write one entry in `key_findings` for each of these question ids: q1, q2, q3, q4, q5, q6, q7.
+  Set `finding_id` to the question id and list the metric_keys you rely on in `evidence_refs`.
+- In `reported_values`, include EVERY metric_key of that question with its verified value (copy it).
+- Follow the structured claim requirements exactly. A ranking is required whenever
+  `ranking_required` is true, including trend questions; order it from highest to lowest.
+- `derived_values` must declare every number in your text computed from findings (difference,
+  ratio, pct_change or share), with metric-key `operands` in formula order.
+- Keep the whole report (title, summary, statements, limitations, conclusion) under 650 words.
+- Mention genuine limitations of the data or analysis in `limitations`.
+
+
+Respond with a single JSON object that conforms to this JSON Schema. Put it in one ```json fenced block and include nothing else outside the block.
+```json
+{
+  "$defs": {
+    "DerivedValue": {
+      "description": "A number stated in the report that is computed from verified findings (v1.2).",
+      "properties": {
+        "kind": {
+          "description": "difference = a-b; ratio = a/b; pct_change = (a-b)/b*100; share = a/b*100",
+          "enum": [
+            "difference",
+            "ratio",
+            "pct_change",
+            "share"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "operands": {
+          "description": "metric_keys [a, b] used in the formula, in order.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Operands",
+          "type": "array"
+        },
+        "value": {
+          "description": "The number as stated in the report.",
+          "title": "Value",
+          "type": "number"
+        }
+      },
+      "required": [
+        "kind",
+        "operands",
+        "value"
+      ],
+      "title": "DerivedValue",
+      "type": "object"
+    },
+    "KeyFinding": {
+      "properties": {
+        "finding_id": {
+          "description": "The analysis question_id this finding addresses.",
+          "title": "Finding Id",
+          "type": "string"
+        },
+        "statement": {
+          "title": "Statement",
+          "type": "string"
+        },
+        "evidence_refs": {
+          "description": "metric_keys from findings.json supporting this statement.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Evidence Refs",
+          "type": "array"
+        },
+        "reported_values": {
+          "additionalProperties": {
+            "type": "number"
+          },
+          "description": "metric_key -> number as stated in the report. Required for EVERY metric_key of the finding.",
+          "title": "Reported Values",
+          "type": "object"
+        },
+        "direction": {
+          "anyOf": [
+            {
+              "enum": [
+                "increase",
+                "decrease",
+                "no_change",
+                "not_applicable"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "For change/trend findings: the direction you state in the text.",
+          "title": "Direction"
+        },
+        "ranking": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "For group comparisons: group labels ordered from highest to lowest value.",
+          "title": "Ranking"
+        },
+        "derived_values": {
+          "description": "Any number in the text computed from findings (share, difference, ...).",
+          "items": {
+            "$ref": "#/$defs/DerivedValue"
+          },
+          "title": "Derived Values",
+          "type": "array"
+        }
+      },
+      "required": [
+        "finding_id",
+        "statement",
+        "evidence_refs"
+      ],
+      "title": "KeyFinding",
+      "type": "object"
+    }
+  },
+  "properties": {
+    "title": {
+      "title": "Title",
+      "type": "string"
+    },
+    "executive_summary": {
+      "title": "Executive Summary",
+      "type": "string"
+    },
+    "key_findings": {
+      "items": {
+        "$ref": "#/$defs/KeyFinding"
+      },
+      "title": "Key Findings",
+      "type": "array"
+    },
+    "limitations": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Limitations",
+      "type": "array"
+    },
+    "conclusion": {
+      "title": "Conclusion",
+      "type": "string"
+    }
+  },
+  "required": [
+    "title",
+    "executive_summary",
+    "key_findings",
+    "limitations",
+    "conclusion"
+  ],
+  "title": "ReportOutput",
+  "type": "object"
+}
+```

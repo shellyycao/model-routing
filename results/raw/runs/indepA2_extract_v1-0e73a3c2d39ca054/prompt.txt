@@ -1,0 +1,21 @@
+TASK: Information extraction (independent benchmark A2, prompt independent_v1)
+
+Extract the fields defined below from the document. Rules:
+- Use EXACTLY these field names as keys (no extra keys).
+- Use null when the document does not state the value. Do not guess.
+- Follow each field's description; it resolves ambiguous cases.
+- Dates as YYYY-MM-DD, numbers as plain numbers (no currency symbols or thousands separators), booleans as true/false.
+
+FIELDS:
+- completion_year: integer; null if not stated
+- drug_name: string: the investigational drug (not the comparator)
+- enrolled_patients: integer: patients actually enrolled (not the planned target)
+- phase: integer: trial phase 1-4
+- primary_endpoint: string
+- sponsor: string
+- trial_id: string: format CT-#####
+
+DOCUMENT:
+"""
+Trial CT-12371 is a Phase 2 study of parsatide versus placebo-matched standard care, sponsored by Corvid Analytics. The planned enrolment target was 300 patients; 293 patients were ultimately enrolled. The primary endpoint is HbA1c reduction; secondary endpoints include quality of life.
+"""

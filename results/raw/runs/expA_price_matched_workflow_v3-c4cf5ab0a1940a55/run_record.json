@@ -1,0 +1,149 @@
+{
+  "contract_version": "1.2",
+  "run_id": "expA_price_matched_workflow_v3-c4cf5ab0a1940a55",
+  "experiment_id": "expA_price_matched_workflow_v3",
+  "project_id": "retail_sales",
+  "stage": "cleaning",
+  "model_alias": "A",
+  "repeat_index": 0,
+  "canonical_inputs": [
+    "datasets/projects/retail_sales/raw.csv"
+  ],
+  "canonical_input_hashes": {
+    "datasets/projects/retail_sales/raw.csv": "a1c513b0966bc95bb7cf521bc8920d7a70ccac71ff98d1564a6d84e013f33a5c"
+  },
+  "config_hash": "d76ed853bf185f7079bd1e99dfc38741973cd01cfe35477d76f302dbc9c818ad",
+  "record": {
+    "stage": "cleaning",
+    "model_alias": "A",
+    "model_id": "us.anthropic.claude-sonnet-4-6",
+    "prompt_version": "v3",
+    "prompt_hash": "166a03432eeeee68c47f88049efab1cd0b57e65cee2270cd7a4026dc133d89a5",
+    "invocation_ids": [
+      "11c2ac5e-3b32-46e2-9acd-12cc80ba0ca5"
+    ],
+    "cache_hit": false,
+    "shared_with_run_ids": [],
+    "status": "passed",
+    "structural_ok": true,
+    "failure_type": null,
+    "failure_detail": null,
+    "parse_ok": true,
+    "execution": {
+      "status": "success",
+      "exit_code": 0,
+      "stdout": "Cleaning complete: 636 raw rows -> 520 cleaned rows.\n",
+      "stderr": "/sandbox/code/main.py:18: FutureWarning: DataFrame.applymap has been deprecated. Use DataFrame.map instead.\n  raw_df = raw_df.applymap(lambda x: x.strip() if isinstance(x, str) else x)\n/sandbox/code/main.py:27: FutureWarning: DataFrame.applymap has been deprecated. Use DataFrame.map instead.\n  raw_df = raw_df.applymap(to_missing)\n",
+      "runtime_ms": 1137.420041995938,
+      "output_files": [
+        "/Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expA_price_matched_workflow_v3-c4cf5ab0a1940a55/cleaning/output/cleaned.csv",
+        "/Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expA_price_matched_workflow_v3-c4cf5ab0a1940a55/cleaning/output/cleaning_summary.json"
+      ],
+      "sandbox_image": "sha256:88988a15503bdb96538c3dd62244a79879d5c7848397db18b1267ccfd0a9727a"
+    },
+    "validation": {
+      "stage": "cleaning",
+      "hard_pass": true,
+      "checks": [
+        {
+          "name": "output_exists",
+          "passed": true,
+          "mandatory": true,
+          "detail": "/Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expA_price_matched_workflow_v3-c4cf5ab0a1940a55/cleaning/output/cleaned.csv",
+          "value": null
+        },
+        {
+          "name": "output_parses",
+          "passed": true,
+          "mandatory": true,
+          "detail": "520 rows, 9 columns",
+          "value": null
+        },
+        {
+          "name": "required_columns_present",
+          "passed": true,
+          "mandatory": true,
+          "detail": "all present",
+          "value": null
+        },
+        {
+          "name": "schema_constraints",
+          "passed": true,
+          "mandatory": true,
+          "detail": "all constraints satisfied",
+          "value": 1.0
+        },
+        {
+          "name": "no_extra_columns",
+          "passed": true,
+          "mandatory": false,
+          "detail": "",
+          "value": null
+        },
+        {
+          "name": "no_duplicate_keys",
+          "passed": true,
+          "mandatory": true,
+          "detail": "",
+          "value": 0.0
+        },
+        {
+          "name": "row_set_matches_reference",
+          "passed": true,
+          "mandatory": true,
+          "detail": "0 reference rows missing (e.g. []); 0 unexpected rows (e.g. []); output rows=520, reference rows=520",
+          "value": null
+        },
+        {
+          "name": "values_match_reference",
+          "passed": true,
+          "mandatory": true,
+          "detail": "4680/4680 cells match (abs_tol=0.011, rel_tol=1e-06)",
+          "value": 1.0
+        }
+      ],
+      "quality": {
+        "cleaning_correctness": 1.0,
+        "data_integrity": 1.0,
+        "schema_compliance": 1.0
+      },
+      "quality_basis": "ground_truth",
+      "validator_version": "1.0"
+    },
+    "conditional_validation": null,
+    "input_artifacts": [
+      "datasets/projects/retail_sales/raw.csv"
+    ],
+    "output_artifacts": [
+      "results/raw/runs/expA_price_matched_workflow_v3-c4cf5ab0a1940a55/cleaning/prompt.txt",
+      "results/raw/runs/expA_price_matched_workflow_v3-c4cf5ab0a1940a55/cleaning/response.txt",
+      "results/raw/runs/expA_price_matched_workflow_v3-c4cf5ab0a1940a55/cleaning/parsed.json",
+      "results/raw/runs/expA_price_matched_workflow_v3-c4cf5ab0a1940a55/cleaning/code.py",
+      "results/raw/runs/expA_price_matched_workflow_v3-c4cf5ab0a1940a55/cleaning/output/cleaned.csv",
+      "results/raw/runs/expA_price_matched_workflow_v3-c4cf5ab0a1940a55/cleaning/output/cleaning_summary.json"
+    ],
+    "input_artifact_hashes": {
+      "datasets/projects/retail_sales/raw.csv": "a1c513b0966bc95bb7cf521bc8920d7a70ccac71ff98d1564a6d84e013f33a5c"
+    },
+    "output_artifact_hashes": {
+      "results/raw/runs/expA_price_matched_workflow_v3-c4cf5ab0a1940a55/cleaning/prompt.txt": "166a03432eeeee68c47f88049efab1cd0b57e65cee2270cd7a4026dc133d89a5",
+      "results/raw/runs/expA_price_matched_workflow_v3-c4cf5ab0a1940a55/cleaning/response.txt": "59e17bd50b0b7383dfe7e91862d12578880dae95617faac4e0edfc7a12c60457",
+      "results/raw/runs/expA_price_matched_workflow_v3-c4cf5ab0a1940a55/cleaning/parsed.json": "403cb9c2fdfc3b987562d727f668c15a85b00e82876c7bb94a701389b6dd61f0",
+      "results/raw/runs/expA_price_matched_workflow_v3-c4cf5ab0a1940a55/cleaning/code.py": "a88704a55c40681fd0ef1ccc1a73abc382ef7bcc834f4420be1f953281614510",
+      "results/raw/runs/expA_price_matched_workflow_v3-c4cf5ab0a1940a55/cleaning/output/cleaned.csv": "f0a6cc19ff470e786eda7a9e5fd148d55fc370f08e4cb656256f0aa9922cfca6",
+      "results/raw/runs/expA_price_matched_workflow_v3-c4cf5ab0a1940a55/cleaning/output/cleaning_summary.json": "3f70f0ca2628a17a9ee72275793f9075209cbb8e9c951128260705c907a91411"
+    },
+    "handoff_in_path": "results/raw/runs/expA_price_matched_workflow_v3-c4cf5ab0a1940a55/cleaning/handoff_in.json",
+    "handoff_size_bytes": 571,
+    "input_tokens": 2060,
+    "output_tokens": 2845,
+    "cost_usd": 0.0537405,
+    "cost_status": "estimated",
+    "timings": {
+      "generation_ms": 16984.823749997304,
+      "execution_ms": 1137.420041995938,
+      "validation_ms": 11.681291995046195,
+      "handoff_ms": 0.17970799672184512
+    }
+  }
+}

@@ -1,0 +1,716 @@
+Let me carefully work through the requirements to write a correct, robust script.
+
+Requirements:
+- R1: Read both CSVs as text (dtype=str), strip whitespace, treat empty/NA/N/A/null/None/- as missing (na_values).
+- R2: tickets dedupe on ticket_id, keep first, before filtering.
+- R3: agents: uppercase agent_id, dedupe keep first.
+- R4: roster: map team case-insensitive from Alpha/Team Alpha -> Alpha etc.; region East/E -> East, West/W -> West; parse hourly_cost after removing $, USD, commas. Exclude rows with invalid field or cost <= 0.
+- R5: tickets agent_id uppercase; inner join to roster; drop unmatched.
+- R6: channel mapping case-insensitive: Email/E-mail -> email, Chat/Live Chat -> chat, Phone/Call -> phone; drop invalid.
+- R7: resolution_minutes: strip trailing 'min'/'minutes', parse integer 1-480; drop invalid. Note "whole number" — parse whole number. Values like "47 minutes", "56", "155 min". Should handle e.g. "45.5"? Parse a whole number — maybe reject non-integers. I'll parse with regex: remove trailing " min" or " minutes" (case-insensitive?), then try int. Safer: strip, then regex sub r'\s*(minutes|min)$' case-insensitive, then int(). Must be whole number 1..480. If value has decimal like "30.0"? Not specified; I'd reject via int() failing. But maybe use float check? Keep simple: int(text).
+- R8: satisfaction_score: whole number 1-5; invalid/missing -> empty cell (pd.NA -> empty in CSV), row kept. Should invalid be counted in summary. Output column int nullable — use pandas nullable Int64.
+- R9: reopened: map Yes/Y/True/1 -> 1, No/N/False/0 -> 0, case-insensitive. Drop invalid/missing.
+- R10: labor_cost = round(resolution_minutes/60*hourly_cost, 2).
+- R11: output exact columns, sort by ticket_id, no index.
+
+Schema: team/region/channel as category dtype with specified categories. resolution_minutes int. satisfaction_score nullable int. reopened int. hourly_cost float >= 0.01.
+
+Sorting by ticket_id: string sort is fine (T00001...). 
+
+cleaning_summary.json: raw_rows (rows read — presumably tickets raw rows), cleaned_rows, plus per-rule counts. I'll include agents_raw_rows, duplicate_ticket_rows_removed, duplicate_agent_rows_removed, roster_rows_excluded, tickets_without_matching_agent, invalid_channel_dropped, invalid_resolution_dropped, invalid_satisfaction_emptied, invalid_reopened_dropped.
+
+Edge considerations:
+- na_values: ["", "NA", "N/A", "null", "None", "-"] with keep_default_na=False? If I pass na_values list, pandas also uses default NaN values unless keep_default_na=False. Default NA values include "NA", "N/A", "null", "NULL", "" etc. It's fine to keep defaults plus extras. But careful: "None" and "-" need adding. However stripping whitespace: read with skipinitialspace=True and also apply .str.strip() to all string cells. NA replacement happens before strip; e.g., " NA " with spaces might not be caught by na_values. So approach: read with keep_default_na=False (so nothing auto-converted), then strip all strings, then replace the missing tokens (case-sensitive as listed? "Treat empty, NA, N/A, null, None and - as missing" — exact tokens; but to be safe, maybe case-insensitive? The list includes both "NA" and "N/A" and "null"/"None" — mixed cases given. I'll match case-insensitively for robustness? Hmm, risk: legitimate values like "na"? None of the fields would legitimately be those tokens. I'll do case-insensitive matching on the token set to be safe.)
+
+Implementation plan:
+
+```python
+import os, json, re
+import pandas as pd
+import numpy as np
+
+MISSING_TOKENS = {"", "na", "n/a", "null", "none", "-"}
+
+def read_csv_text(path):
+    df = pd.read_csv(path, dtype=str, keep_default_na=False)
+    for col in df.columns:
+        df[col] = df[col].str.strip()
+    df = df.replace(...)? 
+```
+
+Actually replace token-wise: `df = df.applymap(lambda v: pd.NA if v.lower() in MISSING_TOKENS else v)` — applymap deprecated in newer pandas; use df.map (DataFrame.map added in pandas 2.1). To be compatible, use `df.mask(df.apply(lambda c: c.str.lower().isin(MISSING_TOKENS)))`. Or simpler per column: `df[col] = df[col].where(~df[col].str.lower().isin(MISSING_TOKENS), pd.NA)`. That works.
+
+R2: `tickets = tickets.drop_duplicates(subset="ticket_id", keep="first")` — note rows with missing ticket_id: duplicates on NA? drop_duplicates treats NaN as equal, keeps first NaN. Hmm, but ticket_id must be not nullable in output. Do we drop missing ticket_id? Requirement doesn't explicitly say, but schema says not nullable. Also sorting by ticket_id with NA is an issue. I'll drop rows with missing ticket_id (count it). Reasonable.
+
+R3/R4 roster cleaning:
+
+```python
+agents["agent_id"] = agents["agent_id"].str.upper()
+agents = agents.drop_duplicates(subset="agent_id", keep="first")
+```
+Wait — order: normalise then dedupe (R3). Rows with missing agent_id: after upper, NA stays NA; dedupe keep first NA... then invalid field exclusion in R4 will drop them (agent_id invalid). Good.
+
+Team mapping:
+```python
+TEAM_MAP = {"alpha": "Alpha", "team alpha": "Alpha", "beta": "Beta", "team beta": "Beta", "gamma": "Gamma", "team gamma": "Gamma"}
+agents["team_clean"] = agents["team"].str.lower().map(TEAM_MAP)
+```
+Region:
+```python
+REGION_MAP = {"east": "East", "e": "East", "west": "West", "w": "West"}
+```
+Cost:
+```python
+cost = agents["hourly_cost"].fillna("").str.replace(r'[$,]', '', regex=True).str.replace('USD', '', case=False, regex=True? )
+```
+Simpler: `str.replace(r'(?i)usd', '', regex=True).str.replace(r'[$,]', '', regex=True).str.strip()` then `pd.to_numeric(errors='coerce')`.
+
+Valid roster row: agent_id notna, team_clean notna, region_clean notna, cost notna and cost > 0. Count excluded.
+
+R5: tickets agent_id upper; merge:
+```python
+tickets["agent_id"] = tickets["agent_id"].str.upper()
+merged = tickets.merge(roster, on="agent_id", how="inner", ...)
+```
+Count unmatched = len(tickets) - len(merged). But careful: if roster has unique agent_ids (deduped), merge preserves ticket rows. Missing agent_id in tickets: str.upper on NA gives NA; inner join drops. Good.
+
+R6: channel map:
+```python
+CHANNEL_MAP = {"email": "email", "e-mail": "email", "chat": "chat", "live chat": "chat", "phone": "phone", "call": "phone"}
+merged["channel_clean"] = merged["channel"].str.lower().map(CHANNEL_MAP)
+drop na.
+```
+
+R7: resolution:
+```python
+res = merged["resolution_minutes"].fillna("").str.replace(r'(?i)\s*(minutes|min)\s*$', '', regex=True).str.strip()
+```
+Order matters: "minutes" before "min" in alternation? Regex alternation with `$` anchor: for "47 minutes", pattern tries "minutes" first — if "min" came first, "min" wouldn't match at end because "utes" follows... Actually with `\s*$` after, "min" in "minutes" is not at end, so it fails and backtracks to "minutes". Either order works due to the anchor, but put minutes first anyway.
+
+Then parse whole number: `res_num = pd.to_numeric(res, errors='coerce')` — but that allows floats like "30.5". "parse a whole number" — I should ensure integer. Use regex check `^\d+$`? Negative not possible with \d+. But "+30"? int() handles. Simpler: 
+```python
+def parse_int(s):
+    try: return int(s)
+    except: return None
+```
+int("30.5") raises. int(" 30 ") fine after strip. Then validate 1..480.
+
+I'll use to_numeric then check `res_num == res_num.astype(int)`? Simpler with a helper function. Performance trivial (380 rows).
+
+R8: satisfaction: similar int parse, valid 1-5; invalid/missing -> NA (empty cell). Keep row. Use nullable Int64.
+
+R9: reopened map:
+```python
+REOPENED_MAP = {"yes":1,"y":1,"true":1,"1":1,"no":0,"n":0,"false":0,"0":0}
+merged["reopened_clean"] = merged["reopened"].str.lower().map(REOPENED_MAP)
+drop na.
+```
+
+R10: labor_cost = (resolution/60*hourly_cost).round(2).
+
+R11: select columns, rename cleaned ones, sort by ticket_id, to_csv index=False. satisfaction_score as Int64 writes empty for NA. 
+
+Categories:
+```python
+out["team"] = pd.Categorical(out["team"], categories=["Alpha","Beta","Gamma"])
+...
+```
+Writing to CSV just writes strings; dtype category satisfied in-script.
+
+Sort by ticket_id — string sort. Could there be non-numeric ticket ids? Sort lexicographically as strings; fine.
+
+Summary JSON:
+```python
+summary = {
+  "raw_rows": int(len(tickets_raw)),
+  "cleaned_rows": int(len(out)),
+  "agents_raw_rows": ...,
+  "duplicate_ticket_rows_removed": ...,
+  "missing_ticket_id_removed": ...,
+  "duplicate_agent_rows_removed": ...,
+  "roster_rows_excluded_invalid": ...,
+  "tickets_dropped_no_matching_agent": ...,
+  "tickets_dropped_invalid_channel": ...,
+  "tickets_dropped_invalid_resolution_minutes": ...,
+  "tickets_satisfaction_score_set_empty": ...,
+  "tickets_dropped_invalid_reopened": ...,
+}
+```
+Write with json.dump.
+
+Also ensure OUTPUT_DIR exists (os.makedirs(exist_ok=True)).
+
+Now handle reading: `pd.read_csv(path, dtype=str, keep_default_na=False)`. All values are strings; empty cells become "" — then strip, then token-mask to NA.
+
+One nuance R1: "Strip whitespace" applies to values; headers presumably fine.
+
+hourly_cost min 0.01 in schema; R4 says exclude cost <= 0. Between 0 and 0.01 exclusive? E.g., 0.005 passes R4 but violates schema. Exclude cost < 0.01? R4 says cost <= 0 exclusion. To satisfy schema min 0.01, maybe exclude <= 0 only; data likely has normal costs. I'll follow R4 exactly (exclude <= 0); schema min 0.01 is just a stated minimum that real data satisfies. Hmm, but a validator might check hourly_cost >= 0.01. Risk is low; but being safe: exclude cost <= 0 per R4; costs like 0.005 unlikely. Actually, to strictly satisfy both, could exclude cost < 0.01 — that would also satisfy "cost <= 0" exclusion and count extras as invalid. But if a test roster had cost 0.005 and expected it kept... very unlikely. Follow R4 literally: drop cost <= 0. Hmm. The schema is "required schema of the cleaned CSV" — min 0.01. I'll drop cost <= 0 per R4 (and note). Let me just follow R4; the rounding of hourly_cost? Not specified — keep parsed float as-is.
+
+labor_cost rounding to 2 decimals — use round(2). Float fine.
+
+Parse hourly_cost: "USD 57.75" -> remove USD -> " 57.75" -> strip -> 57.75. "$44.25" -> 44.25. Commas removed.
+
+Also region/team: "west" -> map lower -> West. Good.
+
+R7 trailing 'min'/'minutes' — also handle case like "47 Minutes"? Use case-insensitive. Also possible "47min" without space — regex `\s*` handles.
+
+Whole number parse for resolution: after removing suffix, e.g., "" -> invalid. "abc" -> invalid. "0" -> out of range -> drop. "500" -> drop.
+
+Satisfaction: empty -> NA kept. "3.5"? int fails -> NA (empty). Per R8 "parse a whole number from 1 through 5. Invalid or missing become empty". Good.
+
+Now write the script cleanly.
+
+```python
+import json
+import os
+import re
+
+import numpy as np
+import pandas as pd
+
+MISSING_TOKENS = {"", "na", "n/a", "null", "none", "-"}
+
+TEAM_MAP = {
+    "alpha": "Alpha", "team alpha": "Alpha",
+    "beta": "Beta", "team beta": "Beta",
+    "gamma": "Gamma", "team gamma": "Gamma",
+}
+REGION_MAP = {"east": "East", "e": "East", "west": "West", "w": "West"}
+CHANNEL_MAP = {
+    "email": "email", "e-mail": "email",
+    "chat": "chat", "live chat": "chat",
+    "phone": "phone", "call": "phone",
+}
+REOPENED_MAP = {
+    "yes": 1, "y": 1, "true": 1, "1": 1,
+    "no": 0, "n": 0, "false": 0, "0": 0,
+}
+
+def read_text_csv(path):
+    df = pd.read_csv(path, dtype=str, keep_default_na=False)
+    df.columns = [c.strip() for c in df.columns]
+    for col in df.columns:
+        df[col] = df[col].str.strip()
+        df[col] = df[col].where(~df[col].str.lower().isin(MISSING_TOKENS), pd.NA)
+    return df
+
+def parse_whole_number(value):
+    if value is pd.NA or value is None:
+        return pd.NA
+    try:
+        return int(str(value))
+    except (ValueError, TypeError):
+        return pd.NA
+```
+
+Wait, int("  47 ") works with whitespace but we already stripped. int("47.0") fails — desired? "parse a whole number" — 47.0 is arguably a whole number. Hmm. Could do float then check is_integer. To be generous: try int; on failure try float and if is_integer and finite, use int. That handles "47.0". I'll include that fallback.
+
+Resolution cleaning:
+```python
+res_text = merged["resolution_minutes"].fillna("").astype(str).str.replace(r"(?i)\s*(minutes|min)\s*$", "", regex=True).str.strip()
+merged["resolution_clean"] = res_text.map(parse_whole_number)
+valid = merged["resolution_clean"].notna() & merged["resolution_clean"].between(1, 480)
+```
+Note map with pd.NA return — use .map on Series of strings; parse returns int or pd.NA; resulting dtype object. Then convert: after filtering, `.astype(int)`.
+
+Actually fillna("") then strip again; empty -> parse fails -> NA. But tokens already NA; fillna("") makes them empty strings. Fine.
+
+between on object dtype of ints — works since elements are int. Or convert to float first. Let me do `pd.to_numeric(...)` after mapping? Simpler: make parse return np.nan float? Then between works. I'll have parse return `float("nan")`? Then later astype(int). Eh. Keep object; between works elementwise comparison fine for ints with object dtype? pd.Series([1,2,pd.NA], dtype=object).between(1,480) — comparison with pd.NA may raise? pd.NA.__ge__ returns pd.NA, and `&` with NA gives NA... between uses (ser >= left) & (ser <= right). With object dtype containing pd.NA, this could produce pd.NA in boolean mask -> error on indexing ("cannot mask with NA"). Safer: return np.nan as float.
+
+Let me define:
+
+```python
+def parse_whole_number(value):
+    try:
+        return int(str(value))
+    except (ValueError, TypeError):
+        try:
+            f = float(str(value))
+            if f.is_integer():
+                return int(f)
+        except (ValueError, TypeError):
+            pass
+    return np.nan
+```
+Returns int or nan -> Series becomes float64. Then between works, NaN mask false. Then `.astype("int64")` after filter. For satisfaction, keep as Int64: `pd.array(...)`? After computing float series, `satisf = satisf.where(valid).astype("Int64")`.
+
+Satisfaction:
+```python
+sat = merged["satisfaction_score"].map(parse_whole_number)  # float w/ nan
+sat_valid = sat.between(1, 5)
+merged["satisfaction_clean"] = sat.where(sat_valid).astype("Int64")
+n_sat_emptied = int((sat.notna() & ~sat_valid).sum() + merged["satisfaction_score"].isna().sum())
+```
+Hmm, count "invalid or missing became empty": missing count + invalid count. Actually all rows end with either valid int or empty. Count = number of rows where final is NA = int(merged["satisfaction_clean"].isna().sum()). Simpler.
+
+Wait: `merged["satisfaction_score"]` contains pd.NA possibly; .map(parse) — parse(pd.NA): str(pd.NA) = "<NA>", int fails, float fails -> nan. Fine.
+
+Reopened:
+```python
+merged["reopened_clean"] = merged["reopened"].str.lower().map(REOPENED_MAP)
+```
+map on string dtype with NA -> NA maps to NaN. Values 1/0 -> float due to NaN. After dropna, astype(int).
+
+Roster cost:
+```python
+cost_text = (agents["hourly_cost"].fillna("").astype(str)
+             .str.replace(r"(?i)usd", "", regex=True)
+             .str.replace(r"[$,]", "", regex=True)
+             .str.strip())
+agents["cost_clean"] = pd.to_numeric(cost_text, errors="coerce")
+```
+Valid: agent_id notna, team mapped notna, region mapped notna, cost notna & > 0.
+
+Merge: roster subset columns agent_id, team, region, hourly_cost (cost_clean). Rename cost_clean -> hourly_cost for output.
+
+Order of counts:
+- raw_rows = len(tickets) after read (before dedupe).
+- dup_ticket_removed = raw - after dedupe.
+- Also drop missing ticket_id — R2 only mentions duplicates. But schema not-nullable; I'll drop NA ticket_id and count separately. Actually, should I? If a ticket has missing id, it can't be sorted/joined reliably... join is by agent_id. Sorting by ticket_id with NA puts NaN last. Output "ticket_id: str; not nullable". I'll drop rows with missing ticket_id right after dedupe, count as tickets_dropped_missing_ticket_id. Safe.
+
+- agents_raw_rows, dup_agent_removed, roster_excluded.
+- after join: dropped_no_agent = before - after.
+- channel drops, resolution drops, reopened drops.
+- cleaned_rows.
+
+Sorting: `out = out.sort_values("ticket_id", kind="stable")`.
+
+Column order exact.
+
+CSV write: satisfaction Int64 NA -> empty cell. Yes, to_csv writes empty for pd.NA.
+
+Also cast dtypes for schema: team/region/channel as pd.Categorical. resolution int64. reopened int64. hourly_cost float. labor_cost float.
+
+Summary JSON with counts as ints (convert numpy ints to int).
+
+Also wrap main in `if __name__ == "__main__":` — fine.
+
+One more consideration: `df[col].str.lower().isin(MISSING_TOKENS)` — MISSING_TOKENS lowercase set. Tokens given: empty, NA, N/A, null, None, -. Case-insensitive matching also catches "Na", "NULL", etc. Acceptable.
+
+Edge: `keep_default_na=False` plus dtype=str: empty field read as "". Good.
+
+Potential issue: `pd.read_csv` with dtype=str and keep_default_na=False — yes all strings.
+
+Now also strip column names? Fine.
+
+Duplicates in tickets: drop_duplicates on ticket_id where ticket_id may be NA: keep first NA row; subsequent NA dropped as dups. Then drop missing. Count missing after dedupe.
+
+For merge, ensure roster agent_id unique — deduped. Yes.
+
+labor_cost: `(merged["resolution_minutes"] / 60 * merged["hourly_cost"]).round(2)`.
+
+Let me also make sure output dir makedirs.
+
+Summary keys: include "raw_rows" and "cleaned_rows" required; extras fine.
+
+Now assemble the final script string. Also `output_filename = "cleaned.csv"`.
+
+Write script:
+
+```python
+import json
+import os
+
+import numpy as np
+import pandas as pd
+
+MISSING_TOKENS = {"", "na", "n/a", "null", "none", "-"}
+
+TEAM_MAP = {...}
+...
+
+def read_text_csv(path):
+    df = pd.read_csv(path, dtype=str, keep_default_na=False)
+    df.columns = [str(c).strip() for c in df.columns]
+    for col in df.columns:
+        s = df[col].str.strip()
+        df[col] = s.where(~s.str.lower().isin(MISSING_TOKENS), pd.NA)
+    return df
+
+def parse_whole_number(value):
+    try:
+        return int(str(value).strip())
+    except (TypeError, ValueError):
+        pass
+    try:
+        f = float(str(value).strip())
+        if np.isfinite(f) and f.is_integer():
+            return int(f)
+    except (TypeError, ValueError):
+        pass
+    return np.nan
+```
+
+Hmm: str(pd.NA) is "<NA>" -> fails both -> nan. Good.
+
+Main flow in code. Let me count carefully and produce per-rule counts.
+
+Full code:
+
+```python
+def main():
+    input_dir = os.environ["INPUT_DIR"]
+    output_dir = os.environ["OUTPUT_DIR"]
+    os.makedirs(output_dir, exist_ok=True)
+
+    tickets = read_text_csv(os.path.join(input_dir, "tickets.csv"))
+    agents = read_text_csv(os.path.join(input_dir, "agents.csv"))
+
+    summary = {"raw_rows": int(len(tickets)), "agents_raw_rows": int(len(agents))}
+
+    # R2
+    before = len(tickets)
+    tickets = tickets.drop_duplicates(subset="ticket_id", keep="first")
+    summary["duplicate_ticket_rows_removed"] = int(before - len(tickets))
+
+    before = len(tickets)
+    tickets = tickets[tickets["ticket_id"].notna()]
+    summary["tickets_dropped_missing_ticket_id"] = int(before - len(tickets))
+
+    # R3
+    agents["agent_id"] = agents["agent_id"].str.upper()
+    before = len(agents)
+    agents = agents.drop_duplicates(subset="agent_id", keep="first")
+    summary["duplicate_agent_rows_removed"] = int(before - len(agents))
+
+    # R4
+    agents["team_clean"] = agents["team"].str.lower().map(TEAM_MAP)
+    agents["region_clean"] = agents["region"].str.lower().map(REGION_MAP)
+    cost_text = (agents["hourly_cost"].fillna("").astype(str)
+                 .str.replace(r"(?i)usd", "", regex=True)
+                 .str.replace(r"[$,]", "", regex=True)
+                 .str.strip())
+    agents["hourly_cost_clean"] = pd.to_numeric(cost_text, errors="coerce")
+    valid_roster = (agents["agent_id"].notna()
+                    & agents["team_clean"].notna()
+                    & agents["region_clean"].notna()
+                    & agents["hourly_cost_clean"].notna()
+                    & (agents["hourly_cost_clean"] > 0))
+    before = len(agents)
+    roster = agents[valid_roster][["agent_id", "team_clean", "region_clean", "hourly_cost_clean"]].rename(
+        columns={"team_clean": "team", "region_clean": "region", "hourly_cost_clean": "hourly_cost"})
+    summary["roster_rows_excluded_invalid"] = int(before - len(roster))
+```
+
+Wait: `agents["agent_id"].str.upper()` on pd.NA gives NA — fine. But note: `.str.upper()` where value missing -> NA. drop_duplicates with NA: keeps one NA row; then valid_roster drops it. OK.
+
+Also team `.str.lower()` on NA -> NA -> map -> NaN. Good.
+
+```python
+    # R5
+    tickets["agent_id"] = tickets["agent_id"].str.upper()
+    before = len(tickets)
+    df = tickets.merge(roster, on="agent_id", how="inner")
+    summary["tickets_dropped_no_matching_agent"] = int(before - len(df))
+
+    # R6
+    df["channel_clean"] = df["channel"].str.lower().map(CHANNEL_MAP)
+    before = len(df)
+    df = df[df["channel_clean"].notna()]
+    summary["tickets_dropped_invalid_channel"] = int(before - len(df))
+
+    # R7
+    res_text = (df["resolution_minutes"].fillna("").astype(str)
+                .str.replace(r"(?i)\s*(minutes|min)\s*$", "", regex=True)
+                .str.strip())
+    df["resolution_clean"] = res_text.map(parse_whole_number)
+    valid_res = df["resolution_clean"].notna() & df["resolution_clean"].between(1, 480)
+    before = len(df)
+    df = df[valid_res]
+    summary["tickets_dropped_invalid_resolution_minutes"] = int(before - len(df))
+
+    # R8
+    sat = df["satisfaction_score"].map(parse_whole_number)
+    df["satisfaction_clean"] = sat.where(sat.between(1, 5)).astype("Int64")
+    summary["tickets_satisfaction_score_set_empty"] = int(df["satisfaction_clean"].isna().sum())
+
+    # R9
+    df["reopened_clean"] = df["reopened"].str.lower().map(REOPENED_MAP)
+    before = len(df)
+    df = df[df["reopened_clean"].notna()]
+    summary["tickets_dropped_invalid_reopened"] = int(before - len(df))
+```
+
+Hmm: `df["reopened"]` may contain pd.NA; `.str.lower()` fine. map returns NaN for NA. Values floats 1.0/0.0 -> astype int later.
+
+R10:
+```python
+    df["resolution_minutes_clean"] = df["resolution_clean"].astype("int64")
+    df["hourly_cost"] = df["hourly_cost"].astype(float)  # already float
+    df["labor_cost"] = (df["resolution_minutes_clean"] / 60.0 * df["hourly_cost"]).round(2)
+```
+roster's hourly_cost is float already via to_numeric.
+
+R11:
+```python
+    out = pd.DataFrame({
+        "ticket_id": df["ticket_id"],
+        "agent_id": df["agent_id"],
+        "team": pd.Categorical(df["team"], categories=["Alpha", "Beta", "Gamma"]),
+        "region": pd.Categorical(df["region"], categories=["East", "West"]),
+        "channel": pd.Categorical(df["channel_clean"], categories=["email", "chat", "phone"]),
+        "resolution_minutes": df["resolution_clean"].astype("int64"),
+        "satisfaction_score": df["satisfaction_clean"].astype("Int64"),
+        "reopened": df["reopened_clean"].astype("int64"),
+        "hourly_cost": df["hourly_cost"].astype(float),
+        "labor_cost": df["labor_cost"],
+    })
+    out = out.sort_values("ticket_id", kind="mergesort").reset_index(drop=True)
+    out.to_csv(os.path.join(output_dir, "cleaned.csv"), index=False)
+
+    summary["cleaned_rows"] = int(len(out))
+    with open(os.path.join(output_dir, "cleaning_summary.json"), "w") as f:
+        json.dump(summary, f, indent=2)
+```
+
+Wait — building DataFrame from dict with df columns retains df's index; pd.Categorical fine. But mixing Series with non-0..n index in dict: DataFrame aligns on index, consistent since all from df. Then sort. OK. Simpler: `out = df[...].copy()` with renames. Either fine.
+
+One nuance: reopened astype int64 from float with no NaN — fine after dropna.
+
+Potential issue: `.map(parse_whole_number)` where parse returns int or np.nan -> Series dtype float64. between ok.
+
+Another nuance: satisfaction `sat.where(sat.between(1, 5))` — between with NaN gives False -> where sets NaN. Good. astype("Int64") from float with NaN works.
+
+Sorting by ticket_id strings: "T00001" zero-padded -> lexicographic == numeric. Good.
+
+Also R2 says dedupe "before any filtering" — done (missing-id drop after dedupe is a minor filtering; that's fine, dedupe first).
+
+Now summary keys ints — ensure Python ints (used int()).
+
+Script prints nothing (or maybe nothing). Fine.
+
+Check pandas `.str.replace(r"(?i)usd", ...)` — inline flag at start OK. `regex=True` default in pandas >= 2 warns if regex pattern without regex=True; pass regex=True explicitly.
+
+`fillna("").astype(str)` on string col with NA — fillna("") gives "". Then replace. For resolution "47 minutes" -> strip suffix -> "47". For "" -> parse -> nan. Good.
+
+Channel map on NA -> NaN -> dropped. Good.
+
+Region "E" -> lower "e" -> East. Good.
+
+Team "Team Gamma" -> "team gamma" -> Gamma. Good.
+
+Cost "USD 60.00" -> remove usd -> " 60.00" -> strip -> 60.0. "$44.25" -> "44.25". "1,234.56" -> commas removed. Good.
+
+Edge: hourly_cost negative "-12" -> to_numeric -12 -> <=0 excluded. But "-" token alone already NA.
+
+Now the JSON response: python_code string, output_filename "cleaned.csv", cleaning_logic brief.
+
+Double-check required column order: ticket_id, agent_id, team, region, channel, resolution_minutes, satisfaction_score, reopened, hourly_cost, labor_cost. Yes.
+
+One more check on merge: roster could have zero rows -> merge empty; downstream code should still work (empty df). Columns exist. parse on empty Series fine. to_csv writes header. OK.
+
+`tickets.merge(roster, on="agent_id", how="inner")` — both agent_id columns are object dtype with NA allowed; merge on NA never matches in pandas (NaN != NaN) — NA agent tickets dropped. Good; count includes them as no-match. Fine.
+
+Also dedupe: after upper-case normalisation for agents, "A003" and "a003" become dups, keep first raw order — drop_duplicates preserves original order. Good.
+
+Let me also add `summary["raw_rows"]` described as "rows read" for tickets; also include agents raw. Good.
+
+Potential pandas version: `Series.map` with function fine. `pd.NA` fine.
+
+`df["resolution_clean"].astype("int64")` after filtering: values are floats like 47.0 -> astype int64 works.
+
+`satisfaction_clean` is Int64 already; `.astype("Int64")` again fine.
+
+In out DataFrame construction, df["satisfaction_clean"] is Int64 dtype — good.
+
+Write final script with comments per rule. Keep it clean and self-contained.
+
+Also guard: `if __name__ == "__main__": main()`.
+
+The response must be a single JSON fenced block with keys python_code, output_filename, cleaning_logic. Ensure proper escaping of newlines in JSON string (the block is JSON, so \n escapes). I'll write it as a JSON string with actual escaped newlines — in a fenced code block, I must produce valid JSON, so newlines inside the string must be \n escapes. That's typical. I'll carefully write it.
+
+Let me finalize code text:
+
+```python
+import json
+import os
+
+import numpy as np
+import pandas as pd
+
+MISSING_TOKENS = {"", "na", "n/a", "null", "none", "-"}
+
+TEAM_MAP = {
+    "alpha": "Alpha", "team alpha": "Alpha",
+    "beta": "Beta", "team beta": "Beta",
+    "gamma": "Gamma", "team gamma": "Gamma",
+}
+REGION_MAP = {"east": "East", "e": "East", "west": "West", "w": "West"}
+CHANNEL_MAP = {
+    "email": "email", "e-mail": "email",
+    "chat": "chat", "live chat": "chat",
+    "phone": "phone", "call": "phone",
+}
+REOPENED_MAP = {
+    "yes": 1, "y": 1, "true": 1, "1": 1,
+    "no": 0, "n": 0, "false": 0, "0": 0,
+}
+
+
+def read_text_csv(path):
+    """R1: read as text, strip whitespace, normalise missing tokens to NA."""
+    df = pd.read_csv(path, dtype=str, keep_default_na=False)
+    df.columns = [str(c).strip() for c in df.columns]
+    for col in df.columns:
+        s = df[col].astype(str).str.strip()
+        df[col] = s.where(~s.str.lower().isin(MISSING_TOKENS), pd.NA)
+    return df
+
+
+def parse_whole_number(value):
+    """Return int for whole-number text, else NaN."""
+    try:
+        return int(str(value).strip())
+    except (TypeError, ValueError):
+        pass
+    try:
+        f = float(str(value).strip())
+        if np.isfinite(f) and f.is_integer():
+            return int(f)
+    except (TypeError, ValueError):
+        pass
+    return np.nan
+
+
+def main():
+    input_dir = os.environ["INPUT_DIR"]
+    output_dir = os.environ["OUTPUT_DIR"]
+    os.makedirs(output_dir, exist_ok=True)
+
+    tickets = read_text_csv(os.path.join(input_dir, "tickets.csv"))
+    agents = read_text_csv(os.path.join(input_dir, "agents.csv"))
+    summary = {"raw_rows": int(len(tickets)), "agents_raw_rows": int(len(agents))}
+
+    # R2: drop duplicate ticket_id rows, keep first in raw-file order.
+    n = len(tickets)
+    tickets = tickets.drop_duplicates(subset="ticket_id", keep="first")
+    summary["duplicate_ticket_rows_removed"] = int(n - len(tickets))
+
+    n = len(tickets)
+    tickets = tickets[tickets["ticket_id"].notna()]
+    summary["tickets_dropped_missing_ticket_id"] = int(n - len(tickets))
+
+    # R3: normalise roster agent_id to upper case, dedupe keep first.
+    agents["agent_id"] = agents["agent_id"].str.upper()
+    n = len(agents)
+    agents = agents.drop_duplicates(subset="agent_id", keep="first")
+    summary["duplicate_agent_rows_removed"] = int(n - len(agents))
+
+    # R4: normalise team/region/hourly_cost; exclude invalid roster rows.
+    agents["team_clean"] = agents["team"].str.lower().map(TEAM_MAP)
+    agents["region_clean"] = agents["region"].str.lower().map(REGION_MAP)
+    cost_text = (
+        agents["hourly_cost"].fillna("").astype(str)
+        .str.replace(r"(?i)usd", "", regex=True)
+        .str.replace(r"[$,]", "", regex=True)
+        .str.strip()
+    )
+    agents["hourly_cost_num"] = pd.to_numeric(cost_text, errors="coerce")
+    valid_roster = (
+        agents["agent_id"].notna()
+        & agents["team_clean"].notna()
+        & agents["region_clean"].notna()
+        & agents["hourly_cost_num"].notna()
+        & (agents["hourly_cost_num"] > 0)
+    )
+    n = len(agents)
+    roster = agents.loc[valid_roster, ["agent_id", "team_clean", "region_clean", "hourly_cost_num"]].rename(
+        columns={"team_clean": "team", "region_clean": "region", "hourly_cost_num": "hourly_cost"}
+    )
+    summary["roster_rows_excluded_invalid"] = int(n - len(roster))
+
+    # R5: normalise ticket agent_id, inner join to roster.
+    tickets["agent_id"] = tickets["agent_id"].str.upper()
+    n = len(tickets)
+    df = tickets.merge(roster, on="agent_id", how="inner")
+    summary["tickets_dropped_no_matching_agent"] = int(n - len(df))
+
+    # R6: channel mapping, drop invalid.
+    df["channel_clean"] = df["channel"].str.lower().map(CHANNEL_MAP)
+    n = len(df)
+    df = df[df["channel_clean"].notna()]
+    summary["tickets_dropped_invalid_channel"] = int(n - len(df))
+
+    # R7: resolution_minutes -> whole number 1..480, drop invalid.
+    res_text = (
+        df["resolution_minutes"].fillna("").astype(str)
+        .str.replace(r"(?i)\s*(minutes|min)\s*$", "", regex=True)
+        .str.strip()
+    )
+    df["resolution_num"] = res_text.map(parse_whole_number)
+    n = len(df)
+    df = df[df["resolution_num"].notna() & df["resolution_num"].between(1, 480)]
+    summary["tickets_dropped_invalid_resolution_minutes"] = int(n - len(df))
+
+    # R8: satisfaction_score -> whole number 1..5, invalid/missing -> empty.
+    sat = df["satisfaction_score"].map(parse_whole_number)
+    df["satisfaction_num"] = sat.where(sat.notna() & sat.between(1, 5)).astype("Int64")
+    summary["tickets_satisfaction_score_set_empty"] = int(df["satisfaction_num"].isna().sum())
+
+    # R9: reopened -> 1/0, drop invalid or missing.
+    df["reopened_num"] = df["reopened"].str.lower().map(REOPENED_MAP)
+    n = len(df)
+    df = df[df["reopened_num"].notna()]
+    summary["tickets_dropped_invalid_reopened"] = int(n - len(df))
+
+    # R10: labor cost.
+    df["labor_cost"] = (df["resolution_num"] / 60.0 * df["hourly_cost"]).round(2)
+
+    # R11: final schema, sort by ticket_id, write.
+    out = pd.DataFrame({
+        "ticket_id": df["ticket_id"].astype(str),
+        "agent_id": df["agent_id"].astype(str),
+        "team": pd.Categorical(df["team"], categories=["Alpha", "Beta", "Gamma"]),
+        "region": pd.Categorical(df["region"], categories=["East", "West"]),
+        "channel": pd.Categorical(df["channel_clean"], categories=["email", "chat", "phone"]),
+        "resolution_minutes": df["resolution_num"].astype("int64"),
+        "satisfaction_score": df["satisfaction_num"].astype("Int64"),
+        "reopened": df["reopened_num"].astype("int64"),
+        "hourly_cost": df["hourly_cost"].astype("float64"),
+        "labor_cost": df["labor_cost"].astype("float64"),
+    })
+    out = out.sort_values("ticket_id", kind="mergesort").reset_index(drop=True)
+    out.to_csv(os.path.join(output_dir, "cleaned.csv"), index=False)
+
+    summary["cleaned_rows"] = int(len(out))
+    with open(os.path.join(output_dir, "cleaning_summary.json"), "w") as fh:
+        json.dump(summary, fh, indent=2)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+Check `df["reopened"].str.lower().map(REOPENED_MAP)` — if reopened column contains pd.NA, `.str.lower()` yields NA; map gives NaN. Values "1" -> lower "1" -> 1. "N" -> "n" -> 0. "No" -> "no" -> 0. "True" -> "true" -> 1. Good.
+
+One subtlety: reopened map result dtype float64 (because of NaN). astype("int64") after dropna fine.
+
+`df["resolution_num"].between(1, 480)` float series with NaN -> NaN in mask? between returns False for NaN (since comparisons with NaN are False). And `df["resolution_num"].notna() & ...` fine.
+
+`sat.notna() & sat.between(1, 5)` — between already False for NaN; fine.
+
+`pd.Categorical(df["team"], ...)` — df["team"] is object strings; fine.
+
+Building `out` from dict: pandas aligns on df's index; all Series share index; Categorical length matches. Good. After sort reset index.
+
+`out.to_csv` with Int64 NA -> empty string. Good.
+
+One thing: `df["agent_id"].astype(str)` — no NA remains (inner join ensures match). ticket_id notna ensured. Good.
+
+Also schema: hourly_cost min 0.01 — roster excluded <= 0; costs like 44.25 fine.
+
+Potential issue: In `read_text_csv`, `df[col].astype(str)` — with keep_default_na=False and dtype=str, already str; but if a column is entirely empty, pandas might infer object of "" — still fine. astype(str) safe.
+
+`summary` JSON keys order — fine.
+
+Also "must not print large amounts" — no prints.
+
+Now the cleaning_logic brief explanation.
+
+JSON output: must ensure valid JSON with escaped backslashes. In the python code there are regex strings like r"(?i)\s*(minutes|min)\s*$" — in JSON, backslash must be escaped as \\. I'll be careful writing the JSON. The fenced block contains raw JSON, so I need `\\s` etc. Yes.
+
+Also quotes inside code: use standard double quotes; JSON string needs them escaped as \". This is laborious but fine. Alternatively use single quotes in Python code to reduce escaping. I'll use double quotes and escape.
+
+Actually I can write the JSON with the code as a single string using \n and escaped quotes. Let me produce it carefully.
+
+I'll now write final answer.

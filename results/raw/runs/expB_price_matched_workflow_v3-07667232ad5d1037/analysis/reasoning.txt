@@ -1,0 +1,219 @@
+We need answer as JSON object with python_code, expected_artifacts, methods_description. Need craft robust script. Need include only fenced JSON block. Ensure no extra outside.
+
+Need reason about script details:
+- Read os.environ["INPUT_DIR"] cleaned.csv. Use pandas.
+- Compute metrics flat floats/ints finite numbers.
+- satisfaction_score nullable; read as float probably with NaN. Use pandas.
+- resolution_std: sample standard deviation => ddof=1.
+- reopen rates: email/chat reopened percentage = mean(reopened)*100 per channel.
+- email_vs_chat_reopen_change_pct = (email_rate - chat_rate)/chat_rate*100. Potential division by zero if chat rate 0; need handle but must be finite. Could guard: if chat_rate == 0 then 0.0? But data likely nonzero. To be safe finite: use if chat_rate_pct != 0 else 0.0. But is that methodologically okay? Validation expects a finite number; guard ensures no NaN. Similarly high_cost_low_sat_reopen_pct if count==0 => 0.0.
+- Team labor sums via groupby, reindex fill 0.
+- Channel means via groupby reindex fill maybe nan; but channels allowed all present likely. To ensure finite, use dropna and get with default 0? Better: compute from groupby and use float(series.get("email", 0.0))? If missing channel, mean would be nan; fallback 0.0 to keep finite. But data includes all channels.
+- unique_agent_count nunique.
+- top_agent_ticket_count value_counts max.
+- total_labor_cost sum of labor_cost column (already rounded 2 decimals in cleaning, sum may have floating representation; don't round). Use float.
+- mean_resolution_minutes float.
+- median float.
+- satisfaction_mean mean skipping NaN; satisfaction_missing_count int.
+- Ensure JSON serializable: convert numpy types to float/int. Write flat dict. Use json.dump with allow_nan=False.
+- Maybe verify all metric keys present.
+
+Should the script handle empty dataframe? Not necessary but can. Keep simple.
+
+Type of satisfaction_score in cleaned CSV shown "4.0" floats; parse as float. missing as NaN. Count missing via isna.
+
+Write to OUTPUT_DIR findings.json. expected_artifacts ["findings.json"].
+
+Potential nuance: q4 "reopened percentage for email and chat" = reopened share within channel * 100. Yes.
+
+Potential nuance: q7 share = top_agent_ticket_count / ticket_count * 100.
+
+Methods description brief: loaded cleaned CSV, computed aggregates with pandas groupby etc.
+
+Need produce valid JSON string with escaped newlines. The fenced block json must be parseable. I'll write code with \n escapes as normal JSON string. Since final answer is in a fenced block, need to be careful: JSON string can contain newlines escaped. I'll format with \n escapes. Long string okay.
+
+Script draft:
+
+import json
+import os
+import numpy as np
+import pandas as pd
+
+METRIC_KEYS = [...]
+
+def main():
+    input_path = os.path.join(os.environ["INPUT_DIR"], "cleaned.csv")
+    output_dir = os.environ["OUTPUT_DIR"]
+    output_path = os.path.join(output_dir, "findings.json")
+
+    df = pd.read_csv(input_path)
+
+    ticket_count = int(len(df))
+    resolution = pd.to_numeric(df["resolution_minutes"], errors="coerce")
+    labor = pd.to_numeric(df["labor_cost"], errors="coerce")
+    reopened = pd.to_numeric(df["reopened"], errors="coerce")
+    satisfaction = pd.to_numeric(df["satisfaction_score"], errors="coerce")
+
+    team_labor = df.assign(_labor=labor).groupby("team")["_labor"].sum()
+    channel_resolution = df.assign(_res=resolution).groupby("channel")["_res"].mean()
+    channel_reopen = df.assign(_re=reopened).groupby("channel")["_re"].mean() * 100.0
+
+    def g(series, key): return float(series.get(key, np.nan)) maybe; ensure finite fallback 0.
+
+Better compute:
+
+    def finite(value, default=0.0):
+        try:
+            value = float(value)
+        except (TypeError, ValueError):
+            return float(default)
+        if not np.isfinite(value):
+            return float(default)
+        return value
+
+email_rate = finite(channel_reopen.get("email"))
+chat_rate = ...
+if chat_rate == 0: change=0.0 else (email-chat)/chat*100.
+
+Segment mask = (labor >= 100) & satisfaction.notna() & (satisfaction <= 2)
+seg_count = int(mask.sum())
+seg_reopen_pct = finite(reopened[mask].mean()*100) if seg_count>0 else 0.0
+
+metrics = {
+ "ticket_count": ticket_count, ... }
+Ensure values are Python float/int. ticket_count int allowed as number. "single finite number" ints ok.
+
+total_labor_cost = finite(labor.sum())
+mean_resolution_minutes = finite(resolution.mean())
+resolution_median = finite(resolution.median())
+resolution_std = finite(resolution.std(ddof=1))
+satisfaction_mean = finite(satisfaction.mean())
+satisfaction_missing_count = int(satisfaction.isna().sum())
+unique_agent_count = int(df["agent_id"].nunique())
+top_agent_ticket_count = int(df["agent_id"].value_counts().max()) if ticket_count else 0
+top share = finite(top/ticket_count*100) if ticket_count else 0.
+
+Write with os.makedirs(output_dir, exist_ok=True), json.dump(metrics, f, allow_nan=False, indent=2) maybe. allow_nan False ensures. Flat.
+
+Maybe assert set(metrics) == set(METRIC_KEYS).
+
+if __name__ == "__main__": main()
+
+All good.
+
+Need output only JSON fenced block. methods_description mention groupby sums/means, sample std ddof=1, NaN-skipping satisfaction, guards for zero denominators.
+
+Double-check there is no requirement to respond with anything else. The final should be single fenced json block, nothing outside.
+
+Ensure JSON valid: escape backslashes? Code contains os.path.join etc no backslashes. Use "\n" within code string? Since I'm writing JSON, the code string must have escaped newlines. I'll write it as one string with \n. Quotes inside code: use single quotes mostly to avoid escaping? JSON strings require double quotes for the string itself; internal double quotes must be escaped. Easier to use double quotes in Python and escape them, or use single quotes in Python. Use single quotes throughout Python code to minimize escaping. But os.environ['INPUT_DIR'] uses single quotes fine. f-strings not needed.
+
+Code:
+
+import json
+import os
+
+import numpy as np
+import pandas as pd
+
+METRIC_KEYS = [ ... ]
+
+
+def finite(value, default=0.0):
+    try:
+        result = float(value)
+    except (TypeError, ValueError):
+        return float(default)
+    if not np.isfinite(result):
+        return float(default)
+    return result
+
+
+def main():
+    input_path = os.path.join(os.environ['INPUT_DIR'], 'cleaned.csv')
+    output_path = os.path.join(os.environ['OUTPUT_DIR'], 'findings.json')
+
+    df = pd.read_csv(input_path)
+
+    resolution = pd.to_numeric(df['resolution_minutes'], errors='coerce')
+    labor = pd.to_numeric(df['labor_cost'], errors='coerce')
+    reopened = pd.to_numeric(df['reopened'], errors='coerce')
+    satisfaction = pd.to_numeric(df['satisfaction_score'], errors='coerce')
+
+    ticket_count = int(len(df))
+
+    team_labor = labor.groupby(df['team']).sum()
+    channel_resolution = resolution.groupby(df['channel']).mean()
+    channel_reopen_pct = reopened.groupby(df['channel']).mean() * 100.0
+
+    reopen_rate_email_pct = finite(channel_reopen_pct.get('email'))
+    reopen_rate_chat_pct = finite(channel_reopen_pct.get('chat'))
+    if reopen_rate_chat_pct == 0.0:
+        email_vs_chat_reopen_change_pct = 0.0
+    else:
+        email_vs_chat_reopen_change_pct = (reopen_rate_email_pct - reopen_rate_chat_pct) / reopen_rate_chat_pct * 100.0
+
+    segment_mask = (labor >= 100.0) & satisfaction.notna() & (satisfaction <= 2)
+    segment_count = int(segment_mask.sum())
+    if segment_count > 0:
+        segment_reopen_pct = finite(reopened[segment_mask].mean() * 100.0)
+    else:
+        segment_reopen_pct = 0.0
+
+    if ticket_count > 0:
+        agent_counts = df['agent_id'].value_counts()
+        unique_agent_count = int(df['agent_id'].nunique())
+        top_agent_ticket_count = int(agent_counts.max())
+        top_agent_ticket_share_pct = finite(top_agent_ticket_count / ticket_count * 100.0)
+    else:
+        unique_agent_count = 0
+        top_agent_ticket_count = 0
+        top_agent_ticket_share_pct = 0.0
+
+    metrics = {
+        'ticket_count': ticket_count,
+        'mean_resolution_minutes': finite(resolution.mean()),
+        'total_labor_cost': finite(labor.sum()),
+        'labor_cost_alpha': finite(team_labor.get('Alpha')),
+        'labor_cost_beta': finite(team_labor.get('Beta')),
+        'labor_cost_gamma': finite(team_labor.get('Gamma')),
+        'resolution_email': finite(channel_resolution.get('email')),
+        'resolution_chat': finite(channel_resolution.get('chat')),
+        'resolution_phone': finite(channel_resolution.get('phone')),
+        'reopen_rate_email_pct': reopen_rate_email_pct,
+        'reopen_rate_chat_pct': reopen_rate_chat_pct,
+        'email_vs_chat_reopen_change_pct': finite(email_vs_chat_reopen_change_pct),
+        'high_cost_low_sat_count': segment_count,
+        'high_cost_low_sat_reopen_pct': segment_reopen_pct,
+        'resolution_median': finite(resolution.median()),
+        'resolution_std': finite(resolution.std(ddof=1)),
+        'satisfaction_mean': finite(satisfaction.mean()),
+        'satisfaction_missing_count': int(satisfaction.isna().sum()),
+        'unique_agent_count': unique_agent_count,
+        'top_agent_ticket_count': top_agent_ticket_count,
+        'top_agent_ticket_share_pct': top_agent_ticket_share_pct,
+    }
+
+    if set(metrics) != set(METRIC_KEYS):
+        raise ValueError('Metric keys do not match the required contract')
+
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    with open(output_path, 'w', encoding='utf-8') as handle:
+        json.dump(metrics, handle, allow_nan=False)
+
+
+if __name__ == '__main__':
+    main()
+
+Note: METRIC_KEYS list must be defined before use. Fine.
+
+Series.get with scalar label works; if missing returns default None -> finite(None) -> default 0. Good.
+
+Potential issue: labor.groupby(df['team']) uses labor series index aligned with df. Fine.
+
+json.dump without indent fine. Add sort_keys? Not needed. Maybe indent=2 for readability; fine either way.
+
+Methods description: mention everything.
+
+Now produce final JSON. Ensure expected_artifacts list contains 'findings.json'.
+
+Let's construct final. Keep no extra text.

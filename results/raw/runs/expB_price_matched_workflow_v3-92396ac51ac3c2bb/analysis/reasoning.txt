@@ -1,0 +1,116 @@
+Let me write a self-contained Python script that computes all the metrics.
+
+Key considerations:
+- Read from INPUT_DIR/cleaned.csv
+- Write OUTPUT_DIR/findings.json as flat JSON with all metric keys as finite numbers
+- No rounding, full precision
+- Handle edge cases: hot_commercial_mean_kwh if no readings? Probably fine, but should guard against NaN. commercial_temp_kwh_corr might be NaN if fewer than 2 observations or zero variance — guard.
+
+Metrics:
+- q1: total_kwh (sum), reading_count (int -> number), mean = total/count
+- q2: group sums by building_type
+- q3: quarters from reading_date month
+- q4: H1 Jan-Jun, H2 Jul-Dec, pct change
+- q5: Commercial & temp >= 25: count and mean energy
+- q6: median, std (ddof=1), temperature mean (non-missing), missing count, Pearson corr for Commercial with non-missing temp
+- q7: peak/off-peak sums, share pct, unique meters, max meter total
+
+Ensure JSON serializable as plain floats; reading_count can be int (a number, fine). Convert numpy types to Python float/int.
+
+Guard NaN: use helper to convert to 0.0 if not finite? The contract says must be finite number. For mean of empty set, we could write 0.0. For corr, if undefined, 0.0. Let me include a safe function.
+
+Write the script.
+
+Use pandas. Parse reading_date with pd.to_datetime. Quarter: month//4 +1 effectively ((month-1)//3)+1.
+
+Compute:
+
+```python
+import os, json, math
+import pandas as pd
+import numpy as np
+
+INPUT_DIR = os.environ["INPUT_DIR"]
+OUTPUT_DIR = os.environ["OUTPUT_DIR"]
+
+df = pd.read_csv(os.path.join(INPUT_DIR, "cleaned.csv"), parse_dates=["reading_date"])
+
+def finite(x):
+    try:
+        v = float(x)
+    except (TypeError, ValueError):
+        return 0.0
+    if math.isnan(v) or math.isinf(v):
+        return 0.0
+    return v
+
+findings = {}
+
+total_kwh = df["energy_kwh"].sum()
+reading_count = len(df)
+findings["total_kwh"] = finite(total_kwh)
+findings["reading_count"] = int(reading_count)
+findings["mean_kwh_per_reading"] = finite(total_kwh / reading_count if reading_count else 0.0)
+
+bt = df.groupby("building_type")["energy_kwh"].sum()
+findings["kwh_residential"] = finite(bt.get("Residential", 0.0))
+findings["kwh_commercial"] = finite(bt.get("Commercial", 0.0))
+findings["kwh_industrial"] = finite(bt.get("Industrial", 0.0))
+
+quarter = df["reading_date"].dt.quarter
+qs = df.groupby(quarter)["energy_kwh"].sum()
+for i, key in enumerate(["kwh_q1","kwh_q2","kwh_q3","kwh_q4"], start=1):
+    findings[key] = finite(qs.get(i, 0.0))
+
+month = df["reading_date"].dt.month
+h1 = df.loc[month <= 6, "energy_kwh"].sum()
+h2 = df.loc[month >= 7, "energy_kwh"].sum()
+findings["kwh_h1"] = finite(h1)
+findings["kwh_h2"] = finite(h2)
+findings["kwh_h2_vs_h1_change_pct"] = finite((h2 - h1) / h1 * 100 if h1 else 0.0)
+
+hot = df[(df["building_type"] == "Commercial") & (df["temperature_c"].notna()) & (df["temperature_c"] >= 25)]
+findings["hot_commercial_reading_count"] = int(len(hot))
+findings["hot_commercial_mean_kwh"] = finite(hot["energy_kwh"].mean() if len(hot) else 0.0)
+
+findings["kwh_median"] = finite(df["energy_kwh"].median())
+findings["kwh_std"] = finite(df["energy_kwh"].std(ddof=1))
+temps = df["temperature_c"].dropna()
+findings["temperature_mean"] = finite(temps.mean())
+findings["temperature_missing_count"] = int(df["temperature_c"].isna().sum())
+
+comm = df[(df["building_type"] == "Commercial") & (df["temperature_c"].notna())]
+if len(comm) >= 2 and comm["temperature_c"].std() > 0 and comm["energy_kwh"].std() > 0:
+    corr = comm["temperature_c"].corr(comm["energy_kwh"])
+else:
+    corr = 0.0
+findings["commercial_temp_kwh_corr"] = finite(corr)
+
+tariff = df.groupby("tariff")["energy_kwh"].sum()
+peak = tariff.get("peak", 0.0)
+off = tariff.get("off-peak", 0.0)
+findings["kwh_peak"] = finite(peak)
+findings["kwh_off_peak"] = finite(off)
+findings["peak_kwh_share_pct"] = finite(peak / total_kwh * 100 if total_kwh else 0.0)
+findings["unique_meter_count"] = int(df["meter_id"].nunique())
+meter_totals = df.groupby("meter_id")["energy_kwh"].sum()
+findings["highest_use_meter_kwh"] = finite(meter_totals.max() if len(meter_totals) else 0.0)
+
+os.makedirs(OUTPUT_DIR, exist_ok=True)
+with open(os.path.join(OUTPUT_DIR, "findings.json"), "w") as f:
+    json.dump(findings, f, indent=2)
+```
+
+Note: pandas corr default is Pearson. Good. temperature missing count: NaN — since cleaning wrote empty for missing, read_csv will read as NaN. Good.
+
+One nuance: reading_date parse — format is YYYY-MM-DD, parse_dates works fine.
+
+median/std on full precision — fine.
+
+Ensure no NaN in output: finite() handles. But note json.dump with a float that's NaN would produce invalid JSON; finite prevents.
+
+peak_kwh_share uses total_kwh which is numpy float; fine.
+
+Methods description: brief.
+
+Return JSON object in fenced block.

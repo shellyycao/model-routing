@@ -1,0 +1,7 @@
+{
+  "fixed_code": "def running_total(xs):\n    out = []\n    total = 0\n    for value in xs:\n        total += value\n        out.append(total)\n    return out\n",
+  "bug_locations": [
+    "running_total: loop header `for value in xs[:-1]:`"
+  ],
+  "explanation": "The loop iterated over xs[:-1], which drops the final element, so the cumulative sum was always missing the last term (e.g. [1,2,3] produced [1,3] instead of [1,3,6]). Iterating over the full iterable `xs` fixes this. Empty input already yields [] naturally, and totals preserve int/float types since no coercion occurs."
+}

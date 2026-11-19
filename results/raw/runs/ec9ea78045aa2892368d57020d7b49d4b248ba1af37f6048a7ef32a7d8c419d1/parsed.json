@@ -1,0 +1,7 @@
+{
+  "fixed_code": "def dependency_order(deps):\n    # Collect all nodes: keys plus any referenced nodes not in keys\n    all_nodes = set(deps.keys())\n    for v in deps.values():\n        all_nodes.update(v)\n    # Build a working deps that includes referenced-only nodes with empty deps\n    full_deps = {n: list(deps.get(n, [])) for n in all_nodes}\n    nodes = set(all_nodes)\n    out = []\n    while nodes:\n        ready = sorted(n for n in nodes if not set(full_deps.get(n, [])) & nodes)\n        if not ready:\n            raise ValueError(\"Cycle detected in dependencies\")\n        out += ready\n        nodes -= set(ready)\n    return out\n",
+  "bug_locations": [
+    "dependency_order function"
+  ],
+  "explanation": "Three bugs were fixed: 1) The original code only initialized `nodes` from `deps.keys()`, missing nodes that are referenced as dependencies but not themselves keys (e.g., 'a' in {'b':['a']} if 'a' had no entry). Now all referenced nodes are collected into `all_nodes`. 2) A `full_deps` dict is built so every node has an entry, avoiding KeyError and ensuring referenced-only nodes (with no dependencies) are treated as having empty dep lists. 3) The `break` on cycle detection was replaced with `raise ValueError(...)` as required by the specification."
+}

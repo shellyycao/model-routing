@@ -1,0 +1,137 @@
+{
+  "stage": "cleaning",
+  "model_alias": "C",
+  "model_id": "openai.gpt-oss-120b-1:0",
+  "prompt_version": "v3",
+  "prompt_hash": "4c80e726ad39dcec71d0f3668b55982f474546dfd54cafee800a7f420e1182ec",
+  "invocation_ids": [
+    "5a47da4c-e21b-48e3-bf53-f1738a0b694d"
+  ],
+  "cache_hit": false,
+  "shared_with_run_ids": [],
+  "status": "failed",
+  "structural_ok": true,
+  "failure_type": "execution_error",
+  "failure_detail": "execution runtime_error (exit 1): /sandbox/code/main.py:14: SettingWithCopyWarning: \nA value is trying to be set on a copy of a slice from a DataFrame.\nTry using .loc[row_indexer,col_indexer] = value instead\n\nSee the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy\n  df[col] = df[col].str.upper()\nTraceback (most recent call last):\n  File \"/sandbox/code/main.py\", line 231, in <module>\n    main()\n  File \"/sandbox/code/main.py\", line 228, in main\n    json.dump(summary, f, indent=2)\n  File \"/usr/local/lib/python3.12/json/__init__.py\", line 179, in dump\n    for chunk in iterable:\n                 ^^^^^^^^\n  File \"/usr/local/lib/python3.12/json/encoder.py\", line 432, in _iterencode\n    yield from _iterencode_dict(o, _current_indent_level)\n  File \"/usr/local/lib/python3.12/json/encoder.py\", line 406, in _iterencode_dict\n    yield from chunks\n  File \"/usr/local/lib/python3.12/json/encoder.py\", line 439, in _iterencode\n    o = _default(o)\n        ^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/json/encoder.py\", line 180, in default\n    raise TypeError(f'Object of type {o.__class__.__name__} '\nTypeError: Object of type int64 is not JSON serializable\n",
+  "parse_ok": true,
+  "execution": {
+    "status": "runtime_error",
+    "exit_code": 1,
+    "stdout": "",
+    "stderr": "/sandbox/code/main.py:14: SettingWithCopyWarning: \nA value is trying to be set on a copy of a slice from a DataFrame.\nTry using .loc[row_indexer,col_indexer] = value instead\n\nSee the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy\n  df[col] = df[col].str.upper()\nTraceback (most recent call last):\n  File \"/sandbox/code/main.py\", line 231, in <module>\n    main()\n  File \"/sandbox/code/main.py\", line 228, in main\n    json.dump(summary, f, indent=2)\n  File \"/usr/local/lib/python3.12/json/__init__.py\", line 179, in dump\n    for chunk in iterable:\n                 ^^^^^^^^\n  File \"/usr/local/lib/python3.12/json/encoder.py\", line 432, in _iterencode\n    yield from _iterencode_dict(o, _current_indent_level)\n  File \"/usr/local/lib/python3.12/json/encoder.py\", line 406, in _iterencode_dict\n    yield from chunks\n  File \"/usr/local/lib/python3.12/json/encoder.py\", line 439, in _iterencode\n    o = _default(o)\n        ^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/json/encoder.py\", line 180, in default\n    raise TypeError(f'Object of type {o.__class__.__name__} '\nTypeError: Object of type int64 is not JSON serializable\n",
+    "runtime_ms": 740.7236250001006,
+    "output_files": [
+      "/Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expB_paths_v3-bfdb87226fde23f6/cleaning/output/cleaned.csv",
+      "/Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expB_paths_v3-bfdb87226fde23f6/cleaning/output/cleaning_summary.json"
+    ],
+    "sandbox_image": "sha256:88988a15503bdb96538c3dd62244a79879d5c7848397db18b1267ccfd0a9727a"
+  },
+  "validation": {
+    "stage": "cleaning",
+    "hard_pass": true,
+    "checks": [
+      {
+        "name": "output_exists",
+        "passed": true,
+        "mandatory": true,
+        "detail": "/Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expB_paths_v3-bfdb87226fde23f6/cleaning/output/cleaned.csv",
+        "value": null
+      },
+      {
+        "name": "output_parses",
+        "passed": true,
+        "mandatory": true,
+        "detail": "347 rows, 10 columns",
+        "value": null
+      },
+      {
+        "name": "required_columns_present",
+        "passed": true,
+        "mandatory": true,
+        "detail": "all present",
+        "value": null
+      },
+      {
+        "name": "schema_constraints",
+        "passed": true,
+        "mandatory": true,
+        "detail": "all constraints satisfied",
+        "value": 1.0
+      },
+      {
+        "name": "no_extra_columns",
+        "passed": true,
+        "mandatory": false,
+        "detail": "",
+        "value": null
+      },
+      {
+        "name": "no_duplicate_keys",
+        "passed": true,
+        "mandatory": true,
+        "detail": "",
+        "value": 0.0
+      },
+      {
+        "name": "row_set_matches_reference",
+        "passed": true,
+        "mandatory": true,
+        "detail": "0 reference rows missing (e.g. []); 0 unexpected rows (e.g. []); output rows=347, reference rows=347",
+        "value": null
+      },
+      {
+        "name": "values_match_reference",
+        "passed": true,
+        "mandatory": true,
+        "detail": "3470/3470 cells match (abs_tol=0.011, rel_tol=1e-06)",
+        "value": 1.0
+      }
+    ],
+    "quality": {
+      "cleaning_correctness": 1.0,
+      "data_integrity": 1.0,
+      "schema_compliance": 1.0
+    },
+    "quality_basis": "ground_truth",
+    "validator_version": "1.0"
+  },
+  "conditional_validation": null,
+  "input_artifacts": [
+    "datasets/projects/support_operations/raw.csv",
+    "datasets/projects/support_operations/agents.csv"
+  ],
+  "output_artifacts": [
+    "results/raw/runs/expB_paths_v3-bfdb87226fde23f6/cleaning/prompt.txt",
+    "results/raw/runs/expB_paths_v3-bfdb87226fde23f6/cleaning/response.txt",
+    "results/raw/runs/expB_paths_v3-bfdb87226fde23f6/cleaning/reasoning.txt",
+    "results/raw/runs/expB_paths_v3-bfdb87226fde23f6/cleaning/parsed.json",
+    "results/raw/runs/expB_paths_v3-bfdb87226fde23f6/cleaning/code.py",
+    "results/raw/runs/expB_paths_v3-bfdb87226fde23f6/cleaning/output/cleaned.csv",
+    "results/raw/runs/expB_paths_v3-bfdb87226fde23f6/cleaning/output/cleaning_summary.json"
+  ],
+  "input_artifact_hashes": {
+    "datasets/projects/support_operations/raw.csv": "d260e1c2251ade14aa044895797fa2d39647b6d1fe43ba7c79d8c5a48fd287fd",
+    "datasets/projects/support_operations/agents.csv": "51d9c560abc74a09ea32b0c667fc52c8d0f5479fd5a01314fc8f7f2fc0ff4442"
+  },
+  "output_artifact_hashes": {
+    "results/raw/runs/expB_paths_v3-bfdb87226fde23f6/cleaning/prompt.txt": "4c80e726ad39dcec71d0f3668b55982f474546dfd54cafee800a7f420e1182ec",
+    "results/raw/runs/expB_paths_v3-bfdb87226fde23f6/cleaning/response.txt": "14d21a6ca02627e70ceb192fc1faed85f63ab2e5e57fdc941b91f70820ff2ea1",
+    "results/raw/runs/expB_paths_v3-bfdb87226fde23f6/cleaning/reasoning.txt": "6d4cb967b4ab19abe58d25c1b4022aa5737fd64dbb4db49022dfa17eb4f2137f",
+    "results/raw/runs/expB_paths_v3-bfdb87226fde23f6/cleaning/parsed.json": "2fd11daeb89fbc924dbee55d0c1226b195cada4dc9815f8cc09d28a053a7f6a7",
+    "results/raw/runs/expB_paths_v3-bfdb87226fde23f6/cleaning/code.py": "76aeda97109e9337fa17f8881f019f262c5268d9d2c010cb5cc0117db1c59123",
+    "results/raw/runs/expB_paths_v3-bfdb87226fde23f6/cleaning/output/cleaned.csv": "54f09d5ba7ca54ab61dc566e3feae4b54d0dc0f530be43057f8744363e55e6b1",
+    "results/raw/runs/expB_paths_v3-bfdb87226fde23f6/cleaning/output/cleaning_summary.json": "4cfb4cb4a6a5cc1051bc75166970a401404fb75dc859fba889986b63d9e7f96d"
+  },
+  "handoff_in_path": "results/raw/runs/expB_paths_v3-bfdb87226fde23f6/cleaning/handoff_in.json",
+  "handoff_size_bytes": 424,
+  "input_tokens": 1583,
+  "output_tokens": 3262,
+  "cost_usd": null,
+  "cost_status": "unavailable",
+  "timings": {
+    "generation_ms": 7640.584374999889,
+    "execution_ms": 740.7236250001006,
+    "validation_ms": 5.26808300128323,
+    "handoff_ms": 0.24620800104457885
+  }
+}

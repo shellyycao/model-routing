@@ -1,0 +1,30 @@
+TASK: Python debugging (independent benchmark A1, prompt independent_v1)
+
+The function below contains exactly one bug. Fix it so that it satisfies the specification.
+
+SPECIFICATION:
+binary_search(xs, target) returns an index i with xs[i] == target in the ascending sorted list xs, or -1 if target is absent.
+
+BUGGY CODE:
+```python
+def binary_search(xs, target):
+    lo, hi = 0, len(xs) - 1
+    while lo < hi:
+        mid = (lo + hi) // 2
+        if xs[mid] == target:
+            return mid
+        if xs[mid] < target:
+            lo = mid + 1
+        else:
+            hi = mid - 1
+    return -1
+
+```
+
+EXAMPLE TESTS (these must pass; additional hidden tests will also be run):
+```python
+assert binary_search([1, 3, 5], 3) == 1
+```
+
+Return the COMPLETE corrected source code (keep the same function names and signatures; standard library only),
+the location of the bug, and a short explanation.

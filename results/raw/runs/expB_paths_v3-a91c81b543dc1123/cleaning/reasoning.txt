@@ -1,0 +1,194 @@
+We need to produce JSON with fields python_code (script), output_filename "cleaned.csv", cleaning_logic description.
+
+The script must implement all cleaning steps, produce cleaned.csv and cleaning_summary.json with raw_rows, cleaned_rows, and per-rule counts.
+
+We need to read raw.csv as text, treat all columns as strings, strip whitespace, treat missing values as defined.
+
+Implementation plan:
+
+- import os, pandas as pd, numpy as np, json, datetime.
+
+- Input path: os.path.join(os.environ["INPUT_DIR"], "raw.csv")
+
+- Read raw CSV using pandas read_csv with dtype=str, keep default, but we need to preserve whitespace. Use keep_default_na=False, na_values=[] to avoid automatic conversion. Then we will strip whitespace manually.
+
+- raw_rows = len(df)
+
+- Apply R1: strip whitespace for all cells, then replace missing values: after stripping, if value.lower() in {'', 'na', 'n/a', 'null', 'none', '-'} then set to None (np.nan). We'll use df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x). Then replace.
+
+- R2: deduplicate based on customer_id, keep first. Count duplicates removed.
+
+- Then process each column sequentially, dropping rows as needed, tracking counts.
+
+We'll create a dict summary counts.
+
+Processing:
+
+Define helper functions for parsing dates.
+
+R3: parse signup_date using multiple formats. We'll attempt each format; if fails, set to NaT. Drop rows where missing or cannot parse. Count rows dropped.
+
+R4: plan mapping dict case-insensitive. Use .str.lower().strip() then map.
+
+R5: contract_type mapping.
+
+R6: monthly_fee: remove '$', 'USD', ',' and spaces. Use regex. Then convert to float. Drop rows where missing, not numeric, <=0 or >500.
+
+R7: tenure_months: remove trailing 'months'/'month' case-insensitive, strip, then parse int. Must be whole number, 0-120.
+
+R8: support_tickets: missing -> 0. Else parse int, 0-100.
+
+R9: satisfaction_score: parse int, if invalid set to np.nan (missing) but keep row.
+
+R10: churned mapping.
+
+R11: lifetime_value = monthly_fee * tenure_months, round 2.
+
+R12: select columns order, sort by customer_id ascending (string sort). Write CSV with header, index=False, float format maybe default but ensure no extra formatting.
+
+Write cleaning_summary.json with counts.
+
+Edge Cases: need to ensure that after each drop we update counts.
+
+Implementation details:
+
+- Use df = df.copy()
+
+- For each rule, we can compute mask of rows to keep.
+
+- For R9, we need to set invalid to np.nan.
+
+- For R8 missing -> 0: after R1 missing values are NaN; we fillna(0) after parsing.
+
+- For satisfaction_score missing after R1, we treat as missing; later we parse; if missing, set to np.nan.
+
+Parsing numeric: use pd.to_numeric with errors='coerce'.
+
+Now produce script as a string.
+
+Make sure to import re for regex.
+
+Write summary dict:
+
+summary = {
+    "raw_rows": raw_rows,
+    "duplicate_rows_removed": dup_removed,
+    "rows_after_R3": rows_after_R3,
+    ... maybe just include counts per rule.
+
+But requirement: at least raw_rows and cleaned_rows plus any per-rule counts you track.
+
+We'll include counts for each rule: "duplicates_removed", "invalid_signup_date", "invalid_plan", "invalid_contract_type", "invalid_monthly_fee", "invalid_tenure_months", "invalid_support_tickets", "invalid_churned". For satisfaction_score we may include "satisfaction_score_set_missing".
+
+Now produce final JSON.
+
+Let's craft script.
+
+Potential pitfalls: reading raw.csv with spaces in column names? The header includes spaces? The sample shows header line without spaces. So fine.
+
+When stripping whitespace from column names? Not needed.
+
+Implementation steps:
+
+```
+import os, pandas as pd, numpy as np, json, re
+from datetime import datetime
+
+def parse_date(val):
+    if pd.isna(val):
+        return pd.NaT
+    val = val.strip()
+    formats = ["%Y-%m-%d", "%m/%d/%Y", "%d-%b-%Y", "%Y/%m/%d", "%B %d, %Y"]
+    for fmt in formats:
+        try:
+            return datetime.strptime(val, fmt).date()
+        except Exception:
+            continue
+    return pd.NaT
+```
+
+Note: %d-%b-%Y expects month abbreviation with first letter capital? case-insensitive? We'll lower? Use datetime with locale; but month abbreviation case-insensitive? We'll just try as is; we can also capitalize first letter. Use .title() maybe.
+
+Better: use pandas to_datetime with format list? Could use dateutil parser but not allowed. We'll implement simple.
+
+For %d-%b-%Y, we can convert month abbreviation to proper case: val = re.sub(r'([a-zA-Z]{3})', lambda m: m.group(1).title(), val) before parsing.
+
+Simplify: use pandas.to_datetime with errors='coerce' and infer format? But we need to restrict to given formats. However using to_datetime may parse other formats inadvertently. Acceptable? Might be okay but spec says parse using exactly one of these formats. We'll implement manual.
+
+Implementation:
+
+```
+def try_parse(val):
+    if pd.isna(val):
+        return pd.NaT
+    val = val.strip()
+    # normalize month abbreviation for %d-%b-%Y
+    val = re.sub(r'([a-z]{3})', lambda m: m.group(1).title(), val, flags=re.IGNORECASE)
+    for fmt in ["%Y-%m-%d", "%m/%d/%Y", "%d-%b-%Y", "%Y/%m/%d", "%B %d, %Y"]:
+        try:
+            return datetime.strptime(val, fmt).date()
+        except:
+            continue
+    return pd.NaT
+```
+
+Now apply: df['signup_date_parsed'] = df['signup_date'].apply(try_parse); keep rows where not NaT.
+
+R4 mapping:
+
+plan_map = {
+    'basic': 'Basic',
+    'basic plan': 'Basic',
+    'standard': 'Standard',
+    'std': 'Standard',
+    'standard plan': 'Standard',
+    'premium': 'Premium',
+    'prem': 'Premium',
+    'premium plan': 'Premium'
+}
+
+lowercase stripped value to map.
+
+R5 mapping:
+
+contract_map = {
+    'monthly': 'Monthly',
+    'month-to-month': 'Monthly',
+    'm2m': 'Monthly',
+    'annual': 'Annual',
+    'yearly': 'Annual',
+    '1 year': 'Annual'
+}
+
+R6: clean fee:
+
+fee_clean = re.sub(r'[\$,]', '', val) then remove 'USD' case-insensitive, then strip. Use regex: re.sub(r'\s*USD\s*', '', fee, flags=re.IGNORECASE). Then strip.
+
+Parse float.
+
+R7: tenure: remove 'months'/'month' case-insensitive: re.sub(r'\s*(months?|Months?)\s*$', '', val, flags=re.IGNORECASE). Then strip, parse int.
+
+R8: support_tickets: missing -> 0. else parse int.
+
+R9: satisfaction_score: parse int; if invalid set np.nan.
+
+R10: churned mapping:
+
+churn_map = {
+    'yes':1,'y':1,'true':1,'1':1,'churned':1,
+    'no':0,'n':0,'false':0,'0':0,'active':0
+}
+
+Now compute lifetime_value.
+
+Write cleaned.csv.
+
+Write summary.
+
+Now produce final JSON.
+
+Let's craft python_code string with triple quotes inside JSON; need to escape properly. We'll embed as raw string.
+
+Make sure script uses if __name__ == "__main__": main().
+
+Now produce final answer.

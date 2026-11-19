@@ -1,0 +1,350 @@
+{
+  "amendments": [
+    {
+      "change": "price-matched workflow availability, run, and lease now use sha256:88988a15503bdb96538c3dd62244a79879d5c7848397db18b1267ccfd0a9727a; missing ID fails closed without short-name fallback",
+      "date": "2026-11-19",
+      "id": "immutable-sandbox-image-pin",
+      "main_calls_before_amendment": 0,
+      "no_main_execution_evidence": {
+        "active_verification_record": "results/verification/sandbox_verification.json",
+        "main_invocations": 0,
+        "part_a_task_records": 0,
+        "part_b_task_records": 0,
+        "verified_image_id": "sha256:88988a15503bdb96538c3dd62244a79879d5c7848397db18b1267ccfd0a9727a"
+      },
+      "old_tag_deleted": false,
+      "replacement_execution_tag": "price-matched-workflow-main-v1.1",
+      "root_cause": "Docker Desktop containerd intermittently failed to resolve the short image name while the fully qualified name and immutable image ID remained available",
+      "scientific_protocol_changed": false,
+      "scope": "execution_only",
+      "superseded_execution_tag": "price-matched-workflow-main-v1"
+    },
+    {
+      "analysis_rule": "a non-void rerun replaces its original void for the effective cell; raw original remains reported",
+      "approved_cells": [
+        {
+          "path_id": "C-C-A",
+          "project_id": "energy_consumption",
+          "repeat_index": 0
+        },
+        {
+          "path_id": "C-C-B",
+          "project_id": "energy_consumption",
+          "repeat_index": 0
+        },
+        {
+          "path_id": "C-C-C",
+          "project_id": "energy_consumption",
+          "repeat_index": 0
+        },
+        {
+          "path_id": "A-A-A",
+          "project_id": "retail_sales",
+          "repeat_index": 0
+        },
+        {
+          "path_id": "A-A-B",
+          "project_id": "retail_sales",
+          "repeat_index": 0
+        }
+      ],
+      "date": "2026-11-19",
+      "each_cell_reruns_exactly_once": true,
+      "id": "outcome-blind-docker-void-rerun",
+      "old_tag_deleted": false,
+      "original_records_deleted_or_overwritten": false,
+      "replacement_execution_tag": "price-matched-workflow-main-v1.2",
+      "rerun_count_ceiling": 5,
+      "root_cause": "approximately two-minute Docker daemon outage; docker info timed out",
+      "scientific_protocol_changed": false,
+      "scope": "execution_and_analysis_handling_only",
+      "selection_is_outcome_blind": true,
+      "superseded_execution_tag": "price-matched-workflow-main-v1.1",
+      "user_authorization": {
+        "date": "2026-11-19",
+        "wording": "\u53ef\u4ee5\u4e0d\u7528\u6211\u6279\u51c6\uff0c\u5982\u679c\u662fdocker\u7684\u95ee\u9898\u4f60\u4e4b\u95f4\u91cd\u8dd1\u5c31\u884c"
+      }
+    }
+  ],
+  "below_static_worst_case_intentionally_accepted": true,
+  "budget_scope": "completed compatibility pilot plus main run, on one shared reserve-then-settle ledger",
+  "checkpoints": {
+    "main_grid": "results/raw/price_matched_workflow/main_grid_cost_checkpoint.json",
+    "main_grid_projection_must_be_within_cap": true,
+    "part_a": "results/raw/price_matched_workflow/part_a_cost_checkpoint.json"
+  },
+  "combined_pre_pilot_realistic_estimate_usd": 42.81721377191824,
+  "combined_static_worst_case_usd": 572.437048,
+  "commands": {
+    "main_grid": ".venv/bin/python -m experiments.run_price_matched_workflow --execute-approved-main --continue-after-part-a",
+    "part_a": ".venv/bin/python -m experiments.run_price_matched_workflow --execute-approved-main",
+    "rerun_docker_voids": ".venv/bin/python -m experiments.run_price_matched_workflow --rerun-docker-voids",
+    "resume_repeats": ".venv/bin/python -m experiments.run_price_matched_workflow --execute-approved-main --continue-after-part-a --continue-after-main-grid"
+  },
+  "comparability_disclosure": "maxTokens 16384 differs from the original Parts A/B setting of 4096",
+  "date": "2026-11-19",
+  "docker_void_rerun": {
+    "analysis_resolution": "successful_rerun_replaces_void",
+    "approved": true,
+    "approved_cells": [
+      {
+        "path_id": "C-C-A",
+        "project_id": "energy_consumption",
+        "repeat_index": 0
+      },
+      {
+        "path_id": "C-C-B",
+        "project_id": "energy_consumption",
+        "repeat_index": 0
+      },
+      {
+        "path_id": "C-C-C",
+        "project_id": "energy_consumption",
+        "repeat_index": 0
+      },
+      {
+        "path_id": "A-A-A",
+        "project_id": "retail_sales",
+        "repeat_index": 0
+      },
+      {
+        "path_id": "A-A-B",
+        "project_id": "retail_sales",
+        "repeat_index": 0
+      }
+    ],
+    "approved_original_run_ids": [
+      "expB_price_matched_workflow_v3-d348486e2b0e6141",
+      "expB_price_matched_workflow_v3-60743b466c67af29",
+      "expB_price_matched_workflow_v3-b13b2e1a92f0b484",
+      "expB_price_matched_workflow_v3-10db877a3ba2a603",
+      "expB_price_matched_workflow_v3-2cc5c33d604f5c14"
+    ],
+    "authorization_date": "2026-11-19",
+    "authorization_wording": "\u53ef\u4ee5\u4e0d\u7528\u6211\u6279\u51c6\uff0c\u5982\u679c\u662fdocker\u7684\u95ee\u9898\u4f60\u4e4b\u95f4\u91cd\u8dd1\u5c31\u884c",
+    "infra_attempt": 1,
+    "logical_cell_ceiling": 5,
+    "original_156_record_prefix_sha256": "0f8d08d57c4ae8a362d3f88b51d70eaecdd28d8f88d5d8c1329d452d0e30d78c",
+    "pre_rerun_evidence": {
+      "approved_original_run_ids": [
+        "expB_price_matched_workflow_v3-d348486e2b0e6141",
+        "expB_price_matched_workflow_v3-60743b466c67af29",
+        "expB_price_matched_workflow_v3-b13b2e1a92f0b484",
+        "expB_price_matched_workflow_v3-10db877a3ba2a603",
+        "expB_price_matched_workflow_v3-2cc5c33d604f5c14"
+      ],
+      "cells": [
+        {
+          "path_id": "C-C-A",
+          "project_id": "energy_consumption",
+          "repeat_index": 0
+        },
+        {
+          "path_id": "C-C-B",
+          "project_id": "energy_consumption",
+          "repeat_index": 0
+        },
+        {
+          "path_id": "C-C-C",
+          "project_id": "energy_consumption",
+          "repeat_index": 0
+        },
+        {
+          "path_id": "A-A-A",
+          "project_id": "retail_sales",
+          "repeat_index": 0
+        },
+        {
+          "path_id": "A-A-B",
+          "project_id": "retail_sales",
+          "repeat_index": 0
+        }
+      ],
+      "failed_api_attempts": 0,
+      "ledger_calls": 467,
+      "ledger_cost_usd": 25.480151299999978,
+      "main_grid_projected_total_usd": 24.365198586451662,
+      "original_156_record_prefix_sha256": "0f8d08d57c4ae8a362d3f88b51d70eaecdd28d8f88d5d8c1329d452d0e30d78c",
+      "part_a_records": 36,
+      "part_b_original_records": 156,
+      "pending_reservations": 0
+    },
+    "repeat_index_unchanged": true,
+    "same_models_parameters_prompts_and_image": true,
+    "shared_ledger_hard_cap_usd": 100.0
+  },
+  "experiment_ids": {
+    "part_a": "expA_price_matched_workflow_v3",
+    "part_b": "expB_price_matched_workflow_v3"
+  },
+  "freeze_tag_created": false,
+  "freeze_tag_creation_delegated_to": "Claude manager after review",
+  "hard_budget_cap_usd": 100.0,
+  "hashes": {
+    "files": {
+      "configs/analysis_price_matched_workflow_v3.yaml": "b704635b7a65862d131503aeec022e0d774b9724457d16471c3ad3f7f4318dd2",
+      "configs/routing.yaml": "18525489c8dc3dba14ffcafb6b8d0b1eef1fe8ca18555d1a0d49dc724d26298d",
+      "configs/routing_cost_posthoc.yaml": "9e8175aabfe9f6d686d4dde24bbe286add9abd67b58681aa3a8a7f3cec6a4da5",
+      "docs/PRICE_MATCHED_WORKFLOW_BRIEF.md": "06288b6940ceae24c67c8c83c396bfa3182b16f08447bdf48a82fba2026524df",
+      "docs/PRICE_MATCHED_WORKFLOW_PLAN.md": "a77e06194148867c02dd94c5e111ed6d4a01618e814a3ab2e439e6596ee458f0",
+      "experiments/build_price_matched_workflow_main_manifest.py": "00011b4c89ecb67d10c49659eb5a9e78b2f71a4a0c18f5be6b7587371c70feba",
+      "experiments/build_price_matched_workflow_pilot_manifest.py": "31e7cf4aeac7bd83fe7542d0a2af6522e969ca5223fa42d3379c5913adec1c0a",
+      "experiments/evaluate_routing.py": "a8150a6e7f9a7038793d6ebedc17b335dbf6b23d6bd34cda0adc37b2034df55e",
+      "experiments/rescore_reporting_v3_1.py": "e6f83ca19777e079273226701848bfc4e67426350e75a3ae214168accde879bb",
+      "experiments/run_price_matched_workflow.py": "91c96132ddb5d9e3814e712afbc0bc8878d2894c22fd160f10eed6f127e9f85f",
+      "experiments/run_stage_benchmark.py": "2487b559f13067d7710a754eebbbae64a3b7a9c5242c933bc5b04c04b7fbe407",
+      "experiments/run_workflow_grid.py": "9297250d7aea64945a8372ad49b9f6ea01a46ed8a6e2b15e1d71c186d2feb650",
+      "experiments/validate_counterfactuals.py": "54e1bba8c277ead9354bb862bcd7f220c7d80b7663dadb49457b04bb873b02fa",
+      "results/processed/independent_v2/price_matched_model_verification.json": "c20f1011a8b13575dc4d6ad077b85f526647c8a08ebdb9be8047540495f27c62",
+      "results/raw/price_matched_workflow/pilot_summary.json": "9438142614ca420d055ea4c309e37f6b89665ed954499d83fbf78d5c492aa585",
+      "results/raw/sandbox_verification.json": "90b19d603684ea025ad11bd28c1e24f0686c8a10bd28555343236c1abdf13c4f",
+      "results/raw/stage_benchmark/expA_price_matched_workflow_pilot_v3.jsonl": "8d3a731daad59c73e15a36ae49b1e16100c332c31529460d43a280c2215a5091",
+      "results/raw/stage_benchmark/expA_price_matched_workflow_pilot_v3.meta.json": "f32cf21792b88def99bd3c6d383406b50a9f462b54d448b54e50c648dc365ab1",
+      "results/verification/sandbox_verification.json": "9b66cddd1751dbdd6850203dce1d1d091345f695a8efb4430142a11cdadb2994",
+      "sandbox/Dockerfile": "5c285710204873f14b8b3a44c0061653788ba5b9efa70a5babca49b7c4195182",
+      "src/analysis/io.py": "9a0bbf16b4ab382d8b5b971652905b3bb3ce1229729657eb7e9c911939fd42c0",
+      "src/analysis/pipeline.py": "3a6da7e7acd210d93729c1f484ab1a98f65c41f3bce02b535c381e587697ad4b",
+      "src/analysis/reruns.py": "b6078c540dae691334f3e286aaec6bf4aed575b8ba73c9e4fc1fa644aa16fcc6",
+      "src/contracts/records.py": "6a8b40f596e3115612debbd8b17c42b9b9e8b03fb9ffc1205cac190eead52cb6",
+      "src/evaluation/analysis.py": "3eebc62863a1afdf753878701b2ba8ac50f4196985698cb098868fa21aa7398b",
+      "src/evaluation/cleaning.py": "935fe8ba4bb16e99b04a04c6ff2d2471dcb7de8c4d5ea74985ea510efd447522",
+      "src/evaluation/reporting_v3.py": "096e57cab496b479950bb5554abf1a765553789295044c2d237ec894b0a42a7c",
+      "src/evaluation/reporting_v3_1.py": "42529b75a8df9ea9f403a6082f8c7b6dd760fb639bca0ea89ffb79e4589508e3",
+      "src/routing/cost_posthoc.py": "b6b75a87683137e2352c3ea3224299faa1c0d242d41b00021a7e959bcc1f937d",
+      "src/routing/estimation.py": "61fa76916e85cf474676e41a0b803ba50a74f59c5a5971427d617c153bee0a96",
+      "src/routing/router.py": "e8f5dafb50d5c998dd0cf82d29394f9993c0342e6aeeee00ed672c11f10d3df8",
+      "src/routing/strategies.py": "63569c4b9025a84514038fd629bc0e005e96e73f823079a21a88022a3d7fc200",
+      "src/workflow/executor.py": "ab51290f7ccee1af988d23ea5a4adf208c466e162c55c011d488ebd429da7eb8",
+      "src/workflow/orchestrator.py": "3506f9e745d3fc2978ce7db6debe94e16e51c02499a98218f9063486e2eab407",
+      "src/workflow/stages.py": "f2589af376668883d9fb6143be3a93c1f473817bf754ff558ab0d592c87cbfe9"
+    },
+    "pricing_snapshots_tree": "92ee7fbea8979291acc20d6316a5a4a68de4f7fef3c1f21da6223b8fef3fabaf",
+    "projects_tree": "5ff939bbf3c2966085f450c73cf03f1a13b1170d628ec25847c6994b11ef5010",
+    "prompts_v3_tree": "813a6c66831491cde56da9f774d917e763ec689d7741108bb28ff71f9aec4686"
+  },
+  "main_approved": true,
+  "main_logical_call_ceiling": 504,
+  "main_plan": {
+    "order": "Part A; mandatory stop; 27-path main grid; mandatory stop; repeats 1-2",
+    "part_a_model_call_ceiling": 36,
+    "part_a_task_records": 36,
+    "part_b_main_model_call_ceiling": 324,
+    "part_b_main_task_records": 108,
+    "part_b_repeat_model_call_ceiling": 144,
+    "part_b_repeat_task_records": 48,
+    "part_b_total_task_records": 156,
+    "repeat_paths": [
+      "A-A-A",
+      "A-A-C",
+      "A-C-A",
+      "A-C-C",
+      "B-B-B",
+      "C-C-C"
+    ]
+  },
+  "main_required_tag": "price-matched-workflow-main-v1.2",
+  "model_parameters": [
+    {
+      "alias": "A",
+      "maxTokens": 16384,
+      "source_alias": "sonnet_4_6",
+      "temperature": 0.0,
+      "temperature_field": "sent"
+    },
+    {
+      "alias": "B",
+      "maxTokens": 16384,
+      "source_alias": "kimi_k3",
+      "temperature": null,
+      "temperature_field": "omitted"
+    },
+    {
+      "alias": "C",
+      "maxTokens": 16384,
+      "source_alias": "glm_5",
+      "temperature": 0.0,
+      "temperature_field": "sent"
+    }
+  ],
+  "network_or_model_calls_made_by_manifest_build": 0,
+  "outputs": {
+    "invocations": {
+      "completion_source": false,
+      "group_field": "context.experiment_id",
+      "path": "results/raw/price_matched_workflow/invocations.jsonl"
+    },
+    "ledger": "results/raw/ledgers/price_matched_workflow.json",
+    "part_a": {
+      "complete_lines": 36,
+      "group_fields": [
+        "project_id",
+        "stage",
+        "model_alias"
+      ],
+      "path": "results/raw/stage_benchmark/expA_price_matched_workflow_v3.jsonl"
+    },
+    "part_b": {
+      "expected_lines_after_rerun": 161,
+      "group_fields": [
+        "project_id",
+        "path_id",
+        "repeat_index"
+      ],
+      "main_grid_repeat_index": 0,
+      "original_lines": 156,
+      "path": "results/raw/workflow_runs/expB_price_matched_workflow_v3.jsonl",
+      "repeat_indices": [
+        1,
+        2
+      ]
+    }
+  },
+  "pilot_actual_plus_main_realistic_estimate_usd": 42.44064015043667,
+  "pilot_approved": true,
+  "pilot_outcome": {
+    "actual_cost_usd": 0.449949,
+    "api_success": 9,
+    "input_tokens": 20741,
+    "logical_calls": 9,
+    "output_tokens": 27868,
+    "parameter_failures": 0,
+    "parsed": 9,
+    "quality_inspected": false,
+    "stopReason_end_turn": 9,
+    "summary_path": "results/raw/price_matched_workflow/pilot_summary.json",
+    "task_records_path": "results/raw/stage_benchmark/expA_price_matched_workflow_pilot_v3.jsonl"
+  },
+  "previous_main_tag_retained": "price-matched-workflow-main-v1.1",
+  "previous_main_tags_retained": [
+    "price-matched-workflow-main-v1",
+    "price-matched-workflow-main-v1.1"
+  ],
+  "protocol": "Price-Matched Workflow + Routing Replication",
+  "resume_completion_sources": [
+    "results/raw/stage_benchmark/expA_price_matched_workflow_v3.jsonl",
+    "results/raw/workflow_runs/expB_price_matched_workflow_v3.jsonl"
+  ],
+  "retry_policy": {
+    "docker_void_rerun_has_standing_user_authorization": true,
+    "maximum_api_attempts_per_logical_call": 5,
+    "non_docker_void_rerun_requires_amendment_and_user_decision": true,
+    "selective_retries": false
+  },
+  "sandbox_execution": {
+    "availability_run_and_lease_reference": "sha256:88988a15503bdb96538c3dd62244a79879d5c7848397db18b1267ccfd0a9727a",
+    "immutable_image_id": "sha256:88988a15503bdb96538c3dd62244a79879d5c7848397db18b1267ccfd0a9727a",
+    "shared_default_image_constant_changed": false,
+    "short_name_fallback": false,
+    "verification_record": "results/verification/sandbox_verification.json"
+  },
+  "selected_max_tokens": 16384,
+  "status": "main_frozen_paid_execution_approved",
+  "user_main_approval": {
+    "date": "2026-11-19",
+    "hard_budget_cap_usd": 100.0,
+    "logical_call_ceiling": 504,
+    "realistic_estimate_usd_rounded": 43,
+    "wording": "Approve the main run (504 calls, about $43 expected, $100 cap)"
+  },
+  "version": "price-matched-workflow-main-v1.2"
+}

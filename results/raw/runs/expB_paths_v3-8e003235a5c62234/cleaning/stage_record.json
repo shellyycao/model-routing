@@ -1,0 +1,133 @@
+{
+  "stage": "cleaning",
+  "model_alias": "A",
+  "model_id": "us.anthropic.claude-sonnet-4-6",
+  "prompt_version": "v3",
+  "prompt_hash": "75d018237537d053a761286adc2946865bc568d7563b334eb22d7222cdd285d5",
+  "invocation_ids": [
+    "6164598f-751b-4070-bfff-eac3bffd530b"
+  ],
+  "cache_hit": false,
+  "shared_with_run_ids": [],
+  "status": "passed",
+  "structural_ok": true,
+  "failure_type": null,
+  "failure_detail": null,
+  "parse_ok": true,
+  "execution": {
+    "status": "success",
+    "exit_code": 0,
+    "stdout": "Cleaning complete: 840 raw rows -> 749 cleaned rows.\n",
+    "stderr": "/sandbox/code/main.py:19: FutureWarning: DataFrame.applymap has been deprecated. Use DataFrame.map instead.\n  df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)\n/sandbox/code/main.py:28: FutureWarning: DataFrame.applymap has been deprecated. Use DataFrame.map instead.\n  df = df.applymap(to_missing)\n",
+    "runtime_ms": 876.3373340007092,
+    "output_files": [
+      "/Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expB_paths_v3-8e003235a5c62234/cleaning/output/cleaned.csv",
+      "/Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expB_paths_v3-8e003235a5c62234/cleaning/output/cleaning_summary.json"
+    ],
+    "sandbox_image": "sha256:88988a15503bdb96538c3dd62244a79879d5c7848397db18b1267ccfd0a9727a"
+  },
+  "validation": {
+    "stage": "cleaning",
+    "hard_pass": true,
+    "checks": [
+      {
+        "name": "output_exists",
+        "passed": true,
+        "mandatory": true,
+        "detail": "/Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expB_paths_v3-8e003235a5c62234/cleaning/output/cleaned.csv",
+        "value": null
+      },
+      {
+        "name": "output_parses",
+        "passed": true,
+        "mandatory": true,
+        "detail": "749 rows, 10 columns",
+        "value": null
+      },
+      {
+        "name": "required_columns_present",
+        "passed": true,
+        "mandatory": true,
+        "detail": "all present",
+        "value": null
+      },
+      {
+        "name": "schema_constraints",
+        "passed": true,
+        "mandatory": true,
+        "detail": "all constraints satisfied",
+        "value": 1.0
+      },
+      {
+        "name": "no_extra_columns",
+        "passed": true,
+        "mandatory": false,
+        "detail": "",
+        "value": null
+      },
+      {
+        "name": "no_duplicate_keys",
+        "passed": true,
+        "mandatory": true,
+        "detail": "",
+        "value": 0.0
+      },
+      {
+        "name": "row_set_matches_reference",
+        "passed": true,
+        "mandatory": true,
+        "detail": "0 reference rows missing (e.g. []); 0 unexpected rows (e.g. []); output rows=749, reference rows=749",
+        "value": null
+      },
+      {
+        "name": "values_match_reference",
+        "passed": true,
+        "mandatory": true,
+        "detail": "7490/7490 cells match (abs_tol=0.011, rel_tol=1e-06)",
+        "value": 1.0
+      }
+    ],
+    "quality": {
+      "cleaning_correctness": 1.0,
+      "data_integrity": 1.0,
+      "schema_compliance": 1.0
+    },
+    "quality_basis": "ground_truth",
+    "validator_version": "1.0"
+  },
+  "conditional_validation": null,
+  "input_artifacts": [
+    "datasets/projects/customer_churn/raw.csv"
+  ],
+  "output_artifacts": [
+    "results/raw/runs/expB_paths_v3-8e003235a5c62234/cleaning/prompt.txt",
+    "results/raw/runs/expB_paths_v3-8e003235a5c62234/cleaning/response.txt",
+    "results/raw/runs/expB_paths_v3-8e003235a5c62234/cleaning/parsed.json",
+    "results/raw/runs/expB_paths_v3-8e003235a5c62234/cleaning/code.py",
+    "results/raw/runs/expB_paths_v3-8e003235a5c62234/cleaning/output/cleaned.csv",
+    "results/raw/runs/expB_paths_v3-8e003235a5c62234/cleaning/output/cleaning_summary.json"
+  ],
+  "input_artifact_hashes": {
+    "datasets/projects/customer_churn/raw.csv": "85dac8de024e160a903ebbe93296e8559aac12a30deb203e3eb85937afc2e281"
+  },
+  "output_artifact_hashes": {
+    "results/raw/runs/expB_paths_v3-8e003235a5c62234/cleaning/prompt.txt": "75d018237537d053a761286adc2946865bc568d7563b334eb22d7222cdd285d5",
+    "results/raw/runs/expB_paths_v3-8e003235a5c62234/cleaning/response.txt": "a3c3f458cedea3534d1010b6b627eef365e3d0a9c6a6501f3804b66c2463ea92",
+    "results/raw/runs/expB_paths_v3-8e003235a5c62234/cleaning/parsed.json": "8d4b9b68482a346ba121abe8a74c2a0a357e903fe398a8c6ee11a2216afa10ca",
+    "results/raw/runs/expB_paths_v3-8e003235a5c62234/cleaning/code.py": "3a7be2ee3bcee5c1c1bb140a44b30b034fe2c4bfe5405d09094c0d77f6def292",
+    "results/raw/runs/expB_paths_v3-8e003235a5c62234/cleaning/output/cleaned.csv": "ed07cf3ea803a53453077431e25ae9a38875f7c0b4dc82410671e0b819d1d68a",
+    "results/raw/runs/expB_paths_v3-8e003235a5c62234/cleaning/output/cleaning_summary.json": "143ede6a12332aeb275a8abb5ce8a8a0958b5038dc91706752bfe3c8855bb3fd"
+  },
+  "handoff_in_path": "results/raw/runs/expB_paths_v3-8e003235a5c62234/cleaning/handoff_in.json",
+  "handoff_size_bytes": 595,
+  "input_tokens": 2198,
+  "output_tokens": 3314,
+  "cost_usd": null,
+  "cost_status": "unavailable",
+  "timings": {
+    "generation_ms": 19774.696624997887,
+    "execution_ms": 876.3373340007092,
+    "validation_ms": 11.763541002437705,
+    "handoff_ms": 0.16295800014631823
+  }
+}

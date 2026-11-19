@@ -1,0 +1,65 @@
+We need to produce JSON conforming to schema. Must include title, executive_summary, key_findings (array of 7 entries for q1..q7), limitations, conclusion. Each key_finding must have finding_id, statement, evidence_refs, reported_values (include all metric_keys for that question), direction, ranking, derived_values.
+
+We must use only verified findings values. We can round to sensible precision. Provide derived values where needed: e.g., for q4 we already have revenue_yoy_change_pct, but we could also compute difference revenue_2024 - revenue_2023 = 21,372.51? Let's compute: revenue_2024 = 233,348.80; revenue_2023 = 211,976.29; difference = 21,372.51 (approx). Provide derived value of kind "difference" with operands ["revenue_2024","revenue_2023"] value 21372.51. Also maybe share of top customer: top_customer_revenue_share_pct already given, but we could compute share = top_customer_revenue / total_revenue *100 = 27,793.13 / 445,325.09 *100 = let's compute: 27,793.13 / 445,325.09 = 0.0624108783 *100 = 6.24108783% matches given. Could include derived value of kind "share" with operands ["top_customer_revenue","total_revenue"] value 6.24108783. But we already have metric top_customer_revenue_share_pct; we can still include derived value maybe not needed. The schema expects derived_values any numbers we compute. We can include for q4 difference and maybe for q7 share (though share already metric). But we can still include derived value for share to illustrate.
+
+For q2 ranking: order regions by revenue descending: East 130,516.69; North 124,845.75; West 99,428.16; South 90,534.49. So ranking list: ["East","North","West","South"].
+
+For q3 direction: trend across quarters? We could state overall increase across quarters? Q1 36,108; Q2 56,617; Q3 71,675; Q4 68,949. Trend: increase Q1->Q2, Q2->Q3, slight decrease Q3->Q4. Could state overall upward trend then slight dip. For direction maybe "increase" as overall upward from Q1 to Q3. But direction field expects for change/trend findings. Could set "increase". Or "no_change"? We'll set "increase".
+
+For q5 direction not applicable.
+
+For q6 direction not applicable.
+
+For q7 direction not applicable.
+
+Now construct statements.
+
+Need executive summary under 600 words total for whole report. Keep concise.
+
+Now produce JSON.
+
+Make sure each reported_values includes all metric_keys for that question with verified values (rounded). Use maybe two decimal places.
+
+Let's list values:
+
+q1: total_revenue 445325.09, order_count 520, average_order_value 856.39 (rounded to 2 decimals). Provide as numbers.
+
+q2: revenue_north 124845.75, revenue_south 90534.49, revenue_east 130516.69, revenue_west 99428.16.
+
+q3: revenue_2024_q1 36108.31, revenue_2024_q2 56616.79, revenue_2024_q3 71674.99, revenue_2024_q4 68948.71.
+
+q4: revenue_2023 211976.29, revenue_2024 233348.80, revenue_yoy_change_pct 10.08 (rounded). Also derived difference 21372.51.
+
+q5: electronics_high_discount_orders 22, electronics_high_discount_revenue 50035.33.
+
+q6: order_revenue_mean 856.39, order_revenue_median 313.28, order_revenue_std 1295.74, order_revenue_min 5.27, order_revenue_max 7844.02.
+
+q7: unique_customer_count 222, top_customer_revenue 27793.13, top_customer_revenue_share_pct 6.24 (rounded). Derived share maybe same.
+
+Now construct statements:
+
+q1 statement: "In 2023‑2024 the company generated $445,325.09 in revenue across 520 orders, yielding an average order value of $856.39." evidence_refs list metric keys.
+
+q2 statement: "Regional revenue ranking shows East leading with $130,516.69, followed by North ($124,845.75), West ($99,428.16) and South ($90,534.49)." evidence_refs list all four.
+
+q3 statement: "Quarterly revenue in 2024 grew from $36,108.31 in Q1 to $56,616.79 in Q2 and peaked at $71,674.99 in Q3 before a modest dip to $68,948.71 in Q4, indicating an overall upward trend." evidence_refs list four quarters. direction "increase". derived maybe none.
+
+q4 statement: "Revenue increased from $211,976.29 in 2023 to $233,348.80 in 2024, a year‑over‑year growth of 10.08 % (an absolute increase of $21,372.51)." evidence_refs list three metric keys. direction "increase". derived_values include difference.
+
+q5 statement: "There were 22 high‑discount (≥20 %) electronics orders contributing $50,035.33 in revenue." evidence_refs list two keys.
+
+q6 statement: "Order values have a mean of $856.39, median $313.28, standard deviation $1,295.74, ranging from a low of $5.27 to a high of $7,844.02." evidence_refs list five keys.
+
+q7 statement: "The dataset contains 222 distinct customers; the top customer generated $27,793.13, representing 6.24 % of total revenue." evidence_refs list three keys. derived share maybe.
+
+Now limitations: mention data only covers two years, limited to orders present, discount threshold, etc.
+
+Conclusion: summarize.
+
+Now produce JSON.
+
+Need to include derived_values arrays. For q4 include one derived value: kind "difference", operands ["revenue_2024","revenue_2023"], value 21372.51 (rounded). For q7 include derived share: kind "share", operands ["top_customer_revenue","total_revenue"], value 6.24108783 (rounded 6.24). Could also include for q4 pct_change but already metric.
+
+Now ensure each key_finding includes direction field (null or appropriate). Provide null for those not applicable.
+
+Now produce final JSON.

@@ -1,0 +1,48 @@
+STAGE: reporting
+PROJECT: {{project_id}}
+PROMPT_VERSION: v3-post-freeze
+
+You are the reporting stage of a three-stage data workflow (cleaning -> analysis -> reporting).
+The analysis stage has already run its code in a sandbox. Write a structured report of the VERIFIED
+findings below for {{audience}}.
+
+## Original objective
+{{objective}}
+
+## Handoff from the previous stages
+Completed stages: {{completed_stages}}
+Validation status of previous stages: {{validation_status}}
+Methods reported by the analysis stage:
+{{methods_description}}
+
+## Analysis questions and their metric_keys
+{{analysis_questions}}
+
+## Structured claim requirements
+The following block is contract metadata, not answer data. For every `ranking_required: true`
+finding, return a complete high-to-low `ranking`. Use the display-label values in
+`ranking_metric_key_to_label` exactly. For every `direction_required: true` finding, return the
+direction implied by the named metric.
+```json
+{{structured_claim_requirements}}
+```
+
+## Verified findings (computed by the analysis code; metric_key -> value)
+VERIFIED_FINDINGS_JSON
+```json
+{{verified_findings}}
+```
+
+## Rules (mandatory)
+- Use ONLY the verified findings above. Do not invent or estimate numbers. Each `key_findings`
+  statement MUST state at least one verified numeric value for that finding. Rounding to a sensible
+  precision is fine; any number you derive must be declared in `derived_values`.
+- Write one entry in `key_findings` for each of these question ids: {{required_finding_ids}}.
+  Set `finding_id` to the question id and list the metric_keys you rely on in `evidence_refs`.
+- In `reported_values`, include EVERY metric_key of that question with its verified value (copy it).
+- Follow the structured claim requirements exactly. A ranking is required whenever
+  `ranking_required` is true, including trend questions; order it from highest to lowest.
+- `derived_values` must declare every number in your text computed from findings (difference,
+  ratio, pct_change or share), with metric-key `operands` in formula order.
+- Keep the whole report (title, summary, statements, limitations, conclusion) under {{max_words}} words.
+- Mention genuine limitations of the data or analysis in `limitations`.

@@ -1,0 +1,88 @@
+We need to produce JSON with fields: title, executive_summary, key_findings (array of objects per q1..q7), limitations, conclusion.
+
+Each key_finding must include finding_id, statement, evidence_refs, reported_values (all metric_keys for that question). Optionally direction, ranking, derived_values.
+
+We must follow ranking requirements: q2 ranking required true, ranking_metric_key_to_label mapping: churn_rate_basic_pct -> "Basic", churn_rate_premium_pct -> "Premium", churn_rate_standard_pct -> "Standard". Need ranking from highest to lowest value. Values: basic 38.6018, standard 36.5079, premium 35.3333. Highest is Basic, then Standard, then Premium. So ranking list should be ["Basic", "Standard", "Premium"].
+
+q3 ranking required true, mapping years. Values: 2021 37.6963, 2022 37.0892, 2023 36.4486, 2024 38.0531. Highest is 2024 (38.0531), then 2021 (37.6963), then 2022 (37.0892), then 2023 (36.4486). So ranking: ["2024", "2021", "2022", "2023"].
+
+q4 direction required true, metric churn_monthly_vs_annual_change_pct = 119.172... Positive indicates increase. Direction should be "increase". Provide direction field.
+
+q7 direction required true, metric premium_vs_basic_ltv_change_pct = 294.809... Positive => increase. Direction "increase". Also ranking required true: ranking_metric_key_to_label mapping: ltv_basic "Basic", ltv_premium "Premium", ltv_standard "Standard". Need ranking from highest to lowest LTV values. Values: basic 465.84, standard 878.36, premium 1839.18. Highest Premium, then Standard, then Basic. So ranking: ["Premium", "Standard", "Basic"].
+
+Now each key_finding must include reported_values for every metric_key of that question. Provide the verified values as numbers (maybe rounded). Use original values.
+
+Also need derived_values: any numbers we compute beyond verified. For q4 we might compute that monthly churn is about 2.19 times annual (ratio). Could include derived value: ratio of churn_rate_monthly_pct / churn_rate_annual_pct = 2.19. But not required unless we mention. The statement may just say churn is 119% higher. That's already metric. Could include derived value for ratio maybe. Not required but okay.
+
+Similarly q7 we could compute absolute difference in LTV between premium and basic. Could include derived value difference = ltv_premium - ltv_basic = 1373.34. Provide derived value.
+
+But must list derived_values array with each derived entry.
+
+Now craft statements.
+
+Need to keep under 600 words.
+
+Let's draft.
+
+Title: "Customer Churn Analysis Report – Key Findings"
+
+Executive summary: summarize overall churn, plan differences, cohort trend, contract effect, at-risk segment, tenure/satisfaction, LTV.
+
+Now each key_finding.
+
+q1: statement: "The dataset contains 731 customers, with an overall churn rate of 37.2% and an average monthly fee of $42.14." evidence_refs list metric keys. reported_values include customer_count, churn_rate_pct, avg_monthly_fee.
+
+q2: statement: "Churn rates differ by subscription plan, with Basic customers experiencing the highest churn (38.6%), followed by Standard (36.5%) and Premium (35.3%)." evidence_refs list three metric keys. ranking as above. reported_values include all three.
+
+q3: statement: "Churn by signup cohort shows a slight variation across years, highest for the 2024 cohort (38.1%) and lowest for the 2023 cohort (36.4%)." evidence_refs list four metric keys. ranking as above. reported_values include all four.
+
+q4: statement: "Customers on Monthly contracts churn at a rate 119% higher than those on Annual contracts, indicating a substantial increase." evidence_refs list three metric keys. direction "increase". reported_values include churn_rate_monthly_pct, churn_rate_annual_pct, churn_monthly_vs_annual_change_pct. derived_values maybe include ratio.
+
+q5: statement: "The identified at‑risk segment comprises 100 customers, of whom 71% have churned." evidence_refs list two metric keys. reported_values include at_risk_customer_count, at_risk_churn_rate_pct.
+
+q6: statement: "Across all customers, average tenure is 21 months (median 19, std dev 13.3). The mean satisfaction score is 3.42, with 27 customers missing a score." evidence_refs list five metric keys. reported_values include tenure_mean, tenure_median, tenure_std, satisfaction_mean, satisfaction_missing_count.
+
+q7: statement: "Lifetime value varies strongly by plan: Premium customers generate $1,839, Standard $878, and Basic $466. Premium LTV is 295% higher than Basic." evidence_refs list four metric keys. direction "increase". ranking as above. derived_values include difference and pct_change maybe already metric. Provide derived for difference.
+
+Now limitations: mention cleaning stage failed, analysis stage failed, data quality issues, missing satisfaction scores, potential bias, etc.
+
+Conclusion: summarize actionable insights.
+
+Now construct JSON.
+
+Need to ensure each key_finding includes required fields: finding_id, statement, evidence_refs, reported_values. direction optional; ranking optional; derived_values optional.
+
+Add derived_values where needed.
+
+Let's compute derived values:
+
+For q4 ratio: churn_rate_monthly_pct / churn_rate_annual_pct = 47.80600461893764 / 21.812080536912752 = compute approx: 47.8060 / 21.8121 = 2.193... Let's compute precisely: 21.812080536912752 *2 = 43.6241610738255; remainder 4.18184354511214; divide remainder by 21.8120805 = 0.1917; total 2.1917. So ratio approx 2.19. We'll include derived value with kind "ratio", operands ["churn_rate_monthly_pct","churn_rate_annual_pct"], value 2.19 (rounded to 2.19).
+
+For q7 difference: ltv_premium - ltv_basic = 1839.1815333333332 - 465.84024316109424 = 1373.341290172239. Round maybe 1373.34. kind "difference", operands ["ltv_premium","ltv_basic"], value 1373.34.
+
+Also maybe ratio of premium vs basic LTV: 1839.1815 / 465.8402 = 3.95. Could include but not needed.
+
+Now ensure each reported_values includes all metric_keys for that question.
+
+List metric keys per question:
+
+q1: customer_count, churn_rate_pct, avg_monthly_fee
+
+q2: churn_rate_basic_pct, churn_rate_standard_pct, churn_rate_premium_pct
+
+q3: churn_rate_cohort_2021_pct, churn_rate_cohort_2022_pct, churn_rate_cohort_2023_pct, churn_rate_cohort_2024_pct
+
+q4: churn_rate_monthly_pct, churn_rate_annual_pct, churn_monthly_vs_annual_change_pct
+
+q5: at_risk_customer_count, at_risk_churn_rate_pct
+
+q6: tenure_mean, tenure_median, tenure_std, satisfaction_mean, satisfaction_missing_count
+
+q7: ltv_basic, ltv_standard, ltv_premium, premium_vs_basic_ltv_change_pct
+
+Now produce JSON.
+
+Check that each evidence_refs list includes metric_keys used in statement (maybe all). We'll include all metric_keys.
+
+Now produce final JSON.
+

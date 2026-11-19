@@ -1,0 +1,21 @@
+# M6 analysis pipeline configuration (experiments/analyze_results.py). Schema: docs/analysis_schema.md.
+# The defaults below are the ENGINEERING SMOKE run on the retail_sales pilot records: every output is
+# status=pilot_only and is not a finding. For a full frozen-v2 or a separately named v3 experiment,
+# copy this file (or pass CLI overrides) with that experiment's record files and a new out_dir.
+schema_version: analysis-1.0
+
+workflow_records:                 # Experiment B JSONL (WorkflowRunRecord); one experiment_id unless grouped
+  - results/raw/workflow_runs/expB_paths.jsonl
+stage_benchmark_records: []       # Experiment A JSONL (StageBenchmarkRecord); none exist yet
+routing_dir: null                 # evaluate_routing/validate_counterfactuals output dir; none on real data yet
+reporting_rescores:               # additional validator-version rescores (shown side by side, never pooled)
+  - results/processed/pilot_v3_rescore/retail_sales_reporting.json
+
+experiment_group: []              # explicit opt-in to analyse several experiment_ids side by side
+matched_pairs: {}                 # Experiment B id -> Experiment A id for matched_baseline
+benchmark_versions:
+  expB_paths: v2-frozen
+
+status_override: pilot_only       # null for real complete experiments
+generated_at: null                # null -> latest source record timestamp (deterministic)
+out_dir: results/processed/pilot_analysis_smoke

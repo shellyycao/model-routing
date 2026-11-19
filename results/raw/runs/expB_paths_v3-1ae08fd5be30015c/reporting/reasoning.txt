@@ -1,0 +1,82 @@
+We need to produce JSON with fields: title, executive_summary, key_findings (array of objects per q1..q7), limitations, conclusion.
+
+Each key_finding must include finding_id, statement, evidence_refs, reported_values (include every metric_key of that question), optional direction, ranking, derived_values.
+
+We must follow ranking requirements: q2 and q3 need ranking (high-to-low) using labels.
+
+q4 direction required: direction based on revenue_yoy_change_pct. Since it's positive 10.08%, direction is "increase". Provide direction field.
+
+Other findings no direction/ranking.
+
+We must include derived_values for any computed numbers not directly from findings. For q2 ranking we may not need derived values; ranking is just ordering labels. For q3 ranking similarly.
+
+For q4 we might include derived value? The direction is derived from metric but not required to list derived value. Could include derived value of yoy change? Already metric. Not needed.
+
+But we might include derived values for any statements that compute something like "top customer accounts for 6.24% of total revenue". That's derived: top_customer_revenue_share_pct is already provided as metric, but we could compute share again? Not needed. However we can include derived value for share maybe using ratio of top_customer_revenue / total_revenue *100, but metric already given. The statement could mention that share is 6.24% (rounded). That's a derived value? It's directly metric, but we can treat as reported metric. So no derived.
+
+But we need to ensure each statement includes at least one numeric value.
+
+Let's craft statements:
+
+q1: "In 2023‑2024 the company generated total revenue of $445,325.07 across 520 orders, yielding an average order value of $856.39." evidence_refs: total_revenue, order_count, average_order_value. reported_values copy those numbers (maybe rounded). Provide as numbers.
+
+q2: "Revenue by region shows East leading, followed by North, West, and South." Provide ranking: ["East","North","West","South"] based on values. evidence_refs: revenue_north, revenue_south, revenue_east, revenue_west. reported_values include each.
+
+q3: "Quarterly revenue in 2024 increased through the year, with Q3 highest, then Q4, Q2, Q1." Need ranking high-to-low: values: Q3 71,674.98; Q4 68,948.70; Q2 56,616.79; Q1 36,108.32. So ranking labels accordingly. evidence_refs: revenue_2024_q1...q4. reported_values copy.
+
+q4: "Revenue grew from $211,976.28 in 2023 to $233,348.79 in 2024, a year‑over‑year increase of 10.08%." direction: "increase". evidence_refs: revenue_2023, revenue_2024, revenue_yoy_change_pct. reported_values copy.
+
+q5: "There were 22 high‑discount (≥20%) electronics orders contributing $50,035.32 in revenue." evidence_refs: electronics_high_discount_orders, electronics_high_discount_revenue. reported_values copy.
+
+q6: "Order revenue distribution: mean $856.39, median $313.28, standard deviation $1,295.74, ranging from $5.27 to $7,844.02." evidence_refs: order_revenue_mean, order_revenue_median, order_revenue_std, order_revenue_min, order_revenue_max. reported_values copy.
+
+q7: "Revenue came from 222 distinct customers; the top customer generated $27,793.12, representing 6.24% of total revenue." evidence_refs: unique_customer_count, top_customer_revenue, top_customer_revenue_share_pct. reported_values copy.
+
+Derived values: maybe none needed. But we could include derived value for share (top_customer_revenue_share_pct) as ratio of top_customer_revenue / total_revenue *100. That would be derived. However metric already given; but we can still list derived value with kind "share" and operands ["top_customer_revenue","total_revenue"] value 6.241... Provide for q7. Also maybe for yoy change derived from revenue_2024 and revenue_2023, but metric already given. Not required.
+
+But the schema expects derived_values array possibly empty. It's okay to include empty.
+
+Now ensure rounding: Use two decimals for monetary values, but keep numbers as float. Provide values as numbers (not strings). Use rounding to 2 decimals for readability but still numeric.
+
+Let's compute rounded numbers:
+
+total_revenue: 445325.07 (already 2 decimals)
+order_count: 520.0 (maybe 520)
+average_order_value: 856.3943653846154 -> round 856.39
+
+region revenues:
+revenue_north 124845.75
+revenue_south 90534.48
+revenue_east 130516.68 (since 130516.68000000001)
+revenue_west 99428.16
+
+quarter revenues:
+q1 36108.32
+q2 56616.79
+q3 71674.98
+q4 68948.7 -> round 68948.70
+
+revenue_2023 211976.28
+revenue_2024 233348.79 (since 233348.78999999998)
+revenue_yoy_change_pct 10.082500740177146 -> round 10.08
+
+electronics_high_discount_orders 22.0 -> 22
+electronics_high_discount_revenue 50035.32
+
+order_revenue_mean 856.3943653846154 -> 856.39
+order_revenue_median 313.275 -> 313.28
+order_revenue_std 1295.7423548861245 -> 1295.74
+order_revenue_min 5.27
+order_revenue_max 7844.02
+
+unique_customer_count 222.0 -> 222
+top_customer_revenue 27793.12
+top_customer_revenue_share_pct 6.241085865657642 -> 6.24
+
+Now derived value for share: kind "share", operands ["top_customer_revenue","total_revenue"], value 6.241... (maybe round 6.24). Provide.
+
+Now construct JSON.
+
+Need to ensure each key_finding includes reported_values with all metric_keys for that question. Provide numbers as per rounding.
+
+Now produce final JSON inside fenced block.

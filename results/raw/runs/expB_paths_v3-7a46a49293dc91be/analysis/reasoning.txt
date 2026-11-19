@@ -1,0 +1,48 @@
+We need to produce JSON with python_code, expected_artifacts, methods_description. Provide script that reads cleaned.csv, computes metrics, writes findings.json.
+
+Need to ensure flat JSON with numeric values only (no NaN). For metrics that could be NaN (e.g., correlation if insufficient data), we need to handle: if correlation cannot be computed (e.g., less than 2 points), set to 0? Must be finite number. We'll compute correlation using pandas .corr() which returns NaN if insufficient; we can replace NaN with 0.0.
+
+Similarly, temperature_mean: if no non-missing temps, set to 0.0.
+
+All metrics: total_kwh sum, reading_count len, mean_kwh_per_reading = total/reading_count.
+
+kwh per building type: groupby building_type sum.
+
+Quarterly: need to filter year 2024 (all data). Use pandas dt.quarter.
+
+Half-year: months 1-6, 7-12.
+
+Hot commercial: building_type == 'Commercial' and temperature_c >= 25 (non-missing). Count and mean energy_kwh. If count 0, mean set to 0.0.
+
+Distribution summary: median, std (sample). Use pandas .median(), .std(ddof=1). Temperature_mean: mean of temperature_c where not null. temperature_missing_count: count where temperature_c is null.
+
+Correlation: commercial rows with non-missing temperature_c. Use .corr() between temperature_c and energy_kwh. If result NaN, set 0.0.
+
+Tariff usage: sum per tariff. peak_kwh_share_pct = kwh_peak / total_kwh * 100. unique_meter_count: nunique meter_id. highest_use_meter_kwh: groupby meter_id sum, max.
+
+All values as floats (or ints). reading_count is integer; but JSON numbers can be integer.
+
+Write findings.json with json.dump with ensure_ascii=False.
+
+Make sure to import os, pandas, numpy, json.
+
+Edge Cases: Ensure temperature_c column may be float with NaN; reading_date is datetime.
+
+Implementation steps:
+
+- input_path = os.path.join(os.environ["INPUT_DIR"], "cleaned.csv")
+- df = pd.read_csv(input_path, parse_dates=['reading_date'])
+- Compute metrics.
+
+Potential large dataset but fine.
+
+Make sure to round? Not required; full precision.
+
+Write to output_path = os.path.join(os.environ["OUTPUT_DIR"], "findings.json").
+
+expected_artifacts list: ["findings.json"].
+
+methods_description: brief description.
+
+Now produce JSON.
+

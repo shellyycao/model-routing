@@ -1,0 +1,405 @@
+{
+  "contract_version": "1.2",
+  "run_id": "expB_paths_v3-b361cd43b36238e5",
+  "experiment_id": "expB_paths_v3",
+  "project_id": "energy_consumption",
+  "path_id": "C-B-C",
+  "models": [
+    "C",
+    "B",
+    "C"
+  ],
+  "repeat_index": 0,
+  "config_hash": "62a4156e13c9c5befb143fcceccc9fa38b682816491c17c4598f7d23b92ba379",
+  "failure_policy": "continue_with_actual_artifact",
+  "started_at": "2026-11-18T05:36:02.041145+00:00",
+  "finished_at": "2026-11-18T05:36:32.826691+00:00",
+  "stages": [
+    {
+      "stage": "cleaning",
+      "model_alias": "C",
+      "model_id": "openai.gpt-oss-120b-1:0",
+      "prompt_version": "v3",
+      "prompt_hash": "54fccecaa4539ea6f9bf17463a0da069f9e72816d3512b9a1510b4481adbcc9d",
+      "invocation_ids": [
+        "0a23b41a-935e-4eb0-88d4-fa60211fa98a"
+      ],
+      "cache_hit": false,
+      "shared_with_run_ids": [],
+      "status": "passed",
+      "structural_ok": true,
+      "failure_type": null,
+      "failure_detail": null,
+      "parse_ok": true,
+      "execution": {
+        "status": "success",
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "/sandbox/code/main.py:135: FutureWarning: DataFrame.applymap has been deprecated. Use DataFrame.map instead.\n  df = df_raw.applymap(lambda x: x.strip() if isinstance(x, str) else x)\n",
+        "runtime_ms": 760.5572909997136,
+        "output_files": [
+          "/Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expB_paths_v3-b361cd43b36238e5/cleaning/output/cleaned.csv",
+          "/Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expB_paths_v3-b361cd43b36238e5/cleaning/output/cleaning_summary.json"
+        ],
+        "sandbox_image": "sha256:88988a15503bdb96538c3dd62244a79879d5c7848397db18b1267ccfd0a9727a"
+      },
+      "validation": {
+        "stage": "cleaning",
+        "hard_pass": true,
+        "checks": [
+          {
+            "name": "output_exists",
+            "passed": true,
+            "mandatory": true,
+            "detail": "/Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expB_paths_v3-b361cd43b36238e5/cleaning/output/cleaned.csv",
+            "value": null
+          },
+          {
+            "name": "output_parses",
+            "passed": true,
+            "mandatory": true,
+            "detail": "1428 rows, 10 columns",
+            "value": null
+          },
+          {
+            "name": "required_columns_present",
+            "passed": true,
+            "mandatory": true,
+            "detail": "all present",
+            "value": null
+          },
+          {
+            "name": "schema_constraints",
+            "passed": true,
+            "mandatory": true,
+            "detail": "all constraints satisfied",
+            "value": 1.0
+          },
+          {
+            "name": "no_extra_columns",
+            "passed": true,
+            "mandatory": false,
+            "detail": "",
+            "value": null
+          },
+          {
+            "name": "no_duplicate_keys",
+            "passed": true,
+            "mandatory": true,
+            "detail": "",
+            "value": 0.0
+          },
+          {
+            "name": "row_set_matches_reference",
+            "passed": true,
+            "mandatory": true,
+            "detail": "0 reference rows missing (e.g. []); 0 unexpected rows (e.g. []); output rows=1428, reference rows=1428",
+            "value": null
+          },
+          {
+            "name": "values_match_reference",
+            "passed": true,
+            "mandatory": true,
+            "detail": "9996/9996 cells match (abs_tol=0.01, rel_tol=1e-06)",
+            "value": 1.0
+          }
+        ],
+        "quality": {
+          "cleaning_correctness": 1.0,
+          "data_integrity": 1.0,
+          "schema_compliance": 1.0
+        },
+        "quality_basis": "ground_truth",
+        "validator_version": "1.0"
+      },
+      "conditional_validation": null,
+      "input_artifacts": [
+        "datasets/projects/energy_consumption/raw.csv"
+      ],
+      "output_artifacts": [
+        "results/raw/runs/expB_paths_v3-b361cd43b36238e5/cleaning/prompt.txt",
+        "results/raw/runs/expB_paths_v3-b361cd43b36238e5/cleaning/response.txt",
+        "results/raw/runs/expB_paths_v3-b361cd43b36238e5/cleaning/reasoning.txt",
+        "results/raw/runs/expB_paths_v3-b361cd43b36238e5/cleaning/parsed.json",
+        "results/raw/runs/expB_paths_v3-b361cd43b36238e5/cleaning/code.py",
+        "results/raw/runs/expB_paths_v3-b361cd43b36238e5/cleaning/output/cleaned.csv",
+        "results/raw/runs/expB_paths_v3-b361cd43b36238e5/cleaning/output/cleaning_summary.json"
+      ],
+      "input_artifact_hashes": {
+        "datasets/projects/energy_consumption/raw.csv": "615e9dd3f351c49e26a813e2a6b47e6c9e2c812b579dae7b15497467a0d01572"
+      },
+      "output_artifact_hashes": {
+        "results/raw/runs/expB_paths_v3-b361cd43b36238e5/cleaning/prompt.txt": "54fccecaa4539ea6f9bf17463a0da069f9e72816d3512b9a1510b4481adbcc9d",
+        "results/raw/runs/expB_paths_v3-b361cd43b36238e5/cleaning/response.txt": "a7d2ed6f1bcf452a01c7d2b003b7f312527565a23be9a1d1e60bb9c22c111430",
+        "results/raw/runs/expB_paths_v3-b361cd43b36238e5/cleaning/reasoning.txt": "2aa61aca1414d622f2594a83d13130f2685961f08a19342233c577650e6c86ff",
+        "results/raw/runs/expB_paths_v3-b361cd43b36238e5/cleaning/parsed.json": "a52e2331fbff2a14456a3f33a8c80689c922312891bcab933927e8bfa12b314c",
+        "results/raw/runs/expB_paths_v3-b361cd43b36238e5/cleaning/code.py": "621187ff572867322b440ba674259dc1a456561e23d45d2554274347f2973bce",
+        "results/raw/runs/expB_paths_v3-b361cd43b36238e5/cleaning/output/cleaned.csv": "dddfbb7d937a69ca974c9a72c638d04fb586ac6f5dd1d5797cb1be23d11dbf27",
+        "results/raw/runs/expB_paths_v3-b361cd43b36238e5/cleaning/output/cleaning_summary.json": "be84e66914081d74e93fdb1f8b12f1eebf453051099d590b0af25308e02fa947"
+      },
+      "handoff_in_path": "results/raw/runs/expB_paths_v3-b361cd43b36238e5/cleaning/handoff_in.json",
+      "handoff_size_bytes": 616,
+      "input_tokens": 1819,
+      "output_tokens": 3097,
+      "cost_usd": null,
+      "cost_status": "unavailable",
+      "timings": {
+        "generation_ms": 20508.249750000687,
+        "execution_ms": 760.5572909997136,
+        "validation_ms": 12.131209001381649,
+        "handoff_ms": 0.2185829980589915
+      }
+    },
+    {
+      "stage": "analysis",
+      "model_alias": "B",
+      "model_id": "us.amazon.nova-pro-v1:0",
+      "prompt_version": "v3",
+      "prompt_hash": "2141e70ea86d8d79340582ca0b71f0fbf3966b4929d905883c7b2a15391149b5",
+      "invocation_ids": [
+        "cef03ea9-1230-4604-b180-62cdbb427f95"
+      ],
+      "cache_hit": false,
+      "shared_with_run_ids": [],
+      "status": "failed",
+      "structural_ok": false,
+      "failure_type": "execution_error",
+      "failure_detail": "execution runtime_error (exit 1): Traceback (most recent call last):\n  File \"/sandbox/code/main.py\", line 20, in <module>\n    df['quarter'] = df['reading_date'].dt.to_period('Q')\n                    ^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/generic.py\", line 6299, in __getattr__\n    return object.__getattribute__(self, name)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/accessor.py\", line 224, in __get__\n    accessor_obj = self._accessor(obj)\n                   ^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/indexes/accessors.py\", line 643, in __new__\n    raise AttributeError(\"Can only use .dt accessor with datetimelike values\")\nAttributeError: Can only use .dt accessor with datetimelike values. Did you mean: 'at'?\n",
+      "parse_ok": true,
+      "execution": {
+        "status": "runtime_error",
+        "exit_code": 1,
+        "stdout": "",
+        "stderr": "Traceback (most recent call last):\n  File \"/sandbox/code/main.py\", line 20, in <module>\n    df['quarter'] = df['reading_date'].dt.to_period('Q')\n                    ^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/generic.py\", line 6299, in __getattr__\n    return object.__getattribute__(self, name)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/accessor.py\", line 224, in __get__\n    accessor_obj = self._accessor(obj)\n                   ^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/indexes/accessors.py\", line 643, in __new__\n    raise AttributeError(\"Can only use .dt accessor with datetimelike values\")\nAttributeError: Can only use .dt accessor with datetimelike values. Did you mean: 'at'?\n",
+        "runtime_ms": 672.4607500000275,
+        "output_files": [],
+        "sandbox_image": "sha256:88988a15503bdb96538c3dd62244a79879d5c7848397db18b1267ccfd0a9727a"
+      },
+      "validation": {
+        "stage": "analysis",
+        "hard_pass": false,
+        "checks": [
+          {
+            "name": "findings_exists",
+            "passed": false,
+            "mandatory": true,
+            "detail": "findings.json not found",
+            "value": null
+          },
+          {
+            "name": "findings_parses",
+            "passed": false,
+            "mandatory": true,
+            "detail": "no parseable findings",
+            "value": null
+          },
+          {
+            "name": "required_keys_present",
+            "passed": false,
+            "mandatory": true,
+            "detail": "no parseable findings",
+            "value": null
+          },
+          {
+            "name": "values_numeric",
+            "passed": false,
+            "mandatory": true,
+            "detail": "no parseable findings",
+            "value": null
+          },
+          {
+            "name": "values_within_tolerance",
+            "passed": false,
+            "mandatory": true,
+            "detail": "no parseable findings",
+            "value": null
+          }
+        ],
+        "quality": {
+          "numerical_accuracy": 0.0,
+          "calculation_coverage": 0.0
+        },
+        "quality_basis": "ground_truth",
+        "validator_version": "1.0"
+      },
+      "conditional_validation": {
+        "stage": "analysis",
+        "hard_pass": false,
+        "checks": [
+          {
+            "name": "findings_exists",
+            "passed": false,
+            "mandatory": true,
+            "detail": "findings.json not found",
+            "value": null
+          },
+          {
+            "name": "findings_parses",
+            "passed": false,
+            "mandatory": true,
+            "detail": "no parseable findings",
+            "value": null
+          },
+          {
+            "name": "required_keys_present",
+            "passed": false,
+            "mandatory": true,
+            "detail": "no parseable findings",
+            "value": null
+          },
+          {
+            "name": "values_numeric",
+            "passed": false,
+            "mandatory": true,
+            "detail": "no parseable findings",
+            "value": null
+          },
+          {
+            "name": "values_within_tolerance",
+            "passed": false,
+            "mandatory": true,
+            "detail": "no parseable findings",
+            "value": null
+          }
+        ],
+        "quality": {
+          "numerical_accuracy": 0.0,
+          "calculation_coverage": 0.0
+        },
+        "quality_basis": "conditional_reference",
+        "validator_version": "1.0"
+      },
+      "input_artifacts": [
+        "results/raw/runs/expB_paths_v3-b361cd43b36238e5/cleaning/output/cleaned.csv"
+      ],
+      "output_artifacts": [
+        "results/raw/runs/expB_paths_v3-b361cd43b36238e5/analysis/prompt.txt",
+        "results/raw/runs/expB_paths_v3-b361cd43b36238e5/analysis/response.txt",
+        "results/raw/runs/expB_paths_v3-b361cd43b36238e5/analysis/parsed.json",
+        "results/raw/runs/expB_paths_v3-b361cd43b36238e5/analysis/code.py"
+      ],
+      "input_artifact_hashes": {
+        "results/raw/runs/expB_paths_v3-b361cd43b36238e5/cleaning/output/cleaned.csv": "dddfbb7d937a69ca974c9a72c638d04fb586ac6f5dd1d5797cb1be23d11dbf27"
+      },
+      "output_artifact_hashes": {
+        "results/raw/runs/expB_paths_v3-b361cd43b36238e5/analysis/prompt.txt": "2141e70ea86d8d79340582ca0b71f0fbf3966b4929d905883c7b2a15391149b5",
+        "results/raw/runs/expB_paths_v3-b361cd43b36238e5/analysis/response.txt": "16eb06a79a02ea92b9547812e6a8dddc301f31a367d88133fcd147d1833d1459",
+        "results/raw/runs/expB_paths_v3-b361cd43b36238e5/analysis/parsed.json": "c9fc99b0cfa9ec3e745b9f70cb8dceddde6aa838a1b2f38e95659f5fe6bbc82e",
+        "results/raw/runs/expB_paths_v3-b361cd43b36238e5/analysis/code.py": "e569c55931601cd60528245c3be655187f73b2d3e0c107cb122261182fd9c52d"
+      },
+      "handoff_in_path": "results/raw/runs/expB_paths_v3-b361cd43b36238e5/analysis/handoff_in.json",
+      "handoff_size_bytes": 17328,
+      "input_tokens": 2645,
+      "output_tokens": 1513,
+      "cost_usd": null,
+      "cost_status": "unavailable",
+      "timings": {
+        "generation_ms": 7669.313875001535,
+        "execution_ms": 672.4607500000275,
+        "validation_ms": 7.424375002301531,
+        "handoff_ms": 0.5345409990695771
+      }
+    },
+    {
+      "stage": "reporting",
+      "model_alias": "C",
+      "model_id": "openai.gpt-oss-120b-1:0",
+      "prompt_version": "v3",
+      "prompt_hash": null,
+      "invocation_ids": [],
+      "cache_hit": false,
+      "shared_with_run_ids": [],
+      "status": "blocked_by_invalid_artifact",
+      "structural_ok": null,
+      "failure_type": null,
+      "failure_detail": "upstream analysis artifact 'findings' unusable: failed structural checks findings_exists, findings_parses, required_keys_present",
+      "parse_ok": null,
+      "execution": null,
+      "validation": null,
+      "conditional_validation": null,
+      "input_artifacts": [],
+      "output_artifacts": [],
+      "input_artifact_hashes": {},
+      "output_artifact_hashes": {},
+      "handoff_in_path": null,
+      "handoff_size_bytes": null,
+      "input_tokens": null,
+      "output_tokens": null,
+      "cost_usd": null,
+      "cost_status": "not_incurred",
+      "timings": {
+        "generation_ms": null,
+        "execution_ms": null,
+        "validation_ms": null,
+        "handoff_ms": null
+      }
+    }
+  ],
+  "feasibility": {
+    "outcome": "infeasible",
+    "stage_status": {
+      "cleaning": "passed",
+      "analysis": "failed",
+      "reporting": "blocked_by_invalid_artifact"
+    },
+    "first_failure_stage": "analysis",
+    "failure_type": "execution_error"
+  },
+  "quality": {
+    "cleaning": {
+      "cleaning_correctness": 1.0,
+      "data_integrity": 1.0,
+      "schema_compliance": 1.0
+    },
+    "analysis": {
+      "numerical_accuracy": 0.0,
+      "calculation_coverage": 0.0
+    }
+  },
+  "conditional_quality": {
+    "analysis": {
+      "numerical_accuracy": 0.0,
+      "calculation_coverage": 0.0
+    }
+  },
+  "efficiency": {
+    "total_api_latency_ms": 28177.56362500222,
+    "total_execution_ms": 1433.018040999741,
+    "total_validation_ms": 19.55558400368318,
+    "total_handoff_ms": 0.7531239971285686,
+    "end_to_end_ms": 30785.574708999775,
+    "input_tokens": 4464,
+    "output_tokens": 4610,
+    "cost_usd": null,
+    "cost_status": "unavailable",
+    "n_calls": 2,
+    "n_cache_hits": 0,
+    "n_switches": 2,
+    "handoff_bytes_total": 17944
+  },
+  "propagation": {
+    "downstream_executable": {
+      "cleaning": true,
+      "analysis": false,
+      "reporting": false
+    },
+    "upstream_error_severity": {
+      "analysis": {
+        "cleaning_correctness": 0.0,
+        "data_integrity": 0.0,
+        "schema_compliance": 0.0
+      }
+    },
+    "end_to_end_accuracy": {},
+    "propagation_impact": {
+      "analysis": {
+        "calculation_coverage": 0.0,
+        "numerical_accuracy": 0.0
+      }
+    },
+    "blocked_stages": [
+      "reporting"
+    ]
+  },
+  "final_artifacts": []
+}

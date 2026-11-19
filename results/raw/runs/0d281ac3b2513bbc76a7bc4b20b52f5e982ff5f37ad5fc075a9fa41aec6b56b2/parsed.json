@@ -1,0 +1,10 @@
+{
+  "fixed_code": "def paginate(items, size, cursor=None):\n    if size <= 0: raise ValueError('size')\n    start = 0 if cursor is None else int(cursor)\n    if start < 0 or start > len(items): raise ValueError('cursor')\n    end = min(start + size, len(items))\n    return items[start:end], (str(end) if end < len(items) else None)",
+  "bug_locations": [
+    "size validation check",
+    "start index calculation",
+    "missing cursor validation",
+    "slicing logic"
+  ],
+  "explanation": "The original code had multiple defects: 1) It only checked for negative size, not non-positive size (size <= 0). 2) It incorrectly calculated start index as 1 when cursor is None, instead of 0. 3) It added 1 to the cursor value, treating it as 1-based instead of 0-based. 4) It lacked validation for invalid cursors (negative or beyond items length). 5) It unnecessarily converted items to list. The fixes address all these issues while maintaining the specification."
+}

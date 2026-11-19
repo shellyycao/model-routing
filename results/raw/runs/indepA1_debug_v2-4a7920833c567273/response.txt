@@ -1,0 +1,26 @@
+Let me analyze the bugs:
+
+1. **Single shared queue for all users**: The code uses one deque `q` for all users, but it should track events per user separately.
+
+2. **Window boundary condition**: The spec says events in `(time-window, time]` count. The current condition `q[0][1] <= t-window` correctly removes events at or before `t-window`, keeping those strictly after `t-window`. This seems correct.
+
+Let me verify with the visible check:
+- `('u',0)`: queue empty, `len(q)<1` is True (0<1), allowed. Queue: `[('u',0)]`
+- `('u',1)`: remove events where `t <= 1-1=0`, so `('u',0)` is removed. Queue empty, `len(q)<1` is True. Allowed.
+
+Wait, with the fix for per-user tracking, let me re-check:
+- `('u',0)`: user 'u' queue empty, 0<1 → True. Queue for 'u': `[(u,0)]`
+- `('u',1)`: remove events ≤ 0 from user 'u' queue → removes `(u,0)`. Queue empty, 0<1 → True.
+
+That works. The main bug is the shared queue - it doesn't separate by user.
+
+```json
+{
+  "fixed_code": "from collections import deque\ndef allowed(events, limit, window):\n    queues = {}\n    out = []\n    for user, t in events:\n        if user not in queues:\n            queues[user] = deque()\n        q = queues[user]\n        while q and q[0] <= t - window:\n            q.popleft()\n        ok = len(q) < limit\n        out.append(ok)\n        if ok:\n            q.append(t)\n    return out\n",
+  "bug_locations": [
+    "allowed function: single shared deque replaced with per-user deques dictionary",
+    "allowed function: queue stores only timestamps (not (user,t) tuples) since queue is already per-user"
+  ],
+  "explanation": "The original code used a single shared deque `q` for all users, so events from different users were incorrectly counted together when checking the rate limit. The fix uses a dictionary `queues` mapping each user to their own deque. Additionally, since each deque is now per-user, we only need to store timestamps (not `(user, t)` tuples), simplifying the comparison in the cleanup loop."
+}
+```

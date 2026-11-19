@@ -1,0 +1,110 @@
+STAGE: analysis
+PROJECT: energy_consumption
+PROMPT_VERSION: v3
+
+You are the analysis stage of a three-stage data workflow (cleaning -> analysis -> reporting).
+The cleaning stage has already run. Write ONE self-contained Python 3 script that computes the
+required metrics from the cleaned data it produced.
+
+## Original objective
+Clean the raw 2024 smart-meter export and analyse electricity consumption: total and per-building-type usage, the quarterly trend, the change between the first and second half of the year, tariff and meter usage, commercial load on hot days and the distribution of consumption and temperature, then report the verified findings to business stakeholders.
+
+## Handoff from the previous stage
+Completed stages: cleaning
+Validation status of previous stages: {"cleaning": "passed"}
+Cleaning logic reported by the cleaning stage:
+The script performs the following cleaning steps in order: (1) Reads raw CSV as text, strips whitespace, and standardizes missing values (NA, null, etc.). (2) Removes duplicate records based on reading_id. (3) Parses multiple date formats into YYYY-MM-DD and drops invalid dates. (4) Uppercases meter_id. (5) Maps building_type variants to standard categories (Residential, Commercial, Industrial). (6) Maps tariff variants to 'peak' or 'off-peak'. (7) Cleans energy values by removing units (kWh/MWh) and commas, converting MWh to kWh, and filtering for valid numeric ranges (0-100k). (8) Cleans temperature values by removing units, converting Fahrenheit to Celsius, and setting invalid out-of-range temperatures to missing (empty). Finally, it sorts by reading_id and writes the result to cleaned.csv.
+Cleaning summary written by the cleaning code (cleaning_summary.json):
+{"raw_rows": 1560, "cleaned_rows": 1428}
+
+## Input/output contract (mandatory)
+- Your script runs in an isolated sandbox with NO network access. Available libraries: the Python
+  standard library, pandas and numpy.
+- Read the cleaned data from os.path.join(os.environ["INPUT_DIR"], "cleaned.csv").
+  It is the file the cleaning stage actually produced; use it as is.
+- Write os.path.join(os.environ["OUTPUT_DIR"], "findings.json"). Write nowhere else.
+- findings.json MUST be a FLAT JSON object mapping every metric_key listed below to a single
+  finite number, e.g. {"metric_a": 12.5, "metric_b": 3.0}. Do NOT nest it: an object such as
+  {"metrics": {"metric_a": 12.5}} FAILS validation. No strings, lists, null, NaN or Infinity as values.
+- Do not round results; write full precision.
+- List every file the script writes in `expected_artifacts`.
+
+## Cleaned data schema (columns in this order)
+- reading_id: str; not nullable
+- reading_date: date; not nullable
+- meter_id: str; not nullable
+- building_type: category; not nullable; allowed values: 'Residential', 'Commercial', 'Industrial'
+- tariff: category; not nullable; allowed values: 'peak', 'off-peak'
+- energy_kwh: float; not nullable; min 0; max 100000
+- temperature_c: float; nullable; min -40; max 50
+
+## First lines of the cleaned file (cleaned.csv, 1429 lines in total incl. header)
+```
+reading_id,reading_date,meter_id,building_type,tariff,energy_kwh,temperature_c
+E000002,2024-01-01,M05,Commercial,peak,469.1,0.9
+E000003,2024-01-01,M07,Commercial,peak,406.45,-1.4
+E000004,2024-01-01,M09,Industrial,peak,2730.2,0.1
+E000006,2024-01-02,M02,Residential,off-peak,38.14,
+E000007,2024-01-02,M03,Residential,off-peak,40.85,5.7
+E000008,2024-01-02,M04,Residential,off-peak,38.68,-1.4
+E000009,2024-01-02,M08,Commercial,off-peak,514.72,1.1
+E000010,2024-01-02,M12,Industrial,peak,1976.89,0.5
+E000011,2024-01-03,M02,Residential,off-peak,49.09,-0.7
+E000012,2024-01-03,M03,Residential,off-peak,35.59,
+E000013,2024-01-03,M05,Commercial,off-peak,498.85,0.2
+```
+
+## Analysis questions and the metric_keys each must produce
+- q1: Overall (aggregation): sum of energy_kwh -> total_kwh; number of readings (rows) -> reading_count; total_kwh / reading_count -> mean_kwh_per_reading.
+  metric_keys: total_kwh, reading_count, mean_kwh_per_reading
+- q2: Building types (group comparison): total energy_kwh per building_type -> kwh_residential, kwh_commercial, kwh_industrial.
+  metric_keys: kwh_residential, kwh_commercial, kwh_industrial
+- q3: Quarterly trend (trend): total energy_kwh of readings dated in each calendar quarter of 2024 (Q1 = Jan-Mar, Q2 = Apr-Jun, Q3 = Jul-Sep, Q4 = Oct-Dec) -> kwh_q1, kwh_q2, kwh_q3, kwh_q4.
+  metric_keys: kwh_q1, kwh_q2, kwh_q3, kwh_q4
+- q4: Half-year change (percentage change): total energy_kwh for January-June -> kwh_h1; July-December -> kwh_h2; (kwh_h2 - kwh_h1) / kwh_h1 * 100 -> kwh_h2_vs_h1_change_pct (in percent).
+  metric_keys: kwh_h1, kwh_h2, kwh_h2_vs_h1_change_pct
+- q5: Hot-day commercial load (conditional filtering): readings with building_type Commercial and a non-missing temperature_c >= 25: their number -> hot_commercial_reading_count; their mean energy_kwh -> hot_commercial_mean_kwh.
+  metric_keys: hot_commercial_reading_count, hot_commercial_mean_kwh
+- q6: Distribution summary (statistical summary): median and sample standard deviation (denominator n - 1) of energy_kwh over all readings -> kwh_median, kwh_std; mean temperature_c over readings with a non-missing temperature -> temperature_mean; number of readings with missing temperature_c -> temperature_missing_count; Pearson correlation between temperature_c and energy_kwh over Commercial readings with a non-missing temperature -> commercial_temp_kwh_corr.
+  metric_keys: kwh_median, kwh_std, temperature_mean, temperature_missing_count, commercial_temp_kwh_corr
+- q7: Tariff and meter usage (derived step): total energy_kwh for peak and off-peak tariffs -> kwh_peak, kwh_off_peak; kwh_peak / total_kwh * 100 -> peak_kwh_share_pct; number of distinct meter_id values -> unique_meter_count; largest total energy_kwh for any single meter_id -> highest_use_meter_kwh.
+  metric_keys: kwh_peak, kwh_off_peak, peak_kwh_share_pct, unique_meter_count, highest_use_meter_kwh
+
+All required metric_keys: total_kwh, reading_count, mean_kwh_per_reading, kwh_residential, kwh_commercial, kwh_industrial, kwh_q1, kwh_q2, kwh_q3, kwh_q4, kwh_h1, kwh_h2, kwh_h2_vs_h1_change_pct, hot_commercial_reading_count, hot_commercial_mean_kwh, kwh_median, kwh_std, temperature_mean, temperature_missing_count, commercial_temp_kwh_corr, kwh_peak, kwh_off_peak, peak_kwh_share_pct, unique_meter_count, highest_use_meter_kwh
+
+## What to return
+Return the script in `python_code`, the list of files it writes in `expected_artifacts`, and a brief
+description of the methods in `methods_description`.
+
+
+Respond with a single JSON object that conforms to this JSON Schema. Put it in one ```json fenced block and include nothing else outside the block.
+```json
+{
+  "properties": {
+    "python_code": {
+      "description": "Python script. Reads the cleaned CSV from INPUT_DIR, writes findings.json to OUTPUT_DIR.",
+      "title": "Python Code",
+      "type": "string"
+    },
+    "expected_artifacts": {
+      "description": "Filenames the script writes to OUTPUT_DIR.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Expected Artifacts",
+      "type": "array"
+    },
+    "methods_description": {
+      "title": "Methods Description",
+      "type": "string"
+    }
+  },
+  "required": [
+    "python_code",
+    "expected_artifacts",
+    "methods_description"
+  ],
+  "title": "AnalysisOutput",
+  "type": "object"
+}
+```

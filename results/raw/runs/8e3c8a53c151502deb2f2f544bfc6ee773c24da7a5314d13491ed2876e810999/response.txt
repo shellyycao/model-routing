@@ -1,0 +1,10 @@
+```json
+{
+  "fixed_code": "def sessionize(events, gap):\n    out = {}\n    last = {}\n    for user, t in sorted(events):\n        if user not in out:\n            out[user] = [[]]\n        if user in last and t - last[user] > gap:\n            out[user].append([])\n        out[user][-1].append(t)\n        last[user] = t\n    return out\n",
+  "bug_locations": [
+    "sessionize: sort key `sorted(events, key=lambda x: x[1])` sorted only by timestamp; the spec requires sorting (user, timestamp) pairs so each user's events are grouped and ordered together",
+    "sessionize: session-boundary logic used a single global `last` timestamp shared across all users; it must track the previous timestamp per user"
+  ],
+  "explanation": "Two interacting defects: (1) events were sorted only by timestamp, so different users' events interleaved, and (2) the single shared `last` variable compared a user's current timestamp against whatever event (possibly another user's) was processed last. This caused both missed splits (e.g., u@1, v@8, u@10 with gap=5 would merge u's events because 10-8<=5) and potential spurious splits. The fix sorts by (user, timestamp) and keeps a per-user `last` dict, so the strict `t - last > gap` comparison only ever compares consecutive events of the same user. The input is not mutated since `sorted` returns a new list and only the output structure is built."
+}
+```

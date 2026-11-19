@@ -1,0 +1,8 @@
+{
+  "fixed_code": "from collections import defaultdict,deque\ndef allowed(events,limit,window):\n    q=defaultdict(deque);out=[]\n    for user,t in events:\n        while q[user] and q[user][0] <= t-window:q[user].popleft()\n        ok=len(q[user])<limit;out.append(ok)\n        if ok:q[user].append(t)\n    return out\n",
+  "bug_locations": [
+    "while q[user] and q[user][0] < t-window: (boundary condition)",
+    "q[user].append(t) (unconditional append of rejected events)"
+  ],
+  "explanation": "Two bugs: (1) The window boundary was wrong — the spec defines the interval as (time-window, time], open on the left, so events at exactly t-window should be excluded. The fix changes `< t-window` to `<= t-window` so timestamps equal to t-window are removed. (2) Rejected events were being appended to the queue, consuming capacity. The spec says rejected events do not consume capacity, so the append is now conditional on `ok` being True."
+}

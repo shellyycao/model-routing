@@ -1,0 +1,10 @@
+```json
+{
+  "fixed_code": "def running_total(xs):\n    out=[]; total=0\n    for value in xs:\n        total += value\n        out.append(total)\n    return out",
+  "bug_locations": [
+    "for value in xs[:-1]:",
+    "out.append(total)"
+  ],
+  "explanation": "The original code iterated only up to the second-to-last element of the input list, which caused the last cumulative sum to be omitted. Additionally, the cumulative sum was appended to the output list after the loop incremented the total, which resulted in the last element of the input list not being included in the output. The fix involves iterating over all elements in the input list and appending the cumulative sum to the output list within the loop."
+}
+```

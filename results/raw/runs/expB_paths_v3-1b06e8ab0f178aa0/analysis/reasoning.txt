@@ -1,0 +1,94 @@
+We need to produce JSON with fields python_code (string containing script), expected_artifacts (list of filenames), methods_description (string). The script must read cleaned.csv from INPUT_DIR env var, compute metrics, write findings.json to OUTPUT_DIR, no other files. Must compute all metric_keys.
+
+We need to be careful about handling missing satisfaction_score (nullable). In pandas, read csv will infer types; satisfaction_score may have empty strings leading to NaN. We'll treat as float? But we need integer values. We'll read with dtype maybe object then convert.
+
+Compute:
+
+ticket_count = number of rows.
+
+mean_resolution_minutes = mean of resolution_minutes (float). Use pandas mean.
+
+total_labor_cost = sum of labor_cost.
+
+Team labor cost sums: group by team, sum labor_cost.
+
+Channel mean resolution minutes: group by channel, mean resolution_minutes.
+
+Reopen rates: reopened column is 0/1. For each channel email and chat, compute percentage of tickets reopened (i.e., sum reopened / count * 100). Use only those channels.
+
+email_vs_chat_reopen_change_pct = (email_rate - chat_rate) / chat_rate * 100. If chat_rate is zero, define as 0? But likely not zero. We'll handle division by zero: if chat_rate == 0, set result to 0.
+
+High-cost low-sat segment: tickets where labor_cost >= 100 and satisfaction_score not missing and <=2. Count them. Also reopened percentage among those tickets: sum reopened / count *100. If count zero, reopen pct = 0.
+
+Distribution: median and sample std (ddof=1) of resolution_minutes. Use pandas median and std (default ddof=1). satisfaction_mean: mean of non-missing satisfaction_score. satisfaction_missing_count: count of rows where satisfaction_score is NaN.
+
+Agent concentration: unique_agent_count = number of distinct agent_id. top_agent_ticket_count = max tickets per agent. top_agent_ticket_share_pct = top_agent_ticket_count / ticket_count * 100.
+
+All metrics must be finite numbers, not NaN. Ensure we convert to Python float or int. For counts, integer but JSON numbers fine.
+
+Write findings.json with flat dict.
+
+Also include expected_artifacts = ["findings.json"].
+
+Methods description: brief.
+
+Now produce script.
+
+Implementation details:
+
+import os, pandas as pd, json, numpy as np.
+
+input_path = os.path.join(os.environ["INPUT_DIR"], "cleaned.csv")
+df = pd.read_csv(input_path)
+
+Make sure satisfaction_score column may be read as float due to NaNs; we can keep as float.
+
+Compute metrics:
+
+ticket_count = int(len(df))
+
+mean_resolution_minutes = df["resolution_minutes"].mean()
+
+total_labor_cost = df["labor_cost"].sum()
+
+labor_cost_alpha = df.loc[df["team"]=="Alpha","labor_cost"].sum()
+Similarly Beta, Gamma.
+
+resolution_email = df.loc[df["channel"]=="email","resolution_minutes"].mean()
+Similarly chat, phone.
+
+reopen_rate_email_pct = df.loc[df["channel"]=="email","reopened"].mean()*100
+reopen_rate_chat_pct = df.loc[df["channel"]=="chat","reopened"].mean()*100
+
+email_vs_chat_reopen_change_pct = ((reopen_rate_email_pct - reopen_rate_chat_pct) / reopen_rate_chat_pct * 100) if reopen_rate_chat_pct !=0 else 0.0
+
+high_cost_low_sat = df[(df["labor_cost"]>=100) & (df["satisfaction_score"].notna()) & (df["satisfaction_score"]<=2)]
+high_cost_low_sat_count = int(len(high_cost_low_sat))
+if high_cost_low_sat_count>0:
+    high_cost_low_sat_reopen_pct = high_cost_low_sat["reopened"].mean()*100
+else:
+    high_cost_low_sat_reopen_pct = 0.0
+
+resolution_median = df["resolution_minutes"].median()
+resolution_std = df["resolution_minutes"].std(ddof=1)  # sample std
+
+satisfaction_mean = df["satisfaction_score"].mean()
+satisfaction_missing_count = int(df["satisfaction_score"].isna().sum())
+
+unique_agent_count = int(df["agent_id"].nunique())
+top_agent_ticket_count = int(df["agent_id"].value_counts().iloc[0])
+top_agent_ticket_share_pct = top_agent_ticket_count / ticket_count * 100
+
+Now create dict with keys exactly as required.
+
+Make sure to convert numpy types to Python native via float() or int().
+
+Write json with json.dump with ensure_ascii=False.
+
+Now produce final JSON output.
+
+Let's craft python_code string with triple quotes inside JSON; need to escape properly. We'll embed as raw string with newline characters.
+
+Make sure script uses __main__ guard.
+
+Now produce final answer.

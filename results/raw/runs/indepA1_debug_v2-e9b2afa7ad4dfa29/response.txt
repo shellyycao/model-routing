@@ -1,0 +1,12 @@
+```json
+{
+  "fixed_code": "def overlap_minutes(a, b):\n    \"\"\"Return the length of overlap (in minutes) between two half‑open intervals.\n\n    Each interval is a tuple (start, end) where ``start`` is inclusive and ``end``\n    is exclusive. The function validates that ``end`` is not less than ``start``\n    for either interval and raises ``ValueError`` if this condition is violated.\n    Touching intervals (where the end of one equals the start of the other) are\n    considered to have zero overlap.\n    \"\"\"\n    # Validate interval ordering\n    if a[1] < a[0] or b[1] < b[0]:\n        raise ValueError(\"Interval end must be greater than or equal to start\")\n\n    # Compute the overlap using half‑open interval semantics\n    overlap_start = max(a[0], b[0])\n    overlap_end = min(a[1], b[1])\n    overlap = overlap_end - overlap_start\n\n    # If intervals do not intersect, overlap will be negative; clamp to zero\n    return max(overlap, 0)\n",
+  "bug_locations": [
+    "Added validation for end < start and raised ValueError",
+    "Introduced clamping of negative overlap to zero",
+    "Replaced direct return with explicit calculation using max/min for clarity",
+    "Added comprehensive docstring describing behavior and half‑open semantics"
+  ],
+  "explanation": "The original implementation returned ``min(end)-max(start)`` without checking interval validity, causing negative results for non‑overlapping intervals and failing to reject intervals where end < start. The fix adds input validation that raises a ValueError when an interval is malformed, computes the overlap start and end explicitly, and clamps negative overlap to zero to satisfy the specification that touching intervals have zero overlap."
+}
+```

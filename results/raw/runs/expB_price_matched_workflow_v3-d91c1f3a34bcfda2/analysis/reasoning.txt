@@ -1,0 +1,98 @@
+The task is clear: write an analysis script that reads cleaned.csv from INPUT_DIR, computes metrics, and writes findings.json to OUTPUT_DIR.
+
+Key considerations:
+1. Read CSV with pandas, parse order_date.
+2. Compute metrics:
+   - q1: total_revenue, order_count, average_order_value
+   - q2: revenue per region
+   - q3: quarterly revenue in 2024
+   - q4: revenue 2023, 2024, YoY change pct
+   - q5: electronics with discount >= 20: count and revenue
+   - q6: mean, median, sample std (ddof=1), min, max of revenue
+   - q7: unique customers, top customer revenue, share pct
+3. Write flat JSON with all metric keys as finite numbers.
+
+Careful details:
+- order_count should be a number; JSON can serialize int fine.
+- Ensure no NaN — data is cleaned so should be fine, but I can use defaults: for quarters with no orders, sum = 0.0.
+- Don't round.
+- Sample std with ddof=1; if only 1 row, NaN — but 520 rows, fine.
+- Use float conversion for values.
+- unique_customer_count as int.
+- top_customer_revenue: group by customer_id, sum revenue, max.
+- top_customer_revenue_share_pct = top / total * 100.
+
+Write the script robustly:
+
+```python
+import json
+import os
+
+import pandas as pd
+
+
+def main():
+    input_path = os.path.join(os.environ["INPUT_DIR"], "cleaned.csv")
+    output_path = os.path.join(os.environ["OUTPUT_DIR"], "findings.json")
+
+    df = pd.read_csv(input_path)
+    df["order_date"] = pd.to_datetime(df["order_date"], format="%Y-%m-%d")
+
+    revenue = df["revenue"].astype(float)
+
+    total_revenue = float(revenue.sum())
+    order_count = int(len(df))
+    average_order_value = total_revenue / order_count
+
+    # q2 regional
+    by_region = df.groupby("region")["revenue"].sum()
+    revenue_north = float(by_region.get("North", 0.0))
+    ...
+
+    # q3 quarters 2024
+    df_2024 = df[df["order_date"].dt.year == 2024]
+    quarter = df_2024["order_date"].dt.quarter
+    q_rev = df_2024.groupby(quarter)["revenue"].sum()
+    ...
+
+    # q4
+    revenue_2023 = float(df.loc[df["order_date"].dt.year == 2023, "revenue"].sum())
+    revenue_2024 = float(df_2024["revenue"].sum())
+    yoy = (revenue_2024 - revenue_2023) / revenue_2023 * 100 if revenue_2023 else 0.0
+
+    # q5
+    mask = (df["product_category"] == "Electronics") & (df["discount_pct"] >= 20)
+    elec = df[mask]
+    electronics_high_discount_orders = int(len(elec))
+    electronics_high_discount_revenue = float(elec["revenue"].sum())
+
+    # q6
+    order_revenue_mean = float(revenue.mean())
+    order_revenue_median = float(revenue.median())
+    order_revenue_std = float(revenue.std(ddof=1))
+    order_revenue_min = float(revenue.min())
+    order_revenue_max = float(revenue.max())
+
+    # q7
+    by_cust = df.groupby("customer_id")["revenue"].sum()
+    unique_customer_count = int(df["customer_id"].nunique())
+    top_customer_revenue = float(by_cust.max())
+    top_customer_revenue_share_pct = top_customer_revenue / total_revenue * 100
+
+    findings = {...}
+
+    with open(output_path, "w") as f:
+        json.dump(findings, f, indent=2)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+All values must be finite numbers — ints and floats are fine.
+
+Methods description: brief.
+
+expected_artifacts: ["findings.json"]
+
+Return in a single JSON fenced block.

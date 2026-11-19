@@ -1,0 +1,33 @@
+# Support Operations Analysis Report
+
+Analysis of 347 support tickets reveals a total labor cost of $27,422.84 and a mean resolution time of ~75 minutes. Team Beta drives the highest labor spend, phone is the fastest channel, and email tickets reopen at more than twice the rate of chat tickets. A small high-cost, low-satisfaction segment warrants targeted intervention, and workload is reasonably distributed across 18 agents.
+
+## Key findings
+- [q1] The dataset contains 347 tickets with a mean resolution time of 75.2 minutes and a total labor cost of $27,422.84.
+  - Reported values: ticket_count=347.0, mean_resolution_minutes=75.193084, total_labor_cost=27422.84
+- [q2] Team Beta incurred the highest labor cost at $10,247.32, followed by Gamma at $9,387.74 and Alpha at $7,787.78. Beta's spend exceeds Alpha's by $2,459.54.
+  - Reported values: labor_cost_alpha=7787.78, labor_cost_beta=10247.32, labor_cost_gamma=9387.74
+  - Ranking: Beta, Gamma, Alpha
+  - Derived difference(labor_cost_beta, labor_cost_alpha): 2459.54
+- [q3] Phone is the fastest channel at 69.3 minutes mean resolution, followed by email at 73.0 minutes and chat at 83.0 minutes.
+  - Reported values: resolution_email=73.017241, resolution_chat=83.039216, resolution_phone=69.253521
+  - Ranking: chat, email, phone
+- [q4] Email tickets reopen at 17.2% versus 7.8% for chat, representing a 119.8% relative increase in reopen rate for email over chat — a meaningful quality gap.
+  - Reported values: reopen_rate_email_pct=17.241379, reopen_rate_chat_pct=7.843137, email_vs_chat_reopen_change_pct=119.827586
+  - Direction: increase
+- [q5] 12 tickets are both high-cost (labor cost ≥ $100) and low-satisfaction (score ≤ 2). Of these, 8.3% were reopened, suggesting most were closed but left customers dissatisfied.
+  - Reported values: high_cost_low_sat_count=12.0, high_cost_low_sat_reopen_pct=8.333333
+- [q6] Resolution time has a median of 65 minutes and a standard deviation of 51.9 minutes, indicating a right-skewed distribution with some long-tail cases. Mean satisfaction is 4.15 out of 5, with 19 tickets missing a satisfaction score.
+  - Reported values: resolution_median=65.0, resolution_std=51.925749, satisfaction_mean=4.152439, satisfaction_missing_count=19.0
+- [q7] 18 distinct agents handled the 347 tickets. The busiest single agent handled 26 tickets, representing a 7.5% share of total volume — indicating no severe workload concentration.
+  - Reported values: unique_agent_count=18.0, top_agent_ticket_count=26.0, top_agent_ticket_share_pct=7.492795
+
+## Limitations
+- 19 tickets are missing satisfaction scores, which may slightly bias the reported mean satisfaction upward or downward depending on whether dissatisfied customers are less likely to respond.
+- Labor cost is derived from agent roster rates applied to resolution minutes; any inaccuracies in the roster (e.g., overtime rates, part-time adjustments) would propagate into cost figures.
+- The analysis covers a single export snapshot with no time dimension, so trends over time cannot be assessed.
+- Reopening rates are based on a binary reopened flag; multiple reopenings per ticket are not distinguished, potentially understating chronic problem tickets.
+- Agent concentration analysis uses ticket count only; ticket complexity and handle time per agent are not factored in.
+
+## Conclusion
+Overall support performance is solid — satisfaction averages 4.15 and workload is spread across 18 agents — but two areas need attention: email's reopen rate is ~120% higher than chat's, and 12 high-cost, low-satisfaction tickets signal unresolved quality issues. Reducing email reopenings and investigating the high-cost/low-satisfaction segment should be the immediate operational priorities.

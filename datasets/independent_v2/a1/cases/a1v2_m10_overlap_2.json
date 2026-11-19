@@ -1,0 +1,27 @@
+{
+  "bug_locations": [
+    "overlap half-open arithmetic",
+    "overlap empty interval validation"
+  ],
+  "buggy": "def overlap_minutes(a,b):\n                 if a[1]<=a[0] or b[1]<=b[0]: raise ValueError('interval')\n                 return max(0,min(a[1],b[1])-max(a[0],b[0])+1)\n",
+  "case_id": "a1v2_m10_overlap_2",
+  "difficulty": "medium",
+  "family": "overlap",
+  "hidden": [
+    "overlap_minutes((10,20),(15,25))==5",
+    "overlap_minutes((0,5),(5,9))==0",
+    "overlap_minutes((0,2),(5,9))==0",
+    "overlap_minutes((3,3),(3,3))==0",
+    "_raises(lambda: overlap_minutes((3,2),(0,1)),ValueError)"
+  ],
+  "label_source": "executable reference plus independently checked tests",
+  "reference": "def overlap_minutes(a,b):\n             if a[1]<a[0] or b[1]<b[0]: raise ValueError('interval')\n             return max(0, min(a[1],b[1])-max(a[0],b[0]))\n",
+  "spec": "overlap_minutes(a, b) accepts half-open minute intervals (start,end), returns overlap length, and rejects end < start. Touching intervals have zero overlap.",
+  "verification": {
+    "buggy_fails": 3,
+    "reference_passes": 5
+  },
+  "visible": [
+    "overlap_minutes((10,20),(15,25)) == 5"
+  ]
+}

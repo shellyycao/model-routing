@@ -1,0 +1,58 @@
+{
+  "protocol": "price-matched-v2-compatibility-pilot",
+  "status": "initial_pilot_and_repilot_executed_main_run_approved",
+  "initial_pilot": {
+    "executed": true,
+    "models": ["sonnet_4_6", "kimi_k3", "grok_4_7"],
+    "records": "results/raw/price_matched_v2_pilot/records.jsonl"
+  },
+  "repilot": {
+    "approved": true,
+    "executed": true,
+    "models": ["kimi_k3", "glm_5"],
+    "logical_calls": 6,
+    "kimi_temperature_field": "omitted",
+    "glm_5_temperature": 0.0,
+    "successes": 6,
+    "schema_parses": 6,
+    "records": "results/raw/price_matched_v2_pilot/repilot_records.jsonl"
+  },
+  "quality_review_forbidden": true,
+  "checks": [
+    "call_succeeds",
+    "structured_output_parses",
+    "raw_usage_and_reasoning_accounting_recorded",
+    "temperature_parameter_support_recorded",
+    "effective_maxTokens_is_16384"
+  ],
+  "cases": {
+    "a1": {
+      "case_id": "pilot_a1_counter",
+      "spec": "Return the number immediately after n.",
+      "buggy": "def next_number(n):\n    return n - 1\n",
+      "visible": ["next_number(4) == 5"]
+    },
+    "a2": {
+      "case_id": "pilot_a2_badge",
+      "schema": {
+        "event_name": "event name as written",
+        "badge_color": "badge color as written",
+        "doors_open": "24-hour time or null"
+      },
+      "document": "Community Robot Night — volunteer badge: teal. Doors open at 18:30."
+    },
+    "a3": {
+      "case_id": "pilot_a3_gardens",
+      "query": {
+        "text": "Which supplied notes apply interviews to urban community-garden participation?"
+      },
+      "candidates": [
+        {"doc_id": "P1001", "title": "Garden Voices", "authors": "A. Pine", "year": 2025, "abstract": "Interview study of participation in urban community gardens."},
+        {"doc_id": "P1002", "title": "Soil Sensors", "authors": "B. Reed", "year": 2024, "abstract": "Sensor measurements of soil moisture in community gardens."},
+        {"doc_id": "P1003", "title": "Shared Plots", "authors": "C. Moss", "year": 2023, "abstract": "Interviews with residents about joining shared city garden plots."},
+        {"doc_id": "P1004", "title": "Rooftop Yield", "authors": "D. Lake", "year": 2022, "abstract": "Crop-yield accounting for rooftop farms."},
+        {"doc_id": "P1005", "title": "Volunteer Paths", "authors": "E. Stone", "year": 2025, "abstract": "Interview analysis of volunteer retention in neighborhood gardens."}
+      ]
+    }
+  }
+}

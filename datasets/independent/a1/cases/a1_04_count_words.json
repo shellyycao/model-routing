@@ -1,0 +1,25 @@
+{
+  "buggy": "def count_words(text):\n    counts = {}\n    for w in text.lower().split(\" \"):\n        counts[w] = counts.get(w, 0) + 1\n    return counts\n",
+  "case_id": "a1_04_count_words",
+  "difficulty": "easy",
+  "func": "count_words",
+  "hidden": [
+    "count_words('a b a') == {'a': 2, 'b': 1}",
+    "count_words('') == {}",
+    "count_words('   ') == {}",
+    "count_words('Hello  hello') == {'hello': 2}",
+    "count_words('x\\ty\\nx') == {'x': 2, 'y': 1}",
+    "count_words(' lead trail ') == {'lead': 1, 'trail': 1}",
+    "count_words('One') == {'one': 1}"
+  ],
+  "operator": "wrong_split",
+  "reference": "def count_words(text):\n    counts = {}\n    for w in text.lower().split():\n        counts[w] = counts.get(w, 0) + 1\n    return counts\n",
+  "spec": "count_words(text) returns a dict mapping each lower-cased word to its count. Words are separated by any whitespace (spaces, tabs, newlines, repeated). Empty or whitespace-only text gives {}.",
+  "verification": {
+    "buggy_fails": 5,
+    "reference_passes": 7
+  },
+  "visible": [
+    "count_words('a b a') == {'a': 2, 'b': 1}"
+  ]
+}

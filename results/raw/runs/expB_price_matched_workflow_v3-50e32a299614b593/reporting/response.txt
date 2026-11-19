@@ -1,0 +1,120 @@
+```json
+{
+  "title": "Support Operations: Cost, Speed, Reopening and Satisfaction Report",
+  "executive_summary": "This report covers 347 cleaned support tickets handled by 18 agents. Total labor cost was $27,422.90, with team Beta the largest cost center. Chat tickets are the slowest to resolve, while email tickets reopen at more than double the relative rate of chat tickets. Overall satisfaction is strong at 4.15 out of 5, and workload is well distributed: the busiest agent accounts for only 7.5% of tickets. A small segment of 12 high-cost, low-satisfaction tickets warrants targeted review.",
+  "key_findings": [
+    {
+      "finding_id": "q1",
+      "statement": "The dataset contains 347 tickets, with a mean resolution time of 75.2 minutes and a total labor cost of $27,422.90.",
+      "evidence_refs": ["ticket_count", "mean_resolution_minutes", "total_labor_cost"],
+      "reported_values": {
+        "ticket_count": 347.0,
+        "mean_resolution_minutes": 75.19308357348703,
+        "total_labor_cost": 27422.9
+      },
+      "direction": "not_applicable",
+      "ranking": null,
+      "derived_values": []
+    },
+    {
+      "finding_id": "q2",
+      "statement": "Team Beta carries the highest total labor cost at $10,247.36, followed by Gamma at $9,387.73 and Alpha at $7,787.81; Beta exceeds Alpha by $2,459.55.",
+      "evidence_refs": ["labor_cost_alpha", "labor_cost_beta", "labor_cost_gamma"],
+      "reported_values": {
+        "labor_cost_alpha": 7787.81,
+        "labor_cost_beta": 10247.36,
+        "labor_cost_gamma": 9387.73
+      },
+      "direction": "not_applicable",
+      "ranking": ["Beta", "Gamma", "Alpha"],
+      "derived_values": [
+        {
+          "kind": "difference",
+          "operands": ["labor_cost_beta", "labor_cost_alpha"],
+          "value": 2459.55
+        }
+      ]
+    },
+    {
+      "finding_id": "q3",
+      "statement": "Chat is the slowest channel at 83.0 minutes on average, then email at 73.0 minutes, then phone at 69.3 minutes; chat runs about 13.8 minutes longer than phone per ticket.",
+      "evidence_refs": ["resolution_email", "resolution_chat", "resolution_phone"],
+      "reported_values": {
+        "resolution_email": 73.01724137931035,
+        "resolution_chat": 83.03921568627452,
+        "resolution_phone": 69.25352112676056
+      },
+      "direction": "not_applicable",
+      "ranking": ["chat", "email", "phone"],
+      "derived_values": [
+        {
+          "kind": "difference",
+          "operands": ["resolution_chat", "resolution_phone"],
+          "value": 13.8
+        }
+      ]
+    },
+    {
+      "finding_id": "q4",
+      "statement": "Email tickets reopen at 17.2% versus 7.8% for chat tickets, a 119.8% relative increase for email over chat.",
+      "evidence_refs": ["reopen_rate_email_pct", "reopen_rate_chat_pct", "email_vs_chat_reopen_change_pct"],
+      "reported_values": {
+        "reopen_rate_email_pct": 17.24137931034483,
+        "reopen_rate_chat_pct": 7.8431372549019605,
+        "email_vs_chat_reopen_change_pct": 119.82758620689657
+      },
+      "direction": "increase",
+      "ranking": null,
+      "derived_values": []
+    },
+    {
+      "finding_id": "q5",
+      "statement": "Only 12 tickets combine high labor cost (at least $100) with low satisfaction (score of 2 or less), and 8.3% of that segment was reopened.",
+      "evidence_refs": ["high_cost_low_sat_count", "high_cost_low_sat_reopen_pct"],
+      "reported_values": {
+        "high_cost_low_sat_count": 12.0,
+        "high_cost_low_sat_reopen_pct": 8.333333333333332
+      },
+      "direction": "not_applicable",
+      "ranking": null,
+      "derived_values": []
+    },
+    {
+      "finding_id": "q6",
+      "statement": "Resolution time has a median of 65 minutes with a sample standard deviation of 51.9 minutes; the mean of 75.2 minutes sitting above the median indicates a right-skewed distribution. Mean satisfaction is 4.15 out of 5 across non-missing scores, with 19 tickets missing a satisfaction score.",
+      "evidence_refs": ["resolution_median", "resolution_std", "satisfaction_mean", "satisfaction_missing_count"],
+      "reported_values": {
+        "resolution_median": 65.0,
+        "resolution_std": 51.92574910613114,
+        "satisfaction_mean": 4.152439024390244,
+        "satisfaction_missing_count": 19.0
+      },
+      "direction": "not_applicable",
+      "ranking": null,
+      "derived_values": []
+    },
+    {
+      "finding_id": "q7",
+      "statement": "Tickets are spread across 18 distinct agents, and the single busiest agent handled 26 tickets, representing just 7.5% of the total workload.",
+      "evidence_refs": ["unique_agent_count", "top_agent_ticket_count", "top_agent_ticket_share_pct"],
+      "reported_values": {
+        "unique_agent_count": 18.0,
+        "top_agent_ticket_count": 26.0,
+        "top_agent_ticket_share_pct": 7.492795389048991
+      },
+      "direction": "not_applicable",
+      "ranking": null,
+      "derived_values": []
+    }
+  ],
+  "limitations": [
+    "Satisfaction scores are missing for 19 tickets; the reported mean of 4.15 excludes them and may be biased if dissatisfied customers respond less often.",
+    "The high-cost, low-satisfaction segment contains only 12 tickets, so its 8.3% reopen rate is based on a very small sample and is unstable.",
+    "The 119.8% email-versus-chat reopen change is a relative figure computed on a low chat base rate (7.8%), so small absolute shifts produce large percentage changes.",
+    "Results are descriptive only; no statistical significance testing was performed, so differences between teams and channels may reflect chance or case mix.",
+    "Team cost and agent workload comparisons do not adjust for ticket complexity or channel mix, which may partly explain Beta's higher cost and chat's longer resolution times.",
+    "The data is a single export snapshot; no trends over time can be assessed."
+  ],
+  "conclusion": "Support operations show healthy satisfaction and well-balanced agent workloads, but chat resolution speed and the elevated email reopen rate are the clearest improvement targets. Team Beta's leading labor cost and the small high-cost, low-satisfaction segment merit focused review before scaling decisions are made."
+}
+```

@@ -1,0 +1,26 @@
+Let me analyze the specification and the bug.
+
+**Specification**: An event is allowed if fewer than `limit` prior **allowed** events for that user fall in `(time-window, time]`. Rejected events do not consume capacity.
+
+**Bug analysis**:
+
+1. **Window boundary**: The spec says `(time-window, time]` — the interval is open on the left. The current code uses `q[user][0] < t-window` to remove events, which removes events where `timestamp < t-window`, keeping events where `timestamp >= t-window`. But the interval is `(time-window, time]`, meaning we should keep events where `timestamp > t-window`. So the condition should be `q[user][0] <= t-window` (remove events at exactly `t-window`).
+
+   Let's verify with the visible check: `allowed([('u',0),('u',1)],1,1)` should be `[True,True]`.
+   - Event ('u',0): queue empty, ok=True, append 0. Queue: [0]
+   - Event ('u',1): window check: remove while `q[0] < 1-1=0` → 0 < 0 is False, so 0 stays. len=1, limit=1, ok = 1<1 = False. But expected True!
+   
+   With fix `<= t-window`: remove while `q[0] <= 0` → 0 <= 0 is True, remove 0. Queue empty, len=0 < 1, ok=True. ✓
+
+2. **Only append when allowed**: The spec says rejected events don't consume capacity, so we should only append to the queue when `ok=True`.
+
+```json
+{
+  "fixed_code": "from collections import defaultdict, deque\n\ndef allowed(events, limit, window):\n    q = defaultdict(deque)\n    out = []\n    for user, t in events:\n        while q[user] and q[user][0] <= t - window:\n            q[user].popleft()\n        ok = len(q[user]) < limit\n        out.append(ok)\n        if ok:\n            q[user].append(t)\n    return out\n",
+  "bug_locations": [
+    "Line: `while q[user] and q[user][0] < t-window:q[user].popleft()`",
+    "Line: `ok=len(q[user])<limit;out.append(ok);q[user].append(t)`"
+  ],
+  "explanation": "Two bugs: (1) The window boundary was wrong — the spec says the interval is (time-window, time], which is open on the left, so events at exactly t-window should be excluded. The condition `q[user][0] < t-window` kept events at t-window; it should be `q[user][0] <= t-window` to remove them. (2) Rejected events were being appended to the queue, consuming capacity. Per the spec, only allowed events consume capacity, so `q[user].append(t)` should only execute when `ok` is True."
+}
+```

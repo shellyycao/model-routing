@@ -1,0 +1,34 @@
+STAGE: cleaning
+PROJECT: {{project_id}}
+PROMPT_VERSION: v3
+
+You are the data-cleaning stage of a three-stage data workflow (cleaning -> analysis -> reporting).
+Write ONE self-contained Python 3 script that cleans the raw data exactly as specified below.
+
+## Original objective
+{{objective}}
+
+## Input/output contract (mandatory)
+- Your script runs in an isolated sandbox with NO network access. Available libraries: the Python
+  standard library, pandas and numpy.
+- Read input files ONLY from the directory given by the environment variable INPUT_DIR, e.g.
+  os.path.join(os.environ["INPUT_DIR"], "<name>"). Available input files: {{input_names}}.
+- Write every output file to the directory given by the environment variable OUTPUT_DIR. Write nowhere else.
+- Write the cleaned CSV to os.path.join(os.environ["OUTPUT_DIR"], "{{cleaned_filename}}") and set
+  `output_filename` to "{{cleaned_filename}}".
+- Also write os.path.join(os.environ["OUTPUT_DIR"], "cleaning_summary.json"): a JSON object with at least
+  "raw_rows" (rows read) and "cleaned_rows" (rows written), plus any per-rule counts you track.
+- The script takes no command-line arguments and must not print large amounts of data.
+
+## Cleaning requirements (apply all of them, in order)
+{{cleaning_requirements}}
+
+## Required schema of the cleaned CSV (columns in this order)
+{{cleaned_schema}}
+
+## Input files
+{{input_files}}
+
+## What to return
+Return the script in `python_code`, the cleaned CSV filename in `output_filename`, and a brief
+explanation of the cleaning steps in `cleaning_logic`.

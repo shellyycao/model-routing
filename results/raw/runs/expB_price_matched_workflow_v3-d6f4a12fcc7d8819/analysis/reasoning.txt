@@ -1,0 +1,98 @@
+Let me write the analysis script. Read cleaned.csv, compute metrics, write findings.json flat.
+
+Key details:
+- q3: quarter from reading_date (already YYYY-MM-DD).
+- q5: Commercial & temperature_c >= 25 non-missing; count and mean energy.
+- q6: median, sample std (ddof=1), mean temp over non-missing, missing count, Pearson corr over Commercial with non-missing temp.
+- q7: peak/off-peak sums, share pct, unique meters, max meter total.
+- All values must be finite numbers; convert numpy types to float/int. Counts as ints is fine (numbers). Ensure no NaN — correlation could be NaN if insufficient data, but presumably fine. I'll add safety: if NaN, fallback? Better not to distort; but validation requires finite. I could guard with np.isfinite check and default to 0.0 — but that distorts. Given 1428 rows, corr will be finite. I'll still ensure float conversion.
+
+Write script with pandas. reading_date parsed via pd.to_datetime. Quarter via dt.quarter. H1 months 1-6, H2 7-12.
+
+Code:
+
+```python
+import json
+import os
+
+import numpy as np
+import pandas as pd
+
+def main():
+    input_path = os.path.join(os.environ["INPUT_DIR"], "cleaned.csv")
+    output_path = os.path.join(os.environ["OUTPUT_DIR"], "findings.json")
+
+    df = pd.read_csv(input_path)
+    df["reading_date"] = pd.to_datetime(df["reading_date"], format="%Y-%m-%d")
+    df["energy_kwh"] = df["energy_kwh"].astype(float)
+    df["temperature_c"] = df["temperature_c"].astype(float)
+
+    findings = {}
+
+    total_kwh = float(df["energy_kwh"].sum())
+    reading_count = int(len(df))
+    findings["total_kwh"] = total_kwh
+    findings["reading_count"] = reading_count
+    findings["mean_kwh_per_reading"] = total_kwh / reading_count
+
+    by_type = df.groupby("building_type")["energy_kwh"].sum()
+    findings["kwh_residential"] = float(by_type.get("Residential", 0.0))
+    findings["kwh_commercial"] = float(by_type.get("Commercial", 0.0))
+    findings["kwh_industrial"] = float(by_type.get("Industrial", 0.0))
+
+    quarter = df["reading_date"].dt.quarter
+    qsum = df.groupby(quarter)["energy_kwh"].sum()
+    for i, key in enumerate(["kwh_q1", "kwh_q2", "kwh_q3", "kwh_q4"], start=1):
+        findings[key] = float(qsum.get(i, 0.0))
+
+    month = df["reading_date"].dt.month
+    h1 = float(df.loc[month <= 6, "energy_kwh"].sum())
+    h2 = float(df.loc[month >= 7, "energy_kwh"].sum())
+    findings["kwh_h1"] = h1
+    findings["kwh_h2"] = h2
+    findings["kwh_h2_vs_h1_change_pct"] = (h2 - h1) / h1 * 100.0
+
+    hot = df[(df["building_type"] == "Commercial") & df["temperature_c"].notna() & (df["temperature_c"] >= 25)]
+    findings["hot_commercial_reading_count"] = int(len(hot))
+    findings["hot_commercial_mean_kwh"] = float(hot["energy_kwh"].mean())
+
+    findings["kwh_median"] = float(df["energy_kwh"].median())
+    findings["kwh_std"] = float(df["energy_kwh"].std(ddof=1))
+    temp = df["temperature_c"]
+    findings["temperature_mean"] = float(temp.mean())
+    findings["temperature_missing_count"] = int(temp.isna().sum())
+    comm = df[(df["building_type"] == "Commercial") & df["temperature_c"].notna()]
+    corr = float(comm["temperature_c"].corr(comm["energy_kwh"], method="pearson"))
+    findings["commercial_temp_kwh_corr"] = corr
+
+    by_tariff = df.groupby("tariff")["energy_kwh"].sum()
+    peak = float(by_tariff.get("peak", 0.0))
+    off_peak = float(by_tariff.get("off-peak", 0.0))
+    findings["kwh_peak"] = peak
+    findings["kwh_off_peak"] = off_peak
+    findings["peak_kwh_share_pct"] = peak / total_kwh * 100.0
+    findings["unique_meter_count"] = int(df["meter_id"].nunique())
+    findings["highest_use_meter_kwh"] = float(df.groupby("meter_id")["energy_kwh"].sum().max())
+
+    for k, v in findings.items():
+        if isinstance(v, float) and not np.isfinite(v):
+            raise ValueError(f"Non-finite value for {k}")
+
+    with open(output_path, "w") as f:
+        json.dump(findings, f)
+
+if __name__ == "__main__":
+    main()
+```
+
+Note hot mean: if hot empty, mean is NaN — guard raises. Fine given data. reading_count int; JSON number fine.
+
+Should I worry about temperature >= 25 inclusive — yes used >=.
+
+Ensure no rounding. json.dump full precision float — repr float fine.
+
+expected_artifacts: ["findings.json"].
+
+methods_description: brief.
+
+Return single JSON fenced block.

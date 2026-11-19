@@ -1,0 +1,27 @@
+{
+  "bug_locations": [
+    "paginate terminal cursor",
+    "paginate validation"
+  ],
+  "buggy": "def paginate(items, size, cursor=None):\n                 start=0 if cursor is None else int(cursor); end=start+size\n                 return list(items[start:end]), str(end)\n",
+  "case_id": "a1v2_m03_paginate_1",
+  "difficulty": "medium",
+  "family": "paginate",
+  "hidden": [
+    "paginate([1,2,3],2)==([1,2],'2')",
+    "paginate([1,2,3],2,'2')==([3],None)",
+    "paginate([],2)==([],None)",
+    "_raises(lambda: paginate([1],0),ValueError)",
+    "_raises(lambda: paginate([1],1,'x'),ValueError)"
+  ],
+  "label_source": "executable reference plus independently checked tests",
+  "reference": "def paginate(items, size, cursor=None):\n             if size <= 0: raise ValueError('size')\n             try: start = 0 if cursor is None else int(cursor)\n             except (TypeError, ValueError): raise ValueError('cursor')\n             if start < 0 or start > len(items): raise ValueError('cursor')\n             end = min(start + size, len(items))\n             return list(items[start:end]), (str(end) if end < len(items) else None)\n",
+  "spec": "paginate(items, size, cursor=None) returns (page, next_cursor). Cursor is a zero-based start index string; next_cursor is null at the end; invalid cursors and nonpositive sizes raise ValueError.",
+  "verification": {
+    "buggy_fails": 3,
+    "reference_passes": 5
+  },
+  "visible": [
+    "paginate([1,2,3], 2) == ([1,2], '2')"
+  ]
+}

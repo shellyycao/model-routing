@@ -1,0 +1,9 @@
+```json
+{
+  "fixed_code": "def chunks(xs, size):\n    if size <= 0:\n        raise ValueError('size')\n    return [xs[i:i+size] for i in range(0, len(xs), size)]",
+  "bug_locations": [
+    "range(0, len(xs)-size+1, size)"
+  ],
+  "explanation": "The original code incorrectly calculated the range for slicing, causing it to miss the final chunk if it was shorter than 'size'. The fix changes the range to 'range(0, len(xs), size)', ensuring all elements are processed and the final chunk is included."
+}
+```

@@ -1,0 +1,7 @@
+{
+  "fixed_code": "def chunks(xs, size):\n    if size <= 0: raise ValueError('size')\n    return [xs[i:i+size] for i in range(0, len(xs), size)]",
+  "bug_locations": [
+    "def chunks(xs, size):"
+  ],
+  "explanation": "The original code incorrectly handled size=0 by returning an empty list instead of raising ValueError as required by the specification. The fix consolidates the size validation into a single check (size <= 0) that raises ValueError for both zero and negative sizes. The list comprehension logic was already correct for creating consecutive chunks including a short final chunk."
+}

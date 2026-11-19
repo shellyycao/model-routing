@@ -1,0 +1,84 @@
+Write a Python script that reads cleaned.csv, computes metrics, writes findings.json as a flat object with all metric keys as finite numbers.
+
+Need to be careful:
+- reading_count should be a number; it can be int but JSON numbers fine. Convert to float or int — both fine.
+- kwh_std sample std (ddof=1).
+- temperature_mean over non-missing.
+- commercial_temp_kwh_corr Pearson correlation over Commercial readings with non-missing temperature.
+- peak share pct.
+- unique_meter_count distinct meter_id.
+- highest_use_meter_kwh max total per meter.
+
+Ensure finite: if hot commercial count is zero, mean would be NaN — handle, but likely nonzero. We can guard with 0.0 fallback. Also corr could be NaN if no data or zero variance; guard.
+
+Use pandas. Write with json.dump. Ensure floats converted to Python floats, ints to int.
+
+Don't round.
+
+Quarter assignment: reading_date parsed with pd.to_datetime; quarter = month mapping.
+
+Let me write code.
+
+```python
+import json, os
+import numpy as np
+import pandas as pd
+
+input_path = os.path.join(os.environ["INPUT_DIR"], "cleaned.csv")
+output_path = os.path.join(os.environ["OUTPUT_DIR"], "findings.json")
+
+df = pd.read_csv(input_path, dtype={"reading_id": str, "meter_id": str, "building_type": str, "tariff": str})
+df["reading_date"] = pd.to_datetime(df["reading_date"], format="%Y-%m-%d")
+df["energy_kwh"] = pd.to_numeric(df["energy_kwh"], errors="coerce")
+df["temperature_c"] = pd.to_numeric(df["temperature_c"], errors="coerce")
+
+energy = df["energy_kwh"]
+total_kwh = float(energy.sum())
+reading_count = int(len(df))
+mean_kwh_per_reading = total_kwh / reading_count
+
+by_type = df.groupby("building_type")["energy_kwh"].sum()
+kwh_residential = float(by_type.get("Residential", 0.0))
+...
+
+month = df["reading_date"].dt.month
+q = ((month - 1) // 3) + 1
+by_q = df.groupby(q)["energy_kwh"].sum()
+
+h1 = months 1-6 sum; h2 months 7-12.
+
+hot = df[(df["building_type"]=="Commercial") & df["temperature_c"].notna() & (df["temperature_c"]>=25)]
+hot_count = len(hot); hot_mean = float(hot["energy_kwh"].mean()) if count else 0.0
+
+kwh_median = float(energy.median())
+kwh_std = float(energy.std(ddof=1))
+
+temp_nonmiss = df["temperature_c"].dropna()
+temperature_mean = float(temp_nonmiss.mean())
+temperature_missing_count = int(df["temperature_c"].isna().sum())
+
+comm = df[(df["building_type"]=="Commercial") & df["temperature_c"].notna()]
+if len(comm) >= 2 and comm["temperature_c"].std(ddof=1) > 0 and comm["energy_kwh"].std(ddof=1) > 0:
+    corr = float(comm["temperature_c"].corr(comm["energy_kwh"]))
+else:
+    corr = 0.0
+
+by_tariff = df.groupby("tariff")["energy_kwh"].sum()
+kwh_peak = float(by_tariff.get("peak", 0.0))
+kwh_off_peak = float(by_tariff.get("off-peak", 0.0))
+peak_share = kwh_peak/total_kwh*100 if total_kwh else 0.0
+
+unique_meter_count = int(df["meter_id"].nunique())
+highest_use_meter_kwh = float(df.groupby("meter_id")["energy_kwh"].sum().max())
+
+findings = {...}
+
+sanity: replace non-finite with 0? Add a check.
+
+with open(output_path, "w") as f:
+    json.dump(findings, f, indent=2)
+```
+
+Ensure values are Python float/int, not numpy. json can't serialize numpy types; converting via float()/int() handles that.
+
+All good. Write expected_artifacts = ["findings.json"].

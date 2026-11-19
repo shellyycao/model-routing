@@ -1,0 +1,28 @@
+We need to produce JSON with fields python_code (string containing script), expected_artifacts (list of filenames), methods_description (string). The script must read cleaned.csv from INPUT_DIR env var, compute metrics, write findings.json to OUTPUT_DIR, and list expected_artifacts as ["findings.json"].
+
+We must ensure script is self-contained, uses pandas, numpy. Compute metrics as per definitions.
+
+Potential pitfalls: revenue column is float; order_count is number of rows (int). average_order_value = total_revenue / order_count (float). For region revenue, sum revenue per region; ensure missing region not present.
+
+Quarterly revenue for 2024: filter order_date year 2024, then quarter based on month. Use pandas dt.quarter.
+
+Year-over-year: revenue_2023 sum, revenue_2024 sum, yoy change pct = (rev2024 - rev2023) / rev2023 * 100. If rev2023 zero, handle division by zero maybe set to None? But must be finite number; assume there is data for 2023. If not, we could set yoy change to 0 or np.nan? Must be finite; we can guard: if rev2023 == 0: yoy = 0.0.
+
+High-discount electronics: filter product_category == 'Electronics' and discount_pct >= 20. Count orders (rows) and sum revenue.
+
+Order revenue distribution: compute mean, median, std (sample, ddof=1), min, max.
+
+Customer concentration: unique_customer_count = number of distinct customer_id. top_customer_revenue = max revenue per customer (groupby sum). top_customer_revenue_share_pct = top_customer_revenue / total_revenue * 100.
+
+All metrics must be numbers (int or float). Ensure we output as JSON with default python json dumps; but we need to write findings.json with json.dump of dict.
+
+Make sure we convert numpy types to python scalars (float, int). Use .item().
+
+Potential issues: revenue column may be float; ensure we treat as float.
+
+Write script with main guard.
+
+Also include expected_artifacts list.
+
+Now produce final JSON.
+

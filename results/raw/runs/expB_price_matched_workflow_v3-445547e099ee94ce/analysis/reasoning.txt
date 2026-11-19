@@ -1,0 +1,108 @@
+Let me write the analysis script. It reads cleaned.csv from INPUT_DIR, computes metrics, writes findings.json to OUTPUT_DIR.
+
+Key considerations:
+- Flat JSON with finite numbers
+- satisfaction_score nullable: empty cells → NaN when read by pandas. Should read with appropriate dtype. Use pd.read_csv; satisfaction_score will be float with NaN.
+- churn rates as percentages.
+- Cohort by year of signup_date: parse signup_date to datetime, extract year. Cohorts 2021-2024. Handle the case where a cohort has 0 customers — would produce NaN; but data likely has all. To be safe, if a group is empty, define rate as 0.0? But that could be misleading. The validation requires finite numbers, so guard against division by zero. Given data spans 2021 onwards, likely all four years present. I'll guard: if count is 0, set to 0.0 (finite). Also guard churn_rate_annual_pct division by zero.
+- tenure_std: sample std (ddof=1). pandas .std() default ddof=1. Good.
+- satisfaction_missing_count: integer count of NaN.
+- at_risk: support_tickets >= 5 AND satisfaction_score not missing and <= 2.
+- lifetime value means by plan.
+- premium_vs_basic_ltv_change_pct.
+
+Write with json.dump, ensure values are Python floats/ints (convert numpy types). Round not applied.
+
+Use float() for all; counts as int is fine (finite number). satisfaction_missing_count as int.
+
+Let me write the code.
+
+```python
+import json
+import os
+
+import numpy as np
+import pandas as pd
+
+
+def main():
+    input_path = os.path.join(os.environ["INPUT_DIR"], "cleaned.csv")
+    output_path = os.path.join(os.environ["OUTPUT_DIR"], "findings.json")
+
+    df = pd.read_csv(input_path, dtype={"customer_id": str})
+
+    findings = {}
+
+    # q1
+    n = len(df)
+    findings["customer_count"] = int(n)
+    findings["churn_rate_pct"] = float(df["churned"].mean() * 100)
+    findings["avg_monthly_fee"] = float(df["monthly_fee"].mean())
+
+    # q2 churn by plan
+    for plan, key in [("Basic", "churn_rate_basic_pct"), ("Standard", "churn_rate_standard_pct"), ("Premium", "churn_rate_premium_pct")]:
+        sub = df[df["plan"] == plan]
+        findings[key] = float(sub["churned"].mean() * 100) if len(sub) > 0 else 0.0
+
+    # q3 cohorts
+    signup = pd.to_datetime(df["signup_date"], format="%Y-%m-%d")
+    years = signup.dt.year
+    for year in (2021, 2022, 2023, 2024):
+        sub = df[years == year]
+        findings[f"churn_rate_cohort_{year}_pct"] = float(sub["churned"].mean() * 100) if len(sub) > 0 else 0.0
+
+    # q4 contract
+    monthly = df[df["contract_type"] == "Monthly"]
+    annual = df[df["contract_type"] == "Annual"]
+    churn_m = float(monthly["churned"].mean() * 100)
+    churn_a = float(annual["churned"].mean() * 100)
+    findings["churn_rate_monthly_pct"] = churn_m
+    findings["churn_rate_annual_pct"] = churn_a
+    findings["churn_monthly_vs_annual_change_pct"] = (churn_m - churn_a) / churn_a * 100 if churn_a != 0 else 0.0
+
+    # q5 at-risk
+    sat = df["satisfaction_score"]  # float with NaN
+    mask = (df["support_tickets"] >= 5) & sat.notna() & (sat <= 2)
+    at_risk = df[mask]
+    findings["at_risk_customer_count"] = int(len(at_risk))
+    findings["at_risk_churn_rate_pct"] = float(at_risk["churned"].mean() * 100) if len(at_risk) > 0 else 0.0
+
+    # q6 tenure and satisfaction
+    tenure = df["tenure_months"].astype(float)
+    findings["tenure_mean"] = float(tenure.mean())
+    findings["tenure_median"] = float(tenure.median())
+    findings["tenure_std"] = float(tenure.std(ddof=1))
+    findings["satisfaction_mean"] = float(sat.mean())
+    findings["satisfaction_missing_count"] = int(sat.isna().sum())
+
+    # q7 ltv by plan
+    for plan, key in [("Basic", "ltv_basic"), ("Standard", "ltv_standard"), ("Premium", "ltv_premium")]:
+        sub = df[df["plan"] == plan]
+        findings[key] = float(sub["lifetime_value"].mean()) if len(sub) > 0 else 0.0
+    ltv_b = findings["ltv_basic"]
+    ltv_p = findings["ltv_premium"]
+    findings["premium_vs_basic_ltv_change_pct"] = (ltv_p - ltv_b) / ltv_b * 100 if ltv_b != 0 else 0.0
+
+    # sanity: ensure finite
+    for k, v in findings.items():
+        fv = float(v)
+        if not np.isfinite(fv):
+            findings[k] = 0.0
+
+    with open(output_path, "w") as f:
+        json.dump(findings, f, indent=2)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+Wait — q5 at-risk churn rate if zero at-risk customers: mean of empty → NaN → guarded to 0.0. Fine.
+
+Note about reading satisfaction_score: pandas will read empty as NaN automatically. Good.
+
+One thing: when replacing non-finite with 0.0, keep ints as ints for counts. The loop converts to float for checking but only reassigns if non-finite. Values stay as int/float. json.dump handles numpy int64? I convert counts with int() and floats with float(), so they're native. Good.
+
+median of tenure: could be e.g. 47.0 — float fine.
+
+Respond with the JSON object.

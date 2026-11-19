@@ -1,0 +1,245 @@
+{
+  "analysis_questions": [
+    {
+      "abs_tolerance": 0.011,
+      "direction_key": null,
+      "metric_keys": [
+        "ticket_count",
+        "mean_resolution_minutes",
+        "total_labor_cost"
+      ],
+      "question": "Overall: number of tickets -> ticket_count; mean resolution_minutes -> mean_resolution_minutes; sum of labor_cost -> total_labor_cost.",
+      "question_id": "q1",
+      "ranking_labels": null,
+      "rel_tolerance": 0.0001
+    },
+    {
+      "abs_tolerance": 0.011,
+      "direction_key": null,
+      "metric_keys": [
+        "labor_cost_alpha",
+        "labor_cost_beta",
+        "labor_cost_gamma"
+      ],
+      "question": "Team comparison: total labor_cost for Alpha, Beta and Gamma -> labor_cost_alpha, labor_cost_beta, labor_cost_gamma.",
+      "question_id": "q2",
+      "ranking_labels": {
+        "labor_cost_alpha": "Alpha",
+        "labor_cost_beta": "Beta",
+        "labor_cost_gamma": "Gamma"
+      },
+      "rel_tolerance": 0.0001
+    },
+    {
+      "abs_tolerance": 0.011,
+      "direction_key": null,
+      "metric_keys": [
+        "resolution_email",
+        "resolution_chat",
+        "resolution_phone"
+      ],
+      "question": "Channel comparison: mean resolution_minutes by channel -> resolution_email, resolution_chat, resolution_phone.",
+      "question_id": "q3",
+      "ranking_labels": {
+        "resolution_chat": "chat",
+        "resolution_email": "email",
+        "resolution_phone": "phone"
+      },
+      "rel_tolerance": 0.0001
+    },
+    {
+      "abs_tolerance": 0.011,
+      "direction_key": "email_vs_chat_reopen_change_pct",
+      "metric_keys": [
+        "reopen_rate_email_pct",
+        "reopen_rate_chat_pct",
+        "email_vs_chat_reopen_change_pct"
+      ],
+      "question": "Reopening change: reopened percentage for email and chat -> reopen_rate_email_pct, reopen_rate_chat_pct; (email rate - chat rate) / chat rate * 100 -> email_vs_chat_reopen_change_pct.",
+      "question_id": "q4",
+      "ranking_labels": null,
+      "rel_tolerance": 0.0001
+    },
+    {
+      "abs_tolerance": 0.011,
+      "direction_key": null,
+      "metric_keys": [
+        "high_cost_low_sat_count",
+        "high_cost_low_sat_reopen_pct"
+      ],
+      "question": "High-cost low-satisfaction segment: tickets with labor_cost >= 100 and a non-missing satisfaction_score <= 2 -> count and reopened percentage as high_cost_low_sat_count and high_cost_low_sat_reopen_pct.",
+      "question_id": "q5",
+      "ranking_labels": null,
+      "rel_tolerance": 0.0001
+    },
+    {
+      "abs_tolerance": 0.011,
+      "direction_key": null,
+      "metric_keys": [
+        "resolution_median",
+        "resolution_std",
+        "satisfaction_mean",
+        "satisfaction_missing_count"
+      ],
+      "question": "Distribution: median and sample standard deviation of resolution_minutes -> resolution_median, resolution_std; mean non-missing satisfaction_score -> satisfaction_mean; missing satisfaction count -> satisfaction_missing_count.",
+      "question_id": "q6",
+      "ranking_labels": null,
+      "rel_tolerance": 0.0001
+    },
+    {
+      "abs_tolerance": 0.011,
+      "direction_key": null,
+      "metric_keys": [
+        "unique_agent_count",
+        "top_agent_ticket_count",
+        "top_agent_ticket_share_pct"
+      ],
+      "question": "Agent concentration (derived step): distinct agent_id count -> unique_agent_count; largest ticket count for one agent -> top_agent_ticket_count; top_agent_ticket_count / ticket_count * 100 -> top_agent_ticket_share_pct.",
+      "question_id": "q7",
+      "ranking_labels": null,
+      "rel_tolerance": 0.0001
+    }
+  ],
+  "canonical_cleaned_file": "canonical/cleaned.csv",
+  "canonical_findings_file": "canonical/findings.json",
+  "cleaned_data_filename": "cleaned.csv",
+  "cleaned_schema": [
+    {
+      "allowed_values": null,
+      "dtype": "str",
+      "max_value": null,
+      "min_value": null,
+      "name": "ticket_id",
+      "nullable": false
+    },
+    {
+      "allowed_values": null,
+      "dtype": "str",
+      "max_value": null,
+      "min_value": null,
+      "name": "agent_id",
+      "nullable": false
+    },
+    {
+      "allowed_values": [
+        "Alpha",
+        "Beta",
+        "Gamma"
+      ],
+      "dtype": "category",
+      "max_value": null,
+      "min_value": null,
+      "name": "team",
+      "nullable": false
+    },
+    {
+      "allowed_values": [
+        "East",
+        "West"
+      ],
+      "dtype": "category",
+      "max_value": null,
+      "min_value": null,
+      "name": "region",
+      "nullable": false
+    },
+    {
+      "allowed_values": [
+        "email",
+        "chat",
+        "phone"
+      ],
+      "dtype": "category",
+      "max_value": null,
+      "min_value": null,
+      "name": "channel",
+      "nullable": false
+    },
+    {
+      "allowed_values": null,
+      "dtype": "int",
+      "max_value": 480.0,
+      "min_value": 1.0,
+      "name": "resolution_minutes",
+      "nullable": false
+    },
+    {
+      "allowed_values": null,
+      "dtype": "int",
+      "max_value": 5.0,
+      "min_value": 1.0,
+      "name": "satisfaction_score",
+      "nullable": true
+    },
+    {
+      "allowed_values": null,
+      "dtype": "int",
+      "max_value": 1.0,
+      "min_value": 0.0,
+      "name": "reopened",
+      "nullable": false
+    },
+    {
+      "allowed_values": null,
+      "dtype": "float",
+      "max_value": null,
+      "min_value": 0.01,
+      "name": "hourly_cost",
+      "nullable": false
+    },
+    {
+      "allowed_values": null,
+      "dtype": "float",
+      "max_value": null,
+      "min_value": 0.0,
+      "name": "labor_cost",
+      "nullable": false
+    }
+  ],
+  "cleaning_requirements": [
+    "R1. Read both tickets.csv and agents.csv as text. Strip whitespace. Treat empty, NA, N/A, null, None and - as missing.",
+    "R2. In tickets.csv, remove duplicate ticket_id rows before any filtering; keep the first in raw-file order.",
+    "R3. In agents.csv, normalise agent_id to upper case and remove duplicate agent_id rows, keeping the first.",
+    "R4. Agent roster: map team case-insensitively from Alpha/Team Alpha, Beta/Team Beta, Gamma/Team Gamma; map region East/E and West/W; parse hourly_cost after removing $, USD and commas. Exclude roster rows with an invalid field or cost <= 0.",
+    "R5. Tickets: normalise agent_id to upper case. Join to the cleaned agent roster by agent_id and drop tickets without a matching agent.",
+    "R6. Map channel case-insensitively: Email/E-mail -> email, Chat/Live Chat -> chat, Phone/Call -> phone. Drop invalid channels.",
+    "R7. resolution_minutes: remove a trailing 'min' or 'minutes', parse a whole number from 1 through 480, and drop invalid rows.",
+    "R8. satisfaction_score: parse a whole number from 1 through 5. Invalid or missing values become an empty cell and the row is kept.",
+    "R9. reopened: map Yes/Y/True/1 to 1 and No/N/False/0 to 0, case-insensitively. Drop invalid or missing values.",
+    "R10. Add labor_cost = resolution_minutes / 60 * hourly_cost, rounded to 2 decimals.",
+    "R11. Output exactly: ticket_id, agent_id, team, region, channel, resolution_minutes, satisfaction_score, reopened, hourly_cost, labor_cost. Sort by ticket_id and write CSV without an index."
+  ],
+  "domain": "customer support operations",
+  "findings_filename": "findings.json",
+  "ground_truth_file": "ground_truth.json",
+  "input_files": [
+    {
+      "description": "support tickets",
+      "name": "tickets.csv",
+      "path": "raw.csv"
+    },
+    {
+      "description": "agent roster",
+      "name": "agents.csv",
+      "path": "agents.csv"
+    }
+  ],
+  "notes": "SYNTHETIC two-file join. Later duplicate tickets deliberately disagree in value; roster and ticket fields contain case, whitespace, currency, unit and missing-value variants.",
+  "objective": "Clean and join a support-ticket export with an agent roster, analyse cost, speed, reopening, satisfaction and agent concentration, then report verified findings.",
+  "project_id": "support_operations",
+  "raw_data_file": "raw.csv",
+  "reporting": {
+    "audience": "business stakeholders",
+    "max_words": 650,
+    "required_finding_ids": [
+      "q1",
+      "q2",
+      "q3",
+      "q4",
+      "q5",
+      "q6",
+      "q7"
+    ]
+  },
+  "seed": 20261121
+}

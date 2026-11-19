@@ -1,0 +1,312 @@
+Let me write a Python script that handles all the cleaning requirements.
+
+Key points:
+- R1: Read both as text (dtype=str), strip whitespace, treat empty/NA/N/A/null/None/- as missing.
+- R2: Remove duplicate ticket_id in tickets, keep first in raw order. Note: dedupe before any filtering. Should dedupe consider missing ticket_id? Probably drop rows with missing ticket_id as well? The spec says "remove duplicate ticket_id rows". If ticket_id is missing, it's not a valid ticket. The schema says ticket_id not nullable. I'll drop rows with missing ticket_id too (count separately or as part of dedupe). Let me handle: drop missing ticket_id, then dedupe keep first.
+- R3: agents: normalize agent_id to upper case, dedupe keep first.
+- R4: map team case-insensitively Alpha/Team Alpha -> Alpha, etc.; region East/E -> East, West/W -> West; parse hourly_cost after removing $, USD, commas. Exclude invalid rows or cost <= 0.
+- R5: tickets agent_id upper, join to roster, drop unmatched.
+- R6: channel mapping, drop invalid.
+- R7: resolution_minutes: remove trailing 'min'/'minutes', parse whole number 1-480, drop invalid. Note "remove a trailing 'min' or 'minutes'" — could be "47 minutes", "155 min", "27 min". So strip trailing "minutes" or "min" case-insensitively, also maybe singular "minute"? Spec says 'min' or 'minutes'. I'll regex r'\s*(minutes|min)\s*$' case-insensitive. Then parse integer. Whole number — should be integer, not float. Use regex ^\d+$ maybe. Range 1-480.
+- R8: satisfaction_score: parse whole number 1-5; invalid/missing -> empty cell, keep row. Output as nullable int (pandas Int64). Empty cell in CSV — Int64 with pd.NA writes empty.
+- R9: reopened: map Yes/Y/True/1 -> 1, No/N/False/0 -> 0, case-insensitive; drop invalid/missing.
+- R10: labor_cost = round(resolution_minutes/60 * hourly_cost, 2).
+- R11: Output exact columns, sort by ticket_id, no index.
+
+Sorting by ticket_id as string is fine (T00001... zero-padded).
+
+cleaning_summary.json with raw_rows and cleaned_rows plus per-rule counts.
+
+Track counts:
+- raw_rows: rows read from tickets (data rows).
+- duplicates_removed (R2)
+- agents raw, roster duplicates removed, roster invalid excluded
+- tickets unmatched agent dropped
+- invalid channel dropped
+- invalid resolution dropped
+- satisfaction invalid set empty
+- reopened invalid dropped
+- cleaned_rows.
+
+Write with pandas. Ensure dtype str on read: pd.read_csv(..., dtype=str, keep_default_na=False) then treat missing tokens manually. Use na_values? Better: read with dtype=str, keep_default_na=False, then strip, then replace tokens with NA.
+
+Tokens: '', 'NA', 'N/A', 'null', 'None', '-' — case? Spec lists them; I'll match case-insensitively for safety except empty. Actually "Treat empty, NA, N/A, null, None and - as missing". I'll do case-insensitive comparison on the stripped value lowered in {'', 'na', 'n/a', 'null', 'none', '-'}.
+
+Team mapping: lowercase in {'alpha', 'team alpha'} -> 'Alpha', etc.
+
+Region: {'east','e'} -> East, {'west','w'} -> West.
+
+hourly_cost: remove '$', 'USD' (case-insensitive), commas, strip, parse float. Must be > 0 and valid. Also check finite.
+
+Channel: {'email','e-mail'}->email, {'chat','live chat'}->chat, {'phone','call'}->phone.
+
+resolution_minutes: strip, regex remove trailing (minutes|min) case-insensitively, strip again, then check ^\d+$ (whole number, no sign? "1 through 480" so positive). int, range check.
+
+satisfaction: if missing -> NA. Else strip, check ^\d+$? Whole number 1-5. Some might be like "4.0"? Sample shows plain ints. I'll accept integer strings; maybe also accept "5.0"? To be safe, accept optional .0? Spec says "parse a whole number from 1 through 5". I'll try int(value) strictly; if fails, NA. Maybe handle "3.0" by float check integer. I'll do: try int; except, try float and check is_integer. Keep simple: strict int parse of the string; if invalid, NA. Actually robust approach: regex ^[1-5]$ for single digit. Values 1-5 only. I'll do regex ^[1-5]$.
+
+reopened: lower in {'yes','y','true','1'} -> 1; {'no','n','false','0'} -> 0; else drop.
+
+Output satisfaction_score as Int64 (nullable). When writing CSV, Int64 NA becomes empty string. Good.
+
+team/region/channel as category dtype per schema. Convert with pd.Categorical. That doesn't change CSV output but meets schema.
+
+Sort by ticket_id.
+
+Rounding: round(x, 2) — use .round(2).
+
+hourly_cost float min 0.01 — cost <= 0 excluded; negative excluded. Fine.
+
+Summary counts as ints.
+
+Let me write the script.
+
+```python
+import json
+import os
+import re
+
+import numpy as np
+import pandas as pd
+
+INPUT_DIR = os.environ["INPUT_DIR"]
+OUTPUT_DIR = os.environ["OUTPUT_DIR"]
+
+MISSING_TOKENS = {"", "na", "n/a", "null", "none", "-"}
+
+def read_text_csv(path):
+    df = pd.read_csv(path, dtype=str, keep_default_na=False)
+    df.columns = [str(c).strip() for c in df.columns]
+    for col in df.columns:
+        df[col] = df[col].map(lambda v: v.strip() if isinstance(v, str) else v)
+    return df
+
+def to_na(series):
+    return series.map(lambda v: np.nan if (pd.isna(v) or str(v).strip().lower() in MISSING_TOKENS) else v)
+```
+
+Wait, after strip, values are strings. to_na maps tokens to np.nan.
+
+Then:
+
+```python
+summary = {}
+
+tickets = read_text_csv(os.path.join(INPUT_DIR, "tickets.csv"))
+agents = read_text_csv(os.path.join(INPUT_DIR, "agents.csv"))
+summary["raw_rows"] = int(len(tickets))
+summary["agents_raw_rows"] = int(len(agents))
+
+# normalize missing
+for df in (tickets, agents):
+    for col in df.columns:
+        df[col] = to_na(df[col])
+```
+
+R2: dedupe tickets.
+
+```python
+missing_tid = int(tickets["ticket_id"].isna().sum())
+tickets = tickets[tickets["ticket_id"].notna()].copy()
+before = len(tickets)
+tickets = tickets.drop_duplicates(subset="ticket_id", keep="first")
+summary["tickets_missing_ticket_id_dropped"] = missing_tid
+summary["duplicate_ticket_id_removed"] = int(before - len(tickets))
+```
+
+R3 agents:
+
+```python
+agents["agent_id"] = agents["agent_id"].str.upper()
+agents = agents[agents["agent_id"].notna()].copy()
+before = len(agents)
+agents = agents.drop_duplicates(subset="agent_id", keep="first")
+summary["agents_duplicate_agent_id_removed"] = int(before - len(agents))
+```
+
+Hmm, dedupe should be after upper-casing per R3 ("normalise agent_id to upper case and remove duplicate agent_id rows"). Yes.
+
+R4:
+
+```python
+TEAM_MAP = {"alpha": "Alpha", "team alpha": "Alpha",
+            "beta": "Beta", "team beta": "Beta",
+            "gamma": "Gamma", "team gamma": "Gamma"}
+REGION_MAP = {"east": "East", "e": "East", "west": "West", "w": "West"}
+
+def parse_cost(v):
+    if pd.isna(v):
+        return np.nan
+    s = str(v).replace("$", "").replace(",", "")
+    s = re.sub(r"(?i)usd", "", s).strip()
+    try:
+        val = float(s)
+    except ValueError:
+        return np.nan
+    if not np.isfinite(val):
+        return np.nan
+    return val
+
+agents["team"] = agents["team"].map(lambda v: TEAM_MAP.get(str(v).lower()) if pd.notna(v) else np.nan)
+agents["region"] = agents["region"].map(lambda v: REGION_MAP.get(str(v).lower()) if pd.notna(v) else np.nan)
+agents["hourly_cost"] = agents["hourly_cost"].map(parse_cost)
+before = len(agents)
+agents = agents.dropna(subset=["team", "region", "hourly_cost"])
+agents = agents[agents["hourly_cost"] > 0]
+summary["agents_invalid_rows_excluded"] = int(before - len(agents))
+```
+
+Wait — order: dedupe before validating? R3 dedupe, R4 validate and exclude. Fine.
+
+R5:
+
+```python
+tickets["agent_id"] = tickets["agent_id"].str.upper()
+merged = tickets.merge(agents, on="agent_id", how="inner")
+summary["tickets_without_matching_agent_dropped"] = int(len(tickets) - merged["ticket_id"].nunique())
+```
+
+Careful: tickets may have rows with missing agent_id — inner join drops them. Count = len(tickets) - len(merged) since ticket_id unique after dedupe and agents unique by agent_id, merge is 1:1 at most. So len(merged) counts rows. Use len difference.
+
+R6 channel:
+
+```python
+CHANNEL_MAP = {"email": "email", "e-mail": "email",
+               "chat": "chat", "live chat": "chat",
+               "phone": "phone", "call": "phone"}
+merged["channel"] = merged["channel"].map(lambda v: CHANNEL_MAP.get(str(v).lower()) if pd.notna(v) else np.nan)
+before = len(merged)
+merged = merged[merged["channel"].notna()]
+summary["invalid_channel_dropped"] = int(before - len(merged))
+```
+
+R7 resolution:
+
+```python
+def parse_resolution(v):
+    if pd.isna(v):
+        return np.nan
+    s = re.sub(r"(?i)\s*(minutes|min)\s*$", "", str(v).strip()).strip()
+    if not re.fullmatch(r"\d+", s):
+        return np.nan
+    n = int(s)
+    return float(n) if 1 <= n <= 480 else np.nan
+```
+
+Return np.nan or int. Then:
+
+```python
+merged["resolution_minutes"] = merged["resolution_minutes"].map(parse_resolution)
+before = len(merged)
+merged = merged[merged["resolution_minutes"].notna()]
+merged["resolution_minutes"] = merged["resolution_minutes"].astype(int)
+summary["invalid_resolution_minutes_dropped"] = int(before - len(merged))
+```
+
+R8 satisfaction:
+
+```python
+def parse_satisfaction(v):
+    if pd.isna(v):
+        return pd.NA
+    s = str(v).strip()
+    if re.fullmatch(r"[1-5]", s):
+        return int(s)
+    return pd.NA
+
+invalid_sat = merged["satisfaction_score"].map(lambda v: pd.notna(v) and parse_satisfaction(v) is pd.NA).sum()
+merged["satisfaction_score"] = merged["satisfaction_score"].map(parse_satisfaction).astype("Int64")
+summary["invalid_satisfaction_set_empty"] = int(invalid_sat)
+```
+
+Note: missing values also become NA but shouldn't count as "invalid"? The rule says invalid or missing become empty. Count could include missing. I'll count invalid-or-missing set to empty. Or track separately. Keep one count: satisfaction_emptied.
+
+R9 reopened:
+
+```python
+REOPENED_MAP = {"yes": 1, "y": 1, "true": 1, "1": 1,
+                "no": 0, "n": 0, "false": 0, "0": 0}
+merged["reopened"] = merged["reopened"].map(lambda v: REOPENED_MAP.get(str(v).lower()) if pd.notna(v) else np.nan)
+before = len(merged)
+merged = merged[merged["reopened"].notna()]
+merged["reopened"] = merged["reopened"].astype(int)
+summary["invalid_reopened_dropped"] = int(before - len(merged))
+```
+
+R10 labor_cost:
+
+```python
+merged["labor_cost"] = (merged["resolution_minutes"] / 60.0 * merged["hourly_cost"]).round(2)
+```
+
+R11 output:
+
+```python
+out = merged[["ticket_id", "agent_id", "team", "region", "channel",
+              "resolution_minutes", "satisfaction_score", "reopened",
+              "hourly_cost", "labor_cost"]].copy()
+out = out.sort_values("ticket_id").reset_index(drop=True)
+out["team"] = pd.Categorical(out["team"], categories=["Alpha", "Beta", "Gamma"])
+out["region"] = pd.Categorical(out["region"], categories=["East", "West"])
+out["channel"] = pd.Categorical(out["channel"], categories=["email", "chat", "phone"])
+out.to_csv(os.path.join(OUTPUT_DIR, "cleaned.csv"), index=False)
+summary["cleaned_rows"] = int(len(out))
+with open(os.path.join(OUTPUT_DIR, "cleaning_summary.json"), "w") as f:
+    json.dump(summary, f, indent=2)
+```
+
+One nuance: merge column order — tickets columns then agents columns (team, region, hourly_cost). Output selection handles order.
+
+hourly_cost float formatting in CSV: values like 44.25 will write as "44.25". Fine.
+
+satisfaction Int64 writes empty for NA. Good.
+
+Edge: reopened map uses str(v).lower() — v already stripped. "1" and "0" strings. Good.
+
+Potential issue: pd.read_csv with dtype=str and keep_default_na=False — NA-like strings kept as strings; our token normalization handles.
+
+One more: R2 says dedupe "before any filtering" — including before dropping missing ticket_id? Dropping missing ticket_id isn't really filtering per spec... To be safe, dedupe first (keep first) then drop missing. Actually dedupe with missing ticket_id: multiple NaN rows — drop_duplicates treats NaN as equal, keeps first. Then drop remaining NaN. Either way one missing-id row might survive dedupe then be dropped. Order barely matters for count totals but let's dedupe first then drop missing to follow "before any filtering" literally:
+
+```python
+before = len(tickets)
+tickets = tickets.drop_duplicates(subset="ticket_id", keep="first")
+summary["duplicate_ticket_id_removed"] = int(before - len(tickets))
+missing_tid = int(tickets["ticket_id"].isna().sum())
+tickets = tickets[tickets["ticket_id"].notna()].copy()
+summary["missing_ticket_id_dropped"] = missing_tid
+```
+
+That's cleaner per spec.
+
+Also should tickets dedupe happen before missing normalization? Normalization doesn't change ticket_id identity except token '-' -> NaN. Fine.
+
+Now counts in summary must be JSON-serializable ints — cast int() everywhere.
+
+Also summary should include raw_rows (rows read) — that's tickets raw rows presumably. I'll add agents_raw_rows too.
+
+The script prints nothing large; maybe a small print of summary. Optional. I'll print a one-line confirmation.
+
+Let me also double check the trailing regex for resolution: "47 minutes" -> remove " minutes" -> "47". "155 min" -> "155". "56" -> unchanged. Case-insensitive covers "Min", "MINUTES". Good. What about "30 mins"? Not specified; would fail -> dropped. Acceptable.
+
+parse_satisfaction counts: I compute invalid count before mapping. Simplify: count values where result is NA:
+
+```python
+parsed_sat = merged["satisfaction_score"].map(parse_satisfaction)
+summary["satisfaction_emptied"] = int(parsed_sat.isna().sum())
+merged["satisfaction_score"] = parsed_sat.astype("Int64")
+```
+
+parsed_sat is object dtype with ints and pd.NA; .astype("Int64") works.
+
+Careful: map with function returning pd.NA — isna works.
+
+Also for CHANNEL/TEAM/REGION maps, `str(v).lower()` — v stripped already, lower handles case. Use .strip().lower() anyway for safety.
+
+parse_cost: "USD 57.75" -> remove $, commas -> "USD 57.75" -> regex remove usd -> " 57.75" -> strip -> 57.75. "$44.25" -> "44.25". Good. Also "usd" inside other words unlikely.
+
+Region "west" -> West, "e" -> East etc.
+
+I think the script is solid. Write final JSON with python_code string, output_filename "cleaned.csv", cleaning_logic brief.
+
+Make sure os.makedirs(OUTPUT_DIR, exist_ok=True)? The dir presumably exists; safe to create. Add it.
+
+Final script assembly.

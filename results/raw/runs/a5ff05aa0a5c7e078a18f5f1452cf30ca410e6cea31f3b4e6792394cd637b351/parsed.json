@@ -1,0 +1,7 @@
+{
+  "fixed_code": "def rolling_mean(xs, window, min_periods=1):\n    if not (1 <= min_periods <= window):\n        raise ValueError(\"min_periods must satisfy 1 <= min_periods <= window\")\n    result = []\n    for i in range(len(xs)):\n        start = max(0, i - window + 1)\n        window_slice = xs[start:i+1]\n        if len(window_slice) >= min_periods:\n            result.append(sum(window_slice) / len(window_slice))\n        else:\n            result.append(None)\n    return result",
+  "bug_locations": [
+    "The entire function logic was incorrect and replaced."
+  ],
+  "explanation": "The original implementation had multiple defects: 1) It did not validate that 1 <= min_periods <= window. 2) The window slice was incorrect (using `xs[max(0,i-window):i]` instead of `xs[max(0,i-window+1):i+1]`), missing the current element and including an extra past element. 3) It always divided by the full `window` size instead of the actual number of elements in the window. 4) It did not handle the `min_periods` requirement, returning a mean even when insufficient data was available. The corrected version properly validates input, calculates the correct window for each position, checks the `min_periods` condition, and returns `None` when the condition is not met."
+}

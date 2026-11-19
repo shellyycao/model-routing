@@ -1,0 +1,90 @@
+We need to produce JSON with fields python_code (string containing script), expected_artifacts (list with findings.json), methods_description (brief description). The script must compute all metrics.
+
+We need to be careful about handling missing satisfaction_score (nullable). In pandas, read_csv will interpret empty as NaN. Compute counts, means, etc. Ensure no NaN in output; for metrics that could be NaN (e.g., mean when no rows), but dataset has rows, so fine.
+
+Metrics:
+
+ticket_count: total rows.
+
+mean_resolution_minutes: mean of resolution_minutes (float). Use .mean().
+
+total_labor_cost: sum of labor_cost.
+
+labor_cost_alpha: sum labor_cost where team == 'Alpha'.
+
+Similarly Beta, Gamma.
+
+resolution_email: mean resolution_minutes where channel == 'email'.
+
+resolution_chat: mean where channel == 'chat'.
+
+resolution_phone: mean where channel == 'phone'.
+
+reopen_rate_email_pct: percentage of tickets with reopened ==1 among email channel. Compute (sum reopened) / count * 100.
+
+Similarly chat.
+
+email_vs_chat_reopen_change_pct: (email_rate - chat_rate) / chat_rate * 100. Need to handle division by zero if chat_rate ==0; but likely not zero. If zero, set to None? Must be finite number. Could set to 0 or maybe inf. Safer: if chat_rate ==0, set result to 0.0.
+
+high_cost_low_sat_count: tickets where labor_cost >=100 and satisfaction_score not missing and <=2. Count.
+
+high_cost_low_sat_reopen_pct: among those tickets, percentage reopened (reopened==1). If count zero, set 0.0.
+
+resolution_median: median of resolution_minutes.
+
+resolution_std: sample standard deviation (ddof=1). Use pandas .std(ddof=1).
+
+satisfaction_mean: mean of non-missing satisfaction_score.
+
+satisfaction_missing_count: count of rows where satisfaction_score is NaN.
+
+unique_agent_count: number of distinct agent_id.
+
+top_agent_ticket_count: max ticket count per agent.
+
+top_agent_ticket_share_pct: top_agent_ticket_count / ticket_count * 100.
+
+All values must be finite numbers (int or float). Use Python's float.
+
+Write findings.json as flat dict.
+
+Implementation steps:
+
+- import os, pandas, json, numpy as np.
+
+- input_path = os.path.join(os.environ["INPUT_DIR"], "cleaned.csv")
+
+- df = pd.read_csv(input_path)
+
+- Compute metrics.
+
+- Build dict.
+
+- output_path = os.path.join(os.environ["OUTPUT_DIR"], "findings.json")
+
+- with open(output_path, "w") as f: json.dump(metrics, f, allow_nan=False)
+
+- Ensure no NaN: maybe convert numpy types to Python float via float().
+
+Potential issues: pandas mean returns numpy.float64; json can handle it.
+
+But ensure no NaN: we can replace any NaN with None? Not allowed. So we must guarantee no NaN. For cases where denominator zero, we set 0.0.
+
+Edge Cases: If there are no email tickets, then email_rate = 0.0, mean resolution maybe NaN. But dataset likely has. We'll still handle: if count==0, set mean to 0.0.
+
+Implementation details:
+
+Define helper function safe_mean(series): if len>0: return series.mean() else 0.0.
+
+Similarly safe_std.
+
+Now produce script.
+
+Now produce JSON output.
+
+Let's craft methods_description: "The script loads the cleaned ticket data, computes aggregate metrics per the questions using pandas groupby and basic arithmetic, handles missing satisfaction scores, and writes a flat JSON file with the results."
+
+Now expected_artifacts: ["findings.json"].
+
+Now produce final JSON block.
+

@@ -1,0 +1,446 @@
+Let me write a Python script that handles all the cleaning requirements.
+
+Key considerations:
+- R1: Read all columns as text (dtype=str in pandas), strip whitespace, treat certain values as missing.
+- R2: Remove duplicates by reading_id, keeping first occurrence. Note: duplicates check should happen before other filters. Question: should reading_id missing be considered? The requirement says rows sharing same reading_id are duplicates. If reading_id is missing... The spec doesn't say to drop missing reading_id. But output schema says reading_id not nullable. Hmm. Let me handle: after dedup, drop rows with missing reading_id? Actually R2 says duplicates share same reading_id. Missing reading_id rows — if multiple rows have missing reading_id, they'd be considered duplicates of each other with naive duplicated(). To be safe, only dedupe on non-missing reading_id, and drop rows with missing reading_id (since schema requires not nullable). Actually, the spec doesn't explicitly say to drop missing reading_id rows, but the schema says not nullable. I'll drop rows with missing reading_id as part of R2 or handle carefully. Let me dedupe only among non-null reading_id, then drop null reading_id rows.
+
+Actually, simplest: drop rows where reading_id is missing (count them), then drop_duplicates on reading_id keep first.
+
+- R3: Date parsing with exact formats:
+  - YYYY-MM-DD: %Y-%m-%d
+  - MM/DD/YYYY: %m/%d/%Y
+  - DD-Mon-YYYY: %d-%b-%Y (e.g., 05-Mar-2024, also "01-Jan-2024")
+  - YYYY/MM/DD: %Y/%m/%d
+  - 'Month D, YYYY': %B %d, %Y (e.g., March 5, 2024; "January 2, 2024")
+  
+  Use datetime.strptime with each format, try in order. Need English month names — strptime with %b and %B uses locale, but in sandbox typically C locale which is English. Fine.
+
+  Note "01-Jan-2024" matches %d-%b-%Y. Good.
+
+- R4: meter_id upper case, drop missing.
+
+- R5: building_type mapping case-insensitive:
+  - residential/res/resi -> Residential
+  - commercial/comm -> Commercial
+  - industrial/ind -> Industrial
+  Drop missing or unmapped.
+
+- R6: tariff: 'peak' -> peak; 'off-peak', 'offpeak', 'off peak' -> off-peak. Case-insensitive. Drop others/missing. Note "PEAK", "Off peak", "Off-Peak" all map. Also maybe collapse internal whitespace? The variants listed are exactly those. I'll normalize by lowercasing and stripping. Maybe also handle multiple spaces? Keep it simple: lower().strip(), then map dict. Could also collapse whitespace to single spaces to be safe.
+
+- R7: energy -> energy_kwh: remove ','; check ends with 'MWh' (case-insensitive, optional space before unit) -> strip unit, *1000; ends with 'kWh' -> strip; else plain number kWh. Note order: check MWh before kWh since 'mwh' doesn't end with 'kwh' anyway ('mwh' ends with 'wh' not 'kwh'). Actually 'mwh'.endswith('kwh') is False. Fine but check MWh first anyway. Drop missing, non-numeric, <0, >100000 after conversion. Round 2 decimals.
+
+- R8: temperature: remove trailing degree sign and unit. If ends with 'F' (optionally '°F') -> Fahrenheit convert. Ends with 'C' or '°C' or no unit -> Celsius. Round 1 decimal. Missing/non-numeric/outside [-40,50] -> set empty but keep row.
+
+  Examples: "33.62 °F", "29.48F", "1.1C", "999.0" (Celsius, out of range -> missing), "None" -> missing, "-1.4".
+  
+  Parsing: strip whitespace. Remove trailing '°' and unit letters. Approach: regex match: ^([+-]?\d+(?:\.\d+)?)\s*(°)?\s*([CFcf])?$ — hmm, but also possibly just degree sign without letter? "remove a trailing degree sign and unit". Let me use regex: `^\s*([+-]?(?:\d+\.?\d*|\.\d+))\s*°?\s*([CcFf])?\s*$`. Capture number and optional unit letter. If unit is F -> convert. Else Celsius.
+
+- R9: Output columns order, sort by reading_id ascending, CSV with header, no index. Missing temperature_c empty cell. Numbers without units/thousands separators. energy_kwh rounded to 2 decimals — write as is; floats may write like 36.37. temperature_c rounded 1 decimal; missing -> NaN -> empty cell in CSV via to_csv.
+
+For output formatting: energy_kwh values like 2730.2 would write as "2730.2" not "2730.20". That's fine—numbers written without units. Should I format to always 2 decimals? The spec says round to 2 decimals, numbers written without units or thousands separators. Plain float output is fine. I'll keep float and let pandas write. Possibly use float_format? That would apply to all floats, but temperature is 1 decimal. Better leave default. Rounded values ensure no long decimals.
+
+Actually rounding to 2 decimals could produce floating point representation issues like 36.37000000000001? round(36.37, 2) = 36.37 typically fine. Multiplication by 1000 for MWh could give e.g. 0.12345*1000 = 123.44999999999999, round -> 123.45. Good.
+
+Sorting by reading_id ascending: string sort. reading_ids like E000001 zero-padded so lexicographic works. Sort as string.
+
+Summary JSON: raw_rows (rows read — 1560 data rows since 1561 lines including header), cleaned_rows, plus per-rule counts: duplicates_removed, dropped_reading_date, dropped_meter_id, dropped_building_type, dropped_tariff, dropped_energy, temperature_set_missing, maybe mwh_converted, fahrenheit_converted.
+
+Read raw: pd.read_csv(path, dtype=str, keep_default_na=False, na_filter=False) so that pandas doesn't convert 'NA' etc. Then strip and apply our own missing values. keep_default_na=False ensures empty strings stay ''. Then strip each value. Use df.applymap? Deprecated in newer pandas; use df.astype(str).apply(lambda col: col.str.strip()). With dtype=str and keep_default_na=False, all values are strings. NaN might occur? With na_filter=False, no NaN. Good.
+
+Missing set: {'', 'na', 'n/a', 'null', 'none', '-'} case-insensitive. Replace with pd.NA or None. I'll create a mask and set to None.
+
+Implementation:
+
+```python
+import os, json, re
+import pandas as pd
+import numpy as np
+from datetime import datetime
+
+INPUT_DIR = os.environ["INPUT_DIR"]
+OUTPUT_DIR = os.environ["OUTPUT_DIR"]
+
+raw_path = os.path.join(INPUT_DIR, "raw.csv")
+out_csv = os.path.join(OUTPUT_DIR, "cleaned.csv")
+out_json = os.path.join(OUTPUT_DIR, "cleaning_summary.json")
+
+MISSING = {"", "na", "n/a", "null", "none", "-"}
+
+df = pd.read_csv(raw_path, dtype=str, keep_default_na=False, na_filter=False)
+raw_rows = len(df)
+
+# R1 strip and normalize missing
+for col in df.columns:
+    df[col] = df[col].astype(str).str.strip()
+
+def norm_missing(v):
+    return None if v.lower() in MISSING else v
+
+for col in df.columns:
+    df[col] = df[col].map(norm_missing)
+
+summary = {"raw_rows": raw_rows}
+```
+
+Wait: strip before missing check, and missing compare after stripping — done.
+
+But what about missing reading_id? Count and drop. Let me integrate into R2:
+
+```python
+# R2 duplicates
+missing_id = int(df["reading_id"].isna().sum())
+df = df[df["reading_id"].notna()]
+before = len(df)
+df = df.drop_duplicates(subset="reading_id", keep="first")
+dups = before - len(df)
+```
+
+Hmm, the spec says "rows that share the same reading_id are duplicates". Rows with missing reading_id — schema requires not nullable, so dropping is justified. I'll count as dropped_missing_reading_id.
+
+R3 date parsing:
+
+```python
+DATE_FORMATS = ["%Y-%m-%d", "%m/%d/%Y", "%d-%b-%Y", "%Y/%m/%d", "%B %d, %Y"]
+
+def parse_date(v):
+    if v is None:
+        return None
+    for fmt in DATE_FORMATS:
+        try:
+            return datetime.strptime(v, fmt).strftime("%Y-%m-%d")
+        except ValueError:
+            pass
+    return None
+```
+
+Note: strptime with %Y-%m-%d would also parse "2024-1-1"? %m accepts non-zero-padded. That's fine, still one of the formats arguably. Keep.
+
+One caveat: "01-Jan-2024" - %d-%b-%Y works. "March 5, 2024" - %B %d, %Y works; also "January 2, 2024".
+
+R4 meter_id: `df["meter_id"] = df["meter_id"].str.upper()` after dropping missing.
+
+R5 building mapping:
+
+```python
+BT = {
+  "residential": "Residential", "res": "Residential", "resi": "Residential",
+  "commercial": "Commercial", "comm": "Commercial",
+  "industrial": "Industrial", "ind": "Industrial",
+}
+df["building_type"] = df["building_type"].map(lambda v: BT.get(v.lower()) if v else None)
+```
+
+R6 tariff:
+
+```python
+TF = {"peak": "peak", "off-peak": "off-peak", "offpeak": "off-peak", "off peak": "off-peak"}
+```
+
+Maybe collapse whitespace: v.lower() then re.sub(r"\s+", " ", ...). I'll do that.
+
+R7 energy:
+
+```python
+def parse_energy(v):
+    if v is None:
+        return None
+    s = v.replace(",", "").strip()
+    mult = 1.0
+    low = s.lower()
+    if low.endswith("mwh"):
+        mult = 1000.0
+        s = s[:-3].strip()
+    elif low.endswith("kwh"):
+        s = s[:-3].strip()
+    try:
+        x = float(s)
+    except ValueError:
+        return None
+    return x * mult
+```
+
+Then filter 0 <= x <= 100000, round 2.
+
+Note "optional space before the unit" — handled since we strip after removing unit suffix. What about "498.85kwh"? endswith kwh, s[:-3] = "498.85". Good.
+
+R8 temperature:
+
+```python
+TEMP_RE = re.compile(r"^([+-]?(?:\d+(?:\.\d+)?|\.\d+))\s*°?\s*([CcFf])?$")
+
+def parse_temp(v):
+    if v is None:
+        return None
+    m = TEMP_RE.match(v.strip())
+    if not m:
+        return None
+    try:
+        x = float(m.group(1))
+    except ValueError:
+        return None
+    unit = m.group(2)
+    if unit and unit.lower() == "f":
+        x = (x - 32) * 5 / 9
+    if x < -40 or x > 50:
+        return None
+    return round(x, 1)
+```
+
+Wait — "999.0" without unit is Celsius, 999 out of range -> missing. Good. "33.62 °F" -> matches: number 33.62, space, °, F. Yes regex: `\s*°?\s*([CcFf])?` — "33.62 °F": after number, `\s*` matches space, `°?` matches °, `\s*` none, F. Good. "29.48F" good. "1.1C" good. "0.5C". "-1.4". "None" -> already None from missing normalization.
+
+But hold on: what about values like "20°"? degree sign with no unit -> Celsius per "or without a unit, is already Celsius". My regex handles: `°?` then optional unit. Good.
+
+Keep row, set temperature_c to NaN (empty cell).
+
+Round then range check or range check then round? Spec: "Round to 1 decimal. If the temperature is missing, not a number, or outside -40 to 50 °C after conversion, set temperature_c to missing". The range check is "after conversion" (F->C). Rounding to 1 decimal then checking bounds is equivalent effectively (49.96 rounds 50.0, within range either way... 50.04 rounds to 50.0 but raw 50.04 > 50 would be excluded if checked before rounding). Order ambiguous. I'll check range after conversion, then round. So 50.04 -> out -> missing. That matches spec order: "outside -40 to 50 after conversion". Round first per spec text order but the condition says after conversion. I'll do: convert, check range, round. Actually let me do convert -> if out of range None else round. That's cleanest.
+
+R9: select columns, rename energy->energy_kwh, temperature->temperature_c, sort by reading_id, write.
+
+For writing: temperature_c NaN -> empty. energy_kwh float. Use df.to_csv(out_csv, index=False). Default na_rep='' gives empty cell. Good.
+
+Float formatting: round(x,2) values like 406.45 fine. But something like 1976.89 fine. Values like 0.1+... not an issue.
+
+But wait: multiplication results e.g. round(123.44999999999999, 2) = 123.45 exactly? round returns float 123.45 which reprs as 123.45. Good.
+
+Temperature round(x,1): e.g. (33.62-32)*5/9 = 0.9000000000000004 -> round -> 0.9. Good.
+
+Sorting: df.sort_values("reading_id", kind="stable").reset_index(drop=True).
+
+Summary JSON with counts:
+- raw_rows
+- cleaned_rows
+- r2_duplicates_removed
+- r2_missing_reading_id_dropped (or fold in)
+- r3_dropped_reading_date
+- r4_dropped_meter_id
+- r5_dropped_building_type
+- r6_dropped_tariff
+- r7_dropped_energy
+- r8_temperature_set_missing
+- r7_mwh_converted (optional)
+- r8_fahrenheit_converted (optional)
+
+Order of drops: sequential filtering, count each stage.
+
+Let me write the full script:
+
+```python
+import json
+import os
+import re
+from datetime import datetime
+
+import numpy as np
+import pandas as pd
+
+MISSING_TOKENS = {"", "na", "n/a", "null", "none", "-"}
+
+DATE_FORMATS = (
+    "%Y-%m-%d",   # YYYY-MM-DD
+    "%m/%d/%Y",   # MM/DD/YYYY
+    "%d-%b-%Y",   # DD-Mon-YYYY
+    "%Y/%m/%d",   # YYYY/MM/DD
+    "%B %d, %Y",  # Month D, YYYY
+)
+
+BUILDING_TYPE_MAP = {
+    "residential": "Residential",
+    "res": "Residential",
+    "resi": "Residential",
+    "commercial": "Commercial",
+    "comm": "Commercial",
+    "industrial": "Industrial",
+    "ind": "Industrial",
+}
+
+TARIFF_MAP = {
+    "peak": "peak",
+    "off-peak": "off-peak",
+    "offpeak": "off-peak",
+    "off peak": "off-peak",
+}
+
+TEMP_RE = re.compile(r"^([+-]?(?:\d+(?:\.\d+)?|\.\d+))\s*°?\s*([CcFf])?$")
+
+
+def parse_reading_date(value):
+    for fmt in DATE_FORMATS:
+        try:
+            return datetime.strptime(value, fmt).strftime("%Y-%m-%d")
+        except ValueError:
+            continue
+    return None
+
+
+def parse_energy(value):
+    """Return energy in kWh (float) or None if unparseable."""
+    s = value.replace(",", "").strip()
+    factor = 1.0
+    low = s.lower()
+    if low.endswith("mwh"):
+        factor = 1000.0
+        s = s[:-3].strip()
+    elif low.endswith("kwh"):
+        s = s[:-3].strip()
+    if not s:
+        return None
+    try:
+        return float(s) * factor
+    except ValueError:
+        return None
+
+
+def parse_temperature(value):
+    """Return temperature in Celsius or None (row is kept either way)."""
+    m = TEMP_RE.match(value.strip())
+    if not m:
+        return None
+    try:
+        t = float(m.group(1))
+    except ValueError:
+        return None
+    if m.group(2) and m.group(2).lower() == "f":
+        t = (t - 32.0) * 5.0 / 9.0
+    if t < -40.0 or t > 50.0:
+        return None
+    return round(t, 1)
+
+
+def main():
+    input_dir = os.environ["INPUT_DIR"]
+    output_dir = os.environ["OUTPUT_DIR"]
+    raw_path = os.path.join(input_dir, "raw.csv")
+
+    # R1: read everything as text, strip whitespace, normalise missing tokens.
+    df = pd.read_csv(raw_path, dtype=str, keep_default_na=False, na_filter=False)
+    raw_rows = len(df)
+    df = df.apply(lambda col: col.astype(str).str.strip())
+    df = df.apply(lambda col: col.map(lambda v: None if v.lower() in MISSING_TOKENS else v))
+
+    summary = {"raw_rows": int(raw_rows)}
+
+    # R2: drop rows with missing reading_id, then de-duplicate on reading_id (keep first).
+    missing_id = int(df["reading_id"].isna().sum())
+    df = df[df["reading_id"].notna()]
+    before = len(df)
+    df = df.drop_duplicates(subset="reading_id", keep="first")
+    summary["r2_missing_reading_id_dropped"] = missing_id
+    summary["r2_duplicate_reading_id_dropped"] = int(before - len(df))
+
+    # R3: reading_date
+    parsed = df["reading_date"].map(lambda v: parse_reading_date(v) if v is not None else None)
+    bad = parsed.isna()
+    summary["r3_reading_date_dropped"] = int(bad.sum())
+    df = df.loc[~bad].copy()
+    df["reading_date"] = parsed[~bad]
+
+    # R4: meter_id
+    bad = df["meter_id"].isna()
+    summary["r4_meter_id_dropped"] = int(bad.sum())
+    df = df.loc[~bad].copy()
+    df["meter_id"] = df["meter_id"].str.upper()
+
+    # R5: building_type
+    bt = df["building_type"].map(lambda v: BUILDING_TYPE_MAP.get(v.lower()) if v is not None else None)
+    bad = bt.isna()
+    summary["r5_building_type_dropped"] = int(bad.sum())
+    df = df.loc[~bad].copy()
+    df["building_type"] = bt[~bad]
+
+    # R6: tariff
+    tf = df["tariff"].map(
+        lambda v: TARIFF_MAP.get(re.sub(r"\s+", " ", v.lower())) if v is not None else None
+    )
+    bad = tf.isna()
+    summary["r6_tariff_dropped"] = int(bad.sum())
+    df = df.loc[~bad].copy()
+    df["tariff"] = tf[~bad]
+
+    # R7: energy -> energy_kwh
+    en = df["energy"].map(lambda v: parse_energy(v) if v is not None else None)
+    valid = en.notna() & en.map(lambda x: 0.0 <= x <= 100000.0 if x is not None else False)
+    summary["r7_energy_dropped"] = int((~valid).sum())
+    df = df.loc[valid].copy()
+    df["energy_kwh"] = en[valid].map(lambda x: round(float(x), 2))
+
+    # R8: temperature -> temperature_c (invalid -> empty, row kept)
+    temp_raw = df["temperature"]
+    tc = temp_raw.map(lambda v: parse_temperature(v) if v is not None else None)
+    summary["r8_temperature_set_missing"] = int(tc.isna().sum())
+    df["temperature_c"] = tc.astype("float64")  # None -> NaN
+
+    # R9: final column order, sort, write
+    out = df[["reading_id", "reading_date", "meter_id", "building_type",
+              "tariff", "energy_kwh", "temperature_c"]].copy()
+    out = out.sort_values("reading_id", kind="stable").reset_index(drop=True)
+    out_path = os.path.join(output_dir, "cleaned.csv")
+    out.to_csv(out_path, index=False)
+
+    summary["cleaned_rows"] = int(len(out))
+    with open(os.path.join(output_dir, "cleaning_summary.json"), "w") as fh:
+        json.dump(summary, fh, indent=2)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+Wait — one issue with R7 valid check: `en.notna() & en.map(lambda x: 0 <= x <= 100000)` — en is object dtype with floats/None. `en.map(lambda x: 0.0 <= x <= 100000.0 if x is not None else False)` works elementwise. Combined with notna. Fine. Actually the map with None check handles it; `valid = en.map(lambda x: x is not None and 0.0 <= x <= 100000.0)`. Simpler.
+
+Also `en[valid].map(lambda x: round(float(x), 2))` — good. energy_kwh becomes float.
+
+Temperature: `tc.astype("float64")` — object array of floats and None -> astype float64 converts None to nan? Actually None in object array astype float gives nan. Yes, np.array([1.0, None], dtype=float) -> [1., nan]. pandas Series astype float64 handles None -> NaN. Good.
+
+One more check: R2 order — dedupe before other row filters. We do missing-id drop first, then dedupe. Dropping missing reading_id isn't really a "row filter" in the sense of R3-R7; it's part of ensuring reading_id validity. Fine.
+
+Also `df = df.apply(lambda col: ...)` twice; could combine. Fine.
+
+Potential subtlety: `pd.read_csv` with `na_filter=False` and dtype=str — all good, values stay strings, missing become ''. Also quoted fields like "January 2, 2024" handled by csv parser.
+
+Another subtlety: values may contain unicode like non-breaking space? Ignore.
+
+Date parsing strictness: `datetime.strptime("2024-13-45", "%Y-%m-%d")` raises ValueError. Good. "01/01/2024" matches %m/%d/%Y. "2024/01/03" matches %Y/%m/%d. "05-Mar-2024" %d-%b-%Y. Also "March 5, 2024" %B %d, %Y. Also "January 2, 2024" — %d accepts "2". Good.
+
+Edge: "2024-01-01" could also match others? No.
+
+One concern: strptime %Y accepts years with fewer digits, fine.
+
+What about energy values like "1,234.5 kWh"? remove commas -> "1234.5 kWh" -> strip unit -> 1234.5. Good. Negative energy "-5" -> parsed, then <0 dropped. Good. "2.5 MWh" -> 2500 kWh. Good.
+
+What about energy "36.37 kWh" with capital "KWH"? low endswith kwh handles. s[:-3] removes last 3 chars of original s — same length. Good.
+
+"mwh" check before "kwh" — 'mwh' does not end with 'kwh' so order irrelevant but safe.
+
+Temperature: "33.62 °F" — note there might be a non-breaking space in raw? Assume regular space. The regex handles optional whitespace.
+
+Also what about temperature like "1.1C" -> group2 C -> Celsius. "None" normalized to None -> tc None -> missing. "999.0" -> 999 out of range -> None. Good.
+
+Hmm — should temperature missing due to "None" token count in r8_temperature_set_missing? Yes, tc.isna() counts all missing including originally missing. That's fine.
+
+Output: numbers without units/thousands separators — yes default. Missing temp -> empty cell — default na_rep="".
+
+energy_kwh float like 36.37 writes "36.37". 2730.2 writes "2730.2". Acceptable.
+
+Now, also should ensure OUTPUT_DIR exists? It presumably exists. Could os.makedirs(output_dir, exist_ok=True) to be safe. That's writing to OUTPUT_DIR which is allowed. Add it.
+
+The summary JSON requirement: at least raw_rows and cleaned_rows. Good.
+
+Return JSON object with python_code, output_filename "cleaned.csv", cleaning_logic brief.
+
+Let me finalize the script text and ensure it is self-contained and correct.
+
+One more detail: `df.apply(lambda col: col.astype(str).str.strip())` — with na_filter=False there are no NaNs, all str already. Fine.
+
+Combined missing normalization: applymap deprecated; using df.apply per column is fine.
+
+Also note: `df["reading_date"] = parsed[~bad]` — index alignment: after `df = df.loc[~bad].copy()`, indexes match since parsed has same index. Good.
+
+Potential pandas warning about setting values — using .copy() avoids.
+
+For tariff normalization, I collapse internal whitespace. Fine.
+
+Sort ascending by reading_id string.
+
+I think the script is solid. Also handle reading_id maybe should be stripped — already stripped in R1.
+
+Write final answer as single JSON fenced block.

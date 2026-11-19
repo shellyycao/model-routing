@@ -1,0 +1,68 @@
+We need to produce JSON with fields python_code (string containing script), output_filename = "cleaned.csv", cleaning_logic brief explanation.
+
+The script must read raw.csv from INPUT_DIR, treat all columns as text, strip whitespace, treat missing values as per list. Then deduplicate by order_id (keep first). Then apply each rule sequentially, dropping rows as needed. Finally output cleaned.csv with required columns sorted by order_id ascending. Also write cleaning_summary.json with raw_rows, cleaned_rows, and per-rule counts.
+
+We need to implement parsing of dates with multiple formats. Use datetime.strptime with list of formats. For format "DD-Mon-YYYY" month abbreviation: %d-%b-%Y. For "Month D, YYYY": %B %d, %Y (note day may have no leading zero). Also need to handle possible spaces.
+
+Implement region mapping: case-insensitive mapping dict.
+
+Product category mapping: map variants.
+
+unit_price cleaning: remove '$', 'USD', ',' and surrounding spaces. Then parse float.
+
+quantity: parse float, ensure integer, within range.
+
+discount_pct: remove trailing '%', parse float, missing set 0.
+
+customer_id: uppercase, missing set 'UNKNOWN'.
+
+Revenue calculation.
+
+Write CSV with header, no index.
+
+Write summary JSON: include raw_rows (rows read from file), cleaned_rows (rows after all cleaning), duplicate_rows_removed, rows_dropped_due_to_date, region, product_category, unit_price, quantity, discount_pct (maybe counts). Provide counts.
+
+Implementation details: Use pandas read_csv with dtype=str, keep default. But need to treat missing values after stripping. We'll read raw.csv with pandas, dtype=str, keep all columns. Then apply strip to all string entries: df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x). Then define a function to treat missing values: if after strip lower in set {'', 'na', 'n/a', 'null', 'none', '-'} then set to None (np.nan). Use pandas replace.
+
+Deduplication: df = df.drop_duplicates(subset='order_id', keep='first').
+
+Now apply each rule sequentially, tracking counts.
+
+We'll create counters dict.
+
+Processing row by row may be easier to apply all rules and drop rows. Use iteration over rows (df.itertuples) building list of cleaned rows.
+
+But we need to keep order_id as string.
+
+Implement date parsing function returning formatted string or None.
+
+Implement region mapping dict.
+
+Implement product mapping dict.
+
+Implement unit_price cleaning.
+
+Implement quantity validation.
+
+Implement discount_pct cleaning.
+
+Implement revenue.
+
+Collect cleaned rows as dicts.
+
+After loop, create cleaned_df = pd.DataFrame(rows). Then sort by order_id.
+
+Write to CSV.
+
+Write summary JSON.
+
+Edge Cases: missing values after initial missing conversion become np.nan; treat accordingly.
+
+Now produce script.
+
+Make sure to import os, json, pandas, numpy, datetime.
+
+Set output_filename variable.
+
+Now produce final JSON.
+

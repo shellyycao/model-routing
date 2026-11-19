@@ -1,0 +1,8 @@
+{
+  "fixed_code": "def clamp(x, low, high):\n    if low > high:\n        raise ValueError(\"low must not be greater than high\")\n    return min(max(x, low), high)\n",
+  "bug_locations": [
+    "clamp: missing required ValueError guard for low > high (previously fell through to min/max and silently returned high)",
+    "clamp: normalized the over-indented body to standard 4-space indentation"
+  ],
+  "explanation": "The expression min(max(x, low), high) is correct only when low <= high; when low > high it collapses to high and returns it instead of failing, violating the specification. Added an explicit guard `if low > high: raise ValueError(...)` before clamping so invalid bounds are rejected, and kept the inclusive clamping logic unchanged. The function body was also re-indented consistently; no example values were hard-coded."
+}

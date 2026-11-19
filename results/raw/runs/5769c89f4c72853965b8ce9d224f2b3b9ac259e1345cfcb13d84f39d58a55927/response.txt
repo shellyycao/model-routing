@@ -1,0 +1,10 @@
+```json
+{
+  "fixed_code": "from collections import deque\n\ndef shortest_path(graph, start, goal):\n    \"\"\"Return a shortest node list from start to goal in an unweighted\n    directed graph, or None if goal is unreachable.\n\n    Neighbours are explored in listed order (breadth-first search).\n    \"\"\"\n    q = deque([(start, [start])])\n    seen = {start}\n    while q:\n        node, path = q.popleft()\n        if node == goal:\n            return path\n        for nxt in graph.get(node, []):\n            if nxt not in seen:\n                seen.add(nxt)\n                q.append((nxt, path + [nxt]))\n    return None\n",
+  "bug_locations": [
+    "shortest_path: queue initialization `q=deque([(start,[])])`",
+    "shortest_path: visited-set initialization `seen=set()`"
+  ],
+  "explanation": "Two interacting defects in shortest_path. (1) The BFS queue was seeded with an empty path `(start, [])`, so every returned path omitted the start node; e.g. the visible check returned ['b'] instead of ['a','b']. Fixed by seeding `(start, [start])` so paths include the start (and start==goal correctly yields [start]). (2) The start node was never marked visited (`seen=set()`), so any cycle leading back to start would re-enqueue it and explore redundant non-simple paths. Fixed by initializing `seen={start}`. Marking neighbours seen at enqueue time and scanning `graph.get(node, [])` in listed order were already correct and are preserved."
+}
+```

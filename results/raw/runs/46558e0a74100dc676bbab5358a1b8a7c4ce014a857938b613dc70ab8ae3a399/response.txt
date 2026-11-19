@@ -1,0 +1,11 @@
+```json
+{
+  "fixed_code": "from collections import deque\n\ndef shortest_path(graph, start, goal):\n    if start == goal:\n        return [start]\n    q = deque([(start, [start])])\n    seen = set([start])\n    while q:\n        node, path = q.popleft()\n        for nxt in graph.get(node, []):\n            if nxt not in seen:\n                if nxt == goal:\n                    return path + [nxt]\n                q.append((nxt, path + [nxt]))\n                seen.add(nxt)\n    return None",
+  "bug_locations": [
+    "Initialization of the queue `q` and `seen` set",
+    "Goal check logic",
+    "Handling of the start == goal edge case"
+  ],
+  "explanation": "The original code had three main issues. First, the initial path in the queue was empty `[]`, but the specification requires the path to be a list of nodes, starting with the start node. Second, the goal check was performed immediately after popping from the queue, which failed to handle the case where `start == goal` because the start node was not yet added to `seen`, nor was the path initialized correctly. Third, the `seen` set was initialized empty, causing the start node to be potentially re-queued if it appeared in a cycle or as a neighbor of another node. The fix initializes the path with `[start]`, adds `start` to `seen` immediately, and checks for `start == goal` at the beginning to handle that edge case correctly."
+}
+```

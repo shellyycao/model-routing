@@ -1,0 +1,9 @@
+```json
+{
+  "fixed_code": "def paginate(items, size, cursor=None):\n    if not isinstance(size, int) or isinstance(size, bool) or size <= 0:\n        raise ValueError('size must be a positive integer')\n    if cursor is None:\n        start = 0\n    else:\n        if not isinstance(cursor, str):\n            raise ValueError('cursor must be a zero-based start index string')\n        try:\n            start = int(cursor, 10)\n        except ValueError:\n            raise ValueError('cursor must be a zero-based start index string') from None\n        if start < 0:\n            raise ValueError('cursor out of range')\n    try:\n        item_count = len(items)\n    except TypeError:\n        items = list(items)\n        item_count = len(items)\n    if start > item_count:\n        raise ValueError('cursor out of range')\n    end = start + size\n    page = list(items[start:end])\n    next_cursor = None if end >= item_count else str(end)\n    return page, next_cursor\n",
+  "bug_locations": [
+    "paginate"
+  ],
+  "explanation": "The original code never rejected nonpositive sizes, accepted negative or out-of-range cursors, leaked parsing errors for bad cursor values, and always returned str(end) even after the end. The fix validates a positive integer size, parses only string cursors into a nonnegative start within [0, len(items)], materializes unsized iterables so the end can be detected, and returns None for next_cursor when end >= len(items)."
+}
+```

@@ -1,0 +1,100 @@
+Let me carefully construct this report.
+
+Verified findings:
+- total_revenue: 445325.08999999997 (~$445,325.09)
+- order_count: 520
+- average_order_value: 856.3944 (~$856.39)
+- revenue_north: 124845.75
+- revenue_south: 90534.49
+- revenue_east: 130516.69
+- revenue_west: 99428.16
+- revenue_2024_q1: 36108.31
+- revenue_2024_q2: 56616.79
+- revenue_2024_q3: 71674.99
+- revenue_2024_q4: 68948.71
+- revenue_2023: 211976.29 (approx)
+- revenue_2024: 233348.80
+- revenue_yoy_change_pct: 10.0825 (~10.08%)
+- electronics_high_discount_orders: 22
+- electronics_high_discount_revenue: 50035.33
+- order_revenue_mean: 856.3944
+- order_revenue_median: 313.275
+- order_revenue_std: 1295.7424
+- order_revenue_min: 5.27
+- order_revenue_max: 7844.02
+- unique_customer_count: 222
+- top_customer_revenue: 27793.13
+- top_customer_revenue_share_pct: 6.2411 (~6.24%)
+
+Rankings:
+q2: East (130516.69) > North (124845.75) > West (99428.16) > South (90534.49). Labels exactly: "East", "North", "West", "South".
+
+q3: Q3 (71674.99) > Q4 (68948.71) > Q2 (56616.79) > Q1 (36108.31). Labels: "Q3", "Q4", "Q2", "Q1".
+
+q4 direction: increase (10.08% growth).
+
+Derived values — any number I compute in text must be declared. Let me decide what derived numbers I want to use:
+
+- q2: East vs South gap: difference = 130516.69 - 90534.49 = 39982.20. Or East share of total: 130516.69/445325.09*100 ≈ 29.31%. I could include a couple. Keep it manageable.
+
+- q3: Q3 vs Q1 difference: 71674.99 - 36108.31 = 35566.68. Or pct_change from Q1 to Q4: (68948.71-36108.31)/36108.31*100 ≈ 90.95%. Maybe declare one.
+
+- q5: share of total revenue: 50035.33/445325.09*100 ≈ 11.24%. Let me compute: 50035.33/445325.09 = 0.112357... ≈ 11.24%.
+
+- q6: mean/median ratio: 856.3944/313.275 ≈ 2.7337 ≈ 2.73. Could state "mean is about 2.7× the median."
+
+- q7: top customer share already given (6.24%), not derived. Average revenue per customer: 445325.09/222 ≈ 2006.0. Could derive: 445325.08999999997/222 = 2005.97... Let me compute: 445325.09/222 = 2006.0? 222*2006 = 445,332. So ≈ 2005.97. Maybe skip to keep word count down.
+
+- q4: revenue difference: 233348.80 - 211976.29 = 21372.51. Could declare as difference.
+
+Word limit: under 600 words for title, summary, statements, limitations, conclusion. Keep concise.
+
+Let me draft.
+
+Title: "Retail Sales Performance Report 2023–2024"
+
+Executive summary: ~80 words. Total revenue $445,325.09 across 520 orders, avg order value $856.39. Revenue grew 10.08% YoY from $211,976.29 (2023) to $233,348.80 (2024). East led regions; revenue climbed through 2024 peaking in Q3. High-discount electronics contributed $50,035.33 across 22 orders. Revenue distribution is heavily right-skewed (mean $856.39 vs median $313.28). Customer base is diversified: 222 unique customers, top customer 6.24% of revenue.
+
+Key findings statements:
+
+q1: "Total revenue across 2023–2024 was $445,325.09 from 520 orders, an average order value of $856.39." Evidence: total_revenue, order_count, average_order_value. reported_values: copy exact values. Note: values as stated — should I copy exact verified values in reported_values, yes: "include EVERY metric_key of that question with its verified value (copy it)". So copy exact floats. order_count 520.0.
+
+q2: "The East region generated the most revenue ($130,516.69), followed by North ($124,845.75), West ($99,428.16), and South ($90,534.49); East exceeded South by $39,982.20." Derived: difference, operands [revenue_east, revenue_south], value 39982.2. Ranking: ["East","North","West","South"].
+
+q3: "2024 revenue rose each quarter from $36,108.31 in Q1 to a peak of $71,674.99 in Q3 before easing to $68,948.71 in Q4; Q3 exceeded Q1 by $35,566.68." Derived: difference [revenue_2024_q3, revenue_2024_q1] = 35566.68. Ranking: ["Q3","Q4","Q2","Q1"]. Direction not required for q3 (direction_required false), so direction null or not_applicable. I'll set null.
+
+q4: "Revenue grew 10.08% year over year, from $211,976.29 in 2023 to $233,348.80 in 2024 — an increase of $21,372.51." Direction: increase. Derived: difference [revenue_2024, revenue_2023] = 21372.51. Note revenue_yoy_change_pct itself is a verified value, not derived by me. The difference is derived.
+
+q5: "22 Electronics orders with discounts of 20% or more generated $50,035.33, about 11.24% of total revenue." Derived: share [electronics_high_discount_revenue, total_revenue] = 11.24. Let me compute precisely: 50035.33/445325.09*100. 445325.09 * 0.1124 = 50054.5. Slightly high. 0.11235*445325.09 = 50032.3. 0.112357... let me do: 50035.33/445325.09 = ?
+
+445325.09 × 0.1123 = 50010.0. Remainder 25.33. 25.33/445325.09 ≈ 0.0000569. So ≈ 0.1123569 → 11.24%. Good.
+
+q6: "Order revenue is highly right-skewed: mean $856.39 is about 2.73× the median of $313.28, with a standard deviation of $1,295.74 and values ranging from $5.27 to $7,844.02." Derived: ratio [order_revenue_mean, order_revenue_median] = 2.73. Compute: 856.3944/313.275 = 2.7337 → 2.73.
+
+q7: "The customer base is diversified: 222 unique customers, and the highest-revenue customer spent $27,793.13 — just 6.24% of total revenue." No derived needed (share given as verified 6.241087830914715; I state 6.24% which is rounding of verified value — that's fine, rounding is fine per rules). reported_values include top_customer_revenue_share_pct exact.
+
+Limitations:
+- Only two years; no seasonality beyond one year of quarters, no margin/profit data (revenue only, discounts not accounted for in revenue? unclear whether revenue is net of discount).
+- The revenue field's relationship to discounts is not specified, so the q5 high-discount figures may not reflect net sales.
+- No product-level or returns data; outliers (max $7,844.02) heavily influence mean.
+- Single top-customer share doesn't capture broader concentration (e.g., top-10 share not computed).
+
+Conclusion: brief.
+
+Word count check: keep under 600.
+
+reported_values for each finding must include every metric key with verified values (exact copy). Let me be precise:
+
+q1: total_revenue 445325.08999999997, order_count 520.0, average_order_value 856.3944038461538
+q2: revenue_north 124845.75, revenue_south 90534.49, revenue_east 130516.69, revenue_west 99428.16
+q3: revenue_2024_q1 36108.31, revenue_2024_q2 56616.79, revenue_2024_q3 71674.99, revenue_2024_q4 68948.71
+q4: revenue_2023 211976.28999999998, revenue_2024 233348.80000000002, revenue_yoy_change_pct 10.082500264534321
+q5: electronics_high_discount_orders 22.0, electronics_high_discount_revenue 50035.33
+q6: order_revenue_mean 856.3944038461538, order_revenue_median 313.275, order_revenue_std 1295.7423896952698, order_revenue_min 5.27, order_revenue_max 7844.02
+q7: unique_customer_count 222.0, top_customer_revenue 27793.13, top_customer_revenue_share_pct 6.241087830914715
+
+Direction fields: q4 = "increase". Others: not required; set to "not_applicable" or null. I'll use null for non-change findings except maybe set q3 null. Schema allows null.
+
+Derived values count: q2 difference 39982.20 (130516.69 - 90534.49 = 39982.20 exactly? 130516.69 - 90534.49 = 39982.20. Yes). q3 difference: 71674.99 - 36108.31 = 35566.68. q4 difference: 233348.80 - 211976.29 = 21372.51 (233348.80000000002 - 211976.28999999998 = 21372.51000000004 ≈ 21372.51). q5 share 11.24. q6 ratio 2.73.
+
+Word count: aim ~450-550 words. Let me write it.

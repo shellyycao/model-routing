@@ -1,0 +1,9 @@
+{
+  "fixed_code": "def allocate_stock(stock, requests):\n    remaining = dict(stock)\n    seen = set()\n    fulfilled = []\n    for rid, sku, qty in requests:\n        if rid in seen:\n            continue\n        seen.add(rid)\n        if qty > 0 and remaining.get(sku, 0) >= qty:\n            remaining[sku] -= qty\n            fulfilled.append(rid)\n    return fulfilled, remaining\n",
+  "bug_locations": [
+    "allocate_stock: fulfilment condition used strict '>' instead of '>=' (rejects requests where stock exactly equals qty)",
+    "allocate_stock: missing positive-qty guard (qty <= 0 could be fulfilled, and negative qty would increase stock)",
+    "allocate_stock: 'seen.add(rid)' only ran on fulfilment, so duplicates of unfulfilled/invalid request_ids were retried instead of ignored"
+  ],
+  "explanation": "Three interacting defects. (1) Sufficient stock means stock >= qty, but the code required stock > qty, so an exactly-matching request (the visible check) was rejected; changed to '>='. (2) The spec requires positive qty; the code had no such check, so qty == 0 could be fulfilled when stock was present and negative qty would be 'fulfilled' while increasing remaining stock; added 'qty > 0'. (3) Duplicates must be ignored, but a request_id was only recorded in 'seen' after a successful fulfilment, letting a later duplicate of a failed request be processed; 'seen.add(rid)' now runs on first encounter (after the duplicate check) so any repeat id is skipped regardless of outcome. The input 'stock' is still not mutated because only the shallow copy 'remaining' is modified, and requests are fulfilled wholly (full qty deducted only when sufficient)."
+}

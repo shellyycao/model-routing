@@ -1,0 +1,11 @@
+```json
+{
+  "fixed_code": "def summarize_logs(lines):\n    counts = {}\n    errors = []\n    for line in lines:\n        parts = line.split('|')\n        if len(parts) < 4:\n            continue\n        ts, level, service = parts[:3]\n        lvl = level.upper()\n        service_counts = counts.setdefault(service, {})\n        service_counts[lvl] = service_counts.get(lvl, 0) + 1\n        if lvl == 'ERROR':\n            errors.append(ts)\n    return {'counts': counts, 'first_error': min(errors) if errors else None}\n",
+  "bug_locations": [
+    "summarize_logs: count-accumulation statement (counts.setdefault(service,{})[level.upper()] = ... .get(level, 0) + 1) — the write key was normalized but the read key was not; normalize once into lvl and use it for both get and set.",
+    "summarize_logs: ERROR tracking and return value (first_error computed with max(errors)) — changed to min(errors) to return the lexicographically earliest timestamp.",
+    "summarize_logs: function body re-indented consistently and parsing kept as split('|') with a len(parts) < 4 malformed-line skip (ts/level/service taken from parts[:3])."
+  ],
+  "explanation": "Two interacting defects. (1) The counter wrote to counts[service][level.upper()] but read the previous value via .get(level, 0) using the un-normalized level, so any non-uppercase level always read 0 and the count reset to 1 instead of accumulating; fix by normalizing the level once and using that single normalized key for both read and write. (2) first_error used max(errors), which yields the lexicographically latest timestamp, but the specification requires the earliest; fix by using min(errors), still returning None (JSON null) when there are no ERROR lines. Malformed-line handling (fewer than 4 '|'-separated fields) already matched the spec and is retained, with consistent indentation and no hard-coded cases."
+}
+```

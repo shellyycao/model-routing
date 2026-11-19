@@ -1,0 +1,70 @@
+Let me construct the report. I need:
+
+- title
+- executive_summary
+- key_findings: 7 entries (q1–q7), each with statement (including at least one verified number), evidence_refs, reported_values (ALL metric keys for that question), direction (q4 needs direction), ranking (q2, q3, q7 need rankings), derived_values for computed numbers.
+- limitations
+- conclusion
+
+Under 600 words total for title, summary, statements, limitations, conclusion.
+
+Derived values I might use:
+- q2: shares per building type (e.g., Industrial share = 995362.16/1207699.96*100 ≈ 82.4%; Commercial ≈ 16.26%; Residential ≈ 1.32%). Compute: 995362.16/1207699.96 = 0.82418... let me compute: 995362.16 / 1207699.96 ≈ 0.82418. So ~82.4%. Commercial: 196367.15/1207699.96 ≈ 0.16260 → 16.3%. Residential: 15970.65/1207699.96 ≈ 0.013224 → 1.3%. Sum: 82.42+16.26+1.32 = 100. Good.
+- q3: quarterly trend — maybe just list values; Q4 peak. Could compute difference Q4 vs Q3? Keep simple, maybe no derived values needed if I just state values.
+- q4: difference kwh_h2 - kwh_h1 = 617744.93 - 589955.03 = 27789.9 kWh. Direction: increase. The pct change is given: 4.71%.
+- q5: maybe ratio hot_commercial_mean vs mean overall? Could avoid derived.
+- q7: peak share 49.65% is a verified metric (peak_kwh_share_pct), so no derived needed. Off-peak share could be derived: 100-49.65=50.35% but that's share of kwh_off_peak/total_kwh*100 = 608075.89/1207699.96*100 ≈ 50.35%. If I mention it, declare derived.
+
+Let me compute exact shares:
+- Industrial: 995362.16/1207699.96 = ?
+1207699.96 × 0.82 = 990312.97; remainder 5049.19; 5049.19/1207699.96 ≈ 0.004181. So 0.824181 → 82.4%.
+- Commercial: 196367.15/1207699.96 ≈ 0.16260 → 16.3%. Check: 1207699.96 × 0.1626 = 196371.77 ≈ close. So 0.1626.
+- Residential: 15970.65/1207699.96 ≈ 0.013224 → 1.3%.
+
+q4 difference: 617744.93 − 589955.03 = 27789.90.
+
+Now write findings.
+
+q1: total 1,207,699.96 kWh over 1,428 readings, mean 845.73 kWh per reading.
+q2: Industrial dominates: 995,362.16 (82.4%), Commercial 196,367.15 (16.3%), Residential 15,970.65 (1.3%). Ranking: Industrial, Commercial, Residential.
+q3: Q4 highest 352,881.81; Q1 319,677.67; Q2 270,277.36; Q3 264,863.12. Ranking high to low: Q4, Q1, Q2, Q3.
+q4: H2 617,744.93 vs H1 589,955.03, +27,789.90 kWh, +4.71%. Direction increase.
+q5: 19 hot commercial readings, mean 415.29 kWh.
+q6: median 406.8, std 913.44, mean temp 11.61°C, 62 missing temps, commercial correlation -0.64.
+q7: peak 599,624.07, off-peak 608,075.89, peak share 49.65%, 12 meters, highest meter 252,241.26. Ranking: off-peak, peak.
+
+Labels for rankings must use exact label values: q2 labels "Commercial", "Industrial", "Residential". q3: "Q1","Q2","Q3","Q4". q7: "off-peak", "peak".
+
+Word count: keep concise. Let me draft statements.
+
+Reported values: copy values as verified.
+
+Draft statements:
+
+q1: "The cleaned dataset contains 1,428 readings totalling 1,207,699.96 kWh in 2024, an average of 845.73 kWh per reading."
+
+q2: "Industrial buildings dominate consumption at 995,362.16 kWh (82.4% of total), ahead of Commercial at 196,367.15 kWh (16.3%) and Residential at 15,970.65 kWh (1.3%)." Derived: three shares.
+
+q3: "Consumption was highest in Q4 (352,881.81 kWh) and Q1 (319,677.67 kWh), and lowest in Q3 (264,863.12 kWh) and Q2 (270,277.36 kWh), a winter-peaking seasonal pattern."
+
+q4: "Second-half consumption (617,744.93 kWh) exceeded the first half (589,955.03 kWh) by 27,789.90 kWh, an increase of 4.71%." Derived difference.
+
+q5: "On 19 hot days (≥25 °C), Commercial readings averaged 415.29 kWh."
+
+q6: "Per-reading consumption is highly skewed: median 406.8 kWh vs standard deviation 913.44 kWh. Mean temperature was 11.61 °C with 62 readings missing temperature. For Commercial sites, temperature and consumption correlate at −0.64."
+
+q7: "Off-peak tariff energy (608,075.89 kWh) slightly exceeds peak (599,624.07 kWh); peak share is 49.65%. 12 unique meters; highest-use meter consumed 252,241.26 kWh."
+
+Executive summary: ~60-80 words.
+
+Limitations: 62 missing temperatures; hot-day sample small (19 readings); negative commercial correlation counterintuitive, possibly confounded; median far below mean indicates skew from industrial; no meter-level attribution detail; correlation doesn't imply causation.
+
+Conclusion: brief.
+
+Word count check: aim ~350-450 words.
+
+Format numbers with commas — that's fine.
+
+Direction field: only q4 needs "increase"; others can be null or "not_applicable". I'll set null for others (default null). Schema allows null. For q4 set "increase".
+
+Now JSON.

@@ -1,0 +1,1 @@
+from collections import defaultdict, deque\n\ndef allowed(events, limit, window):\n    q = defaultdict(deque)\n    out = []\n    for user, t in events:\n        while q[user] and q[user][0] < t - window:\n            q[user].popleft()\n        ok = len(q[user]) < limit\n        if ok:\n            q[user].append(t)\n        out.append(ok)\n    return out

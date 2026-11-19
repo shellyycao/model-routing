@@ -1,0 +1,7 @@
+{
+  "fixed_code": "def rolling_mean(xs, window, min_periods=1):\n    if not (1 <= min_periods <= window):\n        raise ValueError(\"min_periods must satisfy 1 <= min_periods <= window\")\n    result = []\n    for i in range(len(xs)):\n        start = max(0, i - window + 1)\n        window_vals = xs[start:i+1]\n        if len(window_vals) >= min_periods:\n            result.append(sum(window_vals) / len(window_vals))\n        else:\n            result.append(None)\n    return result\n",
+  "bug_locations": [
+    "rolling_mean function body"
+  ],
+  "explanation": "Three bugs were present: (1) The slice used `i-window` to `i` (exclusive of current element), but a trailing window should include the current element, so it should be `i-window+1` to `i+1`. (2) Division was always by `window` instead of the actual number of elements in the window slice, causing wrong results when fewer than `window` elements are available. (3) There was no check for `min_periods`: positions with fewer than `min_periods` values should return null (None) instead of a mean. (4) No validation of `1 <= min_periods <= window` was performed."
+}

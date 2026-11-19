@@ -1,0 +1,125 @@
+We need to produce JSON with fields python_code (script), output_filename "cleaned.csv", cleaning_logic description.
+
+The script must read raw.csv from INPUT_DIR, apply cleaning steps exactly as described, write cleaned.csv and cleaning_summary.json to OUTPUT_DIR.
+
+We need to implement all rules.
+
+Key points:
+
+- R1: read every column as text, strip whitespace, treat certain values as missing (case-insensitive after stripping): empty string, 'NA', 'N/A', 'null', 'None', '-'.
+
+Implementation: read csv with dtype=str, keep all columns as strings. Then apply strip and replace missing values with np.nan.
+
+- R2: Remove duplicate records before any other row filter: duplicates based on customer_id, keep first occurrence in raw order. So after reading and cleaning missing values? The rule says before applying any other row filter, but after R1? Probably after R1 cleaning (strip, missing). So we should deduplicate after R1.
+
+- R3: parse signup_date with multiple formats. Drop rows where missing or cannot parse. Write as YYYY-MM-DD.
+
+We'll use dateutil parser? Not allowed (not in std lib). Use pandas to_datetime with format list? Could try to parse with multiple formats manually.
+
+Define list of formats:
+
+'%Y-%m-%d'
+'%m/%d/%Y'
+'%d-%b-%Y' (e.g., 05-Mar-2024) month abbreviation case-insensitive.
+'%Y/%m/%d'
+'%B %d, %Y' (full month name)
+
+We can attempt to parse each row using a loop trying each format with datetime.strptime. If fails all, drop.
+
+- R4: plan mapping case-insensitively. Map variants.
+
+Define mapping dict: lowercased stripped value to canonical.
+
+Variants: 'basic', 'basic plan' -> 'Basic'; 'standard', 'std', 'standard plan' -> 'Standard'; 'premium', 'prem', 'premium plan' -> 'Premium'.
+
+Drop rows where missing or not mapped.
+
+- R5: contract_type mapping.
+
+Variants: 'monthly', 'month-to-month', 'm2m' -> 'Monthly'; 'annual', 'yearly', '1 year' -> 'Annual'.
+
+- R6: monthly_fee: remove substrings '$', 'USD', ',' and surrounding spaces. So we can replace with '' using regex. Then strip. Parse as float. Drop if missing, not number, <=0, >500.
+
+- R7: tenure_months: remove trailing word 'months' or 'month' case-insensitive and spaces. So we can use regex to remove r'\s*(months?|Months?)$' after stripping. Then parse as number, must be whole number (int), between 0 and 120 inclusive. Store as int.
+
+- R8: support_tickets: missing -> 0. Else parse as number, must be whole number, 0-100 inclusive. Store int.
+
+- R9: satisfaction_score: parse as number; if missing, not number, not whole, <1 or >5, set to missing (empty) and keep row. Else store int.
+
+- R10: churned mapping: case-insensitive mapping to 1 or 0. Drop rows missing or not mapped.
+
+- R11: lifetime_value = monthly_fee * tenure_months, rounded to 2 decimals.
+
+- R12: output columns order, sort by customer_id ascending.
+
+Also produce cleaning_summary.json with raw_rows, cleaned_rows, and per-rule counts we track.
+
+We need to track counts: maybe duplicates_removed, rows_dropped_signup_date, plan_invalid, contract_invalid, monthly_fee_invalid, tenure_invalid, support_invalid, churn_invalid, etc.
+
+Implementation steps:
+
+1. import os, pandas as pd, numpy as np, json, datetime.
+
+2. input_path = os.path.join(os.environ['INPUT_DIR'], 'raw.csv')
+   df_raw = pd.read_csv(input_path, dtype=str, keep_default_na=False) # keep as strings.
+
+3. raw_rows = len(df_raw)
+
+4. R1: strip whitespace for all columns: df = df_raw.applymap(lambda x: x.strip() if isinstance(x, str) else x)
+
+Define missing set = {'', 'na', 'n/a', 'null', 'none', '-'} after lower.
+
+Replace with np.nan: df = df.replace(to_replace=missing_set, value=np.nan, regex=False)
+
+5. R2: deduplicate based on customer_id: before other filters. Use df.drop_duplicates(subset='customer_id', keep='first', inplace=False). Count duplicates_removed = raw_rows - len(df_dedup).
+
+6. Then apply each rule sequentially, each time dropping rows that fail.
+
+We'll keep a dict counts.
+
+Implementation details for each rule:
+
+- signup_date: define function parse_date(s). Try each format using datetime.strptime. Return formatted string or None.
+
+Apply to column, create new column parsed_date; rows where parsed_date is None -> drop.
+
+- plan: map using dict; lower stripped value.
+
+- contract_type: similar.
+
+- monthly_fee: clean string: replace '$', 'USD', ',' with '' (maybe using regex). Then strip. If after cleaning empty -> missing.
+
+Parse float.
+
+- tenure_months: clean: lower, remove 'months'/'month' suffix. Use regex r'(?i)\s*months?$' replace with ''.
+
+Parse float, check integer.
+
+- support_tickets: if missing (np.nan) -> 0. else parse float, check integer.
+
+- satisfaction_score: if missing -> keep as np.nan. else parse float, check integer 1-5 else set np.nan.
+
+- churned: map.
+
+After all, compute lifetime_value.
+
+Select columns, sort.
+
+Write cleaned.csv: df.to_csv(output_path, index=False, float_format='%.2f')? But need monthly_fee and lifetime_value with 2 decimals? Not required for monthly_fee but we can keep default representation (no extra formatting). Use float_format='%.2f' will format all floats, which includes monthly_fee and lifetime_value. That's okay.
+
+But satisfaction_score missing should be empty cell; pandas will write NaN as empty.
+
+Now cleaning_summary.json: include raw_rows, cleaned_rows, and counts.
+
+We'll compute cleaned_rows = len(df_final).
+
+Now produce script as a string.
+
+Edge Cases: Ensure we treat missing values after R1 for each column.
+
+Implementation details for parsing numbers: use try/except.
+
+Now produce final JSON.
+
+Let's craft script.
+

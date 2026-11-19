@@ -1,0 +1,868 @@
+{
+  "completed_rows": 18,
+  "joined_rows": [
+    {
+      "anonymous_sample_id": "HR-001",
+      "automatic": {
+        "a2_recovered_content_correct": null,
+        "a3_grounding_v1_1": null,
+        "failure_type": null,
+        "parse_ok": true,
+        "scores": {
+          "functional_correct": true,
+          "hidden_pass_rate": 1.0,
+          "hidden_passed": 8,
+          "hidden_total": 8,
+          "load_error": null,
+          "names_buggy_function": true,
+          "visible_tests_pass": true
+        },
+        "status": "passed"
+      },
+      "case_id": "a1_03_median",
+      "human": {
+        "error_classification": "none",
+        "human_citation_accuracy_0_to_3": "NA",
+        "human_content_correct": "yes",
+        "human_grounding_quality_0_to_3": "NA",
+        "human_operationally_usable": "yes",
+        "human_overall_judgment": "correct",
+        "human_ranking_quality_0_to_3": "NA",
+        "human_schema_compliant": "yes",
+        "reviewer_notes": "Median uses sorted copy, correct middle index for odd/even lengths, and raises ValueError for empty input; complete valid JSON response."
+      },
+      "model_alias": "C",
+      "model_name": "OpenAI gpt-oss-120b",
+      "run_id": "indepA1_debug_v1-1763adb3fa6739e2",
+      "task": "a1"
+    },
+    {
+      "anonymous_sample_id": "HR-002",
+      "automatic": {
+        "a2_recovered_content_correct": null,
+        "a3_grounding_v1_1": 0.8888888888888888,
+        "failure_type": null,
+        "parse_ok": true,
+        "scores": {
+          "citation_consistent": true,
+          "cites_outside_ranked": [],
+          "enough_claims": true,
+          "grounding_accuracy": 0.8888888888888888,
+          "n_claims": 9,
+          "ndcg_at_5": 1.0,
+          "precision_at_5": 0.8,
+          "precision_at_5_graded1plus": 1.0,
+          "recall_grade2_at_5": 1.0
+        },
+        "status": "passed"
+      },
+      "case_id": "a3_08",
+      "human": {
+        "error_classification": "ranking_error",
+        "human_citation_accuracy_0_to_3": "2",
+        "human_content_correct": "partial",
+        "human_grounding_quality_0_to_3": "2",
+        "human_operationally_usable": "yes",
+        "human_overall_judgment": "mostly_correct",
+        "human_ranking_quality_0_to_3": "2",
+        "human_schema_compliant": "yes",
+        "reviewer_notes": "Top four are direct transformer+crop-yield matches (grade 2); D0148 uses privacy-preserving/federated method (grade 1), not transformers. Its summary identifies that method, but treats it as a transformer study. The structured dataset=satellite imagery claim confuses an input modality with a named benchmark dataset (abstracts separately name HateCheck, ChurnBench, IEEE-CIS and AgriSat). Numeric claims/citations otherwise agree with supplied abstracts."
+      },
+      "model_alias": "B",
+      "model_name": "Amazon Nova Pro",
+      "run_id": "indepA3_lit_v1-3be9c7c81d142ac3",
+      "task": "a3"
+    },
+    {
+      "anonymous_sample_id": "HR-003",
+      "automatic": {
+        "a2_recovered_content_correct": null,
+        "a3_grounding_v1_1": null,
+        "failure_type": null,
+        "parse_ok": true,
+        "scores": {
+          "all_fields_correct": true,
+          "f1": 1.0,
+          "fn": 0,
+          "fp": 0,
+          "hallucinated_fields": 0,
+          "null_accuracy": 1.0,
+          "per_field": {
+            "duration_minutes": "correct",
+            "incident_id": "correct",
+            "root_cause": "correct_null",
+            "severity": "correct",
+            "start_time": "correct",
+            "system": "correct",
+            "users_affected": "correct"
+          },
+          "precision": 1.0,
+          "recall": 1.0,
+          "schema_valid": true,
+          "tp": 6
+        },
+        "status": "passed"
+      },
+      "case_id": "a2_02_incident_report",
+      "human": {
+        "error_classification": "none",
+        "human_citation_accuracy_0_to_3": "NA",
+        "human_content_correct": "yes",
+        "human_grounding_quality_0_to_3": "NA",
+        "human_operationally_usable": "yes",
+        "human_overall_judgment": "correct",
+        "human_ranking_quality_0_to_3": "NA",
+        "human_schema_compliant": "yes",
+        "reviewer_notes": "All seven fields exactly match reference, including revised SEV1, 40-minute duration, null root cause and required fields wrapper."
+      },
+      "model_alias": "C",
+      "model_name": "OpenAI gpt-oss-120b",
+      "run_id": "indepA2_extract_v1-9c007fd905f12c24",
+      "task": "a2"
+    },
+    {
+      "anonymous_sample_id": "HR-004",
+      "automatic": {
+        "a2_recovered_content_correct": null,
+        "a3_grounding_v1_1": 1.0,
+        "failure_type": null,
+        "parse_ok": true,
+        "scores": {
+          "citation_consistent": true,
+          "cites_outside_ranked": [],
+          "enough_claims": true,
+          "grounding_accuracy": 0.8,
+          "n_claims": 30,
+          "ndcg_at_5": 0.9520727775370877,
+          "precision_at_5": 0.8,
+          "precision_at_5_graded1plus": 0.8,
+          "recall_grade2_at_5": 1.0
+        },
+        "status": "passed"
+      },
+      "case_id": "a3_09",
+      "human": {
+        "error_classification": "ranking_error",
+        "human_citation_accuracy_0_to_3": "3",
+        "human_content_correct": "partial",
+        "human_grounding_quality_0_to_3": "2",
+        "human_operationally_usable": "yes",
+        "human_overall_judgment": "mostly_correct",
+        "human_ranking_quality_0_to_3": "1",
+        "human_schema_compliant": "yes",
+        "reviewer_notes": "Four direct federated-learning+hate-speech studies (D0161/0163/0162/0164) are selected, but fifth D0170 has grade 0: it studies customer churn and mentions hate speech only as prior work; grade-1 alternatives were available. Summary acknowledges this distinction yet initially describes five matching studies. Remaining stated evidence and citations are supported by the given abstracts."
+      },
+      "model_alias": "A",
+      "model_name": "Claude Sonnet 4.6",
+      "run_id": "indepA3_lit_v1-d9ba181d09fa40f8",
+      "task": "a3"
+    },
+    {
+      "anonymous_sample_id": "HR-005",
+      "automatic": {
+        "a2_recovered_content_correct": null,
+        "a3_grounding_v1_1": null,
+        "failure_type": null,
+        "parse_ok": true,
+        "scores": {
+          "all_fields_correct": false,
+          "f1": 0.8333333333333334,
+          "fn": 1,
+          "fp": 1,
+          "hallucinated_fields": 0,
+          "null_accuracy": 1.0,
+          "per_field": {
+            "delivery_city": "correct",
+            "item_count": "correct",
+            "order_date": "correct",
+            "payment_terms_days": "correct_null",
+            "po_number": "correct",
+            "total_usd": "wrong_value",
+            "vendor_name": "correct"
+          },
+          "precision": 0.8333333333333334,
+          "recall": 0.8333333333333334,
+          "schema_valid": true,
+          "tp": 5
+        },
+        "status": "passed"
+      },
+      "case_id": "a2_04_purchase_order",
+      "human": {
+        "error_classification": "unit_or_discount_conversion",
+        "human_citation_accuracy_0_to_3": "NA",
+        "human_content_correct": "partial",
+        "human_grounding_quality_0_to_3": "NA",
+        "human_operationally_usable": "yes",
+        "human_overall_judgment": "mostly_correct",
+        "human_ranking_quality_0_to_3": "NA",
+        "human_schema_compliant": "yes",
+        "reviewer_notes": "Six of seven fields match. total_usd=44001.78 is incorrect; reference and order arithmetic support 1602.06. JSON structure and required fields wrapper are valid despite value error."
+      },
+      "model_alias": "B",
+      "model_name": "Amazon Nova Pro",
+      "run_id": "indepA2_extract_v1-ee8339490e2a3ff3",
+      "task": "a2"
+    },
+    {
+      "anonymous_sample_id": "HR-006",
+      "automatic": {
+        "a2_recovered_content_correct": null,
+        "a3_grounding_v1_1": null,
+        "failure_type": null,
+        "parse_ok": true,
+        "scores": {
+          "functional_correct": true,
+          "hidden_pass_rate": 1.0,
+          "hidden_passed": 8,
+          "hidden_total": 8,
+          "load_error": null,
+          "names_buggy_function": true,
+          "visible_tests_pass": true
+        },
+        "status": "passed"
+      },
+      "case_id": "a1_10_merge_intervals",
+      "human": {
+        "error_classification": "none",
+        "human_citation_accuracy_0_to_3": "NA",
+        "human_content_correct": "yes",
+        "human_grounding_quality_0_to_3": "NA",
+        "human_operationally_usable": "yes",
+        "human_overall_judgment": "correct",
+        "human_ranking_quality_0_to_3": "NA",
+        "human_schema_compliant": "yes",
+        "reviewer_notes": "Sorts a fresh list of interval copies before merging, combines touching intervals using <= and preserves the input. Handles unordered, overlapping and empty inputs."
+      },
+      "model_alias": "A",
+      "model_name": "Claude Sonnet 4.6",
+      "run_id": "indepA1_debug_v1-17fbe32484f1e1be",
+      "task": "a1"
+    },
+    {
+      "anonymous_sample_id": "HR-007",
+      "automatic": {
+        "a2_recovered_content_correct": null,
+        "a3_grounding_v1_1": null,
+        "failure_type": null,
+        "parse_ok": true,
+        "scores": {
+          "all_fields_correct": false,
+          "f1": 0.8333333333333334,
+          "fn": 1,
+          "fp": 1,
+          "hallucinated_fields": 0,
+          "null_accuracy": 1.0,
+          "per_field": {
+            "available_from": "correct",
+            "bedrooms": "correct",
+            "city": "correct",
+            "deposit_usd": "correct",
+            "listing_id": "correct",
+            "monthly_rent_usd": "wrong_value",
+            "pets_allowed": "correct_null"
+          },
+          "precision": 0.8333333333333334,
+          "recall": 0.8333333333333334,
+          "schema_valid": true,
+          "tp": 5
+        },
+        "status": "passed"
+      },
+      "case_id": "a2_05_rental_listing",
+      "human": {
+        "error_classification": "unit_or_discount_conversion",
+        "human_citation_accuracy_0_to_3": "NA",
+        "human_content_correct": "partial",
+        "human_grounding_quality_0_to_3": "NA",
+        "human_operationally_usable": "yes",
+        "human_overall_judgment": "mostly_correct",
+        "human_ranking_quality_0_to_3": "NA",
+        "human_schema_compliant": "yes",
+        "reviewer_notes": "Six of seven fields match, but weekly rent $600 must convert to monthly $2600 (600*52/12), not 24960. Required wrapper and JSON keys are valid."
+      },
+      "model_alias": "B",
+      "model_name": "Amazon Nova Pro",
+      "run_id": "indepA2_extract_v1-46e2bf67e7ee9b31",
+      "task": "a2"
+    },
+    {
+      "anonymous_sample_id": "HR-008",
+      "automatic": {
+        "a2_recovered_content_correct": null,
+        "a3_grounding_v1_1": null,
+        "failure_type": "truncated",
+        "parse_ok": false,
+        "scores": {},
+        "status": "failed"
+      },
+      "case_id": "a3_05",
+      "human": {
+        "error_classification": "truncation",
+        "human_citation_accuracy_0_to_3": "3",
+        "human_content_correct": "partial",
+        "human_grounding_quality_0_to_3": "2",
+        "human_operationally_usable": "no",
+        "human_overall_judgment": "mostly_correct",
+        "human_ranking_quality_0_to_3": "2",
+        "human_schema_compliant": "no",
+        "reviewer_notes": "Output ends mid-JSON string in a claim, so cannot be parsed/used without repair. Four ranked IDs D0084/0082/0083/0081 are all grade-2 matches, but fifth is missing. Visible study-level author/year/dataset/metric/value claims and their IDs are supported. Broad assertion of consistently competitive performance is not justified from these isolated results; missing final claim structure prevents full compliance."
+      },
+      "model_alias": "C",
+      "model_name": "OpenAI gpt-oss-120b",
+      "run_id": "indepA3_lit_v1-5548a0c577b5abc4",
+      "task": "a3"
+    },
+    {
+      "anonymous_sample_id": "HR-009",
+      "automatic": {
+        "a2_recovered_content_correct": null,
+        "a3_grounding_v1_1": null,
+        "failure_type": null,
+        "parse_ok": true,
+        "scores": {
+          "all_fields_correct": true,
+          "f1": 1.0,
+          "fn": 0,
+          "fp": 0,
+          "hallucinated_fields": 0,
+          "null_accuracy": 1.0,
+          "per_field": {
+            "available_from": "correct",
+            "bedrooms": "correct",
+            "city": "correct",
+            "deposit_usd": "correct",
+            "listing_id": "correct",
+            "monthly_rent_usd": "correct",
+            "pets_allowed": "correct_null"
+          },
+          "precision": 1.0,
+          "recall": 1.0,
+          "schema_valid": true,
+          "tp": 6
+        },
+        "status": "passed"
+      },
+      "case_id": "a2_05_rental_listing",
+      "human": {
+        "error_classification": "none",
+        "human_citation_accuracy_0_to_3": "NA",
+        "human_content_correct": "yes",
+        "human_grounding_quality_0_to_3": "NA",
+        "human_operationally_usable": "yes",
+        "human_overall_judgment": "correct",
+        "human_ranking_quality_0_to_3": "NA",
+        "human_schema_compliant": "yes",
+        "reviewer_notes": "All seven rental-listing values match reference, including $600/week -> $2600/month and null pets_allowed; wrapper is present."
+      },
+      "model_alias": "A",
+      "model_name": "Claude Sonnet 4.6",
+      "run_id": "indepA2_extract_v1-7c5a0a37fd0ee519",
+      "task": "a2"
+    },
+    {
+      "anonymous_sample_id": "HR-010",
+      "automatic": {
+        "a2_recovered_content_correct": null,
+        "a3_grounding_v1_1": null,
+        "failure_type": null,
+        "parse_ok": true,
+        "scores": {
+          "functional_correct": true,
+          "hidden_pass_rate": 1.0,
+          "hidden_passed": 8,
+          "hidden_total": 8,
+          "load_error": null,
+          "names_buggy_function": true,
+          "visible_tests_pass": true
+        },
+        "status": "passed"
+      },
+      "case_id": "a1_08_parse_duration",
+      "human": {
+        "error_classification": "none",
+        "human_citation_accuracy_0_to_3": "NA",
+        "human_content_correct": "yes",
+        "human_grounding_quality_0_to_3": "NA",
+        "human_operationally_usable": "yes",
+        "human_overall_judgment": "correct",
+        "human_ranking_quality_0_to_3": "NA",
+        "human_schema_compliant": "yes",
+        "reviewer_notes": "Correctly replaces hour multiplier 60 with 3600, preserving fullmatch validation, input grammar and ValueError behavior. Complete source and explanation provided."
+      },
+      "model_alias": "C",
+      "model_name": "OpenAI gpt-oss-120b",
+      "run_id": "indepA1_debug_v1-f55632f103adc061",
+      "task": "a1"
+    },
+    {
+      "anonymous_sample_id": "HR-011",
+      "automatic": {
+        "a2_recovered_content_correct": null,
+        "a3_grounding_v1_1": 1.0,
+        "failure_type": "validation_failed",
+        "parse_ok": true,
+        "scores": {
+          "citation_consistent": true,
+          "cites_outside_ranked": [],
+          "enough_claims": true,
+          "grounding_accuracy": 0.9523809523809523,
+          "n_claims": 21,
+          "ndcg_at_5": 0.9520727775370877,
+          "precision_at_5": 0.8,
+          "precision_at_5_graded1plus": 0.8,
+          "recall_grade2_at_5": 1.0
+        },
+        "status": "failed"
+      },
+      "case_id": "a3_06",
+      "human": {
+        "error_classification": "citation_error",
+        "human_citation_accuracy_0_to_3": "2",
+        "human_content_correct": "partial",
+        "human_grounding_quality_0_to_3": "2",
+        "human_operationally_usable": "yes",
+        "human_overall_judgment": "mostly_correct",
+        "human_ranking_quality_0_to_3": "2",
+        "human_schema_compliant": "yes",
+        "reviewer_notes": "Four ranked studies D0104/0101/0103/0102 are all direct grade-2 matches, but the required fifth study is missing. Individual numerical results and authors match the source abstracts. Summary uses paired citations [D0103][D0101] after two different study descriptions, making attribution ambiguous; each cited paper does not support both adjacent study-specific statements. Structured claims are generally source-supported."
+      },
+      "model_alias": "C",
+      "model_name": "OpenAI gpt-oss-120b",
+      "run_id": "indepA3_lit_v1-7f70e4790d79fdd7",
+      "task": "a3"
+    },
+    {
+      "anonymous_sample_id": "HR-012",
+      "automatic": {
+        "a2_recovered_content_correct": null,
+        "a3_grounding_v1_1": null,
+        "failure_type": null,
+        "parse_ok": true,
+        "scores": {
+          "functional_correct": false,
+          "hidden_pass_rate": 0.875,
+          "hidden_passed": 7,
+          "hidden_total": 8,
+          "load_error": null,
+          "names_buggy_function": false,
+          "visible_tests_pass": true
+        },
+        "status": "passed"
+      },
+      "case_id": "a1_10_merge_intervals",
+      "human": {
+        "error_classification": "functional_logic",
+        "human_citation_accuracy_0_to_3": "NA",
+        "human_content_correct": "no",
+        "human_grounding_quality_0_to_3": "NA",
+        "human_operationally_usable": "yes",
+        "human_overall_judgment": "incorrect",
+        "human_ranking_quality_0_to_3": "NA",
+        "human_schema_compliant": "yes",
+        "reviewer_notes": "Sorts intervals IN PLACE with intervals.sort and sets out=[intervals[0]], then mutates an original nested interval. Violates explicit non-mutation spec even though sorting/touching merging is otherwise repaired. JSON and source can be parsed, but function is semantically wrong."
+      },
+      "model_alias": "B",
+      "model_name": "Amazon Nova Pro",
+      "run_id": "indepA1_debug_v1-99758cee93a07294",
+      "task": "a1"
+    },
+    {
+      "anonymous_sample_id": "HR-013",
+      "automatic": {
+        "a2_recovered_content_correct": null,
+        "a3_grounding_v1_1": 1.0,
+        "failure_type": null,
+        "parse_ok": true,
+        "scores": {
+          "citation_consistent": true,
+          "cites_outside_ranked": [],
+          "enough_claims": true,
+          "grounding_accuracy": 1.0,
+          "n_claims": 6,
+          "ndcg_at_5": 0.6681130542686283,
+          "precision_at_5": 0.4,
+          "precision_at_5_graded1plus": 0.6,
+          "recall_grade2_at_5": 0.5
+        },
+        "status": "passed"
+      },
+      "case_id": "a3_03",
+      "human": {
+        "error_classification": "ranking_error",
+        "human_citation_accuracy_0_to_3": "2",
+        "human_content_correct": "partial",
+        "human_grounding_quality_0_to_3": "1",
+        "human_operationally_usable": "yes",
+        "human_overall_judgment": "incorrect",
+        "human_ranking_quality_0_to_3": "1",
+        "human_schema_compliant": "yes",
+        "reviewer_notes": "Only D0042 and D0044 are direct transformer+fraud matches. D0048 is fraud with decentralized/federated method (grade 1); D0052 and D0054 are grade-0 prior-work-only references in other domains, while D0041 and D0043 are omitted direct matches. Reported numeric results of selected papers match abstracts, but claiming the two prior-work citations demonstrate application to similar financial detection tasks is unsupported."
+      },
+      "model_alias": "B",
+      "model_name": "Amazon Nova Pro",
+      "run_id": "indepA3_lit_v1-4a23d7403880c1bb",
+      "task": "a3"
+    },
+    {
+      "anonymous_sample_id": "HR-014",
+      "automatic": {
+        "a2_recovered_content_correct": null,
+        "a3_grounding_v1_1": 1.0,
+        "failure_type": null,
+        "parse_ok": true,
+        "scores": {
+          "citation_consistent": true,
+          "cites_outside_ranked": [],
+          "enough_claims": true,
+          "grounding_accuracy": 0.8,
+          "n_claims": 35,
+          "ndcg_at_5": 1.0,
+          "precision_at_5": 0.8,
+          "precision_at_5_graded1plus": 1.0,
+          "recall_grade2_at_5": 1.0
+        },
+        "status": "passed"
+      },
+      "case_id": "a3_01",
+      "human": {
+        "error_classification": "ranking_error",
+        "human_citation_accuracy_0_to_3": "3",
+        "human_content_correct": "partial",
+        "human_grounding_quality_0_to_3": "3",
+        "human_operationally_usable": "yes",
+        "human_overall_judgment": "mostly_correct",
+        "human_ranking_quality_0_to_3": "2",
+        "human_schema_compliant": "yes",
+        "reviewer_notes": "Four direct graph-neural-network+hate-speech matches (D0001-D0004) are correct. Fifth D0007 is a federated/decentralized method (grade 1), not GNN; summary explicitly acknowledges this limitation. Study details, paraphrased graph methods and citations are accurately supported by supplied abstracts."
+      },
+      "model_alias": "A",
+      "model_name": "Claude Sonnet 4.6",
+      "run_id": "indepA3_lit_v1-0c6d116e9a266a6f",
+      "task": "a3"
+    },
+    {
+      "anonymous_sample_id": "HR-015",
+      "automatic": {
+        "a2_recovered_content_correct": null,
+        "a3_grounding_v1_1": null,
+        "failure_type": null,
+        "parse_ok": true,
+        "scores": {
+          "functional_correct": true,
+          "hidden_pass_rate": 1.0,
+          "hidden_passed": 6,
+          "hidden_total": 6,
+          "load_error": null,
+          "names_buggy_function": true,
+          "visible_tests_pass": true
+        },
+        "status": "passed"
+      },
+      "case_id": "a1_05_append_item",
+      "human": {
+        "error_classification": "none",
+        "human_citation_accuracy_0_to_3": "NA",
+        "human_content_correct": "yes",
+        "human_grounding_quality_0_to_3": "NA",
+        "human_operationally_usable": "yes",
+        "human_overall_judgment": "correct",
+        "human_ranking_quality_0_to_3": "NA",
+        "human_schema_compliant": "yes",
+        "reviewer_notes": "Replaces mutable default with None and allocates a fresh list for omitted items; preserves behavior when caller supplies list. Valid full fix and explanation."
+      },
+      "model_alias": "A",
+      "model_name": "Claude Sonnet 4.6",
+      "run_id": "indepA1_debug_v1-4ba6e8fec9a29852",
+      "task": "a1"
+    },
+    {
+      "anonymous_sample_id": "HR-016",
+      "automatic": {
+        "a2_recovered_content_correct": null,
+        "a3_grounding_v1_1": null,
+        "failure_type": null,
+        "parse_ok": true,
+        "scores": {
+          "functional_correct": true,
+          "hidden_pass_rate": 1.0,
+          "hidden_passed": 7,
+          "hidden_total": 7,
+          "load_error": null,
+          "names_buggy_function": false,
+          "visible_tests_pass": true
+        },
+        "status": "passed"
+      },
+      "case_id": "a1_09_top_k",
+      "human": {
+        "error_classification": "none",
+        "human_citation_accuracy_0_to_3": "NA",
+        "human_content_correct": "yes",
+        "human_grounding_quality_0_to_3": "NA",
+        "human_operationally_usable": "yes",
+        "human_overall_judgment": "correct",
+        "human_ranking_quality_0_to_3": "NA",
+        "human_schema_compliant": "yes",
+        "reviewer_notes": "rank_key returns (-count,word) and top_k sorts ascending without reverse; correct descending counts, alphabetical tie-break and k bounds."
+      },
+      "model_alias": "B",
+      "model_name": "Amazon Nova Pro",
+      "run_id": "indepA1_debug_v1-d0d3d9f124f33861",
+      "task": "a1"
+    },
+    {
+      "anonymous_sample_id": "HR-017",
+      "automatic": {
+        "a2_recovered_content_correct": true,
+        "a3_grounding_v1_1": null,
+        "failure_type": "parse_error",
+        "parse_ok": false,
+        "scores": {},
+        "status": "failed"
+      },
+      "case_id": "a2_01_clinical_trial",
+      "human": {
+        "error_classification": "schema_or_wrapper",
+        "human_citation_accuracy_0_to_3": "NA",
+        "human_content_correct": "yes",
+        "human_grounding_quality_0_to_3": "NA",
+        "human_operationally_usable": "no",
+        "human_overall_judgment": "mostly_correct",
+        "human_ranking_quality_0_to_3": "NA",
+        "human_schema_compliant": "no",
+        "reviewer_notes": "All seven extracted values exactly match reference, but returns a bare field object without required top-level {\"fields\": ...} wrapper. Therefore content-correct but noncompliant and not directly consumable by intended parser."
+      },
+      "model_alias": "C",
+      "model_name": "OpenAI gpt-oss-120b",
+      "run_id": "indepA2_extract_v1-0e73a3c2d39ca054",
+      "task": "a2"
+    },
+    {
+      "anonymous_sample_id": "HR-018",
+      "automatic": {
+        "a2_recovered_content_correct": null,
+        "a3_grounding_v1_1": null,
+        "failure_type": null,
+        "parse_ok": true,
+        "scores": {
+          "all_fields_correct": true,
+          "f1": 1.0,
+          "fn": 0,
+          "fp": 0,
+          "hallucinated_fields": 0,
+          "null_accuracy": 1.0,
+          "per_field": {
+            "delivery_city": "correct",
+            "item_count": "correct",
+            "order_date": "correct",
+            "payment_terms_days": "correct_null",
+            "po_number": "correct",
+            "total_usd": "correct",
+            "vendor_name": "correct"
+          },
+          "precision": 1.0,
+          "recall": 1.0,
+          "schema_valid": true,
+          "tp": 6
+        },
+        "status": "passed"
+      },
+      "case_id": "a2_04_purchase_order",
+      "human": {
+        "error_classification": "none",
+        "human_citation_accuracy_0_to_3": "NA",
+        "human_content_correct": "yes",
+        "human_grounding_quality_0_to_3": "NA",
+        "human_operationally_usable": "yes",
+        "human_overall_judgment": "correct",
+        "human_ranking_quality_0_to_3": "NA",
+        "human_schema_compliant": "yes",
+        "reviewer_notes": "All seven PO values agree with reference, including correct total $1602.06, current PO number and order date, and null payment terms; JSON wrapper present."
+      },
+      "model_alias": "A",
+      "model_name": "Claude Sonnet 4.6",
+      "run_id": "indepA2_extract_v1-07bdb7129e0d1039",
+      "task": "a2"
+    }
+  ],
+  "manifest_worksheet_sha256": "3c0d8b31bf9c39c769e49bbdbffee8ce1b52ceb2678336775c95cf3dee191cb2",
+  "mode": "completed blinded human spot-check, unblinded only after judgments were locked",
+  "normalized_completed_sha256": "cf2d078764fb2cb8438e2f118ccd5142d46727bd1d4015f5942f138c34bf3b13",
+  "source_file_name": "human_review_worksheet.csv",
+  "source_sha256": "6e07ec073b740984bbfcd229c1bd7b74f4904c6667b7dd7e88754e993d2d7f2d",
+  "summary": {
+    "a3_pairs": [
+      {
+        "anonymous_sample_id": "HR-002",
+        "automatic_status": "passed",
+        "case_id": "a3_08",
+        "citation_consistent_structural": true,
+        "grounding_v1": 0.8888888888888888,
+        "grounding_v1_1": 0.8888888888888888,
+        "human_citation_0_to_3": "2",
+        "human_grounding_0_to_3": "2",
+        "human_ranking_0_to_3": "2",
+        "model_alias": "B",
+        "ndcg_at_5": 1.0
+      },
+      {
+        "anonymous_sample_id": "HR-004",
+        "automatic_status": "passed",
+        "case_id": "a3_09",
+        "citation_consistent_structural": true,
+        "grounding_v1": 0.8,
+        "grounding_v1_1": 1.0,
+        "human_citation_0_to_3": "3",
+        "human_grounding_0_to_3": "2",
+        "human_ranking_0_to_3": "1",
+        "model_alias": "A",
+        "ndcg_at_5": 0.9520727775370877
+      },
+      {
+        "anonymous_sample_id": "HR-008",
+        "automatic_status": "failed",
+        "case_id": "a3_05",
+        "citation_consistent_structural": null,
+        "grounding_v1": null,
+        "grounding_v1_1": null,
+        "human_citation_0_to_3": "3",
+        "human_grounding_0_to_3": "2",
+        "human_ranking_0_to_3": "2",
+        "model_alias": "C",
+        "ndcg_at_5": null
+      },
+      {
+        "anonymous_sample_id": "HR-011",
+        "automatic_status": "failed",
+        "case_id": "a3_06",
+        "citation_consistent_structural": true,
+        "grounding_v1": 0.9523809523809523,
+        "grounding_v1_1": 1.0,
+        "human_citation_0_to_3": "2",
+        "human_grounding_0_to_3": "2",
+        "human_ranking_0_to_3": "2",
+        "model_alias": "C",
+        "ndcg_at_5": 0.9520727775370877
+      },
+      {
+        "anonymous_sample_id": "HR-013",
+        "automatic_status": "passed",
+        "case_id": "a3_03",
+        "citation_consistent_structural": true,
+        "grounding_v1": 1.0,
+        "grounding_v1_1": 1.0,
+        "human_citation_0_to_3": "2",
+        "human_grounding_0_to_3": "1",
+        "human_ranking_0_to_3": "1",
+        "model_alias": "B",
+        "ndcg_at_5": 0.6681130542686283
+      },
+      {
+        "anonymous_sample_id": "HR-014",
+        "automatic_status": "passed",
+        "case_id": "a3_01",
+        "citation_consistent_structural": true,
+        "grounding_v1": 0.8,
+        "grounding_v1_1": 1.0,
+        "human_citation_0_to_3": "3",
+        "human_grounding_0_to_3": "3",
+        "human_ranking_0_to_3": "2",
+        "model_alias": "A",
+        "ndcg_at_5": 1.0
+      }
+    ],
+    "agreement": {
+      "a1_functional_correctness": {
+        "matches": 6,
+        "n": 6,
+        "rate": 1.0
+      },
+      "a2_operational_usability": {
+        "matches": 6,
+        "n": 6,
+        "rate": 1.0
+      },
+      "a2_recovered_content_correctness": {
+        "matches": 6,
+        "n": 6,
+        "rate": 1.0
+      },
+      "a2_schema_compliance": {
+        "matches": 6,
+        "n": 6,
+        "rate": 1.0
+      },
+      "a2_strict_content_correctness": {
+        "matches": 5,
+        "n": 6,
+        "rate": 0.8333333333333334
+      },
+      "a3_human_perfect_citation_count": 2,
+      "a3_operational_usability": {
+        "matches": 5,
+        "n": 6,
+        "rate": 0.8333333333333334
+      },
+      "a3_parsed_count": 5,
+      "a3_structural_citation_consistent_count": 5
+    },
+    "by_task": {
+      "a1": {
+        "error_classes": {
+          "functional_logic": 1,
+          "none": 5
+        },
+        "n": 6,
+        "overall_judgments": {
+          "correct": 5,
+          "incorrect": 1
+        }
+      },
+      "a2": {
+        "error_classes": {
+          "none": 3,
+          "schema_or_wrapper": 1,
+          "unit_or_discount_conversion": 2
+        },
+        "n": 6,
+        "overall_judgments": {
+          "correct": 3,
+          "mostly_correct": 3
+        }
+      },
+      "a3": {
+        "error_classes": {
+          "citation_error": 1,
+          "ranking_error": 4,
+          "truncation": 1
+        },
+        "n": 6,
+        "overall_judgments": {
+          "incorrect": 1,
+          "mostly_correct": 5
+        }
+      }
+    },
+    "confirmed_findings": [
+      "A1 functional tests agreed with all six reviewed human judgments.",
+      "A1 a1_09 localization is a false reject: the mutation is in rank_key, while the scorer requires the top_k function name.",
+      "A2 strict content disagreed on the wrapper-only failure; recovered content and schema/operational judgments each agreed on all six reviewed items.",
+      "A3 nDCG can remain high despite a human-important fifth-rank error, and perfect nDCG still permits summary framing or grounding defects.",
+      "A3 frozen v1 grounding false-rejects faithful paraphrases, while structured-claim grounding can false-accept unsupported prose not represented in claims.",
+      "A3 citation_consistent checks citation structure, not attribution accuracy: five parsed samples passed structurally, but only two received a perfect human citation score."
+    ],
+    "overall_judgments": {
+      "correct": 8,
+      "incorrect": 2,
+      "mostly_correct": 8
+    },
+    "sample_count": 18,
+    "sampling_warning": "Purposive stratified spot-check; not an unbiased performance estimate."
+  },
+  "validation": {
+    "all_ids_match": true,
+    "all_required_fields_complete": true,
+    "all_values_allowed": true
+  }
+}

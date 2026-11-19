@@ -1,0 +1,7 @@
+{
+  "fixed_code": "def dedupe(xs):\n    out = []\n    for item in xs:\n        if item not in out:\n            out.append(item)\n    return out\n",
+  "bug_locations": [
+    "for item in reversed(xs)"
+  ],
+  "explanation": "The original code iterates in reverse order, which causes later duplicates to be kept instead of earlier ones. By iterating forward (removing `reversed`), the first occurrence of each item is preserved and later duplicates are skipped, matching the specification."
+}

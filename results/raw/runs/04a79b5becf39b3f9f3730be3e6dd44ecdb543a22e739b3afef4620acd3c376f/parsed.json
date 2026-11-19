@@ -1,0 +1,9 @@
+{
+  "fixed_code": "from collections import defaultdict, deque\n\ndef allowed(events, limit, window):\n    queues = defaultdict(deque)\n    out = []\n    for user, t in events:\n        q = queues[user]\n        while q and q[0] <= t - window:\n            q.popleft()\n        ok = len(q) < limit\n        out.append(ok)\n        if ok:\n            q.append(t)\n    return out",
+  "bug_locations": [
+    "Initialization of `q=deque()`",
+    "Window expiration check `q[0][1]<=t-window`",
+    "Appending to queue `q.append((user,t))`"
+  ],
+  "explanation": "The original code used a single global queue for all users, but the specification requires rate limiting per user. Additionally, the queue stored (user, time) tuples, which is unnecessary since the queue is now per-user. The fixes include: (1) using a dictionary of deques to track events per user, (2) simplifying the queue to store only timestamps, and (3) adjusting the expiration check accordingly."
+}

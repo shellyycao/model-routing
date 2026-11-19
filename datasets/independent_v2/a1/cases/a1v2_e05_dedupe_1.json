@@ -1,0 +1,25 @@
+{
+  "bug_locations": [
+    "dedupe set conversion"
+  ],
+  "buggy": "def dedupe(xs):\n                 return sorted(set(xs))\n",
+  "case_id": "a1v2_e05_dedupe_1",
+  "difficulty": "easy",
+  "family": "dedupe",
+  "hidden": [
+    "dedupe([3,1,3,2,1])==[3,1,2]",
+    "dedupe([])==[]",
+    "dedupe([[1],[1],[2]])==[[1],[2]]",
+    "dedupe(['a','b','a'])==['a','b']"
+  ],
+  "label_source": "executable reference plus independently checked tests",
+  "reference": "def dedupe(xs):\n             out = []\n             for item in xs:\n                 if item not in out: out.append(item)\n             return out\n",
+  "spec": "dedupe(xs) removes later duplicates while preserving first-occurrence order and supports unhashable values.",
+  "verification": {
+    "buggy_fails": 2,
+    "reference_passes": 4
+  },
+  "visible": [
+    "dedupe([1,2,1]) == [1,2]"
+  ]
+}

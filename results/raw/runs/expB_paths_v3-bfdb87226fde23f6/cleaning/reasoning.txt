@@ -1,0 +1,71 @@
+We need to produce JSON with fields python_code (script), output_filename "cleaned.csv", cleaning_logic description.
+
+We must write script that follows steps.
+
+Implementation details:
+
+- Use os.getenv('INPUT_DIR'), 'OUTPUT_DIR'.
+- Read tickets.csv and agents.csv as text, strip whitespace, treat missing values: we can define na_values list = ['', 'NA', 'N/A', 'null', 'None', '-'] and use pandas read_csv with keep_default_na=False, na_values=na_values, dtype=str maybe. Also strip whitespace from all string cells: after reading, apply lambda x: x.strip() if isinstance(x,str) else x.
+
+- R2: remove duplicate ticket_id rows, keep first. Use drop_duplicates(subset='ticket_id', keep='first').
+
+- R3: agents: normalize agent_id to upper case, then drop duplicates.
+
+- R4: map team case-insensitively: we need mapping: any string containing 'alpha' -> 'Alpha', 'beta' -> 'Beta', 'gamma' -> 'Gamma'. Also handle 'Team Alpha' etc. Use lower and check.
+
+Region mapping: 'east','e' -> 'East'; 'west','w' -> 'West'.
+
+Parse hourly_cost: remove '$', 'USD', commas, spaces. Then convert to float. Exclude rows where parsing fails or cost <=0.
+
+- R5: tickets: normalize agent_id to upper case. Join with cleaned agents on agent_id (inner). Drop tickets without match.
+
+- R6: channel mapping: case-insensitive mapping dict: {'email':'email','e-mail':'email','chat':'chat','live chat':'chat','phone':'phone','call':'phone'}. Use lower and strip.
+
+- R7: resolution_minutes: remove trailing 'min' or 'minutes' (case-insensitive). Then parse integer. Keep rows where integer between 1 and 480 inclusive.
+
+- R8: satisfaction_score: parse integer 1-5; if invalid or missing, set NaN (empty). Keep row.
+
+- R9: reopened mapping: map Yes/Y/True/1 to 1; No/N/False/0 to 0. Case-insensitive. Drop rows where missing or not in mapping.
+
+- R10: labor_cost = resolution_minutes / 60 * hourly_cost, round 2.
+
+- R11: output columns order, sort by ticket_id.
+
+Also produce cleaning_summary.json with raw_rows (tickets rows read?), cleaned_rows (rows written). Also per-rule counts maybe.
+
+Implementation steps:
+
+- Count raw_rows_tickets = len(tickets_df) before any cleaning.
+- After duplicate removal maybe count duplicates_removed.
+- After final cleaning, cleaned_rows = len(final_df).
+
+We'll store summary dict.
+
+Write cleaned.csv with index=False.
+
+Write summary json.
+
+Edge Cases: Ensure columns types: ticket_id string, agent_id string, team category (we can keep as string), region string, channel string, resolution_minutes int, satisfaction_score int (or NaN), reopened int, hourly_cost float, labor_cost float.
+
+We'll convert types accordingly.
+
+Implementation details for stripping whitespace: after reading, apply df.applymap(lambda x: x.strip() if isinstance(x,str) else x).
+
+Now produce script.
+
+Let's craft code.
+
+Potential pitfalls: reading with dtype=str ensures all columns as strings, then we can process.
+
+When parsing hourly_cost: use regex to extract numeric part: re.sub(r'[^0-9.]', '', cost_str). Then float.
+
+When mapping team: lower string, if contains 'alpha' -> 'Alpha', etc.
+
+Region mapping: lower, if startswith 'e' -> 'East', 'w' -> 'West'.
+
+Now produce script.
+
+Also ensure we import json, pandas, numpy, os, re.
+
+Now produce final JSON.
+

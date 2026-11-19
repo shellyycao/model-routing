@@ -1,0 +1,5 @@
+{
+  "fixed_code": "def binary_search(xs, target):\n    lo, hi = 0, len(xs) - 1\n    while lo <= hi:\n        mid = (lo + hi) // 2\n        if xs[mid] == target:\n            return mid\n        if xs[mid] < target:\n            lo = mid + 1\n        else:\n            hi = mid - 1\n    return -1",
+  "bug_location": "binary_search, line 3: 'while lo < hi:' should be 'while lo <= hi:'.",
+  "explanation": "The bug was in the while loop condition. The original condition 'lo < hi' could miss the case where 'lo' equals 'hi', which is a valid condition to check in a binary search. Changing it to 'lo <= hi' ensures that the search space is correctly evaluated until it is exhausted."
+}

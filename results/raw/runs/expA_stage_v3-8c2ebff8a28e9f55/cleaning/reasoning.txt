@@ -1,0 +1,206 @@
+We need to produce JSON with fields python_code (script), output_filename "cleaned.csv", cleaning_logic description.
+
+We must write a script that follows all cleaning steps.
+
+Let's outline steps:
+
+- import os, pandas as pd, numpy as np, json.
+
+- Define missing values list: ["", "NA", "N/A", "null", "None", "-"] after stripping whitespace.
+
+- Read tickets.csv as text: use pd.read_csv with dtype=str, keep default, then strip whitespace from all string columns: applymap lambda x: x.strip() if isinstance(x,str) else x. Then replace missing values with np.nan using .replace(missing list, np.nan).
+
+- Same for agents.csv.
+
+- R2: remove duplicate ticket_id rows, keep first. Use df_tickets.drop_duplicates(subset='ticket_id', keep='first').
+
+- R3: normalize agent_id to upper case in agents, then drop duplicates on agent_id keep first.
+
+- R4: Clean agents roster:
+
+   - team mapping: case-insensitive mapping: if team contains "Alpha" or "Team Alpha" -> "Alpha". Similarly Beta, Gamma. Use lower and check if 'alpha' in value etc.
+
+   - region mapping: East/E -> "East", West/W -> "West". Use lower.
+
+   - hourly_cost: remove $ , USD, commas, spaces. Use regex to extract numeric part. Convert to float. If conversion fails or <=0, drop row.
+
+   - Also ensure after mapping, team and region not missing.
+
+- R5: Normalize agent_id in tickets to upper case. Join with agents on agent_id (inner). Keep only tickets with matching agent.
+
+- R6: channel mapping: case-insensitive mapping: Email/E-mail -> email, Chat/Live Chat -> chat, Phone/Call -> phone. Drop rows where not mapped.
+
+- R7: resolution_minutes: remove trailing 'min' or 'minutes' (case-insensitive). Strip. Then parse integer. Must be between 1 and 480 inclusive. Drop invalid rows.
+
+- R8: satisfaction_score: parse integer 1-5. If missing or invalid, set NaN (empty). Keep row.
+
+- R9: reopened mapping: map Yes/Y/True/1 to 1, No/N/False/0 to 0. Case-insensitive. Drop rows where missing or not in mapping.
+
+- R10: labor_cost = resolution_minutes / 60 * hourly_cost, round 2.
+
+- R11: Output columns in order: ticket_id, agent_id, team, region, channel, resolution_minutes, satisfaction_score, reopened, hourly_cost, labor_cost. Sort by ticket_id.
+
+- Write cleaned.csv without index.
+
+- cleaning_summary.json: include raw_rows (tickets rows read), cleaned_rows (rows written). Also per-rule counts: duplicates_removed, agents_duplicates_removed, agents_invalid_rows, tickets_invalid_channel, tickets_invalid_resolution, tickets_invalid_reopened, etc.
+
+Implement counts.
+
+Edge Cases: need to treat missing values after stripping.
+
+Implementation details:
+
+- After reading, raw_rows = len(df_tickets_original)
+
+- After duplicate removal: dup_tickets = raw_rows - len(df_tickets)
+
+- For agents: raw_agents = len(df_agents_original); after duplicate removal: dup_agents = raw_agents - len(df_agents)
+
+- After roster cleaning: invalid_agents = number of rows dropped due to invalid fields.
+
+- After join: tickets_without_agent = number of tickets dropped because no matching agent.
+
+- After channel mapping: invalid_channel = number dropped.
+
+- After resolution parsing: invalid_resolution = number dropped.
+
+- After reopened mapping: invalid_reopened = number dropped.
+
+- final cleaned_rows = len(df_final)
+
+We'll store counts in dict.
+
+Now produce script as a string.
+
+Make sure to set output_filename variable.
+
+Write cleaning_summary.json using json.dump.
+
+Now produce final JSON.
+
+Let's craft script.
+
+Potential pitfalls: reading as text and stripping whitespace: after read_csv, we can apply lambda to strip each string column.
+
+Implementation:
+
+def strip_and_replace(df):
+    for col in df.columns:
+        if df[col].dtype == object:
+            df[col] = df[col].astype(str).str.strip()
+    df = df.replace(missing_vals, np.nan)
+    return df
+
+Missing values list: ["", "NA", "N/A", "null", "None", "-"]
+
+Now mapping functions.
+
+Team mapping:
+
+def map_team(val):
+    if pd.isna(val):
+        return np.nan
+    v = val.lower()
+    if 'alpha' in v:
+        return 'Alpha'
+    if 'beta' in v:
+        return 'Beta'
+    if 'gamma' in v:
+        return 'Gamma'
+    return np.nan
+
+Region mapping:
+
+def map_region(val):
+    if pd.isna(val):
+        return np.nan
+    v = val.lower()
+    if v in ['east', 'e']:
+        return 'East'
+    if v in ['west', 'w']:
+        return 'West'
+    return np.nan
+
+Hourly cost parsing:
+
+def parse_cost(val):
+    if pd.isna(val):
+        return np.nan
+    # remove $ and USD and commas
+    cleaned = re.sub(r'[\$,]', '', str(val), flags=re.IGNORECASE)
+    cleaned = re.sub(r'(?i)usd', '', cleaned)
+    cleaned = cleaned.strip()
+    try:
+        cost = float(cleaned)
+        return cost if cost > 0 else np.nan
+    except:
+        return np.nan
+
+Channel mapping:
+
+def map_channel(val):
+    if pd.isna(val):
+        return np.nan
+    v = val.lower()
+    if v in ['email', 'e-mail']:
+        return 'email'
+    if v in ['chat', 'live chat']:
+        return 'chat'
+    if v in ['phone', 'call']:
+        return 'phone'
+    return np.nan
+
+Resolution parsing:
+
+def parse_resolution(val):
+    if pd.isna(val):
+        return np.nan
+    v = str(val).lower()
+    v = v.replace('minutes', '').replace('minute', '').replace('min', '').strip()
+    # remove any non-digit characters
+    v = re.sub(r'[^0-9]', '', v)
+    if v == '':
+        return np.nan
+    try:
+        minutes = int(v)
+        if 1 <= minutes <= 480:
+            return minutes
+        else:
+            return np.nan
+    except:
+        return np.nan
+
+Satisfaction parsing:
+
+def parse_satisfaction(val):
+    if pd.isna(val):
+        return np.nan
+    try:
+        s = int(float(val))
+        if 1 <= s <=5:
+            return s
+        else:
+            return np.nan
+    except:
+        return np.nan
+
+Reopened mapping:
+
+def map_reopened(val):
+    if pd.isna(val):
+        return np.nan
+    v = str(val).strip().lower()
+    if v in ['yes', 'y', 'true', '1']:
+        return 1
+    if v in ['no', 'n', 'false', '0']:
+        return 0
+    return np.nan
+
+Now script.
+
+Make sure to import re.
+
+Write summary dict.
+
+Now produce final JSON.
+

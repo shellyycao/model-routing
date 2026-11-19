@@ -1,0 +1,293 @@
+Let me analyze this task. I need to write a Python script that:
+
+1. Reads cleaned.csv from INPUT_DIR
+2. Computes the required metrics
+3. Writes findings.json to OUTPUT_DIR
+
+Let me go through each question:
+
+**q1**: Overall stats
+- ticket_count: number of tickets (rows)
+- mean_resolution_minutes: mean of resolution_minutes
+- total_labor_cost: sum of labor_cost
+
+**q2**: Team comparison
+- labor_cost_alpha, labor_cost_beta, labor_cost_gamma: total labor_cost per team
+
+**q3**: Channel comparison
+- resolution_email, resolution_chat, resolution_phone: mean resolution_minutes by channel
+
+**q4**: Reopening change
+- reopen_rate_email_pct: reopened percentage for email = mean(reopened) * 100 for email channel
+- reopen_rate_chat_pct: same for chat
+- email_vs_chat_reopen_change_pct: (email rate - chat rate) / chat rate * 100
+
+**q5**: High-cost low-satisfaction segment
+- high_cost_low_sat_count: tickets with labor_cost >= 100 and non-missing satisfaction_score <= 2
+- high_cost_low_sat_reopen_pct: reopened percentage for that segment
+
+**q6**: Distribution
+- resolution_median: median of resolution_minutes
+- resolution_std: sample standard deviation (ddof=1) of resolution_minutes
+- satisfaction_mean: mean of non-missing satisfaction_score
+- satisfaction_missing_count: count of missing satisfaction_score
+
+**q7**: Agent concentration
+- unique_agent_count: distinct agent_id count
+- top_agent_ticket_count: largest ticket count for one agent
+- top_agent_ticket_share_pct: top_agent_ticket_count / ticket_count * 100
+
+Key considerations:
+- All values must be finite numbers (no NaN, Infinity, null, strings, lists)
+- Flat JSON object
+- Full precision (no rounding)
+- Handle potential edge cases (e.g., division by zero if chat rate is 0, empty segment for q5)
+
+For q4, if chat reopen rate is 0, the relative change would be division by zero. I should handle this, but likely the data won't have that. Still, to be safe, I could handle it. But the spec says all values must be finite. Let me add a safe guard but in normal case compute directly.
+
+For q5, if the segment is empty, reopen percentage would be NaN. Guard with 0.0? Hmm, but the spec expects finite numbers. Let me compute safely: if count > 0, percentage = mean * 100, else 0.0.
+
+Actually, let me think about whether to add guards. The data has 347 rows, so likely all channels have data. But guards don't hurt as long as normal computation is correct.
+
+For satisfaction_score: it's nullable int. When pandas reads a CSV with missing values in an int column, it becomes float with NaN. So I'll use .dropna() or handle NaN.
+
+Sample standard deviation: pandas .std() defaults to ddof=1 (sample std), which matches. numpy std defaults to ddof=0. So use pandas .std() or np.std with ddof=1.
+
+Let me write the script:
+
+```python
+import json
+import os
+
+import numpy as np
+import pandas as pd
+
+
+def main():
+    input_path = os.path.join(os.environ["INPUT_DIR"], "cleaned.csv")
+    output_path = os.path.join(os.environ["OUTPUT_DIR"], "findings.json")
+
+    df = pd.read_csv(input_path)
+
+    findings = {}
+
+    # q1: Overall
+    ticket_count = int(len(df))
+    findings["ticket_count"] = ticket_count
+    findings["mean_resolution_minutes"] = float(df["resolution_minutes"].mean())
+    findings["total_labor_cost"] = float(df["labor_cost"].sum())
+
+    # q2: Team comparison - total labor cost per team
+    team_cost = df.groupby("team")["labor_cost"].sum()
+    findings["labor_cost_alpha"] = float(team_cost.get("Alpha", 0.0))
+    findings["labor_cost_beta"] = float(team_cost.get("Beta", 0.0))
+    findings["labor_cost_gamma"] = float(team_cost.get("Gamma", 0.0))
+
+    # q3: Channel comparison - mean resolution minutes by channel
+    chan_res = df.groupby("channel")["resolution_minutes"].mean()
+    findings["resolution_email"] = float(chan_res.get("email", 0.0))
+    findings["resolution_chat"] = float(chan_res.get("chat", 0.0))
+    findings["resolution_phone"] = float(chan_res.get("phone", 0.0))
+
+    # q4: Reopening change
+    email_mask = df["channel"] == "email"
+    chat_mask = df["channel"] == "chat"
+    reopen_rate_email = float(df.loc[email_mask, "reopened"].mean()) * 100.0
+    reopen_rate_chat = float(df.loc[chat_mask, "reopened"].mean()) * 100.0
+    findings["reopen_rate_email_pct"] = reopen_rate_email
+    findings["reopen_rate_chat_pct"] = reopen_rate_chat
+    if reopen_rate_chat != 0.0:
+        findings["email_vs_chat_reopen_change_pct"] = (reopen_rate_email - reopen_rate_chat) / reopen_rate_chat * 100.0
+    else:
+        findings["email_vs_chat_reopen_change_pct"] = 0.0
+
+    # q5: High-cost low-satisfaction segment
+    seg_mask = (df["labor_cost"] >= 100) & (df["satisfaction_score"].notna()) & (df["satisfaction_score"] <= 2)
+    seg = df.loc[seg_mask]
+    seg_count = int(len(seg))
+    findings["high_cost_low_sat_count"] = seg_count
+    if seg_count > 0:
+        findings["high_cost_low_sat_reopen_pct"] = float(seg["reopened"].mean()) * 100.0
+    else:
+        findings["high_cost_low_sat_reopen_pct"] = 0.0
+
+    # q6: Distribution
+    findings["resolution_median"] = float(df["resolution_minutes"].median())
+    findings["resolution_std"] = float(df["resolution_minutes"].std(ddof=1))
+    sat = df["satisfaction_score"].dropna()
+    findings["satisfaction_mean"] = float(sat.mean())
+    findings["satisfaction_missing_count"] = int(df["satisfaction_score"].isna().sum())
+
+    # q7: Agent concentration
+    findings["unique_agent_count"] = int(df["agent_id"].nunique())
+    agent_counts = df["agent_id"].value_counts()
+    top_count = int(agent_counts.max())
+    findings["top_agent_ticket_count"] = top_count
+    findings["top_agent_ticket_share_pct"] = top_count / ticket_count * 100.0
+
+    # Ensure all values are finite numbers
+    for key, value in findings.items():
+        if isinstance(value, (int, np.integer)):
+            findings[key] = int(value)
+        else:
+            v = float(value)
+            if not np.isfinite(v):
+                v = 0.0
+            findings[key] = v
+
+    with open(output_path, "w") as f:
+        json.dump(findings, f, indent=2)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+Wait, one thing about the "reopened percentage" — should it be mean * 100 or count of reopened / total * 100? They're equivalent. mean * 100 is fine.
+
+For q4, "reopened percentage for email and chat" — percentage of tickets in that channel that were reopened. Yes.
+
+For email_vs_chat_reopen_change_pct: "(email rate - chat rate) / chat rate * 100". Straightforward.
+
+Hmm, should I be careful about the fallback of 0.0 for division by zero? If chat rate is 0 and email rate is 0, the change is arguably 0. If chat rate is 0 and email > 0, it's infinite — but we can't write Infinity. The guard ensures finiteness. Given the data likely has reopens in both channels, this is a non-issue.
+
+Let me double check about the expected data: 347 rows. Agents 18. All channels present.
+
+One consideration on counts: "findings.json MUST be a FLAT JSON object mapping every metric_key listed below to a single finite number". Integers are fine as JSON numbers.
+
+Should ticket_count be int or float? Either works as JSON number. I'll write int for counts.
+
+Let me also consider: when pandas reads satisfaction_score with missing values, it will be float64. The comparison `<= 2` works with float. notna() handles missing.
+
+Edge: labor_cost >= 100 and satisfaction_score <= 2 — need non-missing satisfaction, which the notna() ensures (NaN <= 2 is False anyway, but explicit is better).
+
+Median of resolution_minutes: pandas .median() — for even count it's the average of the two middle values, which could be a .5 float. Fine.
+
+Sample standard deviation: pandas std with ddof=1 default. I'll be explicit.
+
+Let me also make sure I don't write anywhere else — only findings.json. Yes.
+
+expected_artifacts: ["findings.json"]
+
+methods_description: brief description.
+
+One more thought: should I use float() conversions to ensure JSON serializability? numpy types aren't serializable by default json. Yes, I've converted.
+
+Also the final finite-check loop: converting int via int(value). Actually let me simplify — I already convert everything. The loop is a safety net. Let me keep it simple but robust.
+
+Let me also double-check the groupby .get() with default — pandas Series.get(key, default) works. Good.
+
+Alternatively, use reindex(["Alpha","Beta","Gamma"], fill_value=0.0). Either fine.
+
+Now format the response: single JSON object in a fenced code block, nothing outside.
+
+Let me write the final script carefully.
+
+```python
+import json
+import os
+
+import numpy as np
+import pandas as pd
+
+
+def main():
+    input_path = os.path.join(os.environ["INPUT_DIR"], "cleaned.csv")
+    output_path = os.path.join(os.environ["OUTPUT_DIR"], "findings.json")
+
+    df = pd.read_csv(input_path)
+
+    findings = {}
+
+    # q1 - Overall
+    ticket_count = int(len(df))
+    findings["ticket_count"] = ticket_count
+    findings["mean_resolution_minutes"] = float(df["resolution_minutes"].mean())
+    findings["total_labor_cost"] = float(df["labor_cost"].sum())
+
+    # q2 - Total labor cost per team
+    team_cost = df.groupby("team")["labor_cost"].sum()
+    findings["labor_cost_alpha"] = float(team_cost.get("Alpha", 0.0))
+    findings["labor_cost_beta"] = float(team_cost.get("Beta", 0.0))
+    findings["labor_cost_gamma"] = float(team_cost.get("Gamma", 0.0))
+
+    # q3 - Mean resolution minutes per channel
+    channel_resolution = df.groupby("channel")["resolution_minutes"].mean()
+    findings["resolution_email"] = float(channel_resolution.get("email", 0.0))
+    findings["resolution_chat"] = float(channel_resolution.get("chat", 0.0))
+    findings["resolution_phone"] = float(channel_resolution.get("phone", 0.0))
+
+    # q4 - Reopen rates for email and chat, plus relative change
+    email_reopened = df.loc[df["channel"] == "email", "reopened"]
+    chat_reopened = df.loc[df["channel"] == "chat", "reopened"]
+    reopen_rate_email_pct = float(email_reopened.mean()) * 100.0 if len(email_reopened) else 0.0
+    reopen_rate_chat_pct = float(chat_reopened.mean()) * 100.0 if len(chat_reopened) else 0.0
+    findings["reopen_rate_email_pct"] = reopen_rate_email_pct
+    findings["reopen_rate_chat_pct"] = reopen_rate_chat_pct
+    if reopen_rate_chat_pct != 0.0:
+        findings["email_vs_chat_reopen_change_pct"] = (
+            (reopen_rate_email_pct - reopen_rate_chat_pct) / reopen_rate_chat_pct * 100.0
+        )
+    else:
+        findings["email_vs_chat_reopen_change_pct"] = 0.0
+
+    # q5 - High-cost (labor_cost >= 100) & low-satisfaction (score <= 2, non-missing)
+    segment = df[(df["labor_cost"] >= 100.0) & (df["satisfaction_score"].notna()) & (df["satisfaction_score"] <= 2)]
+    seg_count = int(len(segment))
+    findings["high_cost_low_sat_count"] = seg_count
+    findings["high_cost_low_sat_reopen_pct"] = float(segment["reopened"].mean()) * 100.0 if seg_count else 0.0
+
+    # q6 - Distribution metrics
+    findings["resolution_median"] = float(df["resolution_minutes"].median())
+    findings["resolution_std"] = float(df["resolution_minutes"].std(ddof=1))
+    satisfaction = df["satisfaction_score"].dropna()
+    findings["satisfaction_mean"] = float(satisfaction.mean()) if len(satisfaction) else 0.0
+    findings["satisfaction_missing_count"] = int(df["satisfaction_score"].isna().sum())
+
+    # q7 - Agent concentration
+    findings["unique_agent_count"] = int(df["agent_id"].nunique())
+    top_agent_ticket_count = int(df["agent_id"].value_counts().max())
+    findings["top_agent_ticket_count"] = top_agent_ticket_count
+    findings["top_agent_ticket_share_pct"] = (top_agent_ticket_count / ticket_count * 100.0) if ticket_count else 0.0
+
+    # Safety: guarantee flat, finite numeric values
+    clean = {}
+    for key, value in findings.items():
+        if isinstance(value, (int, np.integer)):
+            clean[key] = int(value)
+        else:
+            v = float(value)
+            clean[key] = v if np.isfinite(v) else 0.0
+
+    with open(output_path, "w") as fh:
+        json.dump(clean, fh, indent=2)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+This looks good. All 21 metric keys present:
+1. ticket_count ✓
+2. mean_resolution_minutes ✓
+3. total_labor_cost ✓
+4. labor_cost_alpha ✓
+5. labor_cost_beta ✓
+6. labor_cost_gamma ✓
+7. resolution_email ✓
+8. resolution_chat ✓
+9. resolution_phone ✓
+10. reopen_rate_email_pct ✓
+11. reopen_rate_chat_pct ✓
+12. email_vs_chat_reopen_change_pct ✓
+13. high_cost_low_sat_count ✓
+14. high_cost_low_sat_reopen_pct ✓
+15. resolution_median ✓
+16. resolution_std ✓
+17. satisfaction_mean ✓
+18. satisfaction_missing_count ✓
+19. unique_agent_count ✓
+20. top_agent_ticket_count ✓
+21. top_agent_ticket_share_pct ✓
+
+All good. Now write the methods description briefly.

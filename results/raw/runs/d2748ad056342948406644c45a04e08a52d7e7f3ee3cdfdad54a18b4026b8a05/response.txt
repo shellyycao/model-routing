@@ -1,0 +1,10 @@
+```json
+{
+  "fixed_code": "from collections import defaultdict, deque\n\ndef allowed(events, limit, window):\n    q = defaultdict(deque)\n    out = []\n    for user, t in events:\n        while q[user] and q[user][0] <= t - window:\n            q[user].popleft()\n        ok = len(q[user]) < limit\n        out.append(ok)\n        if ok:\n            q[user].append(t)\n    return out",
+  "bug_locations": [
+    "while q[user] and q[user][0] < t-window:",
+    "q[user].append(t)"
+  ],
+  "explanation": "The original code had two defects. First, the window expiration check used `<` instead of `<=`, incorrectly keeping events exactly `window` time units old. Second, it unconditionally appended the current event's timestamp to the queue, but the specification states that rejected events do not consume capacity. The fix corrects the comparison to `<=` and moves the append operation inside a conditional that checks if the event was allowed."
+}
+```

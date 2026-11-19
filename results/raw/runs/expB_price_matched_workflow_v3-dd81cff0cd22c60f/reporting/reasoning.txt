@@ -1,0 +1,49 @@
+Let me build the report. I need one key finding per question q1-q7, each with all metric keys in reported_values. Rankings for q2 (regions) and q3 (quarters). Direction for q4 (increase, since +10.08%).
+
+Q2 ranking: East 130516.69 > North 124845.75 > West 99428.16 > South 90534.49.
+
+Q3 ranking: Q3 71674.99 > Q4 68948.71 > Q2 56616.79 > Q1 36108.31.
+
+Q4: direction increase, +10.08%.
+
+Derived values: any computed numbers I mention. Let me decide what to compute:
+- q2: East vs South difference: 130516.69 - 90534.49 = 39982.20. Could mention share of East: 130516.69/445325.09*100 = 29.31%. Let me compute: 130516.69/445325.09 = 0.29308... ×100 = 29.31%. Keep simple: mention the difference East vs South = 39,982.20. Declare derived value difference with operands [revenue_east, revenue_south], value 39982.2.
+- q3: Q4 vs Q3 difference? Or Q1 to Q3 change. Mention Q3 exceeds Q1 by 35,566.68: 71674.99 - 36108.31 = 35566.68. Declare.
+- q4: yoy change 10.08% is a verified metric itself, no derivation needed.
+- q5: share of revenue: 50035.33/445325.09*100 = 11.24%. Compute: 50035.33/445325.09 = 0.112355... let me compute: 445325.09 × 0.1124 = 50054.5, slightly high. 0.11235 × 445325.09 = 50032.3. 0.112357 → 50035.3? 445325.09 × 0.112357 = 50035.3 approx. So ~11.24%. Declare share with operands [electronics_high_discount_revenue, total_revenue], value 11.24.
+- q6: mean vs median ratio? Mean (856.39) is ~2.7× median (313.28): 856.3944038461538 / 313.275 = 2.7337. Compute: 313.275 × 2.73 = 855.24; 2.734 → 856.5; so ~2.7337. Declare ratio value 2.73. Or just state right-skew without number. Safer to state mean nearly 2.7x median and declare. Use 2.73.
+- q7: top customer share 6.24% is verified metric. No derivation needed.
+
+Also q1 average_order_value is verified.
+
+Word count under 600. Keep concise.
+
+Rounding: use 2 decimals generally, e.g., $445,325.09.
+
+Order count 520, unique customers 222, electronics orders 22.
+
+Direction values: q4 = "increase". Others "not_applicable"? The schema says direction for change/trend findings; default null. I'll set q4 direction "increase", others null (or not_applicable). I'll set null for others to be safe? The contract says direction_required true only for q4. For others, null is fine. But ranking_required true for q3 (trend) — ranking needed, direction not required. I'll leave direction null for q3, provide ranking.
+
+Reported values: copy exact verified values.
+
+Now write JSON.
+
+Key findings statements:
+
+q1: "In 2023-2024 the business generated total revenue of $445,325.09 across 520 orders, an average order value of $856.39."
+
+q2: "The East region led with $130,516.69, followed by North ($124,845.75), West ($99,428.16) and South ($90,534.49); East exceeded South by $39,982.20." Derived difference.
+
+q3: "2024 revenue rose through the year, peaking in Q3 at $71,674.99, with Q4 at $68,948.71, Q2 at $56,616.79 and Q1 lowest at $36,108.31; Q3 exceeded Q1 by $35,566.68." Derived difference.
+
+q4: "Revenue grew year over year: 2024 revenue of $233,348.80 vs $211,976.29 in 2023, a +10.08% increase." Direction increase.
+
+q5: "22 Electronics orders had discounts of 20% or more, generating $50,035.33 in revenue — about 11.24% of total revenue." Derived share.
+
+q6: "Order revenue is strongly right-skewed: mean $856.39 vs median $313.28 (mean ~2.73× median), std $1,295.74, range $5.27 to $7,844.02." Derived ratio.
+
+q7: "222 unique customers; top customer spent $27,793.13, 6.24% of total revenue — concentration is modest."
+
+Limitations: dataset covers only two years (2023-2024) so long-term trends can't be assessed; no cost/profit data, revenue-only view; high standard deviation indicates few large orders skew averages; regional groupings may mask store-level differences; no currency or returns/cancellations info provided? Careful — don't invent. Limitations should be genuine: only revenue (no profit margins), only 2 years, right-skew means mean less representative, discount analysis only covers Electronics subset.
+
+Check word count: aim well under 600.

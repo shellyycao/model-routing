@@ -1,0 +1,11 @@
+```json
+{
+  "fixed_code": "def paginate(items, size, cursor=None):\n    if size <= 0:\n        raise ValueError('size')\n    if cursor is None:\n        start = 0\n    else:\n        try:\n            start = int(cursor)\n        except (TypeError, ValueError):\n            raise ValueError('cursor')\n        if start < 0 or start > len(items):\n            raise ValueError('cursor')\n    end = min(start + size, len(items))\n    next_cursor = str(end) if end < len(items) else None\n    return list(items[start:end]), next_cursor\n",
+  "bug_locations": [
+    "paginate: size guard changed from `size < 0` to `size <= 0`",
+    "paginate: start computation changed from one-based (`1 if cursor is None else int(cursor)+1`) to zero-based (`0` when cursor is None, else `int(cursor)`)",
+    "paginate: added cursor validation (parse errors re-raised as ValueError; bounds check `0 <= start <= len(items)`)"
+  ],
+  "explanation": "Three interacting defects. (1) The size guard used `< 0`, so a zero size was accepted; the spec requires nonpositive sizes to raise ValueError, so it is now `size <= 0`. (2) The start index was one-based: it began at 1 when cursor was None and did `int(cursor)+1` otherwise, skipping the first element and misinterpreting the zero-based cursor; it is now zero-based (`0` for None, else `int(cursor)`), which makes paginate([1,2,3],2) return ([1,2],'2'). (3) Invalid cursors were not rejected: negative or out-of-range cursor strings silently produced wrong slices, and non-string parse failures could surface as TypeError; parsing is now wrapped to raise ValueError and the parsed start is bounds-checked against 0..len(items). next_cursor logic (null at the end) was already correct and is retained."
+}
+```

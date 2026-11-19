@@ -1,0 +1,85 @@
+We need to produce JSON report with fields: title, executive_summary, key_findings (array of objects per q1..q7), limitations, conclusion.
+
+Each key_finding must include finding_id, statement, evidence_refs, reported_values (all metric_keys for that question), optional direction, ranking, derived_values.
+
+We must follow ranking requirements:
+
+- q2 ranking_required true: ranking of Alpha, Beta, Gamma by labor_cost descending. Provide ranking array of labels: "Beta", "Gamma", "Alpha"? Let's compute values: labor_cost_alpha 4604.91, beta 6928.72, gamma 5911.44. Highest is Beta (6928.72), then Gamma (5911.44), then Alpha (4604.91). So ranking = ["Beta","Gamma","Alpha"].
+
+- q3 ranking_required true: ranking of channels by mean resolution minutes descending. Values: email 71.7238, chat 82.2329, phone 74.0714. Highest chat, then phone, then email. ranking = ["chat","phone","email"].
+
+- q4 direction_required true: direction based on email_vs_chat_reopen_change_pct. Value is 122.476... positive, meaning email rate higher than chat, so direction = "increase". (Interpretation: email vs chat change positive indicates increase). So direction = "increase". No ranking.
+
+Other findings no ranking/direction.
+
+We must include derived_values for any computed numbers not directly from findings. For q2 and q3 we just provide ranking, not derived numbers. For q4 we might compute direction but not needed as derived. Could include derived value for pct_change? Already given metric. Not needed.
+
+But we might need derived values for any statements that include computed numbers like share percentages etc. For q7 we have top_agent_ticket_share_pct already provided, so no derived.
+
+Thus derived_values may be empty arrays.
+
+Now craft statements:
+
+- q1: "The dataset contains 220 tickets with an average resolution time of 75.66 minutes and total labor cost of $17,445.07." Use rounding.
+
+- q2: "Team labor cost ranking: Beta ($6,928.72) highest, followed by Gamma ($5,911.44), and Alpha ($4,604.91) lowest." Provide ranking.
+
+- q3: "Average resolution time by channel ranks: chat (82.23 min) fastest, phone (74.07 min), email (71.72 min) slowest." Wait fastest is lower minutes, but ranking is highest to lowest value (as per requirement). They said ranking high-to-low. So ranking based on mean resolution minutes high to low: chat (82.23) > phone (74.07) > email (71.72). So statement: "Resolution time highest for chat, then phone, then email." Provide ranking.
+
+- q4: "Reopen rate for email tickets is 15.24%, for chat 6.85%; email rate is 122.48% higher than chat, indicating an increase." Provide direction increase.
+
+- q5: "There are 9 high‑cost, low‑satisfaction tickets, representing 11.11% of that segment that were reopened." Provide values.
+
+- q6: "Resolution time median is 65 min with a standard deviation of 51.30 min. Average satisfaction score is 4.14, with 14 tickets missing satisfaction data." Provide values.
+
+- q7: "Tickets were handled by 18 distinct agents. The most active agent handled 16 tickets, accounting for 7.27% of all tickets." Provide values.
+
+Now evidence_refs: list metric_keys used.
+
+q1 evidence_refs: ticket_count, mean_resolution_minutes, total_labor_cost.
+
+q2: labor_cost_alpha, labor_cost_beta, labor_cost_gamma.
+
+q3: resolution_email, resolution_chat, resolution_phone.
+
+q4: reopen_rate_email_pct, reopen_rate_chat_pct, email_vs_chat_reopen_change_pct.
+
+q5: high_cost_low_sat_count, high_cost_low_sat_reopen_pct.
+
+q6: resolution_median, resolution_std, satisfaction_mean, satisfaction_missing_count.
+
+q7: unique_agent_count, top_agent_ticket_count, top_agent_ticket_share_pct.
+
+Now reported_values: include each metric_key with its verified value (copy). Use numbers as given, maybe round to 2 decimals for readability but must be numeric. The schema expects numbers; we can keep original values.
+
+But we must include every metric_key of that question. So for q1 include three keys with values.
+
+Now direction: only q4 set to "increase". Others null.
+
+Ranking: q2 and q3 arrays.
+
+Derived_values: empty arrays for all.
+
+Now title: "Support Operations Analysis Report".
+
+Executive summary: brief summary of key points.
+
+Limitations: list bullet points: cleaning stage failed, possible data quality issues, satisfaction missing, etc.
+
+Conclusion: wrap up.
+
+Word count under 650 words.
+
+Now produce JSON.
+
+Check schema: top-level fields: title (string), executive_summary (string), key_findings (array of KeyFinding), limitations (array of strings), conclusion (string). Each KeyFinding must have required fields: finding_id, statement, evidence_refs, reported_values. direction, ranking, derived_values optional.
+
+We'll include direction and ranking where needed, and derived_values as empty array.
+
+Now produce JSON with proper formatting.
+
+Let's craft statements with numbers rounded to 2 decimals where appropriate but values must be numeric in reported_values unchanged.
+
+Ok.
+
+Now produce final answer.

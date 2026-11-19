@@ -1,0 +1,133 @@
+{
+  "stage": "cleaning",
+  "model_alias": "A",
+  "model_id": "us.anthropic.claude-sonnet-4-6",
+  "prompt_version": "v3",
+  "prompt_hash": "54fccecaa4539ea6f9bf17463a0da069f9e72816d3512b9a1510b4481adbcc9d",
+  "invocation_ids": [
+    "580fe253-c067-47ec-9692-1a5f2105fa1c"
+  ],
+  "cache_hit": false,
+  "shared_with_run_ids": [],
+  "status": "passed",
+  "structural_ok": true,
+  "failure_type": null,
+  "failure_detail": null,
+  "parse_ok": true,
+  "execution": {
+    "status": "success",
+    "exit_code": 0,
+    "stdout": "Cleaning complete: 1560 raw rows -> 1428 cleaned rows.\n",
+    "stderr": "/sandbox/code/main.py:19: FutureWarning: DataFrame.applymap has been deprecated. Use DataFrame.map instead.\n  raw = raw.applymap(lambda x: x.strip() if isinstance(x, str) else x)\n/sandbox/code/main.py:28: FutureWarning: DataFrame.applymap has been deprecated. Use DataFrame.map instead.\n  raw = raw.applymap(to_missing)\n",
+    "runtime_ms": 817.1968749957159,
+    "output_files": [
+      "/Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expB_price_matched_workflow_v3-aa52c29876cf73ca/cleaning/output/cleaned.csv",
+      "/Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expB_price_matched_workflow_v3-aa52c29876cf73ca/cleaning/output/cleaning_summary.json"
+    ],
+    "sandbox_image": "sha256:88988a15503bdb96538c3dd62244a79879d5c7848397db18b1267ccfd0a9727a"
+  },
+  "validation": {
+    "stage": "cleaning",
+    "hard_pass": true,
+    "checks": [
+      {
+        "name": "output_exists",
+        "passed": true,
+        "mandatory": true,
+        "detail": "/Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expB_price_matched_workflow_v3-aa52c29876cf73ca/cleaning/output/cleaned.csv",
+        "value": null
+      },
+      {
+        "name": "output_parses",
+        "passed": true,
+        "mandatory": true,
+        "detail": "1428 rows, 7 columns",
+        "value": null
+      },
+      {
+        "name": "required_columns_present",
+        "passed": true,
+        "mandatory": true,
+        "detail": "all present",
+        "value": null
+      },
+      {
+        "name": "schema_constraints",
+        "passed": true,
+        "mandatory": true,
+        "detail": "all constraints satisfied",
+        "value": 1.0
+      },
+      {
+        "name": "no_extra_columns",
+        "passed": true,
+        "mandatory": false,
+        "detail": "",
+        "value": null
+      },
+      {
+        "name": "no_duplicate_keys",
+        "passed": true,
+        "mandatory": true,
+        "detail": "",
+        "value": 0.0
+      },
+      {
+        "name": "row_set_matches_reference",
+        "passed": true,
+        "mandatory": true,
+        "detail": "0 reference rows missing (e.g. []); 0 unexpected rows (e.g. []); output rows=1428, reference rows=1428",
+        "value": null
+      },
+      {
+        "name": "values_match_reference",
+        "passed": true,
+        "mandatory": true,
+        "detail": "9996/9996 cells match (abs_tol=0.01, rel_tol=1e-06)",
+        "value": 1.0
+      }
+    ],
+    "quality": {
+      "cleaning_correctness": 1.0,
+      "data_integrity": 1.0,
+      "schema_compliance": 1.0
+    },
+    "quality_basis": "ground_truth",
+    "validator_version": "1.0"
+  },
+  "conditional_validation": null,
+  "input_artifacts": [
+    "datasets/projects/energy_consumption/raw.csv"
+  ],
+  "output_artifacts": [
+    "results/raw/runs/expB_price_matched_workflow_v3-aa52c29876cf73ca/cleaning/prompt.txt",
+    "results/raw/runs/expB_price_matched_workflow_v3-aa52c29876cf73ca/cleaning/response.txt",
+    "results/raw/runs/expB_price_matched_workflow_v3-aa52c29876cf73ca/cleaning/parsed.json",
+    "results/raw/runs/expB_price_matched_workflow_v3-aa52c29876cf73ca/cleaning/code.py",
+    "results/raw/runs/expB_price_matched_workflow_v3-aa52c29876cf73ca/cleaning/output/cleaned.csv",
+    "results/raw/runs/expB_price_matched_workflow_v3-aa52c29876cf73ca/cleaning/output/cleaning_summary.json"
+  ],
+  "input_artifact_hashes": {
+    "datasets/projects/energy_consumption/raw.csv": "615e9dd3f351c49e26a813e2a6b47e6c9e2c812b579dae7b15497467a0d01572"
+  },
+  "output_artifact_hashes": {
+    "results/raw/runs/expB_price_matched_workflow_v3-aa52c29876cf73ca/cleaning/prompt.txt": "54fccecaa4539ea6f9bf17463a0da069f9e72816d3512b9a1510b4481adbcc9d",
+    "results/raw/runs/expB_price_matched_workflow_v3-aa52c29876cf73ca/cleaning/response.txt": "137c557faacbc9c4b865eb0642d5f451cd27c2a282f175750a3e370363f85cb5",
+    "results/raw/runs/expB_price_matched_workflow_v3-aa52c29876cf73ca/cleaning/parsed.json": "f12a40cbb7f9b17e0b60b673d92455db5f3b73cf0e17e42dec1e1967d81e3f32",
+    "results/raw/runs/expB_price_matched_workflow_v3-aa52c29876cf73ca/cleaning/code.py": "3a12a53d2a0ad8a2180a61a40d27ddabb034a52e289bf5fcc61f968d1b4418d4",
+    "results/raw/runs/expB_price_matched_workflow_v3-aa52c29876cf73ca/cleaning/output/cleaned.csv": "af6205ceec17c06a12a266d765064aa1497a408f91f7b8a1b04ddf5b6213fc62",
+    "results/raw/runs/expB_price_matched_workflow_v3-aa52c29876cf73ca/cleaning/output/cleaning_summary.json": "b8c6604cff399f8b8fcf209b58d0d927c5753746b9a9116354686bd34186537b"
+  },
+  "handoff_in_path": "results/raw/runs/expB_price_matched_workflow_v3-aa52c29876cf73ca/cleaning/handoff_in.json",
+  "handoff_size_bytes": 616,
+  "input_tokens": 2031,
+  "output_tokens": 2905,
+  "cost_usd": 0.054634800000000004,
+  "cost_status": "estimated",
+  "timings": {
+    "generation_ms": 18454.56945800106,
+    "execution_ms": 817.1968749957159,
+    "validation_ms": 28.520915999251883,
+    "handoff_ms": 0.3724160051206127
+  }
+}

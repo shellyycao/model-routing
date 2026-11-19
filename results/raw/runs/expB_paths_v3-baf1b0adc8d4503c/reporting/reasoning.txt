@@ -1,0 +1,112 @@
+We need to produce JSON with fields: title, executive_summary, key_findings (array of objects per q1..q7), limitations, conclusion.
+
+Each key_finding must include finding_id, statement, evidence_refs, reported_values (all metric_keys for that question), optional direction, ranking, derived_values.
+
+We must follow ranking requirements: q2 ranking required true, ranking_metric_key_to_label mapping Alpha, Beta, Gamma. So we need ranking list of labels ordered high to low based on labor_cost values. Values: labor_cost_alpha 7787.81, labor_cost_beta 10247.36, labor_cost_gamma 9387.73. Highest is Beta (10247.36), then Gamma (9387.73), then Alpha (7787.81). So ranking: ["Beta","Gamma","Alpha"].
+
+q3 ranking required true, mapping resolution_chat, resolution_email, resolution_phone. Values: chat 83.039..., email 73.017..., phone 69.2535. Highest chat, then email, then phone. Ranking: ["chat","email","phone"].
+
+q4 direction required true, metric key email_vs_chat_reopen_change_pct = 119.827586... Positive indicates increase (email higher than chat). Direction should be "increase". Provide direction field.
+
+Other questions no ranking/direction.
+
+Now statements: need to be concise, include numeric values (rounded). Provide evidence_refs list of metric_keys used.
+
+Also need derived_values: any numbers we compute beyond the verified ones. For q2 we might compute share of total labor cost per team? Not required. But we could include derived values like total labor cost sum of three teams equals total_labor_cost (should be 7787.81+10247.36+9387.73 = 27422.9 matches). That's a derived value maybe we can state that they sum to total. Provide derived value with kind "difference"? Actually we can compute difference between total_labor_cost and sum of three; but that's zero. Could include ratio of each team to total. Not required but we can include derived values if we mention them. Simpler: avoid derived values unless needed. For q4 we might compute that email reopen rate is 119.8% higher than chat. That's already metric email_vs_chat_reopen_change_pct. That's a verified metric, not derived. So no derived needed.
+
+But we need to include every metric_key of that question in reported_values. So for each q, we must list all metric_keys for that question with their verified values.
+
+Let's list:
+
+q1 metric_keys: ticket_count, mean_resolution_minutes, total_labor_cost.
+
+q2: labor_cost_alpha, labor_cost_beta, labor_cost_gamma.
+
+q3: resolution_email, resolution_chat, resolution_phone.
+
+q4: reopen_rate_email_pct, reopen_rate_chat_pct, email_vs_chat_reopen_change_pct.
+
+q5: high_cost_low_sat_count, high_cost_low_sat_reopen_pct.
+
+q6: resolution_median, resolution_std, satisfaction_mean, satisfaction_missing_count.
+
+q7: unique_agent_count, top_agent_ticket_count, top_agent_ticket_share_pct.
+
+Now statements: need to be a sentence summarizing.
+
+Let's craft each.
+
+q1 statement: "The dataset contains 347 tickets, with an average resolution time of 75.2 minutes and total labor cost of $27,422.90." Use rounding.
+
+Evidence_refs: list all three metric_keys.
+
+reported_values: copy values (rounded maybe but keep as numbers). Use same as verified values maybe rounded to 2 decimals for readability but must be numbers. Could keep full values.
+
+q2 statement: "Team labor costs differ, with Beta incurring the highest cost, followed by Gamma, then Alpha." Provide ranking. Evidence_refs: three keys.
+
+reported_values: values.
+
+ranking: ["Beta","Gamma","Alpha"].
+
+q3 statement: "Resolution speed varies by channel, fastest on phone (69.3 min), slower on email (73.0 min), and slowest on chat (83.0 min)." Provide ranking.
+
+ranking: ["chat","email","phone"].
+
+q4 statement: "Email tickets are reopened at a rate 119.8% higher than chat tickets, indicating a substantial increase." Direction: "increase". Evidence_refs: three keys.
+
+q5 statement: "There are 12 high‑cost, low‑satisfaction tickets, representing 8.33% of that segment being reopened." Evidence_refs: two keys.
+
+q6 statement: "Resolution times have a median of 65 min and a standard deviation of 51.9 min; average satisfaction score is 4.15, with 19 tickets missing a score." Evidence_refs: four keys.
+
+q7 statement: "Across the sample, 18 agents handled tickets; the most active agent resolved 26 tickets, accounting for 7.49% of all tickets." Evidence_refs: three keys.
+
+Now derived_values: we haven't computed any new numbers beyond verified. For q2 we could compute each team's share of total labor cost as derived values. That would be nice. Let's include derived values for each team: share = labor_cost_x / total_labor_cost * 100. Provide kind "share". Operands: [labor_cost_alpha, total_labor_cost] etc. Values: compute.
+
+Compute:
+
+total_labor_cost = 27422.9
+
+Alpha share = 7787.81 / 27422.9 *100 = let's calculate approx: 7787.81/27422.9 = 0.2840 approx. *100 = 28.40%.
+
+Beta share = 10247.36 / 27422.9 = 0.3737 => 37.37%.
+
+Gamma share = 9387.73 / 27422.9 = 0.3422 => 34.22%.
+
+We can include derived values list for q2.
+
+Similarly for q3 we could compute difference between fastest and slowest, but not required. Could include derived value: difference between chat and phone resolution times. Let's include maybe.
+
+Compute diff = resolution_chat - resolution_phone = 83.03921568627452 - 69.25352112676056 = 13.78569455951396. Kind "difference". Operands: ["resolution_chat","resolution_phone"].
+
+Also maybe ratio of email vs chat? Not needed.
+
+q4 direction already captured.
+
+q5 maybe compute proportion of high cost low sat tickets relative to total tickets? Not required.
+
+But we can include derived values for q5: share of total tickets = high_cost_low_sat_count / ticket_count *100. Compute: 12 / 347 = 0.03458 => 3.46%. Provide derived value.
+
+But statement didn't mention that; we could add derived value but not referenced in statement. It's okay as derived values can be present even if not mentioned? The schema says derived_values must declare every number in your text computed from findings. If we include derived values not mentioned, that's okay but not required. Safer to only include derived values that we actually mention. In statements we didn't mention shares, so we can omit derived values.
+
+Thus only derived values for q2 (team shares) and maybe q3 diff if we mention difference. In statement we said "slowest on chat". Not mention difference. Could still include derived but not referenced; might be okay but not needed. Let's keep only derived for q2.
+
+Now construct JSON.
+
+Need to ensure each key_finding includes required fields: finding_id, statement, evidence_refs, reported_values. direction optional; ranking optional; derived_values optional.
+
+Add direction for q4.
+
+Add ranking for q2 and q3.
+
+Add derived_values for q2.
+
+Now produce JSON.
+
+Make sure numbers are numbers (floats). Use rounding to 2 decimals maybe but keep as numbers.
+
+Let's compute shares with two decimals:
+
+Alpha share 28.40, Beta 37.37, Gamma 34.22.
+
+Now produce.
+

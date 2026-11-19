@@ -1,0 +1,91 @@
+We need to produce JSON with fields python_code (string containing script), output_filename "cleaned.csv", cleaning_logic brief explanation.
+
+The script must implement all cleaning steps, produce cleaned.csv and cleaning_summary.json with raw_rows, cleaned_rows, and per-rule counts.
+
+We need to read raw.csv as text, treat all columns as strings, strip whitespace, treat missing values as per list.
+
+Implementation plan:
+
+- import os, pandas as pd, numpy as np, json, datetime.
+
+- input_path = os.path.join(os.environ["INPUT_DIR"], "raw.csv")
+- df_raw = pd.read_csv(input_path, dtype=str, keep_default_na=False) # read as strings, no NA conversion.
+
+- raw_rows = len(df_raw)
+
+- Strip whitespace: df = df_raw.applymap(lambda x: x.strip() if isinstance(x, str) else x)
+
+- Define missing set: {'', 'na', 'n/a', 'null', 'none', '-'} after lower.
+
+- Replace missing values with np.nan: df = df.replace(to_replace=lambda v: isinstance(v,str) and v.strip().lower() in missing_set, value=np.nan)
+
+- R2 duplicate removal: keep first occurrence based on order_id. order_id column may have missing? Not specified; assume not missing. Use df.drop_duplicates(subset=['order_id'], keep='first', inplace=True). Count duplicates removed.
+
+- We'll track counts per rule: e.g., duplicates_removed, rows_dropped_order_date, region_invalid, product_category_invalid, unit_price_invalid, quantity_invalid, discount_invalid.
+
+- R3 order_date parsing: define function parse_date(s). Try each format using datetime.strptime. Formats list: "%Y-%m-%d", "%m/%d/%Y", "%d-%b-%Y", "%Y/%m/%d", "%B %d, %Y". For %d-%b-%Y need month abbreviation case-insensitive; strptime handles case-insensitive? It expects proper case; we can .title() maybe. We'll try with .capitalize? We'll just try directly; we can .lower() then use strptime? Actually strptime expects month abbreviation with first letter capital, e.g., "Mar". We'll convert to proper case: s = s.strip(); then try each format; if fails continue. If parsed, return date.strftime("%Y-%m-%d"). else None.
+
+- Apply to df['order_date']; rows where result is NaN drop.
+
+- R4 region mapping: map case-insensitive values: 'north','n' -> 'North', etc. Use dict mapping lower to proper. If missing or not in mapping, drop.
+
+- R5 product_category mapping: define mapping dict lower->standard. Include variants. Use lower stripped. Drop rows not mapped.
+
+- R6 unit_price: remove '$','USD',',' and surrounding spaces. Use regex: re.sub(r'[\$,]', '', s) then replace 'USD' case-insensitively. Then strip. If after cleaning empty -> NaN. Then try float. Drop if missing, not number, <=0 or >5000.
+
+- R7 quantity: parse as float, then check integer (abs(value - round(value)) < epsilon). Convert to int. Drop if missing, not number, not whole, <1 or >50.
+
+- R8 discount_pct: if missing (NaN) set 0. Else remove trailing '%' and strip, parse float. Drop if not number or <0 or >100.
+
+- R9 customer_id: if missing (NaN) set 'UNKNOWN', else upper.
+
+- R10 revenue: compute quantity * unit_price * (1 - discount_pct/100). Round to 2 decimals.
+
+- R11 output columns order, sort by order_id ascending (string sort). Write CSV with header, index=False.
+
+- cleaning_summary: include raw_rows, cleaned_rows, duplicates_removed, rows_dropped_order_date, region_invalid, product_category_invalid, unit_price_invalid, quantity_invalid, discount_invalid.
+
+- Write JSON to cleaning_summary.json.
+
+Edge Cases: need to ensure we treat missing values after stripping before mapping.
+
+Implementation details:
+
+- Use pandas operations for speed.
+
+- For per-rule counts, we can compute before dropping: e.g., after each step, compute number of rows dropped.
+
+Implementation steps:
+
+1. raw_rows = len(df)
+
+2. After stripping and missing replacement.
+
+3. duplicates_removed = df.duplicated(subset='order_id').sum(); df = df.drop_duplicates(subset='order_id', keep='first')
+
+4. order_date parsing: create new column parsed_date; rows where parsed_date is NaN count; drop.
+
+5. region mapping: map; rows where result is NaN count; drop.
+
+6. product_category mapping: map; rows where result is NaN count; drop.
+
+7. unit_price cleaning: apply function; rows where result is NaN or invalid count; drop.
+
+8. quantity cleaning: apply; rows where invalid count; drop.
+
+9. discount_pct cleaning: apply; rows where invalid count; drop.
+
+10. After all, cleaned_rows = len(df)
+
+Write.
+
+Now produce script as string.
+
+Need to ensure we import re.
+
+Now produce JSON.
+
+Let's craft cleaning_logic: brief explanation.
+
+Now produce final answer.
+

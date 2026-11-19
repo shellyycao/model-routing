@@ -1,0 +1,7 @@
+{
+  "fixed_code": "def overlap_minutes(a,b):\n    if a[1] < a[0] or b[1] < b[0]: raise ValueError('interval')\n    return max(0, min(a[1], b[1]) - max(a[0], b[0]))",
+  "bug_locations": [
+    "overlap_minutes function"
+  ],
+  "explanation": "The original code had two defects: 1) The validation check used `<=` instead of `<`, incorrectly rejecting valid intervals where start equals end (zero-length intervals). 2) The overlap calculation added `+1`, which is incorrect for half-open intervals. The fix corrects the validation to only reject intervals where end < start, and removes the erroneous `+1` from the overlap calculation."
+}

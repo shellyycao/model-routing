@@ -1,0 +1,129 @@
+We need to produce JSON with fields python_code (string containing script), output_filename = "cleaned.csv", cleaning_logic brief explanation.
+
+The script must read raw.csv from INPUT_DIR, treat all columns as text, strip whitespace, treat missing values as per list. Then deduplicate by order_id (keep first). Then apply each rule sequentially, dropping rows as needed.
+
+We need to track counts for summary: raw_rows, cleaned_rows, maybe counts per rule.
+
+Implementation details:
+
+- Use pandas read_csv with dtype=str, keep default. But need to treat missing values after stripping. We'll read as strings, then apply strip to all cells.
+
+- For missing detection: after stripping, if lowercased value in set {'', 'na', 'n/a', 'null', 'none', '-'} then treat as None (np.nan). We'll replace with np.nan.
+
+- Deduplicate: df.drop_duplicates(subset='order_id', keep='first', inplace=True)
+
+- Then apply each rule, building summary counts.
+
+Parsing order_date: we need to try multiple formats. Use datetime.strptime with list of formats. Also need to handle month abbreviation format: %d-%b-%Y (e.g., 05-Mar-2024). Also 'Month D, YYYY' format: %B %d, %Y (note day may have no leading zero). We'll attempt each format; if fails, drop row.
+
+After parsing, format to YYYY-MM-DD string.
+
+Region mapping: case-insensitive mapping: N->North, etc. Also full names. We'll map after stripping and upper/lower.
+
+Product category mapping: define dict mapping normalized lower string to target.
+
+Unit_price: remove '$', 'USD', ',' and surrounding spaces. Use regex: replace r'[\$,]' and 'USD' case-insensitively. Then strip. If after cleaning empty -> missing. Parse float. Drop if <=0 or >5000.
+
+Quantity: parse float, ensure integer (value.is_integer()), between 1 and 50 inclusive. Store as int.
+
+Discount_pct: if missing (np.nan) set to 0. Else remove trailing '%' and parse float. Drop if <0 or >100.
+
+Customer_id: convert to upper case; if missing set to 'UNKNOWN'.
+
+Revenue: compute quantity * unit_price * (1 - discount_pct/100). Round to 2 decimals.
+
+Select columns order, sort by order_id ascending (string sort). Write CSV with header, index=False.
+
+Write cleaning_summary.json with counts.
+
+Edge Cases: need to ensure we treat missing values after initial stripping before deduplication? The spec says R1: treat missing values; R2 deduplicate before any other row filter. So deduplication should be based on raw order_id values before missing conversion? But order_id may have missing? Not likely. We'll deduplicate after initial cleaning of whitespace but before dropping rows. So we will apply R1 (strip and missing conversion) to all columns, then deduplicate based on order_id (including after missing conversion). That's fine.
+
+Implementation steps:
+
+- import os, pandas as pd, numpy as np, json, datetime.
+
+- raw_path = os.path.join(os.environ['INPUT_DIR'], 'raw.csv')
+- df = pd.read_csv(raw_path, dtype=str, keep_default_na=False) # keep strings.
+
+- raw_rows = len(df)
+
+- Strip whitespace: df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)
+
+- Define missing set; replace values: df = df.replace(missing_set, np.nan, regex=False) but need case-insensitive. We'll use applymap again: if isinstance(x,str) and x.lower() in missing_set: return np.nan else x.
+
+Simpler: define function clean_val.
+
+- After cleaning, deduplicate: df = df.drop_duplicates(subset='order_id', keep='first')
+
+- Then start applying rules sequentially, each step filter rows and update counts.
+
+We'll keep a dict summary_counts for each rule dropped.
+
+Implementation details for each rule:
+
+R3: define function parse_date(val). Return formatted string or np.nan. Use try loops.
+
+After applying, drop rows where order_date is NaN.
+
+R4: region mapping dict: {'n':'North','north':'North','s':'South','south':'South','e':'East','east':'East','w':'West','west':'West'}
+
+Apply lower, map; else NaN.
+
+R5: product mapping dict: map normalized lower string (strip spaces) to target.
+
+Normalization: lower, replace '&' with 'and' maybe? We'll just define mapping for given variants.
+
+We'll create dict mapping:
+
+{
+'electronics':'Electronics',
+'electronic':'Electronics',
+'clothing':'Clothing',
+'apparel':'Clothing',
+'home & garden':'Home & Garden',
+'home and garden':'Home & Garden',
+'home&garden':'Home & Garden',
+'home and garden':'Home & Garden',
+'home & garden':'Home & Garden',
+'sports':'Sports',
+'sport':'Sports',
+'books':'Books',
+'book':'Books'
+}
+
+Also ensure we handle spaces.
+
+R6: unit_price cleaning: remove '$', 'USD', ','; also strip. Use regex: re.sub(r'[\$,]', '', val, flags=re.IGNORECASE); also replace 'USD' case-insensitively. Then parse float.
+
+R7: quantity: parse float, check is_integer, between 1 and 50.
+
+R8: discount_pct: if NaN set 0. else remove trailing '%', strip, parse float.
+
+R9: customer_id: if NaN set 'UNKNOWN', else upper.
+
+R10: revenue compute.
+
+R11: select columns, sort.
+
+Write cleaned.csv.
+
+Write summary JSON: include raw_rows, cleaned_rows, and per rule dropped counts.
+
+We need to track counts: after each rule, compute rows before and after, store diff.
+
+Implementation details: after each rule, we can compute before = len(df), after = len(df_filtered), diff = before - after.
+
+We'll store in summary dict.
+
+Edge Cases: For discount_pct missing, we set to 0, not drop.
+
+Now produce final JSON.
+
+Let's craft script as a multi-line string.
+
+Make sure to import re.
+
+Write summary to json file.
+
+Now produce final answer.
+

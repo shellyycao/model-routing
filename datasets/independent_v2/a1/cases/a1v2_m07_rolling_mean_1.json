@@ -1,0 +1,27 @@
+{
+  "bug_locations": [
+    "rolling_mean window bounds",
+    "rolling_mean denominator"
+  ],
+  "buggy": "def rolling_mean(xs,window,min_periods=1):\n                 return [sum(xs[max(0,i-window):i])/window for i in range(len(xs))]\n",
+  "case_id": "a1v2_m07_rolling_mean_1",
+  "difficulty": "medium",
+  "family": "rolling_mean",
+  "hidden": [
+    "rolling_mean([1,2,3],2)==[1,1.5,2.5]",
+    "rolling_mean([1,2],3,3)==[None,None]",
+    "rolling_mean([],2)==[]",
+    "_raises(lambda: rolling_mean([1],0),ValueError)",
+    "_raises(lambda: rolling_mean([1],2,3),ValueError)"
+  ],
+  "label_source": "executable reference plus independently checked tests",
+  "reference": "def rolling_mean(xs, window, min_periods=1):\n             if window<=0 or min_periods<1 or min_periods>window: raise ValueError('window')\n             out=[]\n             for i in range(len(xs)):\n                 vals=xs[max(0,i-window+1):i+1]\n                 out.append(sum(vals)/len(vals) if len(vals)>=min_periods else None)\n             return out\n",
+  "spec": "rolling_mean(xs, window, min_periods=1) returns one mean per input position using the trailing window and requiring at least min_periods values; otherwise null. Validate 1 <= min_periods <= window.",
+  "verification": {
+    "buggy_fails": 4,
+    "reference_passes": 5
+  },
+  "visible": [
+    "rolling_mean([1,2,3], 2) == [1,1.5,2.5]"
+  ]
+}

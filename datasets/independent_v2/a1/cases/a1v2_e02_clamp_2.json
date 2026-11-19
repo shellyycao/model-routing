@@ -1,0 +1,26 @@
+{
+  "bug_locations": [
+    "clamp bounds validation"
+  ],
+  "buggy": "def clamp(x, low, high):\n                 return min(max(x, low), high)\n",
+  "case_id": "a1v2_e02_clamp_2",
+  "difficulty": "easy",
+  "family": "clamp",
+  "hidden": [
+    "clamp(5,0,10)==5",
+    "clamp(-2,0,10)==0",
+    "clamp(11,0,10)==10",
+    "clamp(2.5,2.5,2.5)==2.5",
+    "_raises(lambda: clamp(1,3,2), ValueError)"
+  ],
+  "label_source": "executable reference plus independently checked tests",
+  "reference": "def clamp(x, low, high):\n             if low > high: raise ValueError('bounds')\n             return min(max(x, low), high)\n",
+  "spec": "clamp(x, low, high) bounds x inclusively; raise ValueError when low > high.",
+  "verification": {
+    "buggy_fails": 1,
+    "reference_passes": 5
+  },
+  "visible": [
+    "clamp(5, 0, 10) == 5"
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "fixed_code": "def dedupe(xs):\n    seen = set()\n    result = []\n    for x in xs:\n        if x not in seen:\n            seen.add(x)\n            result.append(x)\n    return result",
+  "bug_locations": [
+    "dedupe"
+  ],
+  "explanation": "The original implementation incorrectly used set to remove duplicates, which does not preserve order and cannot handle unhashable values. The corrected implementation uses a set to track seen elements and a list to preserve order, ensuring that only the first occurrence of each element is added to the result."
+}

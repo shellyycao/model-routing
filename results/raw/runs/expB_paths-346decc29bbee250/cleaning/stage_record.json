@@ -1,0 +1,119 @@
+{
+  "stage": "cleaning",
+  "model_alias": "B",
+  "model_id": "us.amazon.nova-pro-v1:0",
+  "prompt_version": "v2",
+  "prompt_hash": "db9085b5641fae0b1962e16963671aa36c598358db09e4a841d5a054b0253296",
+  "invocation_ids": [
+    "64fe1cd2-e9ee-448e-a064-b8cffabc3c4a"
+  ],
+  "cache_hit": false,
+  "shared_with_run_ids": [],
+  "status": "failed",
+  "structural_ok": false,
+  "failure_type": "execution_error",
+  "failure_detail": "execution runtime_error (exit 1): /sandbox/code/main.py:47: SyntaxWarning: invalid escape sequence '\\$'\n  df['unit_price'] = df['unit_price'].replace({'\\$': '', 'USD': '', ',': ''}, regex=True).str.strip()\n/sandbox/code/main.py:16: FutureWarning: DataFrame.applymap has been deprecated. Use DataFrame.map instead.\n  df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)\nTraceback (most recent call last):\n  File \"/sandbox/code/main.py\", line 23, in <module>\n    df['order_date'] = pd.to_datetime(df['order_date'], format=date_formats, errors='coerce')\n                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/tools/datetimes.py\", line 1067, in to_datetime\n    values = convert_listlike(arg._values, format)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/tools/datetimes.py\", line 433, in _convert_listlike_datetimes\n    return _array_strptime_with_fallback(arg, name, utc, format, exact, errors)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/tools/datetimes.py\", line 467, in _array_strptime_with_fallback\n    result, tz_out = array_strptime(arg, fmt, exact=exact, errors=errors, utc=utc)\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: Argument 'fmt' has incorrect type (expected str, got list)\n",
+  "parse_ok": true,
+  "execution": {
+    "status": "runtime_error",
+    "exit_code": 1,
+    "stdout": "",
+    "stderr": "/sandbox/code/main.py:47: SyntaxWarning: invalid escape sequence '\\$'\n  df['unit_price'] = df['unit_price'].replace({'\\$': '', 'USD': '', ',': ''}, regex=True).str.strip()\n/sandbox/code/main.py:16: FutureWarning: DataFrame.applymap has been deprecated. Use DataFrame.map instead.\n  df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)\nTraceback (most recent call last):\n  File \"/sandbox/code/main.py\", line 23, in <module>\n    df['order_date'] = pd.to_datetime(df['order_date'], format=date_formats, errors='coerce')\n                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/tools/datetimes.py\", line 1067, in to_datetime\n    values = convert_listlike(arg._values, format)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/tools/datetimes.py\", line 433, in _convert_listlike_datetimes\n    return _array_strptime_with_fallback(arg, name, utc, format, exact, errors)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/tools/datetimes.py\", line 467, in _array_strptime_with_fallback\n    result, tz_out = array_strptime(arg, fmt, exact=exact, errors=errors, utc=utc)\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: Argument 'fmt' has incorrect type (expected str, got list)\n",
+    "runtime_ms": 850.4328750004788,
+    "output_files": [],
+    "sandbox_image": "sha256:7f95c0dedbe5dedde14b03130fce5c5e889062d63d7bde9dd10c3f7891bbb738"
+  },
+  "validation": {
+    "stage": "cleaning",
+    "hard_pass": false,
+    "checks": [
+      {
+        "name": "output_exists",
+        "passed": false,
+        "mandatory": true,
+        "detail": "cleaned CSV not found: /Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expB_paths-346decc29bbee250/cleaning/output/cleaned.csv",
+        "value": null
+      },
+      {
+        "name": "output_parses",
+        "passed": false,
+        "mandatory": true,
+        "detail": "no output",
+        "value": null
+      },
+      {
+        "name": "required_columns_present",
+        "passed": false,
+        "mandatory": true,
+        "detail": "no output",
+        "value": null
+      },
+      {
+        "name": "schema_constraints",
+        "passed": false,
+        "mandatory": true,
+        "detail": "no output",
+        "value": null
+      },
+      {
+        "name": "no_duplicate_keys",
+        "passed": false,
+        "mandatory": true,
+        "detail": "no output",
+        "value": null
+      },
+      {
+        "name": "row_set_matches_reference",
+        "passed": false,
+        "mandatory": true,
+        "detail": "no output",
+        "value": null
+      },
+      {
+        "name": "values_match_reference",
+        "passed": false,
+        "mandatory": true,
+        "detail": "no output",
+        "value": null
+      }
+    ],
+    "quality": {
+      "cleaning_correctness": 0.0,
+      "data_integrity": 0.0,
+      "schema_compliance": 0.0
+    },
+    "quality_basis": "ground_truth",
+    "validator_version": "1.0"
+  },
+  "conditional_validation": null,
+  "input_artifacts": [
+    "datasets/projects/retail_sales/raw.csv"
+  ],
+  "output_artifacts": [
+    "results/raw/runs/expB_paths-346decc29bbee250/cleaning/prompt.txt",
+    "results/raw/runs/expB_paths-346decc29bbee250/cleaning/response.txt",
+    "results/raw/runs/expB_paths-346decc29bbee250/cleaning/parsed.json",
+    "results/raw/runs/expB_paths-346decc29bbee250/cleaning/code.py"
+  ],
+  "input_artifact_hashes": {
+    "datasets/projects/retail_sales/raw.csv": "a1c513b0966bc95bb7cf521bc8920d7a70ccac71ff98d1564a6d84e013f33a5c"
+  },
+  "output_artifact_hashes": {
+    "results/raw/runs/expB_paths-346decc29bbee250/cleaning/prompt.txt": "db9085b5641fae0b1962e16963671aa36c598358db09e4a841d5a054b0253296",
+    "results/raw/runs/expB_paths-346decc29bbee250/cleaning/response.txt": "c0cbc936352b3c850de2e598579c914e41011ecfb49361c05944ca0d6509178e",
+    "results/raw/runs/expB_paths-346decc29bbee250/cleaning/parsed.json": "33c3846975421c0ffc2af28412126e3cdfb53f099160d4845c58f4f34a2bc4a7",
+    "results/raw/runs/expB_paths-346decc29bbee250/cleaning/code.py": "d793271b470963176f00f18369d57b22e3bfab2961722cc574e797cbe9d0495f"
+  },
+  "handoff_in_path": "results/raw/runs/expB_paths-346decc29bbee250/cleaning/handoff_in.json",
+  "handoff_size_bytes": 575,
+  "input_tokens": 2175,
+  "output_tokens": 1871,
+  "cost_usd": null,
+  "cost_status": "unavailable",
+  "timings": {
+    "generation_ms": 11047.906874999171,
+    "execution_ms": 850.4328750004788,
+    "validation_ms": 0.802500000645523,
+    "handoff_ms": 0.23824999880162068
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "fixed_code": "def chunks(xs, size):\n    if size <= 0: raise ValueError('size')\n    return [xs[i:i+size] for i in range(0, len(xs), size)]\n",
+  "bug_locations": [
+    "return statement in chunks function"
+  ],
+  "explanation": "The range stop value was `len(xs)-size+1` instead of `len(xs)`. Using `len(xs)-size+1` causes the last chunk to be omitted when the list length is not a perfect multiple of size, and also fails for lists shorter than `size`. The correct stop value is `len(xs)`, which ensures all elements are covered including any short final chunk."
+}

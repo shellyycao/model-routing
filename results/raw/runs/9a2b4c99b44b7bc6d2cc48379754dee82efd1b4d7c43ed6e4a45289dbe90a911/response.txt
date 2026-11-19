@@ -1,0 +1,9 @@
+```json
+{
+  "fixed_code": "def rotate(xs, k):\n    if not xs:\n        return []\n    k %= len(xs)\n    return list(xs[-k:] + xs[:-k])\n",
+  "bug_locations": [
+    "rotate: final return/slice expression"
+  ],
+  "explanation": "The empty-input guard is correct, and Python's modulo already normalizes negative k into an equivalent right rotation. The defect is that xs[k:] + xs[:k] rotates left by k. For a right rotation, the last k elements must come first: xs[-k:] + xs[:-k]. This also returns a full copy when k == 0."
+}
+```

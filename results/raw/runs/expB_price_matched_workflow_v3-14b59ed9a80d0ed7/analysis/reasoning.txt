@@ -1,0 +1,239 @@
+Let me analyze the task carefully.
+
+I need to write a Python script that:
+1. Reads cleaned.csv from INPUT_DIR
+2. Computes metrics
+3. Writes findings.json to OUTPUT_DIR (flat JSON object with all metric keys as finite numbers)
+
+Key considerations:
+- order_date should be parsed as datetime
+- Year filtering: 2023, 2024 for revenue; quarters of 2024
+- Regional revenues: North, South, East, West
+- High-discount electronics: product_category == 'Electronics' and discount_pct >= 20
+- Order revenue distribution: mean, median, sample std (ddof=1), min, max
+- Customer concentration: unique customer_id count, top customer revenue, share pct
+- All values must be finite numbers (int or float), no NaN/Infinity
+- Don't round results; full precision
+
+Edge cases:
+- If revenue_2023 is 0, YoY would be division by zero — but data clearly has 2023 data, so it's fine, but I could add a guard. Since the contract requires finite numbers, I should ensure values are finite. With 520 rows spanning 2023-2024, both years should have data. I'll add safe handling maybe, but keep it simple. Actually, to be robust, I could compute with plain division; the data will have 2023 revenue > 0.
+
+- order_count should probably be an integer — that's a number, fine.
+- unique_customer_count — integer, fine.
+- electronics_high_discount_orders — integer, fine.
+
+For JSON serialization, numpy types need conversion to Python native types. I'll convert everything to float/int explicitly.
+
+Let me write the script:
+
+```python
+import json
+import os
+
+import pandas as pd
+
+
+def main():
+    input_path = os.path.join(os.environ["INPUT_DIR"], "cleaned.csv")
+    output_path = os.path.join(os.environ["OUTPUT_DIR"], "findings.json")
+
+    df = pd.read_csv(input_path, parse_dates=["order_date"])
+
+    revenue = df["revenue"].astype(float)
+
+    # q1: overall performance
+    total_revenue = float(revenue.sum())
+    order_count = int(len(df))
+    average_order_value = total_revenue / order_count
+
+    # q2: regional comparison
+    by_region = df.groupby("region")["revenue"].sum()
+    revenue_north = float(by_region.get("North", 0.0))
+    revenue_south = float(by_region.get("South", 0.0))
+    revenue_east = float(by_region.get("East", 0.0))
+    revenue_west = float(by_region.get("West", 0.0))
+
+    # year and quarter
+    year = df["order_date"].dt.year
+
+    # q4: year-over-year
+    revenue_2023 = float(revenue[year == 2023].sum())
+    revenue_2024 = float(revenue[year == 2024].sum())
+    revenue_yoy_change_pct = (revenue_2024 - revenue_2023) / revenue_2023 * 100.0
+
+    # q3: quarterly trend in 2024
+    quarter = df["order_date"].dt.quarter
+    rev_2024_by_q = revenue[(year == 2024)].groupby(quarter[year == 2024]).sum()
+    ...
+```
+
+Hmm, simpler:
+
+```python
+    mask_2024 = year == 2024
+    q = df.loc[mask_2024, "order_date"].dt.quarter
+    rev_q = df.loc[mask_2024, "revenue"].groupby(q).sum()
+    revenue_2024_q1 = float(rev_q.get(1, 0.0))
+    ...
+```
+
+q5:
+```python
+    mask_hd = (df["product_category"] == "Electronics") & (df["discount_pct"] >= 20)
+    electronics_high_discount_orders = int(mask_hd.sum())
+    electronics_high_discount_revenue = float(df.loc[mask_hd, "revenue"].sum())
+```
+
+q6:
+```python
+    order_revenue_mean = float(revenue.mean())
+    order_revenue_median = float(revenue.median())
+    order_revenue_std = float(revenue.std(ddof=1))
+    order_revenue_min = float(revenue.min())
+    order_revenue_max = float(revenue.max())
+```
+
+q7:
+```python
+    unique_customer_count = int(df["customer_id"].nunique())
+    by_customer = df.groupby("customer_id")["revenue"].sum()
+    top_customer_revenue = float(by_customer.max())
+    top_customer_revenue_share_pct = top_customer_revenue / total_revenue * 100.0
+```
+
+Then build findings dict, verify all finite, and write with json.dump. Use math.isfinite check; if something is NaN, maybe convert to 0? The contract says values must be finite. Given the data, everything will be finite. But a guard could be added. I'll add an assertion or a safety conversion. Better to just ensure and let it be — but a defensive approach: if std is NaN (n<2) set to 0. With 520 rows, no issue. I'll include a finite check that raises or coerces. Actually simplest: assert all finite — if it fails the stage fails. Given data guarantees, it's fine. I'll include a check and raise ValueError to be explicit. Hmm, raising would fail the stage. Coercing silently could mask bugs. The data guarantees at least min 0 revenue and 520 rows, so all metrics are computable and finite. revenue_2023 > 0 since there are clearly 2023 orders with revenue. I'll keep plain computation plus a sanity assertion.
+
+Writing JSON: use json.dump with default handling. Convert all to native Python float/int.
+
+Note: groupby on categorical "region" — if region is read as object dtype by default (pandas read_csv gives object), fine. `.get("North", 0.0)` works.
+
+Actually for a categorical column, groupby sum returns a Series indexed by category values, .get works too.
+
+One caution: with categoricals, `by_region.get("North", 0.0)` — Series.get uses label lookup, works.
+
+Order of keys in output dict: match the required list order. Python dicts preserve insertion order; json.dump preserves it.
+
+Full precision: don't round. json.dump will serialize floats with repr precision, fine.
+
+Methods description: brief summary.
+
+expected_artifacts: ["findings.json"].
+
+Let me write final script cleanly. Also handle dtype: quantity int etc. Not needed beyond revenue/discount/category/date/customer_id.
+
+I'll parse dates with pd.to_datetime via read_csv parse_dates. Fine.
+
+Let me assemble:
+
+```python
+"""Analysis stage for the retail_sales project.
+
+Reads the cleaned order data produced by the cleaning stage and computes the
+required business metrics, writing them as a flat JSON object to findings.json.
+"""
+
+import json
+import math
+import os
+
+import pandas as pd
+
+
+def main() -> None:
+    input_path = os.path.join(os.environ["INPUT_DIR"], "cleaned.csv")
+    output_path = os.path.join(os.environ["OUTPUT_DIR"], "findings.json")
+
+    df = pd.read_csv(input_path, parse_dates=["order_date"])
+
+    revenue = df["revenue"].astype(float)
+    year = df["order_date"].dt.year
+
+    # q1: overall performance
+    total_revenue = float(revenue.sum())
+    order_count = int(len(df))
+    average_order_value = total_revenue / order_count
+
+    # q2: regional comparison
+    revenue_by_region = df.groupby("region")["revenue"].sum()
+
+    # q3: quarterly trend in 2024
+    mask_2024 = year == 2024
+    revenue_2024_by_quarter = (
+        df.loc[mask_2024].groupby(df.loc[mask_2024, "order_date"].dt.quarter)["revenue"].sum()
+    )
+
+    # q4: year-over-year change
+    revenue_2023 = float(revenue[year == 2023].sum())
+    revenue_2024 = float(revenue[mask_2024].sum())
+    revenue_yoy_change_pct = (revenue_2024 - revenue_2023) / revenue_2023 * 100.0
+
+    # q5: high-discount electronics
+    mask_hd_elec = (df["product_category"] == "Electronics") & (df["discount_pct"] >= 20.0)
+    electronics_high_discount_orders = int(mask_hd_elec.sum())
+    electronics_high_discount_revenue = float(revenue[mask_hd_elec].sum())
+
+    # q6: order revenue distribution (sample std with ddof=1)
+    order_revenue_mean = float(revenue.mean())
+    order_revenue_median = float(revenue.median())
+    order_revenue_std = float(revenue.std(ddof=1))
+    order_revenue_min = float(revenue.min())
+    order_revenue_max = float(revenue.max())
+
+    # q7: customer concentration
+    unique_customer_count = int(df["customer_id"].nunique())
+    revenue_by_customer = df.groupby("customer_id")["revenue"].sum()
+    top_customer_revenue = float(revenue_by_customer.max())
+    top_customer_revenue_share_pct = top_customer_revenue / total_revenue * 100.0
+
+    findings = {
+        "total_revenue": total_revenue,
+        "order_count": order_count,
+        "average_order_value": average_order_value,
+        "revenue_north": float(revenue_by_region.get("North", 0.0)),
+        "revenue_south": float(revenue_by_region.get("South", 0.0)),
+        "revenue_east": float(revenue_by_region.get("East", 0.0)),
+        "revenue_west": float(revenue_by_region.get("West", 0.0)),
+        "revenue_2024_q1": float(revenue_2024_by_quarter.get(1, 0.0)),
+        "revenue_2024_q2": float(revenue_2024_by_quarter.get(2, 0.0)),
+        "revenue_2024_q3": float(revenue_2024_by_quarter.get(3, 0.0)),
+        "revenue_2024_q4": float(revenue_2024_by_quarter.get(4, 0.0)),
+        "revenue_2023": revenue_2023,
+        "revenue_2024": revenue_2024,
+        "revenue_yoy_change_pct": revenue_yoy_change_pct,
+        "electronics_high_discount_orders": electronics_high_discount_orders,
+        "electronics_high_discount_revenue": electronics_high_discount_revenue,
+        "order_revenue_mean": order_revenue_mean,
+        "order_revenue_median": order_revenue_median,
+        "order_revenue_std": order_revenue_std,
+        "order_revenue_min": order_revenue_min,
+        "order_revenue_max": order_revenue_max,
+        "unique_customer_count": unique_customer_count,
+        "top_customer_revenue": top_customer_revenue,
+        "top_customer_revenue_share_pct": top_customer_revenue_share_pct,
+    }
+
+    for key, value in findings.items():
+        if not isinstance(value, (int, float)) or not math.isfinite(value):
+            raise ValueError(f"Metric {key!r} is not a finite number: {value!r}")
+
+    with open(output_path, "w", encoding="utf-8") as fh:
+        json.dump(findings, fh, indent=2)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+One subtlety: `df.groupby("region")["revenue"].sum()` when region is object dtype — fine. `.get` on the resulting Series — Series.get(label, default) works.
+
+Another subtlety: groupby with observed parameter for categorical — pandas default observed=False may produce a FutureWarning in some versions but works. Since read_csv gives object dtype by default (schema says category but the CSV itself has no dtype info; the analysis script reads fresh, so it's object). Fine.
+
+Note `math.isfinite` accepts ints and floats — yes, works with int too.
+
+The groupby for quarters: `df.loc[mask_2024].groupby(df.loc[mask_2024, "order_date"].dt.quarter)["revenue"].sum()` — grouping by a Series with matching index, works. Result index is quarter numbers as int. `.get(1, 0.0)` works.
+
+Everything looks good. The response must be a single JSON object in a fenced block, nothing outside.
+
+Methods description: "Loaded cleaned.csv with pandas, parsed order_date, then computed: q1 totals and average order value from revenue; q2 revenue summed by region; q3 revenue summed per calendar quarter of 2024; q4 2023 vs 2024 totals and percentage YoY change; q5 count and revenue of Electronics orders with discount_pct >= 20; q6 mean, median, sample standard deviation (ddof=1), min and max of order revenue; q7 distinct customer count, top customer's total revenue and its percentage share of total revenue. Results written unrounded as a flat JSON object."
+
+Done.

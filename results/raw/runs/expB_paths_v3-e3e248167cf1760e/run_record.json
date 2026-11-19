@@ -1,0 +1,407 @@
+{
+  "contract_version": "1.2",
+  "run_id": "expB_paths_v3-e3e248167cf1760e",
+  "experiment_id": "expB_paths_v3",
+  "project_id": "support_operations",
+  "path_id": "A-C-A",
+  "models": [
+    "A",
+    "C",
+    "A"
+  ],
+  "repeat_index": 1,
+  "config_hash": "5e95e189c5d0fda618d3176168dfa512e3ccc9bb2cf9c0f2ff28fac308f4974b",
+  "failure_policy": "continue_with_actual_artifact",
+  "started_at": "2026-11-18T07:00:26.883318+00:00",
+  "finished_at": "2026-11-18T07:01:02.619527+00:00",
+  "stages": [
+    {
+      "stage": "cleaning",
+      "model_alias": "A",
+      "model_id": "us.anthropic.claude-sonnet-4-6",
+      "prompt_version": "v3",
+      "prompt_hash": "4c80e726ad39dcec71d0f3668b55982f474546dfd54cafee800a7f420e1182ec",
+      "invocation_ids": [
+        "1f80109b-cb2d-4406-98e5-39992d52c92e"
+      ],
+      "cache_hit": false,
+      "shared_with_run_ids": [],
+      "status": "failed",
+      "structural_ok": true,
+      "failure_type": "validation_failed",
+      "failure_detail": "row_set_matches_reference: 127 reference rows missing (e.g. ['T00004', 'T00006', 'T00016', 'T00017', 'T00019']); 0 unexpected rows (e.g. []); output rows=220, reference rows=347",
+      "parse_ok": true,
+      "execution": {
+        "status": "success",
+        "exit_code": 0,
+        "stdout": "Cleaning complete: 380 raw rows -> 220 cleaned rows.\nSummary: {'raw_rows': 380, 'tickets_deduped': 20, 'agents_deduped': 0, 'agents_excluded_invalid': 0, 'tickets_dropped_no_agent': 6, 'tickets_dropped_invalid_channel': 4, 'tickets_dropped_invalid_resolution': 130, 'tickets_dropped_invalid_reopened': 0, 'cleaned_rows': 220}\n",
+        "stderr": "",
+        "runtime_ms": 719.325124999159,
+        "output_files": [
+          "/Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expB_paths_v3-e3e248167cf1760e/cleaning/output/cleaned.csv",
+          "/Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expB_paths_v3-e3e248167cf1760e/cleaning/output/cleaning_summary.json"
+        ],
+        "sandbox_image": "sha256:88988a15503bdb96538c3dd62244a79879d5c7848397db18b1267ccfd0a9727a"
+      },
+      "validation": {
+        "stage": "cleaning",
+        "hard_pass": false,
+        "checks": [
+          {
+            "name": "output_exists",
+            "passed": true,
+            "mandatory": true,
+            "detail": "/Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expB_paths_v3-e3e248167cf1760e/cleaning/output/cleaned.csv",
+            "value": null
+          },
+          {
+            "name": "output_parses",
+            "passed": true,
+            "mandatory": true,
+            "detail": "220 rows, 10 columns",
+            "value": null
+          },
+          {
+            "name": "required_columns_present",
+            "passed": true,
+            "mandatory": true,
+            "detail": "all present",
+            "value": null
+          },
+          {
+            "name": "schema_constraints",
+            "passed": true,
+            "mandatory": true,
+            "detail": "all constraints satisfied",
+            "value": 1.0
+          },
+          {
+            "name": "no_extra_columns",
+            "passed": true,
+            "mandatory": false,
+            "detail": "",
+            "value": null
+          },
+          {
+            "name": "no_duplicate_keys",
+            "passed": true,
+            "mandatory": true,
+            "detail": "",
+            "value": 0.0
+          },
+          {
+            "name": "row_set_matches_reference",
+            "passed": false,
+            "mandatory": true,
+            "detail": "127 reference rows missing (e.g. ['T00004', 'T00006', 'T00016', 'T00017', 'T00019']); 0 unexpected rows (e.g. []); output rows=220, reference rows=347",
+            "value": null
+          },
+          {
+            "name": "values_match_reference",
+            "passed": true,
+            "mandatory": true,
+            "detail": "2200/2200 cells match (abs_tol=0.011, rel_tol=1e-06)",
+            "value": 1.0
+          }
+        ],
+        "quality": {
+          "cleaning_correctness": 0.6340057636887608,
+          "data_integrity": 0.6340057636887608,
+          "schema_compliance": 1.0
+        },
+        "quality_basis": "ground_truth",
+        "validator_version": "1.0"
+      },
+      "conditional_validation": null,
+      "input_artifacts": [
+        "datasets/projects/support_operations/raw.csv",
+        "datasets/projects/support_operations/agents.csv"
+      ],
+      "output_artifacts": [
+        "results/raw/runs/expB_paths_v3-e3e248167cf1760e/cleaning/prompt.txt",
+        "results/raw/runs/expB_paths_v3-e3e248167cf1760e/cleaning/response.txt",
+        "results/raw/runs/expB_paths_v3-e3e248167cf1760e/cleaning/parsed.json",
+        "results/raw/runs/expB_paths_v3-e3e248167cf1760e/cleaning/code.py",
+        "results/raw/runs/expB_paths_v3-e3e248167cf1760e/cleaning/output/cleaned.csv",
+        "results/raw/runs/expB_paths_v3-e3e248167cf1760e/cleaning/output/cleaning_summary.json"
+      ],
+      "input_artifact_hashes": {
+        "datasets/projects/support_operations/raw.csv": "d260e1c2251ade14aa044895797fa2d39647b6d1fe43ba7c79d8c5a48fd287fd",
+        "datasets/projects/support_operations/agents.csv": "51d9c560abc74a09ea32b0c667fc52c8d0f5479fd5a01314fc8f7f2fc0ff4442"
+      },
+      "output_artifact_hashes": {
+        "results/raw/runs/expB_paths_v3-e3e248167cf1760e/cleaning/prompt.txt": "4c80e726ad39dcec71d0f3668b55982f474546dfd54cafee800a7f420e1182ec",
+        "results/raw/runs/expB_paths_v3-e3e248167cf1760e/cleaning/response.txt": "032bbb212221467bde40a15fbf5a919854d5a84e169a6b5862051a92beeb49ac",
+        "results/raw/runs/expB_paths_v3-e3e248167cf1760e/cleaning/parsed.json": "f11a1784f83a19f962e86a54b7464d0eae9633938ecd8ce3ee6797b21e2ca759",
+        "results/raw/runs/expB_paths_v3-e3e248167cf1760e/cleaning/code.py": "f8ec5d2f256671f7ca2e75695b9e0978a08bc04b95113cb1ccaf82e04ffd5e99",
+        "results/raw/runs/expB_paths_v3-e3e248167cf1760e/cleaning/output/cleaned.csv": "b565e02b4bf534a01bd76e12a1445e68a4b98691efedeb37241d845f8dfeff66",
+        "results/raw/runs/expB_paths_v3-e3e248167cf1760e/cleaning/output/cleaning_summary.json": "197676384e2b55f1622ca5bf6f8cdc62000df48d49e16bd4d1fe83a88346d2a0"
+      },
+      "handoff_in_path": "results/raw/runs/expB_paths_v3-e3e248167cf1760e/cleaning/handoff_in.json",
+      "handoff_size_bytes": 424,
+      "input_tokens": 1757,
+      "output_tokens": 3362,
+      "cost_usd": null,
+      "cost_status": "unavailable",
+      "timings": {
+        "generation_ms": 20502.573416000814,
+        "execution_ms": 719.325124999159,
+        "validation_ms": 3.579207997972844,
+        "handoff_ms": 0.2356670011067763
+      }
+    },
+    {
+      "stage": "analysis",
+      "model_alias": "C",
+      "model_id": "openai.gpt-oss-120b-1:0",
+      "prompt_version": "v3",
+      "prompt_hash": "0dc03ca202cd55640388af9a10a0febd575c73946c18f141f96bfd0fa5ad8999",
+      "invocation_ids": [
+        "c26b7438-deff-43bf-acb4-602390027e42"
+      ],
+      "cache_hit": false,
+      "shared_with_run_ids": [],
+      "status": "failed",
+      "structural_ok": false,
+      "failure_type": "execution_error",
+      "failure_detail": "execution runtime_error (exit 1):   File \"/sandbox/code/main.py\", line 29\n    resolution_phone = float(df.loc[df[\"channel\"]] == \"phone\", \"resolution_minutes\"].mean())\n                                                                                   ^\nSyntaxError: closing parenthesis ']' does not match opening parenthesis '('\n",
+      "parse_ok": true,
+      "execution": {
+        "status": "runtime_error",
+        "exit_code": 1,
+        "stdout": "",
+        "stderr": "  File \"/sandbox/code/main.py\", line 29\n    resolution_phone = float(df.loc[df[\"channel\"]] == \"phone\", \"resolution_minutes\"].mean())\n                                                                                   ^\nSyntaxError: closing parenthesis ']' does not match opening parenthesis '('\n",
+        "runtime_ms": 206.1363339998934,
+        "output_files": [],
+        "sandbox_image": "sha256:88988a15503bdb96538c3dd62244a79879d5c7848397db18b1267ccfd0a9727a"
+      },
+      "validation": {
+        "stage": "analysis",
+        "hard_pass": false,
+        "checks": [
+          {
+            "name": "findings_exists",
+            "passed": false,
+            "mandatory": true,
+            "detail": "findings.json not found",
+            "value": null
+          },
+          {
+            "name": "findings_parses",
+            "passed": false,
+            "mandatory": true,
+            "detail": "no parseable findings",
+            "value": null
+          },
+          {
+            "name": "required_keys_present",
+            "passed": false,
+            "mandatory": true,
+            "detail": "no parseable findings",
+            "value": null
+          },
+          {
+            "name": "values_numeric",
+            "passed": false,
+            "mandatory": true,
+            "detail": "no parseable findings",
+            "value": null
+          },
+          {
+            "name": "values_within_tolerance",
+            "passed": false,
+            "mandatory": true,
+            "detail": "no parseable findings",
+            "value": null
+          }
+        ],
+        "quality": {
+          "numerical_accuracy": 0.0,
+          "calculation_coverage": 0.0
+        },
+        "quality_basis": "ground_truth",
+        "validator_version": "1.0"
+      },
+      "conditional_validation": {
+        "stage": "analysis",
+        "hard_pass": false,
+        "checks": [
+          {
+            "name": "findings_exists",
+            "passed": false,
+            "mandatory": true,
+            "detail": "findings.json not found",
+            "value": null
+          },
+          {
+            "name": "findings_parses",
+            "passed": false,
+            "mandatory": true,
+            "detail": "no parseable findings",
+            "value": null
+          },
+          {
+            "name": "required_keys_present",
+            "passed": false,
+            "mandatory": true,
+            "detail": "no parseable findings",
+            "value": null
+          },
+          {
+            "name": "values_numeric",
+            "passed": false,
+            "mandatory": true,
+            "detail": "no parseable findings",
+            "value": null
+          },
+          {
+            "name": "values_within_tolerance",
+            "passed": false,
+            "mandatory": true,
+            "detail": "no parseable findings",
+            "value": null
+          }
+        ],
+        "quality": {
+          "numerical_accuracy": 0.0,
+          "calculation_coverage": 0.0
+        },
+        "quality_basis": "conditional_reference",
+        "validator_version": "1.0"
+      },
+      "input_artifacts": [
+        "results/raw/runs/expB_paths_v3-e3e248167cf1760e/cleaning/output/cleaned.csv"
+      ],
+      "output_artifacts": [
+        "results/raw/runs/expB_paths_v3-e3e248167cf1760e/analysis/prompt.txt",
+        "results/raw/runs/expB_paths_v3-e3e248167cf1760e/analysis/response.txt",
+        "results/raw/runs/expB_paths_v3-e3e248167cf1760e/analysis/reasoning.txt",
+        "results/raw/runs/expB_paths_v3-e3e248167cf1760e/analysis/parsed.json",
+        "results/raw/runs/expB_paths_v3-e3e248167cf1760e/analysis/code.py"
+      ],
+      "input_artifact_hashes": {
+        "results/raw/runs/expB_paths_v3-e3e248167cf1760e/cleaning/output/cleaned.csv": "b565e02b4bf534a01bd76e12a1445e68a4b98691efedeb37241d845f8dfeff66"
+      },
+      "output_artifact_hashes": {
+        "results/raw/runs/expB_paths_v3-e3e248167cf1760e/analysis/prompt.txt": "0dc03ca202cd55640388af9a10a0febd575c73946c18f141f96bfd0fa5ad8999",
+        "results/raw/runs/expB_paths_v3-e3e248167cf1760e/analysis/response.txt": "72f48d8cfa6c0937fe2202b390799a9d754aad2d0adccc5244c7d7351786840c",
+        "results/raw/runs/expB_paths_v3-e3e248167cf1760e/analysis/reasoning.txt": "f069937367b4418e08ab5720104c456a223dc83c92cc08ae552ae3f88641ac6a",
+        "results/raw/runs/expB_paths_v3-e3e248167cf1760e/analysis/parsed.json": "69a1e6b33150d2f134c8ff0de2616e347ee9015fa93443ac5df7ee9ffd7d621f",
+        "results/raw/runs/expB_paths_v3-e3e248167cf1760e/analysis/code.py": "964f6b541a02b8b7b83050f62ae4134ebae07bc0f61e51758542601f22dacc99"
+      },
+      "handoff_in_path": "results/raw/runs/expB_paths_v3-e3e248167cf1760e/analysis/handoff_in.json",
+      "handoff_size_bytes": 20151,
+      "input_tokens": 2146,
+      "output_tokens": 2202,
+      "cost_usd": null,
+      "cost_status": "unavailable",
+      "timings": {
+        "generation_ms": 12166.139665998344,
+        "execution_ms": 206.1363339998934,
+        "validation_ms": 3.761667001526803,
+        "handoff_ms": 0.8426669992331881
+      }
+    },
+    {
+      "stage": "reporting",
+      "model_alias": "A",
+      "model_id": "us.anthropic.claude-sonnet-4-6",
+      "prompt_version": "v3",
+      "prompt_hash": null,
+      "invocation_ids": [],
+      "cache_hit": false,
+      "shared_with_run_ids": [],
+      "status": "blocked_by_invalid_artifact",
+      "structural_ok": null,
+      "failure_type": null,
+      "failure_detail": "upstream analysis artifact 'findings' unusable: failed structural checks findings_exists, findings_parses, required_keys_present",
+      "parse_ok": null,
+      "execution": null,
+      "validation": null,
+      "conditional_validation": null,
+      "input_artifacts": [],
+      "output_artifacts": [],
+      "input_artifact_hashes": {},
+      "output_artifact_hashes": {},
+      "handoff_in_path": null,
+      "handoff_size_bytes": null,
+      "input_tokens": null,
+      "output_tokens": null,
+      "cost_usd": null,
+      "cost_status": "not_incurred",
+      "timings": {
+        "generation_ms": null,
+        "execution_ms": null,
+        "validation_ms": null,
+        "handoff_ms": null
+      }
+    }
+  ],
+  "feasibility": {
+    "outcome": "infeasible",
+    "stage_status": {
+      "cleaning": "failed",
+      "analysis": "failed",
+      "reporting": "blocked_by_invalid_artifact"
+    },
+    "first_failure_stage": "cleaning",
+    "failure_type": "validation_failed"
+  },
+  "quality": {
+    "cleaning": {
+      "cleaning_correctness": 0.6340057636887608,
+      "data_integrity": 0.6340057636887608,
+      "schema_compliance": 1.0
+    },
+    "analysis": {
+      "numerical_accuracy": 0.0,
+      "calculation_coverage": 0.0
+    }
+  },
+  "conditional_quality": {
+    "analysis": {
+      "numerical_accuracy": 0.0,
+      "calculation_coverage": 0.0
+    }
+  },
+  "efficiency": {
+    "total_api_latency_ms": 32668.713081999158,
+    "total_execution_ms": 925.4614589990524,
+    "total_validation_ms": 7.340874999499647,
+    "total_handoff_ms": 1.0783340003399644,
+    "end_to_end_ms": 35736.02650000248,
+    "input_tokens": 3903,
+    "output_tokens": 5564,
+    "cost_usd": null,
+    "cost_status": "unavailable",
+    "n_calls": 2,
+    "n_cache_hits": 0,
+    "n_switches": 2,
+    "handoff_bytes_total": 20575
+  },
+  "propagation": {
+    "downstream_executable": {
+      "cleaning": true,
+      "analysis": false,
+      "reporting": false
+    },
+    "upstream_error_severity": {
+      "analysis": {
+        "cleaning_correctness": 0.3659942363112392,
+        "data_integrity": 0.3659942363112392,
+        "schema_compliance": 0.0
+      }
+    },
+    "end_to_end_accuracy": {},
+    "propagation_impact": {
+      "analysis": {
+        "calculation_coverage": 0.0,
+        "numerical_accuracy": 0.0
+      }
+    },
+    "blocked_stages": [
+      "reporting"
+    ]
+  },
+  "final_artifacts": []
+}

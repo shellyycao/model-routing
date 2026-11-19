@@ -1,0 +1,7 @@
+```json
+{
+  "fixed_code": "def rank_key(item):\n    word, count = item\n    return (-count, word)\n\ndef top_k(counts, k):\n    return sorted(counts.items(), key=rank_key)[:max(k, 0)]",
+  "bug_location": "rank_key, return (count, word)",
+  "explanation": "The bug was in the rank_key function where the count was not negated, causing the sorting to be incorrect for equal counts. Negating the count ensures that the sorting is done in descending order by count and, for equal counts, in ascending order by word."
+}
+```

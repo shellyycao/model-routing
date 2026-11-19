@@ -1,0 +1,8 @@
+{
+  "fixed_code": "def dedupe(xs):\n    \"\"\"Return a list with duplicates removed, preserving the first occurrence order.\n\n    This implementation works for any iterable, including those containing\n    unhashable items (e.g., lists, dicts). It does not rely on ``set`` which\n    would both lose ordering and raise ``TypeError`` for unhashable elements.\n    \"\"\"\n    result = []\n    for x in xs:\n        if x not in result:\n            result.append(x)\n    return result\n",
+  "bug_locations": [
+    "dedupe function definition",
+    "return statement using sorted(set(xs))"
+  ],
+  "explanation": "The original code used ``sorted(set(xs))`` which (1) discards the original order, violating the requirement to preserve first‑occurrence order, and (2) fails for unhashable elements because ``set`` requires hashable items. The fix replaces the set‑based approach with a simple linear scan that appends an element to the result list only if it hasn't been seen before, using ``in`` membership which works with any comparable objects, thereby satisfying both ordering and unhashable‑value support."
+}

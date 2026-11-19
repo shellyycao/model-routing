@@ -1,0 +1,112 @@
+We need to produce JSON with fields python_code (script), output_filename ("cleaned.csv"), cleaning_logic (brief explanation). The script must implement all cleaning steps.
+
+We need to read raw.csv from INPUT_DIR, treat all columns as text, strip whitespace, treat missing values as per list. Then deduplicate by reading_id (keep first). Then parse reading_date with multiple formats, drop rows missing or unparsable. Convert to YYYY-MM-DD.
+
+Meter_id uppercase, drop missing.
+
+Building_type mapping case-insensitive: map to Residential, Commercial, Industrial. Variants: 'Res','Resi' -> Residential; 'Comm' -> Commercial; 'Ind' -> Industrial. Drop rows missing or unmapped.
+
+Tariff mapping: case-insensitive 'peak' -> peak; 'off-peak','offpeak','off peak' -> off-peak. Drop rows missing or not one of these.
+
+Energy: remove commas. If ends with MWh (case-insensitive, optional space before unit) remove unit and multiply number by 1000. If ends with kWh (case-insensitive) remove unit. No unit -> already kWh. Drop rows missing, not a number, <0, >100000 after conversion. Round to 2 decimals.
+
+Temperature: remove trailing degree sign and unit. If ends with F (or °F) convert to C. If ends with C or °C or no unit, treat as Celsius. Round to 1 decimal. If missing, not a number, or outside -40 to 50 after conversion, set temperature_c to missing (empty) but keep row.
+
+Output columns in order, sort by reading_id ascending (string). Write CSV with header, no index. Missing temperature empty cell.
+
+Also produce cleaning_summary.json with raw_rows, cleaned_rows, and per-rule counts.
+
+Implementation details: Use pandas read_csv with dtype=str, keep default. We'll need to treat missing values after stripping. We'll process row by row perhaps using DataFrame apply.
+
+Better: read raw CSV with pandas, dtype=str, keep default. Then strip whitespace for all string columns: df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x). Then define a function to treat missing values: set to None/np.nan if after stripping lower in missing set.
+
+We'll need to count rows dropped per rule. We'll keep counters.
+
+Deduplication: before any other filter, drop duplicates based on reading_id, keep first. Count duplicates removed.
+
+Then parse reading_date: define list of formats and try each. Use datetime.strptime. For 'Month D, YYYY' we can use %B %d, %Y. For 'DD-Mon-YYYY' with 3-letter month abbreviation: %d-%b-%Y. For 'MM/DD/YYYY': %m/%d/%Y. For 'YYYY/MM/DD': %Y/%m/%d. For 'YYYY-MM-DD': %Y-%m-%d. We'll need to handle leading zeros etc. Use try/except.
+
+If parsing fails or missing, drop row, count.
+
+Meter_id: uppercase, drop missing.
+
+Building_type mapping: define dict mapping lower stripped to canonical. Use .lower().
+
+Tariff mapping: similar.
+
+Energy: process string: remove commas, strip, lower. Use regex to detect unit. For MWh: pattern r'([\d\.]+)\s*mwh$' case-insensitive. For kWh: r'([\d\.]+)\s*kwh$' case-insensitive. If no unit, just number. Convert to float, multiply if needed. Drop if missing, not numeric, out of range.
+
+Temperature: similar. Remove spaces. Use regex to capture number and optional unit. For F: convert. For C or no unit: keep. Round. If missing or not numeric, set NaN.
+
+After processing, select columns, rename energy to energy_kwh, temperature to temperature_c. Sort by reading_id.
+
+Write cleaned.csv.
+
+Write cleaning_summary.json with counts.
+
+Edge Cases: reading_id may be string; sorting ascending lexicographically.
+
+Implementation steps:
+
+- import os, pandas as pd, numpy as np, json, datetime.
+
+- define missing_set = {'', 'na', 'n/a', 'null', 'none', '-'}
+
+- read raw_path = os.path.join(os.environ['INPUT_DIR'], 'raw.csv')
+
+- df = pd.read_csv(raw_path, dtype=str, keep_default_na=False) # keep as strings.
+
+- raw_rows = len(df)
+
+- Strip whitespace: df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)
+
+- Convert missing: for each column, replace values where lower in missing_set with np.nan.
+
+- Count duplicates: duplicates = df.duplicated(subset='reading_id', keep='first'); dup_count = duplicates.sum(); df = df[~duplicates]
+
+- Then process each column with functions, using row-wise apply maybe.
+
+We'll create new columns.
+
+Processing reading_date: define function parse_date(val). Return formatted string or np.nan.
+
+We'll apply and then drop rows where result is NaN. Count dropped.
+
+Meter_id: df['meter_id'] = df['meter_id'].str.upper(); drop missing.
+
+Building_type: map dict.
+
+Tariff: map dict.
+
+Energy: function convert_energy.
+
+Temperature: function convert_temp.
+
+We'll keep counters for each drop.
+
+Implementation details for counters: We'll have dict counts = {'duplicates_removed': dup_count, 'invalid_reading_date': 0, ...}. For each step, after applying filter, compute number dropped = previous_len - new_len, add to dict.
+
+For temperature, rows are not dropped; we just set NaN.
+
+After all, cleaned_rows = len(df).
+
+Write cleaned.csv: output_path = os.path.join(os.environ['OUTPUT_DIR'], 'cleaned.csv'); df.to_csv(output_path, index=False, float_format='%.2f' maybe for energy, but temperature needs 1 decimal. We'll format after rounding.
+
+Better: after rounding, we can keep as float; pandas will output default representation. For energy we need 2 decimals; we can set df['energy_kwh'] = df['energy_kwh'].round(2). For temperature: round(1). When writing, we can use df.to_csv with default; but ensure no scientific notation. Use float_format='%.2f' would affect temperature too. So maybe format columns individually: df['energy_kwh'] = df['energy_kwh'].map(lambda x: f"{x:.2f}") but then they become strings. Acceptable? The schema expects float, but CSV can have numbers. We'll keep as float and rely on pandas default which prints up to needed decimals. Could set pd.options.display.float_format but not for to_csv. Use df.to_csv with float_format='%.2f' will format all floats with 2 decimals, but temperature needs 1 decimal. Could convert temperature to string with 1 decimal. Simpler: after rounding, convert temperature to string with one decimal, but keep NaN as empty. Use df['temperature_c'] = df['temperature_c'].apply(lambda x: '' if pd.isna(x) else f"{x:.1f}").
+
+Energy column: keep as float, but to ensure 2 decimals, we can format similarly: df['energy_kwh'] = df['energy_kwh'].apply(lambda x: f"{x:.2f}").
+
+Thus both become strings; that's fine.
+
+Write summary JSON: summary = {'raw_rows': raw_rows, 'cleaned_rows': cleaned_rows, **counts}. Write to output_path_summary.
+
+Set output_filename = "cleaned.csv".
+
+Now produce final JSON with fields.
+
+Let's craft script as a multi-line string.
+
+Make sure script uses only allowed libraries.
+
+Now produce final answer.
+

@@ -1,0 +1,7 @@
+```json
+{
+  "fixed_code": "import re\n\ndef parse_duration(s):\n    m = re.fullmatch(r\"(?:(\\d+)h)?(?:(\\d+)m)?(?:(\\d+)s)?\", s or \"\")\n    if not s or not m:\n        raise ValueError(s)\n    h, mi, se = (int(x) if x else 0 for x in m.groups())\n    return h * 3600 + mi * 60 + se",
+  "bug_location": "parse_duration, line with'return h * 60 + mi * 60 + se'",
+  "explanation": "The bug was in the calculation of total seconds. Hours should be multiplied by 3600, not 60."
+}
+```

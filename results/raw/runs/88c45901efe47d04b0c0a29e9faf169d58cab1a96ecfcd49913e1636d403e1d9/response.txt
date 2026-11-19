@@ -1,0 +1,12 @@
+```json
+{
+  "fixed_code": "def paginate(items, size, cursor=None):\n    if size <= 0: raise ValueError('size')\n    try:\n        start = 0 if cursor is None else int(cursor)\n    except ValueError:\n        raise ValueError('cursor')\n    if start < 0 or start > len(items): raise ValueError('cursor')\n    end = min(start + size, len(items))\n    return list(items[start:end]), (str(end) if end < len(items) else None)",
+  "bug_locations": [
+    "size validation",
+    "start index calculation",
+    "cursor validation",
+    "slicing logic"
+  ],
+  "explanation": "The original code had multiple defects: (1) size validation only checked for negative values, not nonpositive (size <= 0); (2) start index was incorrectly calculated as 1 if cursor is None, instead of 0; (3) no validation for invalid cursor strings or out-of-range indices; (4) slicing used start+1 offset incorrectly. The fixes ensure proper validation of size and cursor, correct zero-based indexing, and proper slicing logic."
+}
+```

@@ -1,0 +1,178 @@
+{
+  "contract_version": "1.2",
+  "run_id": "expB_paths_v3-17177a797a42f6d1",
+  "experiment_id": "expB_paths_v3",
+  "project_id": "support_operations",
+  "path_id": "B-C-B",
+  "models": [
+    "B",
+    "C",
+    "B"
+  ],
+  "repeat_index": 0,
+  "config_hash": "5e95e189c5d0fda618d3176168dfa512e3ccc9bb2cf9c0f2ff28fac308f4974b",
+  "failure_policy": "continue_with_actual_artifact",
+  "started_at": "2026-11-18T06:30:50.108986+00:00",
+  "finished_at": "2026-11-18T06:31:00.418366+00:00",
+  "stages": [
+    {
+      "stage": "cleaning",
+      "model_alias": "B",
+      "model_id": "us.amazon.nova-pro-v1:0",
+      "prompt_version": "v3",
+      "prompt_hash": "4c80e726ad39dcec71d0f3668b55982f474546dfd54cafee800a7f420e1182ec",
+      "invocation_ids": [
+        "8c74ad93-d504-45de-a99b-9d47b729dd60",
+        "8c74ad93-d504-45de-a99b-9d47b729dd60:parse"
+      ],
+      "cache_hit": false,
+      "shared_with_run_ids": [],
+      "status": "failed",
+      "structural_ok": false,
+      "failure_type": "parse_error",
+      "failure_detail": "structured output not parseable (invalid_json): Invalid \\escape: line 2 column 1539 (char 1540)",
+      "parse_ok": false,
+      "execution": null,
+      "validation": null,
+      "conditional_validation": null,
+      "input_artifacts": [
+        "datasets/projects/support_operations/raw.csv",
+        "datasets/projects/support_operations/agents.csv"
+      ],
+      "output_artifacts": [
+        "results/raw/runs/expB_paths_v3-17177a797a42f6d1/cleaning/prompt.txt",
+        "results/raw/runs/expB_paths_v3-17177a797a42f6d1/cleaning/response.txt"
+      ],
+      "input_artifact_hashes": {
+        "datasets/projects/support_operations/raw.csv": "d260e1c2251ade14aa044895797fa2d39647b6d1fe43ba7c79d8c5a48fd287fd",
+        "datasets/projects/support_operations/agents.csv": "51d9c560abc74a09ea32b0c667fc52c8d0f5479fd5a01314fc8f7f2fc0ff4442"
+      },
+      "output_artifact_hashes": {
+        "results/raw/runs/expB_paths_v3-17177a797a42f6d1/cleaning/prompt.txt": "4c80e726ad39dcec71d0f3668b55982f474546dfd54cafee800a7f420e1182ec",
+        "results/raw/runs/expB_paths_v3-17177a797a42f6d1/cleaning/response.txt": "2846e430d4ae672539d61b3b93cfdb49946b5384b547fb83e822439f58c1de44"
+      },
+      "handoff_in_path": "results/raw/runs/expB_paths_v3-17177a797a42f6d1/cleaning/handoff_in.json",
+      "handoff_size_bytes": 424,
+      "input_tokens": 1826,
+      "output_tokens": 1717,
+      "cost_usd": null,
+      "cost_status": "unavailable",
+      "timings": {
+        "generation_ms": 9642.420166997908,
+        "execution_ms": null,
+        "validation_ms": null,
+        "handoff_ms": 0.36283400186221115
+      }
+    },
+    {
+      "stage": "analysis",
+      "model_alias": "C",
+      "model_id": "openai.gpt-oss-120b-1:0",
+      "prompt_version": "v3",
+      "prompt_hash": null,
+      "invocation_ids": [],
+      "cache_hit": false,
+      "shared_with_run_ids": [],
+      "status": "blocked_by_invalid_artifact",
+      "structural_ok": null,
+      "failure_type": null,
+      "failure_detail": "upstream cleaning artifact 'cleaned_csv' unusable: no structured output (parse failure)",
+      "parse_ok": null,
+      "execution": null,
+      "validation": null,
+      "conditional_validation": null,
+      "input_artifacts": [],
+      "output_artifacts": [],
+      "input_artifact_hashes": {},
+      "output_artifact_hashes": {},
+      "handoff_in_path": null,
+      "handoff_size_bytes": null,
+      "input_tokens": null,
+      "output_tokens": null,
+      "cost_usd": null,
+      "cost_status": "not_incurred",
+      "timings": {
+        "generation_ms": null,
+        "execution_ms": null,
+        "validation_ms": null,
+        "handoff_ms": null
+      }
+    },
+    {
+      "stage": "reporting",
+      "model_alias": "B",
+      "model_id": "us.amazon.nova-pro-v1:0",
+      "prompt_version": "v3",
+      "prompt_hash": null,
+      "invocation_ids": [],
+      "cache_hit": false,
+      "shared_with_run_ids": [],
+      "status": "blocked_by_invalid_artifact",
+      "structural_ok": null,
+      "failure_type": null,
+      "failure_detail": "upstream cleaning artifact 'cleaned_csv' unusable: no structured output (parse failure)",
+      "parse_ok": null,
+      "execution": null,
+      "validation": null,
+      "conditional_validation": null,
+      "input_artifacts": [],
+      "output_artifacts": [],
+      "input_artifact_hashes": {},
+      "output_artifact_hashes": {},
+      "handoff_in_path": null,
+      "handoff_size_bytes": null,
+      "input_tokens": null,
+      "output_tokens": null,
+      "cost_usd": null,
+      "cost_status": "not_incurred",
+      "timings": {
+        "generation_ms": null,
+        "execution_ms": null,
+        "validation_ms": null,
+        "handoff_ms": null
+      }
+    }
+  ],
+  "feasibility": {
+    "outcome": "infeasible",
+    "stage_status": {
+      "cleaning": "failed",
+      "analysis": "blocked_by_invalid_artifact",
+      "reporting": "blocked_by_invalid_artifact"
+    },
+    "first_failure_stage": "cleaning",
+    "failure_type": "parse_error"
+  },
+  "quality": {},
+  "conditional_quality": {},
+  "efficiency": {
+    "total_api_latency_ms": 9642.420166997908,
+    "total_execution_ms": null,
+    "total_validation_ms": null,
+    "total_handoff_ms": 0.36283400186221115,
+    "end_to_end_ms": 10309.369583999796,
+    "input_tokens": 1826,
+    "output_tokens": 1717,
+    "cost_usd": null,
+    "cost_status": "unavailable",
+    "n_calls": 1,
+    "n_cache_hits": 0,
+    "n_switches": 2,
+    "handoff_bytes_total": 424
+  },
+  "propagation": {
+    "downstream_executable": {
+      "cleaning": false,
+      "analysis": false,
+      "reporting": false
+    },
+    "upstream_error_severity": {},
+    "end_to_end_accuracy": {},
+    "propagation_impact": {},
+    "blocked_stages": [
+      "analysis",
+      "reporting"
+    ]
+  },
+  "final_artifacts": []
+}

@@ -1,0 +1,76 @@
+We need to produce JSON with fields python_code (script), output_filename "cleaned.csv", cleaning_logic description.
+
+The script must implement all cleaning steps, produce cleaned.csv and cleaning_summary.json with raw_rows, cleaned_rows, and per-rule counts.
+
+We need to read raw.csv as text, treat all columns as strings, strip whitespace, treat missing values as defined.
+
+Implementation plan:
+
+- import os, pandas as pd, numpy as np, json, datetime.
+
+- Input path: os.path.join(os.environ["INPUT_DIR"], "raw.csv")
+
+- Read raw CSV using pandas read_csv with dtype=str, keep default, but we need to preserve whitespace. Use keep_default_na=False, na_values=[] to avoid automatic conversion. Then we will strip whitespace manually.
+
+- raw_rows = len(df)
+
+- Apply R1: strip whitespace for all cells, then replace missing values: after stripping, if value.lower() in {'', 'na', 'n/a', 'null', 'none', '-'} then set to None (np.nan). We'll use df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x). Then replace.
+
+- R2: deduplicate based on customer_id, keep first. Count duplicates removed.
+
+- Then per column processing with dropping rows as needed.
+
+We'll keep a dict summary counts: duplicates_removed, rows_dropped_{rule}.
+
+Implementation details:
+
+- For date parsing: define list of formats and attempt parse. Use datetime.strptime. For 'Month D, YYYY' we need format "%B %d, %Y". For 'DD-Mon-YYYY' with abbreviation: "%d-%b-%Y". For 'MM/DD/YYYY': "%m/%d/%Y". For 'YYYY/MM/DD': "%Y/%m/%d". For 'YYYY-MM-DD': "%Y-%m-%d". We'll try each; if fails, set NaT.
+
+- After parsing, drop rows where date missing.
+
+- For plan mapping: define dict mapping lowercased stripped value to canonical. Use mapping dict.
+
+- For contract_type mapping similarly.
+
+- monthly_fee: remove '$', 'USD', ',' and spaces. Use regex: re.sub(r'[\$,]', '', val). Also remove 'USD' case-insensitively. Then strip. Then try float conversion. Drop if missing or not number or <=0 or >500.
+
+- tenure_months: remove trailing word 'months' or 'month' case-insensitively. Use regex: re.sub(r'\s*(months?|Months?)\s*$', '', val). Then strip. Then check integer, between 0 and 120.
+
+- support_tickets: missing -> 0. Else parse int, check 0-100.
+
+- satisfaction_score: parse int, if missing or invalid set to np.nan (empty). Keep row.
+
+- churned mapping: map to 1/0.
+
+- lifetime_value = monthly_fee * tenure_months, round 2.
+
+- Ensure column order.
+
+- Sort by customer_id ascending (string sort). Use df.sort_values('customer_id').
+
+- Write cleaned.csv with df.to_csv(..., index=False, float_format='%.2f' maybe for monthly_fee and lifetime_value? But monthly_fee may need not forced 2 decimals? The spec says numbers without currency symbols; not specify formatting. We'll output default but ensure lifetime_value rounded to 2 decimals.
+
+- For missing satisfaction_score, pandas will write empty cell if NaN.
+
+- Write cleaning_summary.json with counts.
+
+Edge Cases: need to count rows dropped per rule. We'll maintain a variable current_df and after each rule compute dropped = previous_len - new_len (if rule leads to drop). For rules that don't drop (like satisfaction_score) we don't count.
+
+Implementation steps:
+
+- After R2 dedup, set summary['duplicates_removed'].
+
+- For each rule that may drop rows: R3, R4, R5, R6, R7, R8, R10. We'll count.
+
+- For R9 we don't drop.
+
+- At end cleaned_rows = len(df).
+
+Write summary dict with raw_rows, cleaned_rows, and per-rule counts.
+
+Now produce script as a string.
+
+Make sure to import re.
+
+Now produce JSON.
+

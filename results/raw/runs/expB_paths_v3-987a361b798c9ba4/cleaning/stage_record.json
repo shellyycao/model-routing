@@ -1,0 +1,135 @@
+{
+  "stage": "cleaning",
+  "model_alias": "B",
+  "model_id": "us.amazon.nova-pro-v1:0",
+  "prompt_version": "v3",
+  "prompt_hash": "4c80e726ad39dcec71d0f3668b55982f474546dfd54cafee800a7f420e1182ec",
+  "invocation_ids": [
+    "2550392a-e21b-4b3d-9264-06b6f97ee623"
+  ],
+  "cache_hit": false,
+  "shared_with_run_ids": [],
+  "status": "failed",
+  "structural_ok": true,
+  "failure_type": "validation_failed",
+  "failure_detail": "schema_constraints: team:allowed_values: unexpected values ['ALPHA', 'BETA', 'GAMMA']; region:allowed_values: unexpected values ['EAST', 'WEST']; values_match_reference: team: 272 mismatches (e.g. ['T00001', 'T00004', 'T00005']); region: 227 mismatches (e.g. ['T00001', 'T00002', 'T00003'])",
+  "parse_ok": true,
+  "execution": {
+    "status": "success",
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": "/sandbox/code/main.py:30: SyntaxWarning: invalid escape sequence '\\$'\n  agents_df['hourly_cost'] = agents_df['hourly_cost'].replace({'\\$': '', 'USD': '', ',': ''}, regex=True).astype(float)\n/sandbox/code/main.py:18: FutureWarning: DataFrame.applymap has been deprecated. Use DataFrame.map instead.\n  df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)\n/sandbox/code/main.py:50: FutureWarning: Downcasting behavior in `replace` is deprecated and will be removed in a future version. To retain the old behavior, explicitly call `result.infer_objects(copy=False)`. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`\n  tickets_df['reopened'] = tickets_df['reopened'].replace({'YES': 1, 'Y': 1, 'TRUE': 1, '1': 1, 'NO': 0, 'N': 0, 'FALSE': 0, '0': 0}, regex=True)\n",
+    "runtime_ms": 763.3257079978648,
+    "output_files": [
+      "/Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expB_paths_v3-987a361b798c9ba4/cleaning/output/cleaned.csv",
+      "/Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expB_paths_v3-987a361b798c9ba4/cleaning/output/cleaning_summary.json"
+    ],
+    "sandbox_image": "sha256:88988a15503bdb96538c3dd62244a79879d5c7848397db18b1267ccfd0a9727a"
+  },
+  "validation": {
+    "stage": "cleaning",
+    "hard_pass": false,
+    "checks": [
+      {
+        "name": "output_exists",
+        "passed": true,
+        "mandatory": true,
+        "detail": "/Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expB_paths_v3-987a361b798c9ba4/cleaning/output/cleaned.csv",
+        "value": null
+      },
+      {
+        "name": "output_parses",
+        "passed": true,
+        "mandatory": true,
+        "detail": "347 rows, 10 columns",
+        "value": null
+      },
+      {
+        "name": "required_columns_present",
+        "passed": true,
+        "mandatory": true,
+        "detail": "all present",
+        "value": null
+      },
+      {
+        "name": "schema_constraints",
+        "passed": false,
+        "mandatory": true,
+        "detail": "team:allowed_values: unexpected values ['ALPHA', 'BETA', 'GAMMA']; region:allowed_values: unexpected values ['EAST', 'WEST']",
+        "value": 0.9523809523809523
+      },
+      {
+        "name": "no_extra_columns",
+        "passed": true,
+        "mandatory": false,
+        "detail": "",
+        "value": null
+      },
+      {
+        "name": "no_duplicate_keys",
+        "passed": true,
+        "mandatory": true,
+        "detail": "",
+        "value": 0.0
+      },
+      {
+        "name": "row_set_matches_reference",
+        "passed": true,
+        "mandatory": true,
+        "detail": "0 reference rows missing (e.g. []); 0 unexpected rows (e.g. []); output rows=347, reference rows=347",
+        "value": null
+      },
+      {
+        "name": "values_match_reference",
+        "passed": false,
+        "mandatory": true,
+        "detail": "team: 272 mismatches (e.g. ['T00001', 'T00004', 'T00005']); region: 227 mismatches (e.g. ['T00001', 'T00002', 'T00003'])",
+        "value": 0.8561959654178675
+      }
+    ],
+    "quality": {
+      "cleaning_correctness": 0.8561959654178675,
+      "data_integrity": 1.0,
+      "schema_compliance": 0.9523809523809523
+    },
+    "quality_basis": "ground_truth",
+    "validator_version": "1.0"
+  },
+  "conditional_validation": null,
+  "input_artifacts": [
+    "datasets/projects/support_operations/raw.csv",
+    "datasets/projects/support_operations/agents.csv"
+  ],
+  "output_artifacts": [
+    "results/raw/runs/expB_paths_v3-987a361b798c9ba4/cleaning/prompt.txt",
+    "results/raw/runs/expB_paths_v3-987a361b798c9ba4/cleaning/response.txt",
+    "results/raw/runs/expB_paths_v3-987a361b798c9ba4/cleaning/parsed.json",
+    "results/raw/runs/expB_paths_v3-987a361b798c9ba4/cleaning/code.py",
+    "results/raw/runs/expB_paths_v3-987a361b798c9ba4/cleaning/output/cleaned.csv",
+    "results/raw/runs/expB_paths_v3-987a361b798c9ba4/cleaning/output/cleaning_summary.json"
+  ],
+  "input_artifact_hashes": {
+    "datasets/projects/support_operations/raw.csv": "d260e1c2251ade14aa044895797fa2d39647b6d1fe43ba7c79d8c5a48fd287fd",
+    "datasets/projects/support_operations/agents.csv": "51d9c560abc74a09ea32b0c667fc52c8d0f5479fd5a01314fc8f7f2fc0ff4442"
+  },
+  "output_artifact_hashes": {
+    "results/raw/runs/expB_paths_v3-987a361b798c9ba4/cleaning/prompt.txt": "4c80e726ad39dcec71d0f3668b55982f474546dfd54cafee800a7f420e1182ec",
+    "results/raw/runs/expB_paths_v3-987a361b798c9ba4/cleaning/response.txt": "337c2fe3e4ccfb51f675a1be2c1fa95f035b35077e3c912080581b51fc7941a8",
+    "results/raw/runs/expB_paths_v3-987a361b798c9ba4/cleaning/parsed.json": "224ec55cfea2dbf790c27644def16a2496fc546ea56cf111c6ca0a0ff366f3ac",
+    "results/raw/runs/expB_paths_v3-987a361b798c9ba4/cleaning/code.py": "70c977940f231bad4ee781a24328624dbdc50ab1701bc1c68adf9729012adeea",
+    "results/raw/runs/expB_paths_v3-987a361b798c9ba4/cleaning/output/cleaned.csv": "a69429d7db0f8b69e9fd523e3b563d9de1af366625c21fee492e2b7528245839",
+    "results/raw/runs/expB_paths_v3-987a361b798c9ba4/cleaning/output/cleaning_summary.json": "2d74c5c55c6e88291066c39af33214161b6146d9bed43595fbbf4aa349876af2"
+  },
+  "handoff_in_path": "results/raw/runs/expB_paths_v3-987a361b798c9ba4/cleaning/handoff_in.json",
+  "handoff_size_bytes": 424,
+  "input_tokens": 1826,
+  "output_tokens": 1719,
+  "cost_usd": null,
+  "cost_status": "unavailable",
+  "timings": {
+    "generation_ms": 9338.959417000297,
+    "execution_ms": 763.3257079978648,
+    "validation_ms": 5.944000000454253,
+    "handoff_ms": 0.22770799841964617
+  }
+}

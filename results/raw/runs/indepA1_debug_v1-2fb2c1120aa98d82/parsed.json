@@ -1,0 +1,5 @@
+{
+  "fixed_code": "def count_words(text):\n    counts = {}\n    for w in text.lower().split():\n        counts[w] = counts.get(w, 0) + 1\n    return counts",
+  "bug_location": "count_words: using text.lower().split(\" \") which splits only on single spaces and yields empty strings for multiple/other whitespace.",
+  "explanation": "The original split(\" \") fails to handle tabs, newlines, and consecutive spaces, producing empty tokens that are counted. Replacing it with split() splits on any whitespace and discards empties, satisfying the specification."
+}

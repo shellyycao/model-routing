@@ -1,0 +1,7 @@
+{
+  "fixed_code": "def chunks(xs, size):\n    if size <= 0:\n        raise ValueError('size')\n    return [xs[i:i+size] for i in range(0, len(xs), size)]\n",
+  "bug_locations": [
+    "chunks: the range() call in the list comprehension"
+  ],
+  "explanation": "The range upper bound was len(xs)-size+1, which stops iteration before the start of any final chunk shorter than `size`, silently dropping trailing elements (e.g. chunks([1,2,3,4,5], 2) lost [5]). Per the spec, all consecutive chunks including a short final one must be returned, so the bound is changed to len(xs), letting slicing naturally produce the short final chunk (and correctly returning [] for an empty input). The size <= 0 validation already matches the spec, and slicing never mutates xs; indentation was also normalized."
+}

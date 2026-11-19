@@ -1,0 +1,25 @@
+{
+  "bug_locations": [
+    "discount/tax order"
+  ],
+  "buggy": "def invoice_total(lines, discount_pct=0, tax_pct=0):\n                 subtotal=sum(row['qty']*row['unit_price'] for row in lines)\n                 return round(subtotal*(1+tax_pct/100)-subtotal*discount_pct/100,2)\n",
+  "case_id": "a1v2_m01_invoice_total_1",
+  "difficulty": "medium",
+  "family": "invoice_total",
+  "hidden": [
+    "invoice_total([{'qty':2,'unit_price':10}],10,5)==18.9",
+    "invoice_total([],10,5)==0",
+    "invoice_total([{'qty':3,'unit_price':0.335}],0,0)==1.01",
+    "invoice_total([{'qty':1,'unit_price':100}],25,20)==90.0"
+  ],
+  "label_source": "executable reference plus independently checked tests",
+  "reference": "def invoice_total(lines, discount_pct=0, tax_pct=0):\n             subtotal = sum(row['qty'] * row['unit_price'] for row in lines)\n             discounted = subtotal * (1 - discount_pct / 100)\n             return round(discounted * (1 + tax_pct / 100) + 1e-12, 2)\n",
+  "spec": "invoice_total(lines, discount_pct, tax_pct) sums quantity*unit_price, applies discount, then tax, and rounds only the final result to 2 decimals.",
+  "verification": {
+    "buggy_fails": 2,
+    "reference_passes": 4
+  },
+  "visible": [
+    "invoice_total([{'qty':2,'unit_price':10}],10,5) == 18.9"
+  ]
+}

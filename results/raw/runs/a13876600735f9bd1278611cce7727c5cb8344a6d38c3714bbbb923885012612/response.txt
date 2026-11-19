@@ -1,0 +1,11 @@
+```json
+{
+  "fixed_code": "from collections import defaultdict, deque\n\ndef allowed(events, limit, window):\n    qs = defaultdict(deque)\n    out = []\n    for user, t in events:\n        q = qs[user]\n        while q and q[0] <= t - window:\n            q.popleft()\n        ok = len(q) < limit\n        out.append(ok)\n        if ok:\n            q.append(t)\n    return out\n",
+  "bug_locations": [
+    "q=deque()",
+    "while q and q[0][1]<=t-window:q.popleft()",
+    "if ok:q.append((user,t))"
+  ],
+  "explanation": "The original code used a single global deque for all users, causing events from different users to interfere with each other's rate limiting. The fix uses a dictionary mapping each user to their own deque. Additionally, the deque elements were changed from tuples (user, time) to just time, as the user is now tracked by the dictionary key, simplifying the logic and correcting the comparison in the while loop."
+}
+```

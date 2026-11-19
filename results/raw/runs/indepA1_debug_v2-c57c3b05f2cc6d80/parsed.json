@@ -1,0 +1,8 @@
+{
+  "fixed_code": "def chunks(xs, size):\n    if size <= 0: raise ValueError('size must be greater than 0')\n    return [xs[i:i+size] for i in range(0, len(xs), size)]",
+  "bug_locations": [
+    "if size < 0: raise ValueError('size')",
+    "if size == 0: return []"
+  ],
+  "explanation": "The original code incorrectly handled the case when size is 0 by returning an empty list, which does not conform to the specification. It also failed to raise an error when size is exactly 0, only when it is less than 0. The fixed code correctly raises a ValueError for any non-positive size and removes the incorrect return statement for size == 0."
+}

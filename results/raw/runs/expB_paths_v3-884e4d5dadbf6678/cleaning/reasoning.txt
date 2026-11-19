@@ -1,0 +1,42 @@
+We need to produce JSON with fields python_code (script), output_filename ("cleaned.csv"), cleaning_logic (brief explanation). The script must implement all cleaning steps.
+
+We need to read raw.csv from INPUT_DIR, treat all columns as text, strip whitespace, treat missing values as per list. Then deduplicate by reading_id (keep first). Then parse reading_date with given formats, drop rows missing or unparsable. Then meter_id uppercase, drop missing. building_type mapping case-insensitive, drop missing or unmapped. tariff mapping, drop missing or unmapped. energy conversion: remove commas, handle units MWh/kWh, convert to kWh, drop rows missing, not number, <0 or >100000 after conversion. Round to 2 decimals. temperature conversion: remove trailing degree sign and unit, handle F to C conversion, else C. If missing or not number or outside -40 to 50 after conversion, set temperature_c missing (empty) but keep row. Round to 1 decimal. Output columns in order, sort by reading_id ascending. Write cleaned.csv with header, no index. Also write cleaning_summary.json with raw_rows, cleaned_rows, and per-rule counts.
+
+Implementation details: Use pandas read_csv with dtype=str, keep default. We'll need to strip whitespace for all cells: df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x). Then define missing values: after stripping, treat empty string, case-insensitive 'na','n/a','null','none','-'. We'll replace those with np.nan.
+
+Deduplication: df.drop_duplicates(subset='reading_id', keep='first', inplace=True). Count duplicates removed.
+
+Parsing dates: define function parse_date(s) that tries each format using datetime.strptime. For month abbreviation format: %d-%b-%Y. For 'Month D, YYYY': %B %d, %Y. Also handle leading/trailing spaces already stripped. If fails, return None. Then apply, drop rows where result is NaT.
+
+Meter_id: uppercase, drop missing.
+
+Building_type mapping: define dict mapping lowercased variants to canonical. Use .lower() after stripping. Drop rows where mapping not found.
+
+Tariff mapping: similar.
+
+Energy: remove commas, strip, handle unit detection. Use regex. Steps: value = str, remove commas. Use re to detect unit: if endswith case-insensitive 'MWh' possibly with space before: pattern r'(?i)^\s*([\d\.]+)\s*mwh\s*$' etc. We'll extract numeric part. If endswith 'MWh' multiply by 1000. If endswith 'kWh' just numeric. If no unit, numeric. Convert to float, check >0 and <=100000. Round to 2 decimals.
+
+Temperature: similar. Remove trailing degree sign and unit. Use regex to capture numeric and optional unit. If unit is F, convert. If unit is C or missing, keep. After conversion, check range -40 to 50; if out of range, set NaN. Round to 1 decimal.
+
+After processing, select columns, rename energy to energy_kwh, temperature to temperature_c. Ensure types: reading_id str, reading_date formatted as YYYY-MM-DD string, meter_id str, building_type categorical, tariff categorical, energy_kwh float, temperature_c float (or NaN). Sort by reading_id.
+
+Write cleaned.csv using df.to_csv with index=False.
+
+Write summary JSON: include raw_rows (original rows count), cleaned_rows (final rows count), duplicates_removed, rows_dropped_date, rows_dropped_meter_id, rows_dropped_building_type, rows_dropped_tariff, rows_dropped_energy, rows_temperature_invalid (count of rows where temperature set to missing). Provide counts.
+
+Edge Cases: reading_id may be numeric? Keep as string.
+
+Implementation: Use os, pandas, numpy, json, datetime, re.
+
+Now produce final JSON with script as string (escape newlines). Ensure script is self-contained.
+
+Let's craft script.
+
+We'll define main function.
+
+Potential pitfalls: reading_date column may have quotes; pandas will read as string.
+
+Parsing date: use datetime module.
+
+Now produce final answer.
+

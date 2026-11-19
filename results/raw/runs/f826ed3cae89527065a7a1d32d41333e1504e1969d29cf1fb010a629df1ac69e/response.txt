@@ -1,0 +1,11 @@
+```json
+{
+  "fixed_code": "from bisect import bisect_right, insort\nfrom collections import defaultdict\n\ndef allowed(events, limit, window):\n    allowed_times = defaultdict(list)\n    out = []\n    for user, t in events:\n        start = t - window\n        times = allowed_times[user]\n        in_window = bisect_right(times, t) - bisect_right(times, start)\n        ok = in_window < limit\n        out.append(ok)\n        if ok:\n            insort(times, t)\n    return out\n",
+  "bug_locations": [
+    "module imports: replaced deque-only state with sorted per-user timestamp lists using bisect",
+    "allowed(events, limit, window): window membership counting now uses the strict lower bound and inclusive upper bound from the specification",
+    "allowed(events, limit, window): timestamps are stored only when the event is allowed, so rejected events do not consume capacity"
+  ],
+  "explanation": "Root causes: the old code evicted with `< t-window`, but the specified interval is `(t-window, t]`, so events exactly at `t-window` are excluded and events at `t` are included; left-popping a deque also assumed chronological timestamps. It also appended every event, making rejected events consume capacity. The fix keeps only allowed timestamps per user in sorted order, counts the current interval with `bisect_right(times, t) - bisect_right(times, t-window)`, and inserts the current timestamp only when allowed."
+}
+```

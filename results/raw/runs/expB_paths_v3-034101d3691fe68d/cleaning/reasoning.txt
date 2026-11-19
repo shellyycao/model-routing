@@ -1,0 +1,139 @@
+We need to produce JSON with fields python_code (script), output_filename "cleaned.csv", cleaning_logic description.
+
+The script must implement all cleaning steps, produce cleaned.csv and cleaning_summary.json with raw_rows, cleaned_rows, and per-rule counts.
+
+We need to read raw.csv as text, treat all columns as strings, strip whitespace, treat missing values as defined.
+
+Implementation plan:
+
+- import os, pandas as pd, numpy as np, json, datetime.
+
+- Input path: os.path.join(os.environ["INPUT_DIR"], "raw.csv").
+
+- Read raw CSV using pandas read_csv with dtype=str, keep default, but we need to preserve whitespace. Use keep_default_na=False to avoid default NA conversion. Then apply strip to all string values.
+
+- Count raw_rows = len(df).
+
+- Apply missing value normalization: after stripping, replace values that are in missing set (case-insensitive) with np.nan.
+
+Define missing_set = {"", "na", "n/a", "null", "none", "-"}. Use df.applymap lambda.
+
+- R2 duplicate removal: based on customer_id column (after stripping). Keep first occurrence. Count duplicates removed.
+
+- Then apply row filters sequentially, tracking counts per rule maybe.
+
+We'll create a dict summary_counts = {"raw_rows": raw_rows, "duplicates_removed": dup_removed, "rows_after_R2": len(df), ...}. At the end cleaned_rows = len(df_cleaned).
+
+Implement each rule:
+
+R3 signup_date parsing: define function parse_date(s). Try each format using datetime.strptime. Formats:
+
+1 "%Y-%m-%d"
+2 "%m/%d/%Y"
+3 "%d-%b-%Y" (e.g., 05-Mar-2024) month abbreviation case-insensitive; need to ensure locale English; use %b.
+4 "%Y/%m/%d"
+5 "%B %d, %Y" (full month name). Also maybe day may have leading zero.
+
+If parsing fails, return None.
+
+Drop rows where signup_date is NaN or parsing fails.
+
+Store as string formatted "%Y-%m-%d".
+
+R4 plan mapping: define mapping dict lowercased keys to canonical. Use .lower() after stripping. Map variants.
+
+Plan mapping dict:
+
+{
+"basic": "Basic",
+"basic plan": "Basic",
+"standard": "Standard",
+"std": "Standard",
+"standard plan": "Standard",
+"premium": "Premium",
+"prem": "Premium",
+"premium plan": "Premium"
+}
+
+Drop rows where plan missing or not in mapping.
+
+R5 contract_type mapping:
+
+{
+"monthly": "Monthly",
+"month-to-month": "Monthly",
+"m2m": "Monthly",
+"annual": "Annual",
+"yearly": "Annual",
+"1 year": "Annual"
+}
+
+Drop rows where missing or not in mapping.
+
+R6 monthly_fee: remove '$', 'USD', ',' and surrounding spaces. Use regex: replace r'[\$,]' and 'USD' case-insensitive. Then strip. If after cleaning empty -> missing. Parse float. Drop if missing, not number, <=0, >500.
+
+R7 tenure_months: remove trailing word 'months' or 'month' case-insensitive, also spaces. Use regex: r'\s*(months?|Months?)\s*$' replace with '' . Then strip. Parse int. Drop if missing, not int, <0, >120.
+
+R8 support_tickets: missing -> 0. Else parse int. Drop if not int, <0, >100.
+
+R9 satisfaction_score: parse int. If missing or invalid (not int or out of 1-5) set to np.nan (empty). Keep row.
+
+R10 churned mapping: map case-insensitive values to 1/0. Define mapping dict.
+
+{
+"yes":1,"y":1,"true":1,"1":1,"churned":1,
+"no":0,"n":0,"false":0,"0":0,"active":0
+}
+
+Drop rows where missing or not in mapping.
+
+R11 lifetime_value = monthly_fee * tenure_months, round 2.
+
+R12 output columns order, sort by customer_id ascending (string). Write CSV with header, index=False, na_rep='' to have empty cells.
+
+Write cleaning_summary.json with summary dict.
+
+Edge Cases: need to ensure after each rule we count rows dropped.
+
+Implementation details:
+
+- Use df = df.copy() after each step.
+
+- For missing detection after stripping: we can apply lambda to each cell: if isinstance(x,str) and x.strip().lower() in missing_set then np.nan else x.strip().
+
+But we already stripped whitespace earlier.
+
+Simplify: after reading, apply df = df.applymap(lambda x: x.strip() if isinstance(x,str) else x). Then replace missing values: df = df.replace(to_replace=missing_set, value=np.nan, regex=False). However need case-insensitive. So we can use df = df.applymap(lambda x: np.nan if isinstance(x,str) and x.strip().lower() in missing_set else x).
+
+Now duplicates: df = df.drop_duplicates(subset='customer_id', keep='first').
+
+Now proceed.
+
+Counting: We'll maintain dict counts.
+
+Implementation steps:
+
+```
+summary = {
+    "raw_rows": raw_rows,
+    "duplicates_removed": dup_removed,
+    "rows_after_R2": len(df),
+    "rows_dropped_R3": 0,
+    ...
+}
+```
+
+When dropping rows, compute before and after counts.
+
+At the end, summary["cleaned_rows"] = len(df_cleaned).
+
+Write summary to json.
+
+Now produce final JSON output.
+
+Let's craft script as a multi-line string.
+
+Make sure to import re for regex.
+
+Now produce final answer.
+

@@ -1,0 +1,82 @@
+Let me build the report. Verified findings:
+
+- total_revenue: 445325.08999999997 → ~$445,325.09
+- order_count: 520
+- average_order_value: 856.3944038461538 → ~$856.39
+- revenue_north: 124845.75
+- revenue_south: 90534.49
+- revenue_east: 130516.69
+- revenue_west: 99428.16
+- 2024 quarters: Q1 36108.31, Q2 56616.79, Q3 71674.99, Q4 68948.71
+- revenue_2023: 211976.29, revenue_2024: 233348.80, yoy +10.08%
+- electronics high discount: 22 orders, $50,035.33 revenue
+- distribution: mean 856.39, median 313.275, std 1295.74, min 5.27, max 7844.02
+- customers: 222 unique, top customer 27793.13, share 6.24%
+
+Rankings:
+q2 (regions high to low): East (130516.69), North (124845.75), West (99428.16), South (90534.49).
+q3 (quarters high to low): Q3 (71674.99), Q4 (68948.71), Q2 (56616.79), Q1 (36108.31).
+
+q4 direction: increase (positive YoY change 10.08%).
+
+Derived values I might state: 
+- East-South gap: difference, operands [revenue_east, revenue_south] = 39982.20. Let me compute: 130516.69 - 90534.49 = 39982.20.
+- YoY absolute difference: 233348.80 - 211976.29 = 21372.51.
+- Q3 vs Q1 difference maybe: 71674.99 - 36108.31 = 35566.68.
+- Regional shares? Maybe East share of total: 130516.69/445325.09*100 = 29.31%. Let me compute: 130516.69 / 445325.09 = 0.29308... → 29.31%. Could include.
+- High-discount electronics revenue share: 50035.33/445325.09*100 = 11.24%. Compute: 50035.33/445325.09 = 0.112356 → 11.24%.
+- Mean/median ratio: 856.39/313.275 = 2.734. Could mention as skew indicator.
+
+Keep derived values declared. Keep under 600 words. Let me be careful with numbers.
+
+Rounding: state e.g. $445,325.09, $856.39, etc.
+
+q1 statement: "Total revenue across 520 cleaned orders was $445,325.09, with an average order value of $856.39."
+
+q2: "The East region led with $130,516.69 in revenue, followed by North ($124,845.75), West ($99,428.16), and South ($90,534.49); the East–South gap is $39,982.20." Derived: difference 39982.20, operands [revenue_east, revenue_south].
+
+q3: "2024 revenue rose through the year: Q1 $36,108.31, Q2 $56,616.79, Q3 $71,674.99, Q4 $68,948.71, with Q3 the strongest quarter, $35,566.68 above Q1." Ranking Q3 > Q4 > Q2 > Q1. Derived difference 35566.68 operands [revenue_2024_q3, revenue_2024_q1].
+
+q4: "Revenue grew from $211,976.29 in 2023 to $233,348.80 in 2024, a year-over-year increase of 10.08% (+$21,372.51)." Direction increase. Derived difference 21372.51 (operands revenue_2024, revenue_2023). The pct is itself a verified metric (revenue_yoy_change_pct), so no need to redeclare pct_change as derived since it's a metric. Actually revenue_yoy_change_pct is a reported metric, fine.
+
+q5: "22 Electronics orders had discounts of 20% or more, contributing $50,035.33 in revenue — 11.24% of total revenue." Derived share: 50035.33/445325.09*100 = 11.24 (11.2356...). Compute precisely: 50035.33 / 445325.08999999997 = 0.1123569... Let me compute: 445325.09 * 0.1124 = 50054.5. Hmm slightly off. 50035.33/445325.09: 445325.09*0.1123 = 50010.0. Difference 50035.33-50010.0=25.33; 25.33/445325.09 = 0.0000569. So 0.1123569 → 11.24%. Good.
+
+q6: "Order revenue is highly right-skewed: mean $856.39 vs median $313.28, standard deviation $1,295.74, ranging from $5.27 to $7,844.02; the mean is 2.73× the median." Derived ratio: 856.3944038461538 / 313.275 = 2.7335... compute: 313.275*2.73 = 855.24. Remainder 1.154; 1.154/313.275=0.00368 → 2.7337. So 2.73. Declare ratio value 2.73.
+
+q7: "There are 222 unique customers; the top customer accounts for $27,793.13, or 6.24% of total revenue — moderate concentration." No derived values needed (share is a verified metric).
+
+Limitations: 
+- Only two years of data; YoY based on a single year-pair.
+- Revenue figures already net of discounts? Actually we don't know if revenue is net of discount — genuine limitation: unclear whether revenue is pre- or post-discount.
+- High discount threshold 20% is arbitrary.
+- No product margin/profit data — revenue only, not profitability.
+- 2024 Q4 dip vs Q3 — cannot determine cause (seasonality vs other).
+- Outliers heavily influence mean.
+
+Word count under 600. Fine.
+
+Direction field: for q4 set "increase". Others "not_applicable" or null. Schema allows enum or null. For non-change findings, "not_applicable" seems apt.
+
+Executive summary: brief.
+
+Let me write the JSON.
+
+Check reported_values includes EVERY metric_key per question:
+q1: total_revenue, order_count, average_order_value.
+q2: four regions.
+q3: four quarters.
+q4: revenue_2023, revenue_2024, revenue_yoy_change_pct.
+q5: electronics_high_discount_orders, electronics_high_discount_revenue.
+q6: five stats.
+q7: three.
+
+Copy exact values from findings JSON (unrounded) for reported_values. I'll copy them exactly.
+
+Derived values: 
+- q2: difference, [revenue_east, revenue_south], 39982.2
+- q3: difference, [revenue_2024_q3, revenue_2024_q1], 35566.68
+- q4: difference, [revenue_2024, revenue_2023], 21372.51 — compute precisely: 233348.80000000002 - 211976.28999999998 = 21372.51000000004 → state 21372.51.
+- q5: share, [electronics_high_discount_revenue, total_revenue], 11.24
+- q6: ratio, [order_revenue_mean, order_revenue_median], 2.73
+
+Word count: keep tight. Let me draft statements concisely.

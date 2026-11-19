@@ -1,0 +1,206 @@
+{
+  "conclusions": [
+    "A1 ranking is not stable enough to distinguish A from C; 10/10 versus 9/10 is within wide n=10 intervals.",
+    "A2 gpt-oss changes from last under strict pipeline success to tied-best content after recovering the missing wrapper; this is interface sensitivity, not improved extraction.",
+    "A3 parsed-only ranking hides truncation. Counting invalid outputs as zero changes the practical ranking sharply.",
+    "A3 grounding winner changes between frozen v1 and post-hoc v1.1 because documented paraphrases are reclassified."
+  ],
+  "mode": "offline saved-output sensitivity",
+  "tasks": {
+    "a1": {
+      "models": {
+        "A": {
+          "bug_location_rate": 1.0,
+          "functional_rate": 1.0,
+          "functional_wilson95": [
+            0.7224598312333834,
+            1.0
+          ],
+          "input_tokens_median": 496.0,
+          "latency_median_s": 2.132987729000888,
+          "mean_hidden_pass_rate": 1.0,
+          "n": 10,
+          "operational_status_rate": 1.0,
+          "output_tokens_median": 194.0
+        },
+        "B": {
+          "bug_location_rate": 0.8,
+          "functional_rate": 0.9,
+          "functional_wilson95": [
+            0.5958436145024278,
+            0.9821242504842788
+          ],
+          "input_tokens_median": 451.0,
+          "latency_median_s": 1.412146999498873,
+          "mean_hidden_pass_rate": 0.9875,
+          "n": 10,
+          "operational_status_rate": 1.0,
+          "output_tokens_median": 179.5
+        },
+        "C": {
+          "bug_location_rate": 1.0,
+          "functional_rate": 1.0,
+          "functional_wilson95": [
+            0.7224598312333834,
+            1.0
+          ],
+          "input_tokens_median": 487.5,
+          "latency_median_s": 2.385814853998454,
+          "mean_hidden_pass_rate": 1.0,
+          "n": 10,
+          "operational_status_rate": 1.0,
+          "output_tokens_median": 319.0
+        }
+      },
+      "rankings": {
+        "efficiency_latency": [
+          "B",
+          "A",
+          "C"
+        ],
+        "functional": [
+          "A",
+          "C",
+          "B"
+        ]
+      }
+    },
+    "a2": {
+      "models": {
+        "A": {
+          "content_given_parse_f1": 1.0,
+          "input_tokens_median": 469.5,
+          "latency_median_s": 1.0747285004999867,
+          "n": 10,
+          "output_tokens_median": 100.5,
+          "recoverable_content_correct": 10,
+          "recoverable_content_rate": 1.0,
+          "schema_operational_rate": 1.0,
+          "strict_all_fields_rate": 1.0,
+          "strict_wilson95": [
+            0.7224598312333834,
+            1.0
+          ]
+        },
+        "B": {
+          "content_given_parse_f1": 0.9444444444444444,
+          "input_tokens_median": 422.5,
+          "latency_median_s": 0.8765049369994813,
+          "n": 10,
+          "output_tokens_median": 94.0,
+          "recoverable_content_correct": 6,
+          "recoverable_content_rate": 0.6,
+          "schema_operational_rate": 0.9,
+          "strict_all_fields_rate": 0.6,
+          "strict_wilson95": [
+            0.3126695474501864,
+            0.8318224187964902
+          ]
+        },
+        "C": {
+          "content_given_parse_f1": 1.0,
+          "input_tokens_median": 475.0,
+          "latency_median_s": 2.3241826454996044,
+          "n": 10,
+          "output_tokens_median": 385.0,
+          "recoverable_content_correct": 10,
+          "recoverable_content_rate": 1.0,
+          "schema_operational_rate": 0.3,
+          "strict_all_fields_rate": 0.3,
+          "strict_wilson95": [
+            0.10778928748621183,
+            0.6032267800204347
+          ]
+        }
+      },
+      "rankings": {
+        "recoverable_content": [
+          "A",
+          "C",
+          "B"
+        ],
+        "schema_operational": [
+          "A",
+          "B",
+          "C"
+        ],
+        "strict_operational_content": [
+          "A",
+          "B",
+          "C"
+        ]
+      }
+    },
+    "a3": {
+      "models": {
+        "A": {
+          "citation_consistency_all_calls": 1.0,
+          "grounding_v1_1_parsed_mean": 0.9956521739130435,
+          "grounding_v1_parsed_mean": 0.8375224294941855,
+          "input_tokens_median": 2573.0,
+          "latency_median_s": 7.594780229001117,
+          "n": 10,
+          "ndcg_all_calls_failure_zero": 0.9952072777537089,
+          "ndcg_parsed_mean": 0.9952072777537089,
+          "operational_valid_rate": 1.0,
+          "output_tokens_median": 1469.0,
+          "parsed_rate": 1.0
+        },
+        "B": {
+          "citation_consistency_all_calls": 1.0,
+          "grounding_v1_1_parsed_mean": 0.9722222222222221,
+          "grounding_v1_parsed_mean": 0.965079365079365,
+          "input_tokens_median": 2314.0,
+          "latency_median_s": 4.293469250000271,
+          "n": 10,
+          "ndcg_all_calls_failure_zero": 0.9620185831805717,
+          "ndcg_parsed_mean": 0.9620185831805717,
+          "operational_valid_rate": 1.0,
+          "output_tokens_median": 806.0,
+          "parsed_rate": 1.0
+        },
+        "C": {
+          "citation_consistency_all_calls": 0.6,
+          "grounding_v1_1_parsed_mean": 0.9944444444444445,
+          "grounding_v1_parsed_mean": 0.8746031746031746,
+          "input_tokens_median": 2240.0,
+          "latency_median_s": 22.15242962499906,
+          "n": 10,
+          "ndcg_all_calls_failure_zero": 0.5952072777537087,
+          "ndcg_parsed_mean": 0.9920121295895146,
+          "operational_valid_rate": 0.5,
+          "output_tokens_median": 3832.5,
+          "parsed_rate": 0.6
+        }
+      },
+      "rankings": {
+        "grounding_v1": [
+          "B",
+          "C",
+          "A"
+        ],
+        "grounding_v1_1": [
+          "A",
+          "C",
+          "B"
+        ],
+        "ndcg_all_calls": [
+          "A",
+          "B",
+          "C"
+        ],
+        "ndcg_parsed_only": [
+          "A",
+          "C",
+          "B"
+        ],
+        "operational": [
+          "A",
+          "B",
+          "C"
+        ]
+      }
+    }
+  },
+  "warning": "Alternative views are post-hoc and never replace frozen v1."
+}

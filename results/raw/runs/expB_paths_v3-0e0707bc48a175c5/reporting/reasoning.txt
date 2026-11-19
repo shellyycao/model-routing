@@ -1,0 +1,53 @@
+We need to produce JSON with fields: title, executive_summary, key_findings (array of objects per q1..q7), limitations, conclusion.
+
+Each key_finding must include finding_id, statement, evidence_refs, reported_values (all metric_keys for that question), optional direction, ranking, derived_values.
+
+We must follow ranking requirements:
+
+- q2 ranking_required true, ranking_metric_key_to_label mapping: churn_rate_basic_pct -> "Basic", churn_rate_premium_pct -> "Premium", churn_rate_standard_pct -> "Standard". Need ranking from highest to lowest value. Values: basic 38.8724, standard 36.6795, premium 36.6013. Highest is Basic, then Standard, then Premium. So ranking list: ["Basic", "Standard", "Premium"].
+
+- q3 ranking_required true, mapping years. Values: 2021 38.0208, 2022 36.7442, 2023 37.0536, 2024 39.8305. Highest is 2024, then 2021, then 2023, then 2022. So ranking: ["2024", "2021", "2023", "2022"].
+
+- q4 direction_required true, direction_metric_key churn_monthly_vs_annual_change_pct = 121.110433... Positive indicates increase (monthly churn higher than annual). Direction should be "increase". Provide direction field.
+
+- q7 direction_required true, metric premium_vs_basic_ltv_change_pct = 292.005... Positive indicates increase (premium LTV higher than basic). So direction "increase". Also ranking_required true: ranking_metric_key_to_label mapping: ltv_basic "Basic", ltv_premium "Premium", ltv_standard "Standard". Need ranking from highest to lowest LTV: values: basic 463.457, standard 868.830, premium 1816.778. So ranking: ["Premium", "Standard", "Basic"].
+
+Other questions no direction/ranking.
+
+Now each key_finding must include statement with at least one numeric value. Use verified numbers, can round.
+
+Also derived_values: any numbers we compute beyond the verified ones. For example, we might compute difference between churn rates, or share, but not required. However we need to include derived_values if we state any derived numbers. We can avoid derived numbers to simplify. But we might want to state that churn is higher for monthly contracts by 121% relative to annual. That's derived from churn_monthly_vs_annual_change_pct which is already computed. That's a metric, not derived. So we can just state the metric value. No derived needed.
+
+But we might compute that at-risk churn rate is 71% which is verified. No derived.
+
+Thus derived_values can be empty array for each.
+
+Now construct each key_finding.
+
+Q1: metrics: customer_count, churn_rate_pct, avg_monthly_fee. Statement: "The dataset contains 749 customers, with an overall churn rate of 37.7% and an average monthly fee of $42.11." Use rounding.
+
+Evidence_refs list those three keys.
+
+Reported_values: copy each metric with original values (maybe rounded). Must be numbers. Use original values as in findings. Could round to 2 decimals but it's okay. Provide as numbers.
+
+Q2: metrics: churn_rate_basic_pct, churn_rate_standard_pct, churn_rate_premium_pct. Statement: "Churn rates differ by plan: Basic 38.9%, Standard 36.7%, Premium 36.6%." Provide evidence refs list three keys. Ranking as above. Direction not required.
+
+Q3: metrics: churn_rate_cohort_2021_pct, churn_rate_cohort_2022_pct, churn_rate_cohort_2023_pct, churn_rate_cohort_2024_pct. Statement: "Cohort churn rates (2021‑2024) range from 36.7% to 39.8%, with the 2024 cohort highest at 39.8%." Provide ranking list years.
+
+Q4: metrics: churn_rate_monthly_pct, churn_rate_annual_pct, churn_monthly_vs_annual_change_pct. Statement: "Monthly contracts churn at 48.3% versus 21.9% for annual contracts, a 121.1% higher churn rate." Provide direction "increase". Evidence refs list three keys.
+
+Q5: metrics: at_risk_customer_count, at_risk_churn_rate_pct. Statement: "The at‑risk segment comprises 100 customers and experiences a churn rate of 71%." Evidence refs list two keys.
+
+Q6: metrics: tenure_mean, tenure_median, tenure_std, satisfaction_mean, satisfaction_missing_count. Statement: "Average tenure is 20.8 months (median 19, std 13.25). Average satisfaction score is 3.42, with 27 customers missing a score." Evidence refs list five keys.
+
+Q7: metrics: ltv_basic, ltv_standard, ltv_premium, premium_vs_basic_ltv_change_pct. Statement: "Mean lifetime value is $463.46 for Basic, $868.83 for Standard, and $1,816.78 for Premium, representing a 292% higher LTV for Premium versus Basic." Direction "increase". Ranking list as above.
+
+Now limitations: mention data size, missing satisfaction scores, churn definition, snapshot nature, etc.
+
+Conclusion: summarize.
+
+Now produce JSON.
+
+Need to ensure each key_finding includes required fields: finding_id, statement, evidence_refs, reported_values. Optional fields direction, ranking, derived_values. Provide derived_values as empty array [].
+
+Now produce final JSON inside fenced block.

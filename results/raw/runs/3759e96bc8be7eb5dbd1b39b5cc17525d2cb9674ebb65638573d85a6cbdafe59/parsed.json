@@ -1,0 +1,7 @@
+{
+  "fixed_code": "def dedupe(xs):\n    result = []\n    for x in xs:\n        if not any(x is seen or x == seen for seen in result):\n            result.append(x)\n    return result\n",
+  "bug_locations": [
+    "dedupe function body"
+  ],
+  "explanation": "The original implementation used sorted(set(xs)), which has three defects: (1) set() requires hashable elements, so it raises TypeError on unhashable values like lists or dicts; (2) sorted() destroys first-occurrence order by reordering elements by value; (3) sorting can also fail on mixed incomparable types. The fix iterates over the input once, appending each value to the result list only if no previously kept value is identical to it or equal to it (x is seen or x == seen). Linear membership testing uses equality rather than hashing, so unhashable values work, and appending in scan order preserves first-occurrence order while dropping later duplicates. The identity check also ensures that values which are not equal to themselves (e.g., float('nan')) are still deduplicated when they are the same object."
+}

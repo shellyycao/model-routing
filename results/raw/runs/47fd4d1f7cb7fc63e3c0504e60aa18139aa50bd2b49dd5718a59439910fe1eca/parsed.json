@@ -1,0 +1,11 @@
+{
+  "fixed_code": "import heapq\n\n\ndef dependency_order(deps):\n    dependencies = {}\n    nodes = set(deps)\n    for node, node_deps in deps.items():\n        node_deps = set(node_deps)\n        dependencies[node] = node_deps\n        nodes.update(node_deps)\n    for node in nodes:\n        dependencies.setdefault(node, set())\n\n    dependents = {node: set() for node in nodes}\n    indegree = {node: 0 for node in nodes}\n    for node, node_deps in dependencies.items():\n        indegree[node] = len(node_deps)\n        for dependency in node_deps:\n            dependents[dependency].add(node)\n\n    available = [node for node in nodes if indegree[node] == 0]\n    heapq.heapify(available)\n\n    order = []\n    while available:\n        node = heapq.heappop(available)\n        order.append(node)\n        for dependent in dependents[node]:\n            indegree[dependent] -= 1\n            if indegree[dependent] == 0:\n                heapq.heappush(available, dependent)\n\n    if len(order) != len(nodes):\n        raise ValueError('dependency graph contains a cycle')\n    return order",
+  "bug_locations": [
+    "module-level imports: added heapq",
+    "dependency_order: node/dependency construction now includes every referenced node and materializes dependency sets",
+    "dependency_order: added dependents/indegree graph construction",
+    "dependency_order: available-node selection now repeatedly pops the alphabetically smallest available node",
+    "dependency_order: cycle handling now raises ValueError instead of returning a partial order"
+  ],
+  "explanation": "The original only used mapping keys as nodes, so referenced-only nodes were omitted and dependents could incorrectly appear ready. It also broke out of the loop and returned a partial result when a cycle remained. The fix builds the full node universe from keys plus referenced nodes, computes indegrees and dependents, uses a min-heap to always choose the alphabetically smallest currently available node, and raises ValueError if not all nodes can be emitted."
+}

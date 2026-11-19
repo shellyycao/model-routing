@@ -1,0 +1,10 @@
+{
+  "fixed_code": "def shortest_path(graph, start, goal):\n    from collections import deque\n    queue = deque([(start, [start])])\n    seen = {start}\n    while queue:\n        node, path = queue.popleft()\n        if node == goal:\n            return path\n        for n in graph.get(node, []):\n            if n not in seen:\n                seen.add(n)\n                queue.append((n, path + [n]))\n    return None",
+  "bug_locations": [
+    "stack=[(start,[start])]; seen=set()",
+    "while stack:",
+    "node,path=stack.pop(); seen.add(node)",
+    "stack += [(n,path+[n]) for n in graph.get(node,[]) if n not in seen]"
+  ],
+  "explanation": "The original code used a stack (LIFO) for traversal, which implements Depth-First Search (DFS). However, the specification requires a 'shortest node list' in an unweighted graph, which necessitates Breadth-First Search (BFS) using a queue (FIFO). Additionally, the original code marked nodes as 'seen' only after popping them from the stack, which allowed duplicate entries and incorrect path lengths. The fix replaces the stack with a queue (using collections.deque), marks nodes as 'seen' immediately upon discovery to ensure each node is visited at its earliest possible depth, and iterates over neighbors in listed order to satisfy the exploration requirement."
+}

@@ -1,0 +1,110 @@
+STAGE: analysis
+PROJECT: energy_consumption
+PROMPT_VERSION: v3
+
+You are the analysis stage of a three-stage data workflow (cleaning -> analysis -> reporting).
+The cleaning stage has already run. Write ONE self-contained Python 3 script that computes the
+required metrics from the cleaned data it produced.
+
+## Original objective
+Clean the raw 2024 smart-meter export and analyse electricity consumption: total and per-building-type usage, the quarterly trend, the change between the first and second half of the year, tariff and meter usage, commercial load on hot days and the distribution of consumption and temperature, then report the verified findings to business stakeholders.
+
+## Handoff from the previous stage
+Completed stages: cleaning
+Validation status of previous stages: {"cleaning": "passed"}
+Cleaning logic reported by the cleaning stage:
+R1: All columns read as text; every cell is stripped of whitespace; empty string, 'NA', 'N/A', 'null', 'None', and '-' (case-insensitive) are replaced with NaN. R2: Duplicate reading_id rows are removed before any other filter, keeping only the first occurrence in file order. R3: reading_date is parsed by trying five explicit formats in order (ISO, US slash, DD-Mon-YYYY, YYYY/MM/DD, full-month-name); unparseable or missing dates cause the row to be dropped; dates are written as YYYY-MM-DD. R4: meter_id is upper-cased; rows with a missing meter_id are dropped. R5: building_type is mapped case-insensitively to Residential/Commercial/Industrial (including short variants Res, Resi, Comm, Ind); unrecognised or missing values drop the row. R6: tariff is mapped case-insensitively to 'peak' or 'off-peak' (accepting offpeak and off peak as synonyms); missing or unrecognised values drop the row. R7: energy values have commas removed; MWh values are multiplied by 1000; kWh unit suffixes are stripped; the result is validated as a non-negative number ≤ 100 000 kWh (rows outside this range or non-numeric are dropped) and rounded to 2 decimal places; the column is renamed energy_kwh. R8: temperature values have degree signs stripped; values ending in F are converted from Fahrenheit to Celsius; values ending in C or without a unit are treated as Celsius; the result is rounded to 1 decimal place; values outside −40 to 50 °C or non-numeric are set to NaN but the row is kept; the column is renamed temperature_c. R9: Output contains exactly the seven required columns in the specified order, sorted by reading_id ascending, written as a CSV with a header and no index; missing temperature_c appears as an empty cell.
+Cleaning summary written by the cleaning code (cleaning_summary.json):
+{"raw_rows": 1560, "cleaned_rows": 1428, "duplicates_removed": 60, "date_dropped": 14, "meter_id_dropped": 10, "building_type_dropped": 9, "tariff_dropped": 14, "energy_dropped": 25, "temperature_set_missing": 62}
+
+## Input/output contract (mandatory)
+- Your script runs in an isolated sandbox with NO network access. Available libraries: the Python
+  standard library, pandas and numpy.
+- Read the cleaned data from os.path.join(os.environ["INPUT_DIR"], "cleaned.csv").
+  It is the file the cleaning stage actually produced; use it as is.
+- Write os.path.join(os.environ["OUTPUT_DIR"], "findings.json"). Write nowhere else.
+- findings.json MUST be a FLAT JSON object mapping every metric_key listed below to a single
+  finite number, e.g. {"metric_a": 12.5, "metric_b": 3.0}. Do NOT nest it: an object such as
+  {"metrics": {"metric_a": 12.5}} FAILS validation. No strings, lists, null, NaN or Infinity as values.
+- Do not round results; write full precision.
+- List every file the script writes in `expected_artifacts`.
+
+## Cleaned data schema (columns in this order)
+- reading_id: str; not nullable
+- reading_date: date; not nullable
+- meter_id: str; not nullable
+- building_type: category; not nullable; allowed values: 'Residential', 'Commercial', 'Industrial'
+- tariff: category; not nullable; allowed values: 'peak', 'off-peak'
+- energy_kwh: float; not nullable; min 0; max 100000
+- temperature_c: float; nullable; min -40; max 50
+
+## First lines of the cleaned file (cleaned.csv, 1429 lines in total incl. header)
+```
+reading_id,reading_date,meter_id,building_type,tariff,energy_kwh,temperature_c
+E000002,2024-01-01,M05,Commercial,peak,469.1,0.9
+E000003,2024-01-01,M07,Commercial,peak,406.45,-1.4
+E000004,2024-01-01,M09,Industrial,peak,2730.2,0.1
+E000006,2024-01-02,M02,Residential,off-peak,38.14,
+E000007,2024-01-02,M03,Residential,off-peak,40.85,5.7
+E000008,2024-01-02,M04,Residential,off-peak,38.68,-1.4
+E000009,2024-01-02,M08,Commercial,off-peak,514.72,1.1
+E000010,2024-01-02,M12,Industrial,peak,1976.89,0.5
+E000011,2024-01-03,M02,Residential,off-peak,49.09,-0.7
+E000012,2024-01-03,M03,Residential,off-peak,35.59,
+E000013,2024-01-03,M05,Commercial,off-peak,498.85,0.2
+```
+
+## Analysis questions and the metric_keys each must produce
+- q1: Overall (aggregation): sum of energy_kwh -> total_kwh; number of readings (rows) -> reading_count; total_kwh / reading_count -> mean_kwh_per_reading.
+  metric_keys: total_kwh, reading_count, mean_kwh_per_reading
+- q2: Building types (group comparison): total energy_kwh per building_type -> kwh_residential, kwh_commercial, kwh_industrial.
+  metric_keys: kwh_residential, kwh_commercial, kwh_industrial
+- q3: Quarterly trend (trend): total energy_kwh of readings dated in each calendar quarter of 2024 (Q1 = Jan-Mar, Q2 = Apr-Jun, Q3 = Jul-Sep, Q4 = Oct-Dec) -> kwh_q1, kwh_q2, kwh_q3, kwh_q4.
+  metric_keys: kwh_q1, kwh_q2, kwh_q3, kwh_q4
+- q4: Half-year change (percentage change): total energy_kwh for January-June -> kwh_h1; July-December -> kwh_h2; (kwh_h2 - kwh_h1) / kwh_h1 * 100 -> kwh_h2_vs_h1_change_pct (in percent).
+  metric_keys: kwh_h1, kwh_h2, kwh_h2_vs_h1_change_pct
+- q5: Hot-day commercial load (conditional filtering): readings with building_type Commercial and a non-missing temperature_c >= 25: their number -> hot_commercial_reading_count; their mean energy_kwh -> hot_commercial_mean_kwh.
+  metric_keys: hot_commercial_reading_count, hot_commercial_mean_kwh
+- q6: Distribution summary (statistical summary): median and sample standard deviation (denominator n - 1) of energy_kwh over all readings -> kwh_median, kwh_std; mean temperature_c over readings with a non-missing temperature -> temperature_mean; number of readings with missing temperature_c -> temperature_missing_count; Pearson correlation between temperature_c and energy_kwh over Commercial readings with a non-missing temperature -> commercial_temp_kwh_corr.
+  metric_keys: kwh_median, kwh_std, temperature_mean, temperature_missing_count, commercial_temp_kwh_corr
+- q7: Tariff and meter usage (derived step): total energy_kwh for peak and off-peak tariffs -> kwh_peak, kwh_off_peak; kwh_peak / total_kwh * 100 -> peak_kwh_share_pct; number of distinct meter_id values -> unique_meter_count; largest total energy_kwh for any single meter_id -> highest_use_meter_kwh.
+  metric_keys: kwh_peak, kwh_off_peak, peak_kwh_share_pct, unique_meter_count, highest_use_meter_kwh
+
+All required metric_keys: total_kwh, reading_count, mean_kwh_per_reading, kwh_residential, kwh_commercial, kwh_industrial, kwh_q1, kwh_q2, kwh_q3, kwh_q4, kwh_h1, kwh_h2, kwh_h2_vs_h1_change_pct, hot_commercial_reading_count, hot_commercial_mean_kwh, kwh_median, kwh_std, temperature_mean, temperature_missing_count, commercial_temp_kwh_corr, kwh_peak, kwh_off_peak, peak_kwh_share_pct, unique_meter_count, highest_use_meter_kwh
+
+## What to return
+Return the script in `python_code`, the list of files it writes in `expected_artifacts`, and a brief
+description of the methods in `methods_description`.
+
+
+Respond with a single JSON object that conforms to this JSON Schema. Put it in one ```json fenced block and include nothing else outside the block.
+```json
+{
+  "properties": {
+    "python_code": {
+      "description": "Python script. Reads the cleaned CSV from INPUT_DIR, writes findings.json to OUTPUT_DIR.",
+      "title": "Python Code",
+      "type": "string"
+    },
+    "expected_artifacts": {
+      "description": "Filenames the script writes to OUTPUT_DIR.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Expected Artifacts",
+      "type": "array"
+    },
+    "methods_description": {
+      "title": "Methods Description",
+      "type": "string"
+    }
+  },
+  "required": [
+    "python_code",
+    "expected_artifacts",
+    "methods_description"
+  ],
+  "title": "AnalysisOutput",
+  "type": "object"
+}
+```

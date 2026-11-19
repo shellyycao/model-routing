@@ -1,0 +1,20 @@
+Extract the requested fields from the document. Resolve conflicts using each field description, perform required unit conversions, and use null when the document does not support a value.
+
+Schema:
+- dose_mg: number milligrams
+- enrollment: integer target
+- primary_endpoint: string
+- sponsor: string or null
+- start_date: date YYYY-MM-DD
+- trial_id: string
+
+Document:
+Protocol amendment 3 | supersedes draft NCT00000001
+Registry: NCT00000203
+Target enrollment: 283 (screening cap 999)
+Dose: 0.75 g per administration
+First participant: 2026-05-06
+Primary endpoint: progression-free survival
+Sponsor: redacted / not disclosed
+
+Return exactly one object with the required `fields` wrapper and no extra schema keys. Content correctness and schema/operational compliance are scored separately.

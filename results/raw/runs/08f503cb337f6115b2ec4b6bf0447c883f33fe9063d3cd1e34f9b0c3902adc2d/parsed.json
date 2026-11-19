@@ -1,0 +1,9 @@
+{
+  "fixed_code": "def allocate_stock(stock, requests):\n    remaining = dict(stock)\n    fulfilled = []\n    seen = set()\n    for rid, sku, qty in requests:\n        if rid in seen:\n            continue\n        seen.add(rid)\n        if qty > 0 and remaining.get(sku, 0) >= qty:\n            remaining[sku] -= qty\n            fulfilled.append(rid)\n    return fulfilled, remaining\n",
+  "bug_locations": [
+    "allocate_stock: `remaining = stock` aliased the caller's dict, causing mutation of the input; replaced with a copy `dict(stock)`.",
+    "allocate_stock: the request loop had no duplicate request_id tracking; added a `seen` set so repeat ids are ignored.",
+    "allocate_stock: the allocation condition `remaining.get(sku, 0) >= qty` lacked a positive-quantity check; added `qty > 0` so zero/negative quantities are never fulfilled (negative qty previously increased stock)."
+  ],
+  "explanation": "Three interacting defects: (1) `remaining = stock` bound the result to the same dict object as the input, so decrements mutated the caller's stock; fixed by copying with `dict(stock)`. (2) Duplicate request_ids were re-processed because nothing tracked prior ids; a `seen` set now skips any id already encountered, regardless of whether the first occurrence was fulfilled. (3) The condition only checked stock sufficiency, so non-positive quantities were fulfilled (negative qty even added stock); the guard now requires `qty > 0` along with sufficient stock, preserving whole-request-only fulfillment. The visible check still passes and no input mutation occurs."
+}

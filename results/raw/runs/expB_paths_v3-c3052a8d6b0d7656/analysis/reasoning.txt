@@ -1,0 +1,50 @@
+We need to produce JSON with fields python_code (string containing script), expected_artifacts (list of filenames), methods_description (string). The script must read cleaned.csv from INPUT_DIR env var, compute metrics, write findings.json to OUTPUT_DIR. Must output flat JSON with all metric keys as numbers (no NaN). Need to handle missing temperature values: for temperature_mean, compute mean over non-missing; for temperature_missing_count count NaNs. For correlation: Pearson correlation between temperature_c and energy_kwh for Commercial rows with non-missing temperature. If insufficient data (e.g., less than 2 rows), correlation would be NaN; but we must output a finite number. Could set to 0.0 if not enough data. We'll compute using pandas .corr() which returns NaN if insufficient; we can replace NaN with 0.0.
+
+All metrics: compute as described.
+
+Edge cases: reading_count is number of rows (should be int). But JSON numbers can be int or float; fine.
+
+Mean_kwh_per_reading = total_kwh / reading_count.
+
+kwh_* per building type: sum energy_kwh where building_type matches.
+
+Quarterly: need to filter reading_date year 2024 (all). Use pandas dt.quarter.
+
+Half-year: months 1-6 vs 7-12.
+
+Hot commercial: building_type == 'Commercial' and temperature_c >= 25 (non-missing). Count and mean energy_kwh.
+
+Distribution summary: median, std (sample). Use pandas .median() and .std(ddof=1). Temperature_mean: mean of temperature_c non-missing. temperature_missing_count: count of rows where temperature_c is NaN.
+
+commercial_temp_kwh_corr: correlation between temperature_c and energy_kwh for Commercial rows with non-missing temperature. Use .corr().
+
+Tariff and meter usage: sum energy_kwh for each tariff. peak_kwh_share_pct = kwh_peak / total_kwh * 100.
+
+unique_meter_count: number of distinct meter_id.
+
+highest_use_meter_kwh: group by meter_id sum energy_kwh, take max.
+
+All numbers should be plain Python numbers (float). Ensure we convert to Python native types (float, int). Use json.dump with ensure_ascii=False.
+
+Write findings.json.
+
+expected_artifacts: ["findings.json"].
+
+Now produce script.
+
+We'll import os, pandas, numpy, json.
+
+Read csv: path = os.path.join(os.environ["INPUT_DIR"], "cleaned.csv").
+
+df = pd.read_csv(path, parse_dates=['reading_date'])
+
+Compute metrics.
+
+Potential issues: temperature_c column may have empty strings; pandas will read as NaN automatically if default.
+
+Now produce script as a string.
+
+Make sure script is self-contained, no external functions.
+
+Now produce JSON output.
+

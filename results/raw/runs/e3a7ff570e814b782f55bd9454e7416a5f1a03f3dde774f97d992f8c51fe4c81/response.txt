@@ -1,0 +1,11 @@
+```json
+{
+  "fixed_code": "def summarize_logs(lines):\n    counts = {}\n    first_error = None\n    for line in lines:\n        parts = line.split('|')\n        if len(parts) != 4:\n            continue\n        ts, level, service, message = parts\n        level = level.upper()\n        service_counts = counts.setdefault(service, {})\n        service_counts[level] = service_counts.get(level, 0) + 1\n        if level == 'ERROR' and (first_error is None or ts < first_error):\n            first_error = ts\n    return {'counts': counts, 'first_error': first_error}\n",
+  "bug_locations": [
+    "Line parsing in the loop body: direct unpacking of line.split('|') with no malformed-line handling",
+    "Counting statement: level used verbatim instead of normalized uppercase",
+    "first_error update: kept the first ERROR seen in input order instead of the lexicographically earliest timestamp, and tested the unnormalized level"
+  ],
+  "explanation": "Three interacting defects: (1) Malformed lines crashed the function because line.split('|') was unpacked into exactly four names with no validation; fixed by splitting once, skipping any line that does not produce exactly four fields. (2) Levels were counted as-is, so mixed-case inputs like 'error' produced separate keys and were never matched for the ERROR timestamp; fixed by uppercasing the level once and using the normalized value for both counting and the ERROR check. (3) first_error was assigned only when None, i.e., the first ERROR in input order, but the spec requires the lexicographically earliest ERROR timestamp; fixed by replacing it whenever a strictly smaller timestamp is found. The value remains None (null) when no valid ERROR line exists."
+}
+```

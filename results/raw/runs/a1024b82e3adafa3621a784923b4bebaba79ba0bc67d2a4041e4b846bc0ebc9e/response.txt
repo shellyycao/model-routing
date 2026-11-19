@@ -1,0 +1,9 @@
+```json
+{
+  "fixed_code": "def invoice_total(lines, discount_pct=0, tax_pct=0):\n    subtotal = sum(row['qty'] * row['unit_price'] for row in lines)\n    discounted = subtotal * (1 - discount_pct / 100)\n    total = discounted * (1 + tax_pct / 100)\n    return round(total, 2)\n",
+  "bug_locations": [
+    "invoice_total: return statement computing subtotal*(1+tax_pct/100)-subtotal*discount_pct/100"
+  ],
+  "explanation": "The buggy formula applied tax to the full (undiscounted) subtotal and separately subtracted the discount computed on the full subtotal, i.e. subtotal*(1 + tax_pct/100 - discount_pct/100). The spec requires sequential application: compute the subtotal, apply the discount first (subtotal * (1 - discount_pct/100)), then apply tax to the discounted amount, and round only the final result to 2 decimals. For the visible check this yields 20 * 0.9 * 1.05 = 18.9, whereas the buggy code produced 19.0."
+}
+```

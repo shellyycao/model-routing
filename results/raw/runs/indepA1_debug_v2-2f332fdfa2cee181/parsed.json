@@ -1,0 +1,7 @@
+{
+  "fixed_code": "def dedupe(xs):\n    seen = []\n    result = []\n    for x in xs:\n        try:\n            if x not in seen:\n                seen.append(x)\n                result.append(x)\n        except TypeError:\n            if x not in seen:\n                seen.append(x)\n                result.append(x)\n    return result\n",
+  "bug_locations": [
+    "dedupe function body"
+  ],
+  "explanation": "Two bugs: (1) `sorted()` changes the order instead of preserving first-occurrence order. (2) `set()` doesn't support unhashable values (like lists/dicts). The fix iterates through xs, tracking seen items in a list (which supports unhashable values via equality checks) and appending each item to the result only on its first occurrence."
+}

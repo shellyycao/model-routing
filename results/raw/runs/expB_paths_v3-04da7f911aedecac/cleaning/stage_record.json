@@ -1,0 +1,121 @@
+{
+  "stage": "cleaning",
+  "model_alias": "C",
+  "model_id": "openai.gpt-oss-120b-1:0",
+  "prompt_version": "v3",
+  "prompt_hash": "166a03432eeeee68c47f88049efab1cd0b57e65cee2270cd7a4026dc133d89a5",
+  "invocation_ids": [
+    "d3067bce-4174-49eb-baca-d7716035b7ec"
+  ],
+  "cache_hit": false,
+  "shared_with_run_ids": [],
+  "status": "failed",
+  "structural_ok": false,
+  "failure_type": "execution_error",
+  "failure_detail": "execution runtime_error (exit 1): /sandbox/code/main.py:15: FutureWarning: DataFrame.applymap has been deprecated. Use DataFrame.map instead.\n  df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)\n/sandbox/code/main.py:22: FutureWarning: DataFrame.replace without 'value' and with non-dict-like 'to_replace' is deprecated and will raise in a future version. Explicitly specify the new values instead.\n  return df.replace(to_nan)\nTraceback (most recent call last):\n  File \"/sandbox/code/main.py\", line 224, in <module>\n    main()\n  File \"/sandbox/code/main.py\", line 123, in main\n    df = strip_and_normalize(df_raw)\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/sandbox/code/main.py\", line 22, in strip_and_normalize\n    return df.replace(to_nan)\n           ^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/generic.py\", line 7939, in replace\n    raise TypeError(\nTypeError: Expecting 'to_replace' to be either a scalar, array-like, dict or None, got invalid type 'function'\n",
+  "parse_ok": true,
+  "execution": {
+    "status": "runtime_error",
+    "exit_code": 1,
+    "stdout": "",
+    "stderr": "/sandbox/code/main.py:15: FutureWarning: DataFrame.applymap has been deprecated. Use DataFrame.map instead.\n  df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)\n/sandbox/code/main.py:22: FutureWarning: DataFrame.replace without 'value' and with non-dict-like 'to_replace' is deprecated and will raise in a future version. Explicitly specify the new values instead.\n  return df.replace(to_nan)\nTraceback (most recent call last):\n  File \"/sandbox/code/main.py\", line 224, in <module>\n    main()\n  File \"/sandbox/code/main.py\", line 123, in main\n    df = strip_and_normalize(df_raw)\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/sandbox/code/main.py\", line 22, in strip_and_normalize\n    return df.replace(to_nan)\n           ^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/generic.py\", line 7939, in replace\n    raise TypeError(\nTypeError: Expecting 'to_replace' to be either a scalar, array-like, dict or None, got invalid type 'function'\n",
+    "runtime_ms": 718.5739590022422,
+    "output_files": [],
+    "sandbox_image": "sha256:88988a15503bdb96538c3dd62244a79879d5c7848397db18b1267ccfd0a9727a"
+  },
+  "validation": {
+    "stage": "cleaning",
+    "hard_pass": false,
+    "checks": [
+      {
+        "name": "output_exists",
+        "passed": false,
+        "mandatory": true,
+        "detail": "cleaned CSV not found: /Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expB_paths_v3-04da7f911aedecac/cleaning/output/cleaned.csv",
+        "value": null
+      },
+      {
+        "name": "output_parses",
+        "passed": false,
+        "mandatory": true,
+        "detail": "no output",
+        "value": null
+      },
+      {
+        "name": "required_columns_present",
+        "passed": false,
+        "mandatory": true,
+        "detail": "no output",
+        "value": null
+      },
+      {
+        "name": "schema_constraints",
+        "passed": false,
+        "mandatory": true,
+        "detail": "no output",
+        "value": null
+      },
+      {
+        "name": "no_duplicate_keys",
+        "passed": false,
+        "mandatory": true,
+        "detail": "no output",
+        "value": null
+      },
+      {
+        "name": "row_set_matches_reference",
+        "passed": false,
+        "mandatory": true,
+        "detail": "no output",
+        "value": null
+      },
+      {
+        "name": "values_match_reference",
+        "passed": false,
+        "mandatory": true,
+        "detail": "no output",
+        "value": null
+      }
+    ],
+    "quality": {
+      "cleaning_correctness": 0.0,
+      "data_integrity": 0.0,
+      "schema_compliance": 0.0
+    },
+    "quality_basis": "ground_truth",
+    "validator_version": "1.0"
+  },
+  "conditional_validation": null,
+  "input_artifacts": [
+    "datasets/projects/retail_sales/raw.csv"
+  ],
+  "output_artifacts": [
+    "results/raw/runs/expB_paths_v3-04da7f911aedecac/cleaning/prompt.txt",
+    "results/raw/runs/expB_paths_v3-04da7f911aedecac/cleaning/response.txt",
+    "results/raw/runs/expB_paths_v3-04da7f911aedecac/cleaning/reasoning.txt",
+    "results/raw/runs/expB_paths_v3-04da7f911aedecac/cleaning/parsed.json",
+    "results/raw/runs/expB_paths_v3-04da7f911aedecac/cleaning/code.py"
+  ],
+  "input_artifact_hashes": {
+    "datasets/projects/retail_sales/raw.csv": "a1c513b0966bc95bb7cf521bc8920d7a70ccac71ff98d1564a6d84e013f33a5c"
+  },
+  "output_artifact_hashes": {
+    "results/raw/runs/expB_paths_v3-04da7f911aedecac/cleaning/prompt.txt": "166a03432eeeee68c47f88049efab1cd0b57e65cee2270cd7a4026dc133d89a5",
+    "results/raw/runs/expB_paths_v3-04da7f911aedecac/cleaning/response.txt": "8b48cd1b179534397477f4bb96c953256c8ff98fd0d2f66c88012f8a6c7e4955",
+    "results/raw/runs/expB_paths_v3-04da7f911aedecac/cleaning/reasoning.txt": "a21ec89c706a2d5692a40bc6ff3bbbe822cc9d42ecc825ccefeeaf802a5cfc8d",
+    "results/raw/runs/expB_paths_v3-04da7f911aedecac/cleaning/parsed.json": "680ad0df2d75c95c5177c8cea36087a2a2fe3784e1068dbaf54463388285f213",
+    "results/raw/runs/expB_paths_v3-04da7f911aedecac/cleaning/code.py": "ed66f1fb4046e68aa1a5763252863f5d42aa3bc76309aec7e9503c7421b72c45"
+  },
+  "handoff_in_path": "results/raw/runs/expB_paths_v3-04da7f911aedecac/cleaning/handoff_in.json",
+  "handoff_size_bytes": 575,
+  "input_tokens": 1870,
+  "output_tokens": 3308,
+  "cost_usd": null,
+  "cost_status": "unavailable",
+  "timings": {
+    "generation_ms": 14119.599832996755,
+    "execution_ms": 718.5739590022422,
+    "validation_ms": 0.6914170007803477,
+    "handoff_ms": 0.31908399978419766
+  }
+}

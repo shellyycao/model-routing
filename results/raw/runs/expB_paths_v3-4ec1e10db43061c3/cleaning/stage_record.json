@@ -1,0 +1,135 @@
+{
+  "stage": "cleaning",
+  "model_alias": "C",
+  "model_id": "openai.gpt-oss-120b-1:0",
+  "prompt_version": "v3",
+  "prompt_hash": "166a03432eeeee68c47f88049efab1cd0b57e65cee2270cd7a4026dc133d89a5",
+  "invocation_ids": [
+    "c652d312-30f2-471e-93f0-b1959f4cc403"
+  ],
+  "cache_hit": false,
+  "shared_with_run_ids": [],
+  "status": "failed",
+  "structural_ok": true,
+  "failure_type": "execution_error",
+  "failure_detail": "execution runtime_error (exit 1): /sandbox/code/main.py:130: FutureWarning: DataFrame.applymap has been deprecated. Use DataFrame.map instead.\n  df = df_raw.applymap(normalize_missing)\nTraceback (most recent call last):\n  File \"/sandbox/code/main.py\", line 252, in <module>\n    main()\n  File \"/sandbox/code/main.py\", line 249, in main\n    json.dump(summary, f, indent=2)\n  File \"/usr/local/lib/python3.12/json/__init__.py\", line 179, in dump\n    for chunk in iterable:\n                 ^^^^^^^^\n  File \"/usr/local/lib/python3.12/json/encoder.py\", line 432, in _iterencode\n    yield from _iterencode_dict(o, _current_indent_level)\n  File \"/usr/local/lib/python3.12/json/encoder.py\", line 406, in _iterencode_dict\n    yield from chunks\n  File \"/usr/local/lib/python3.12/json/encoder.py\", line 406, in _iterencode_dict\n    yield from chunks\n  File \"/usr/local/lib/python3.12/json/encoder.py\", line 439, in _iterencode\n    o = _default(o)\n        ^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/json/encoder.py\", line 180, in default\n    raise TypeError(f'Object of type {o.__class__.__name__} '\nTypeError: Object of type int64 is not JSON serializable\n",
+  "parse_ok": true,
+  "execution": {
+    "status": "runtime_error",
+    "exit_code": 1,
+    "stdout": "",
+    "stderr": "/sandbox/code/main.py:130: FutureWarning: DataFrame.applymap has been deprecated. Use DataFrame.map instead.\n  df = df_raw.applymap(normalize_missing)\nTraceback (most recent call last):\n  File \"/sandbox/code/main.py\", line 252, in <module>\n    main()\n  File \"/sandbox/code/main.py\", line 249, in main\n    json.dump(summary, f, indent=2)\n  File \"/usr/local/lib/python3.12/json/__init__.py\", line 179, in dump\n    for chunk in iterable:\n                 ^^^^^^^^\n  File \"/usr/local/lib/python3.12/json/encoder.py\", line 432, in _iterencode\n    yield from _iterencode_dict(o, _current_indent_level)\n  File \"/usr/local/lib/python3.12/json/encoder.py\", line 406, in _iterencode_dict\n    yield from chunks\n  File \"/usr/local/lib/python3.12/json/encoder.py\", line 406, in _iterencode_dict\n    yield from chunks\n  File \"/usr/local/lib/python3.12/json/encoder.py\", line 439, in _iterencode\n    o = _default(o)\n        ^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/json/encoder.py\", line 180, in default\n    raise TypeError(f'Object of type {o.__class__.__name__} '\nTypeError: Object of type int64 is not JSON serializable\n",
+    "runtime_ms": 714.8509999969974,
+    "output_files": [
+      "/Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expB_paths_v3-4ec1e10db43061c3/cleaning/output/cleaned.csv",
+      "/Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expB_paths_v3-4ec1e10db43061c3/cleaning/output/cleaning_summary.json"
+    ],
+    "sandbox_image": "sha256:88988a15503bdb96538c3dd62244a79879d5c7848397db18b1267ccfd0a9727a"
+  },
+  "validation": {
+    "stage": "cleaning",
+    "hard_pass": true,
+    "checks": [
+      {
+        "name": "output_exists",
+        "passed": true,
+        "mandatory": true,
+        "detail": "/Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expB_paths_v3-4ec1e10db43061c3/cleaning/output/cleaned.csv",
+        "value": null
+      },
+      {
+        "name": "output_parses",
+        "passed": true,
+        "mandatory": true,
+        "detail": "520 rows, 9 columns",
+        "value": null
+      },
+      {
+        "name": "required_columns_present",
+        "passed": true,
+        "mandatory": true,
+        "detail": "all present",
+        "value": null
+      },
+      {
+        "name": "schema_constraints",
+        "passed": true,
+        "mandatory": true,
+        "detail": "all constraints satisfied",
+        "value": 1.0
+      },
+      {
+        "name": "no_extra_columns",
+        "passed": true,
+        "mandatory": false,
+        "detail": "",
+        "value": null
+      },
+      {
+        "name": "no_duplicate_keys",
+        "passed": true,
+        "mandatory": true,
+        "detail": "",
+        "value": 0.0
+      },
+      {
+        "name": "row_set_matches_reference",
+        "passed": true,
+        "mandatory": true,
+        "detail": "0 reference rows missing (e.g. []); 0 unexpected rows (e.g. []); output rows=520, reference rows=520",
+        "value": null
+      },
+      {
+        "name": "values_match_reference",
+        "passed": true,
+        "mandatory": true,
+        "detail": "4680/4680 cells match (abs_tol=0.011, rel_tol=1e-06)",
+        "value": 1.0
+      }
+    ],
+    "quality": {
+      "cleaning_correctness": 1.0,
+      "data_integrity": 1.0,
+      "schema_compliance": 1.0
+    },
+    "quality_basis": "ground_truth",
+    "validator_version": "1.0"
+  },
+  "conditional_validation": null,
+  "input_artifacts": [
+    "datasets/projects/retail_sales/raw.csv"
+  ],
+  "output_artifacts": [
+    "results/raw/runs/expB_paths_v3-4ec1e10db43061c3/cleaning/prompt.txt",
+    "results/raw/runs/expB_paths_v3-4ec1e10db43061c3/cleaning/response.txt",
+    "results/raw/runs/expB_paths_v3-4ec1e10db43061c3/cleaning/reasoning.txt",
+    "results/raw/runs/expB_paths_v3-4ec1e10db43061c3/cleaning/parsed.json",
+    "results/raw/runs/expB_paths_v3-4ec1e10db43061c3/cleaning/code.py",
+    "results/raw/runs/expB_paths_v3-4ec1e10db43061c3/cleaning/output/cleaned.csv",
+    "results/raw/runs/expB_paths_v3-4ec1e10db43061c3/cleaning/output/cleaning_summary.json"
+  ],
+  "input_artifact_hashes": {
+    "datasets/projects/retail_sales/raw.csv": "a1c513b0966bc95bb7cf521bc8920d7a70ccac71ff98d1564a6d84e013f33a5c"
+  },
+  "output_artifact_hashes": {
+    "results/raw/runs/expB_paths_v3-4ec1e10db43061c3/cleaning/prompt.txt": "166a03432eeeee68c47f88049efab1cd0b57e65cee2270cd7a4026dc133d89a5",
+    "results/raw/runs/expB_paths_v3-4ec1e10db43061c3/cleaning/response.txt": "89de1312f10dee2f3e99235e880523bc9a3ad164d6a7df015ebde785c8dd49f1",
+    "results/raw/runs/expB_paths_v3-4ec1e10db43061c3/cleaning/reasoning.txt": "5490dafbda33056b5eed8ea621ee6f404ccefcbe5ac5b2a09273ae92743bfb8a",
+    "results/raw/runs/expB_paths_v3-4ec1e10db43061c3/cleaning/parsed.json": "9813ab63248862b0f971d06a363c7f84ed93922148aba5ba2c20c1ecfa66c2e7",
+    "results/raw/runs/expB_paths_v3-4ec1e10db43061c3/cleaning/code.py": "7af6d41f9886be2f3ae88bf259a9f29cf7505504107a832bd57781086b872c09",
+    "results/raw/runs/expB_paths_v3-4ec1e10db43061c3/cleaning/output/cleaned.csv": "fdb1ac3af643c810adcf86df0134aa55ba88ed91251a33bbd9a379f6f5f8448a",
+    "results/raw/runs/expB_paths_v3-4ec1e10db43061c3/cleaning/output/cleaning_summary.json": "46aec4ee7924cc22123ebbe66523a166cba675a5a1a9370e683cbde946163bf4"
+  },
+  "handoff_in_path": "results/raw/runs/expB_paths_v3-4ec1e10db43061c3/cleaning/handoff_in.json",
+  "handoff_size_bytes": 575,
+  "input_tokens": 1870,
+  "output_tokens": 3795,
+  "cost_usd": null,
+  "cost_status": "unavailable",
+  "timings": {
+    "generation_ms": 11203.885791001085,
+    "execution_ms": 714.8509999969974,
+    "validation_ms": 9.596791998774279,
+    "handoff_ms": 0.23883300309535116
+  }
+}

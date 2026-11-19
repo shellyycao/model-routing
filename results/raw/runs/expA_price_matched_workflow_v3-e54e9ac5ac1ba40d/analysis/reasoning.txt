@@ -1,0 +1,144 @@
+Let me analyze the requirements:
+
+1. Read cleaned.csv from INPUT_DIR
+2. Compute metrics:
+   - ticket_count: number of tickets
+   - mean_resolution_minutes: mean of resolution_minutes
+   - total_labor_cost: sum of labor_cost
+   - labor_cost_alpha, labor_cost_beta, labor_cost_gamma: sum of labor_cost by team
+   - resolution_email, resolution_chat, resolution_phone: mean resolution_minutes by channel
+   - reopen_rate_email_pct, reopen_rate_chat_pct: reopened percentage (mean of reopened * 100) for email and chat
+   - email_vs_chat_reopen_change_pct: (email rate - chat rate) / chat rate * 100
+   - high_cost_low_sat_count: count of tickets with labor_cost >= 100 and satisfaction_score <= 2 (non-missing)
+   - high_cost_low_sat_reopen_pct: reopened percentage for that segment
+   - resolution_median: median of resolution_minutes
+   - resolution_std: sample standard deviation (ddof=1) of resolution_minutes
+   - satisfaction_mean: mean of non-missing satisfaction_score
+   - satisfaction_missing_count: count of missing satisfaction_score
+   - unique_agent_count: distinct agent_id count
+   - top_agent_ticket_count: max ticket count for one agent
+   - top_agent_ticket_share_pct: top_agent_ticket_count / ticket_count * 100
+
+3. Write findings.json to OUTPUT_DIR - flat JSON with all metric keys as finite numbers.
+
+Important details:
+- No rounding, full precision
+- All values must be finite numbers (no NaN, Infinity, strings, lists, null)
+- Reopened percentage: I need to decide - "reopened percentage for email and chat" - mean of reopened column * 100. That's the percentage.
+- satisfaction_score is nullable - need to handle NaN.
+- satisfaction_missing_count should be a number (int converted to float is fine, JSON handles ints).
+- email_vs_chat_reopen_change_pct uses the rates - should I use the percentages (already *100) or proportions? Let's see: (email rate - chat rate) / chat rate * 100. If rates are both percentages, the result is the same as if both are proportions since the *100 cancels. Actually: (e_pct - c_pct)/c_pct*100 = (e - c)/c*100 either way. So it doesn't matter. Good.
+- High-cost low-sat: labor_cost >= 100 AND satisfaction_score <= 2 AND satisfaction not missing. reopened percentage = mean(reopened)*100 for that subset.
+- Sample std: pandas .std() defaults to ddof=1 which is sample std. Good.
+- Ensure values are Python floats/ints for JSON serialization. numpy types need conversion - use float() or int().
+
+Edge case: if high_cost_low_sat_count is 0, then the reopen pct would be NaN - need to handle. But requirement says finite numbers. Given the data probably has some, but to be safe, use 0.0 if count is 0. Let me handle it.
+
+Similarly if chat reopen rate is 0, division would be infinity. Handle with fallback? The spec says compute it. To be safe, I could check and use 0.0 if denominator is 0. But that might deviate from expected. Likely the data has nonzero chat reopen rate. Still, I'll add safety handling that only kicks in for degenerate cases.
+
+Let me write the script:
+
+```python
+import json
+import os
+
+import numpy as np
+import pandas as pd
+
+input_path = os.path.join(os.environ["INPUT_DIR"], "cleaned.csv")
+output_path = os.path.join(os.environ["OUTPUT_DIR"], "findings.json")
+
+df = pd.read_csv(input_path)
+
+findings = {}
+
+# q1: overall
+findings["ticket_count"] = int(len(df))
+findings["mean_resolution_minutes"] = float(df["resolution_minutes"].mean())
+findings["total_labor_cost"] = float(df["labor_cost"].sum())
+
+# q2: team labor cost
+team_cost = df.groupby("team", observed=True)["labor_cost"].sum()
+findings["labor_cost_alpha"] = float(team_cost.get("Alpha", 0.0))
+findings["labor_cost_beta"] = float(team_cost.get("Beta", 0.0))
+findings["labor_cost_gamma"] = float(team_cost.get("Gamma", 0.0))
+
+# q3: channel mean resolution
+chan_res = df.groupby("channel", observed=True)["resolution_minutes"].mean()
+findings["resolution_email"] = float(chan_res.get("email", 0.0))
+findings["resolution_chat"] = float(chan_res.get("chat", 0.0))
+findings["resolution_phone"] = float(chan_res.get("phone", 0.0))
+
+# q4: reopen rates
+def reopen_pct(sub):
+    if len(sub) == 0:
+        return 0.0
+    return float(sub["reopened"].mean() * 100.0)
+
+email_df = df[df["channel"] == "email"]
+chat_df = df[df["channel"] == "chat"]
+email_rate = reopen_pct(email_df)
+chat_rate = reopen_pct(chat_df)
+findings["reopen_rate_email_pct"] = email_rate
+findings["reopen_rate_chat_pct"] = chat_rate
+if chat_rate != 0.0:
+    findings["email_vs_chat_reopen_change_pct"] = float((email_rate - chat_rate) / chat_rate * 100.0)
+else:
+    findings["email_vs_chat_reopen_change_pct"] = 0.0
+
+# q5: high-cost low-satisfaction segment
+sat = df["satisfaction_score"]
+mask = (df["labor_cost"] >= 100) & sat.notna() & (sat <= 2)
+seg = df[mask]
+findings["high_cost_low_sat_count"] = int(len(seg))
+if len(seg) > 0:
+    findings["high_cost_low_sat_reopen_pct"] = float(seg["reopened"].mean() * 100.0)
+else:
+    findings["high_cost_low_sat_reopen_pct"] = 0.0
+
+# q6: distribution
+findings["resolution_median"] = float(df["resolution_minutes"].median())
+findings["resolution_std"] = float(df["resolution_minutes"].std(ddof=1))
+findings["satisfaction_mean"] = float(df["satisfaction_score"].mean())
+findings["satisfaction_missing_count"] = int(df["satisfaction_score"].isna().sum())
+
+# q7: agent concentration
+agent_counts = df["agent_id"].value_counts()
+findings["unique_agent_count"] = int(df["agent_id"].nunique())
+findings["top_agent_ticket_count"] = int(agent_counts.max())
+findings["top_agent_ticket_share_pct"] = float(findings["top_agent_ticket_count"] / findings["ticket_count"] * 100.0)
+
+# safety: replace any non-finite with 0.0 (shouldn't happen)
+for k, v in findings.items():
+    if not np.isfinite(v):
+        findings[k] = 0.0
+
+with open(output_path, "w") as f:
+    json.dump(findings, f, indent=2)
+```
+
+Wait — for satisfaction_mean, if all missing it would be NaN; the safety fallback handles it. But is replacing with 0.0 appropriate? The requirement says values must be finite. The data likely has non-missing values. The safety is fine.
+
+Note: grouping by category with observed=True to avoid FutureWarning. Since the categories are allowed values only, .get should work.
+
+For JSON serialization, ints are fine as JSON numbers. The example shows {"metric_a": 12.5, "metric_b": 3.0}. Ints will serialize as e.g. 347 which is a valid JSON number. Fine.
+
+Should counts be int or float? Either is a number. I'll use int for counts to be natural, but maybe float to be safe? JSON numbers — both fine. Validation says "single finite number". Int is fine.
+
+For resolution_std: sample standard deviation — pandas default ddof=1. Explicit is good.
+
+Let me double check q4: "reopened percentage for email and chat -> reopen_rate_email_pct, reopen_rate_chat_pct" — percentage = mean(reopened) * 100 since reopened is 0/1. Yes.
+
+"(email rate - chat rate) / chat rate * 100 -> email_vs_chat_reopen_change_pct" — using the percentage rates: same result. Good.
+
+q5: "tickets with labor_cost >= 100 and a non-missing satisfaction_score <= 2 -> count and reopened percentage". Good.
+
+The script writes only findings.json. expected_artifacts: ["findings.json"].
+
+Let me also make sure OUTPUT_DIR exists — it should, but I could add os.makedirs. The contract says write to OUTPUT_DIR; adding makedirs with exist_ok is harmless. Actually "Write nowhere else" — creating a directory isn't writing a file, but OUTPUT_DIR should exist. I'll add os.makedirs(..., exist_ok=True) for safety — that's commonly accepted. Hmm, but strictly "write nowhere else" — creating the dir is fine.
+
+Let me finalize the code. Keep it self-contained and clean.
+
+methods_description: brief description of computation methods.
+
+Format response as a single JSON fenced block.

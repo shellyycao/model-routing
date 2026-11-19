@@ -1,0 +1,166 @@
+{
+  "contract_version": "1.2",
+  "run_id": "expA_stage_v3-d2a04da34a3f274f",
+  "experiment_id": "expA_stage_v3",
+  "project_id": "customer_churn",
+  "stage": "analysis",
+  "model_alias": "B",
+  "repeat_index": 0,
+  "canonical_inputs": [
+    "datasets/projects/customer_churn/canonical/cleaned.csv"
+  ],
+  "canonical_input_hashes": {
+    "datasets/projects/customer_churn/canonical/cleaned.csv": "b1b8ff3308afdaf8d0206b2cb99807c5a4c50d5c0547db9fe4610ce5f3b67543"
+  },
+  "config_hash": "4ae6e3b017ae44471ae78dfebf4a53d108dd1c5ad6d7074e3cb2b60cfe24223c",
+  "record": {
+    "stage": "analysis",
+    "model_alias": "B",
+    "model_id": "us.amazon.nova-pro-v1:0",
+    "prompt_version": "v3",
+    "prompt_hash": "2bd2587105ca92873bdac929e429d989c510dcd97b9dd74e617be46574f4ccba",
+    "invocation_ids": [
+      "01eedb3c-a594-4f76-b773-832d49f0bd84"
+    ],
+    "cache_hit": false,
+    "shared_with_run_ids": [],
+    "status": "failed",
+    "structural_ok": false,
+    "failure_type": "execution_error",
+    "failure_detail": "execution runtime_error (exit 1): Traceback (most recent call last):\n  File \"/sandbox/code/main.py\", line 16, in <module>\n    churn_rate_cohort_2021_pct = df[df['signup_date'].dt.year == 2021]['churned'].mean() * 100\n                                    ^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/generic.py\", line 6299, in __getattr__\n    return object.__getattribute__(self, name)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/accessor.py\", line 224, in __get__\n    accessor_obj = self._accessor(obj)\n                   ^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/indexes/accessors.py\", line 643, in __new__\n    raise AttributeError(\"Can only use .dt accessor with datetimelike values\")\nAttributeError: Can only use .dt accessor with datetimelike values. Did you mean: 'at'?\n",
+    "parse_ok": true,
+    "execution": {
+      "status": "runtime_error",
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "Traceback (most recent call last):\n  File \"/sandbox/code/main.py\", line 16, in <module>\n    churn_rate_cohort_2021_pct = df[df['signup_date'].dt.year == 2021]['churned'].mean() * 100\n                                    ^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/generic.py\", line 6299, in __getattr__\n    return object.__getattribute__(self, name)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/accessor.py\", line 224, in __get__\n    accessor_obj = self._accessor(obj)\n                   ^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/indexes/accessors.py\", line 643, in __new__\n    raise AttributeError(\"Can only use .dt accessor with datetimelike values\")\nAttributeError: Can only use .dt accessor with datetimelike values. Did you mean: 'at'?\n",
+      "runtime_ms": 820.1736249975511,
+      "output_files": [],
+      "sandbox_image": "sha256:88988a15503bdb96538c3dd62244a79879d5c7848397db18b1267ccfd0a9727a"
+    },
+    "validation": {
+      "stage": "analysis",
+      "hard_pass": false,
+      "checks": [
+        {
+          "name": "findings_exists",
+          "passed": false,
+          "mandatory": true,
+          "detail": "findings.json not found",
+          "value": null
+        },
+        {
+          "name": "findings_parses",
+          "passed": false,
+          "mandatory": true,
+          "detail": "no parseable findings",
+          "value": null
+        },
+        {
+          "name": "required_keys_present",
+          "passed": false,
+          "mandatory": true,
+          "detail": "no parseable findings",
+          "value": null
+        },
+        {
+          "name": "values_numeric",
+          "passed": false,
+          "mandatory": true,
+          "detail": "no parseable findings",
+          "value": null
+        },
+        {
+          "name": "values_within_tolerance",
+          "passed": false,
+          "mandatory": true,
+          "detail": "no parseable findings",
+          "value": null
+        }
+      ],
+      "quality": {
+        "numerical_accuracy": 0.0,
+        "calculation_coverage": 0.0
+      },
+      "quality_basis": "ground_truth",
+      "validator_version": "1.0"
+    },
+    "conditional_validation": {
+      "stage": "analysis",
+      "hard_pass": false,
+      "checks": [
+        {
+          "name": "findings_exists",
+          "passed": false,
+          "mandatory": true,
+          "detail": "findings.json not found",
+          "value": null
+        },
+        {
+          "name": "findings_parses",
+          "passed": false,
+          "mandatory": true,
+          "detail": "no parseable findings",
+          "value": null
+        },
+        {
+          "name": "required_keys_present",
+          "passed": false,
+          "mandatory": true,
+          "detail": "no parseable findings",
+          "value": null
+        },
+        {
+          "name": "values_numeric",
+          "passed": false,
+          "mandatory": true,
+          "detail": "no parseable findings",
+          "value": null
+        },
+        {
+          "name": "values_within_tolerance",
+          "passed": false,
+          "mandatory": true,
+          "detail": "no parseable findings",
+          "value": null
+        }
+      ],
+      "quality": {
+        "numerical_accuracy": 0.0,
+        "calculation_coverage": 0.0
+      },
+      "quality_basis": "conditional_reference",
+      "validator_version": "1.0"
+    },
+    "input_artifacts": [
+      "datasets/projects/customer_churn/canonical/cleaned.csv"
+    ],
+    "output_artifacts": [
+      "results/raw/runs/expA_stage_v3-d2a04da34a3f274f/analysis/prompt.txt",
+      "results/raw/runs/expA_stage_v3-d2a04da34a3f274f/analysis/response.txt",
+      "results/raw/runs/expA_stage_v3-d2a04da34a3f274f/analysis/parsed.json",
+      "results/raw/runs/expA_stage_v3-d2a04da34a3f274f/analysis/code.py"
+    ],
+    "input_artifact_hashes": {
+      "datasets/projects/customer_churn/canonical/cleaned.csv": "b1b8ff3308afdaf8d0206b2cb99807c5a4c50d5c0547db9fe4610ce5f3b67543"
+    },
+    "output_artifact_hashes": {
+      "results/raw/runs/expA_stage_v3-d2a04da34a3f274f/analysis/prompt.txt": "2bd2587105ca92873bdac929e429d989c510dcd97b9dd74e617be46574f4ccba",
+      "results/raw/runs/expA_stage_v3-d2a04da34a3f274f/analysis/response.txt": "b3fe04a099fbe2efb06511c76f3f477a2755cb8620cbf7279827f16009c243a6",
+      "results/raw/runs/expA_stage_v3-d2a04da34a3f274f/analysis/parsed.json": "4f0b61b0e9ded3ee5f82e1c3e81a54c8cd3d83b3c5e5809d5a53994c11a19c19",
+      "results/raw/runs/expA_stage_v3-d2a04da34a3f274f/analysis/code.py": "ac175a3b46a3752705113eec90ce1510a55dee4d6df681bbba5aede76fdfa0bc"
+    },
+    "handoff_in_path": "results/raw/runs/expA_stage_v3-d2a04da34a3f274f/analysis/handoff_in.json",
+    "handoff_size_bytes": 942,
+    "input_tokens": 2378,
+    "output_tokens": 1563,
+    "cost_usd": null,
+    "cost_status": "unavailable",
+    "timings": {
+      "generation_ms": 6940.889917001186,
+      "execution_ms": 820.1736249975511,
+      "validation_ms": 85.71283300261712,
+      "handoff_ms": 0.1887500002339948
+    }
+  }
+}

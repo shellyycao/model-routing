@@ -1,0 +1,303 @@
+STAGE: reporting
+PROJECT: energy_consumption
+PROMPT_VERSION: v3-post-freeze
+
+You are the reporting stage of a three-stage data workflow (cleaning -> analysis -> reporting).
+The analysis stage has already run its code in a sandbox. Write a structured report of the VERIFIED
+findings below for business stakeholders.
+
+## Original objective
+Clean the raw 2024 smart-meter export and analyse electricity consumption: total and per-building-type usage, the quarterly trend, the change between the first and second half of the year, tariff and meter usage, commercial load on hot days and the distribution of consumption and temperature, then report the verified findings to business stakeholders.
+
+## Handoff from the previous stages
+Completed stages: cleaning, analysis
+Validation status of previous stages: {"cleaning": "passed", "analysis": "passed"}
+Methods reported by the analysis stage:
+The script reads the cleaned CSV data and computes the required metrics using pandas. It calculates overall aggregates (sum, count, mean) for energy consumption. It groups data by building type to get totals per category. Temporal trends are analyzed by extracting the quarter and half-year from the reading date to compute period totals and the percentage change between halves. Hot-day commercial load is identified by filtering for 'Commercial' building types with temperatures at or above 25°C, then calculating the count and mean energy. Distribution statistics (median, standard deviation) are computed for energy, and mean and missing counts for temperature. The Pearson correlation between temperature and energy is calculated specifically for the Commercial subset with valid temperatures. Finally, tariff-based aggregates, unique meter counts, and maximum per-meter usage are derived to complete the analysis. All results are written to a flat JSON file.
+
+## Analysis questions and their metric_keys
+- q1: Overall (aggregation): sum of energy_kwh -> total_kwh; number of readings (rows) -> reading_count; total_kwh / reading_count -> mean_kwh_per_reading.
+  metric_keys: total_kwh, reading_count, mean_kwh_per_reading
+- q2: Building types (group comparison): total energy_kwh per building_type -> kwh_residential, kwh_commercial, kwh_industrial.
+  metric_keys: kwh_residential, kwh_commercial, kwh_industrial
+- q3: Quarterly trend (trend): total energy_kwh of readings dated in each calendar quarter of 2024 (Q1 = Jan-Mar, Q2 = Apr-Jun, Q3 = Jul-Sep, Q4 = Oct-Dec) -> kwh_q1, kwh_q2, kwh_q3, kwh_q4.
+  metric_keys: kwh_q1, kwh_q2, kwh_q3, kwh_q4
+- q4: Half-year change (percentage change): total energy_kwh for January-June -> kwh_h1; July-December -> kwh_h2; (kwh_h2 - kwh_h1) / kwh_h1 * 100 -> kwh_h2_vs_h1_change_pct (in percent).
+  metric_keys: kwh_h1, kwh_h2, kwh_h2_vs_h1_change_pct
+- q5: Hot-day commercial load (conditional filtering): readings with building_type Commercial and a non-missing temperature_c >= 25: their number -> hot_commercial_reading_count; their mean energy_kwh -> hot_commercial_mean_kwh.
+  metric_keys: hot_commercial_reading_count, hot_commercial_mean_kwh
+- q6: Distribution summary (statistical summary): median and sample standard deviation (denominator n - 1) of energy_kwh over all readings -> kwh_median, kwh_std; mean temperature_c over readings with a non-missing temperature -> temperature_mean; number of readings with missing temperature_c -> temperature_missing_count; Pearson correlation between temperature_c and energy_kwh over Commercial readings with a non-missing temperature -> commercial_temp_kwh_corr.
+  metric_keys: kwh_median, kwh_std, temperature_mean, temperature_missing_count, commercial_temp_kwh_corr
+- q7: Tariff and meter usage (derived step): total energy_kwh for peak and off-peak tariffs -> kwh_peak, kwh_off_peak; kwh_peak / total_kwh * 100 -> peak_kwh_share_pct; number of distinct meter_id values -> unique_meter_count; largest total energy_kwh for any single meter_id -> highest_use_meter_kwh.
+  metric_keys: kwh_peak, kwh_off_peak, peak_kwh_share_pct, unique_meter_count, highest_use_meter_kwh
+
+## Structured claim requirements
+The following block is contract metadata, not answer data. For every `ranking_required: true`
+finding, return a complete high-to-low `ranking`. Use the display-label values in
+`ranking_metric_key_to_label` exactly. For every `direction_required: true` finding, return the
+direction implied by the named metric.
+```json
+{
+  "q1": {
+    "direction_required": false,
+    "direction_metric_key": null,
+    "ranking_required": false,
+    "ranking_metric_key_to_label": null
+  },
+  "q2": {
+    "direction_required": false,
+    "direction_metric_key": null,
+    "ranking_required": true,
+    "ranking_metric_key_to_label": {
+      "kwh_commercial": "Commercial",
+      "kwh_industrial": "Industrial",
+      "kwh_residential": "Residential"
+    }
+  },
+  "q3": {
+    "direction_required": false,
+    "direction_metric_key": null,
+    "ranking_required": true,
+    "ranking_metric_key_to_label": {
+      "kwh_q1": "Q1",
+      "kwh_q2": "Q2",
+      "kwh_q3": "Q3",
+      "kwh_q4": "Q4"
+    }
+  },
+  "q4": {
+    "direction_required": true,
+    "direction_metric_key": "kwh_h2_vs_h1_change_pct",
+    "ranking_required": false,
+    "ranking_metric_key_to_label": null
+  },
+  "q5": {
+    "direction_required": false,
+    "direction_metric_key": null,
+    "ranking_required": false,
+    "ranking_metric_key_to_label": null
+  },
+  "q6": {
+    "direction_required": false,
+    "direction_metric_key": null,
+    "ranking_required": false,
+    "ranking_metric_key_to_label": null
+  },
+  "q7": {
+    "direction_required": false,
+    "direction_metric_key": null,
+    "ranking_required": true,
+    "ranking_metric_key_to_label": {
+      "kwh_off_peak": "off-peak",
+      "kwh_peak": "peak"
+    }
+  }
+}
+```
+
+## Verified findings (computed by the analysis code; metric_key -> value)
+VERIFIED_FINDINGS_JSON
+```json
+{
+  "total_kwh": 1207699.96,
+  "reading_count": 1428.0,
+  "mean_kwh_per_reading": 845.7282633053221,
+  "kwh_residential": 15970.65,
+  "kwh_commercial": 196367.15,
+  "kwh_industrial": 995362.16,
+  "kwh_q1": 319677.67,
+  "kwh_q2": 270277.36,
+  "kwh_q3": 264863.12,
+  "kwh_q4": 352881.81,
+  "kwh_h1": 589955.03,
+  "kwh_h2": 617744.93,
+  "kwh_h2_vs_h1_change_pct": 4.710511579162232,
+  "hot_commercial_reading_count": 19.0,
+  "hot_commercial_mean_kwh": 415.29368421052624,
+  "kwh_median": 406.8,
+  "kwh_std": 913.4385157872866,
+  "temperature_mean": 11.612298682284042,
+  "temperature_missing_count": 62.0,
+  "commercial_temp_kwh_corr": -0.637636239865442,
+  "kwh_peak": 599624.07,
+  "kwh_off_peak": 608075.89,
+  "peak_kwh_share_pct": 49.65008610251175,
+  "unique_meter_count": 12.0,
+  "highest_use_meter_kwh": 252241.26
+}
+```
+
+## Rules (mandatory)
+- Use ONLY the verified findings above. Do not invent or estimate numbers. Each `key_findings`
+  statement MUST state at least one verified numeric value for that finding. Rounding to a sensible
+  precision is fine; any number you derive must be declared in `derived_values`.
+- Write one entry in `key_findings` for each of these question ids: q1, q2, q3, q4, q5, q6, q7.
+  Set `finding_id` to the question id and list the metric_keys you rely on in `evidence_refs`.
+- In `reported_values`, include EVERY metric_key of that question with its verified value (copy it).
+- Follow the structured claim requirements exactly. A ranking is required whenever
+  `ranking_required` is true, including trend questions; order it from highest to lowest.
+- `derived_values` must declare every number in your text computed from findings (difference,
+  ratio, pct_change or share), with metric-key `operands` in formula order.
+- Keep the whole report (title, summary, statements, limitations, conclusion) under 600 words.
+- Mention genuine limitations of the data or analysis in `limitations`.
+
+
+Respond with a single JSON object that conforms to this JSON Schema. Put it in one ```json fenced block and include nothing else outside the block.
+```json
+{
+  "$defs": {
+    "DerivedValue": {
+      "description": "A number stated in the report that is computed from verified findings (v1.2).",
+      "properties": {
+        "kind": {
+          "description": "difference = a-b; ratio = a/b; pct_change = (a-b)/b*100; share = a/b*100",
+          "enum": [
+            "difference",
+            "ratio",
+            "pct_change",
+            "share"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "operands": {
+          "description": "metric_keys [a, b] used in the formula, in order.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Operands",
+          "type": "array"
+        },
+        "value": {
+          "description": "The number as stated in the report.",
+          "title": "Value",
+          "type": "number"
+        }
+      },
+      "required": [
+        "kind",
+        "operands",
+        "value"
+      ],
+      "title": "DerivedValue",
+      "type": "object"
+    },
+    "KeyFinding": {
+      "properties": {
+        "finding_id": {
+          "description": "The analysis question_id this finding addresses.",
+          "title": "Finding Id",
+          "type": "string"
+        },
+        "statement": {
+          "title": "Statement",
+          "type": "string"
+        },
+        "evidence_refs": {
+          "description": "metric_keys from findings.json supporting this statement.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Evidence Refs",
+          "type": "array"
+        },
+        "reported_values": {
+          "additionalProperties": {
+            "type": "number"
+          },
+          "description": "metric_key -> number as stated in the report. Required for EVERY metric_key of the finding.",
+          "title": "Reported Values",
+          "type": "object"
+        },
+        "direction": {
+          "anyOf": [
+            {
+              "enum": [
+                "increase",
+                "decrease",
+                "no_change",
+                "not_applicable"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "For change/trend findings: the direction you state in the text.",
+          "title": "Direction"
+        },
+        "ranking": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "For group comparisons: group labels ordered from highest to lowest value.",
+          "title": "Ranking"
+        },
+        "derived_values": {
+          "description": "Any number in the text computed from findings (share, difference, ...).",
+          "items": {
+            "$ref": "#/$defs/DerivedValue"
+          },
+          "title": "Derived Values",
+          "type": "array"
+        }
+      },
+      "required": [
+        "finding_id",
+        "statement",
+        "evidence_refs"
+      ],
+      "title": "KeyFinding",
+      "type": "object"
+    }
+  },
+  "properties": {
+    "title": {
+      "title": "Title",
+      "type": "string"
+    },
+    "executive_summary": {
+      "title": "Executive Summary",
+      "type": "string"
+    },
+    "key_findings": {
+      "items": {
+        "$ref": "#/$defs/KeyFinding"
+      },
+      "title": "Key Findings",
+      "type": "array"
+    },
+    "limitations": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Limitations",
+      "type": "array"
+    },
+    "conclusion": {
+      "title": "Conclusion",
+      "type": "string"
+    }
+  },
+  "required": [
+    "title",
+    "executive_summary",
+    "key_findings",
+    "limitations",
+    "conclusion"
+  ],
+  "title": "ReportOutput",
+  "type": "object"
+}
+```

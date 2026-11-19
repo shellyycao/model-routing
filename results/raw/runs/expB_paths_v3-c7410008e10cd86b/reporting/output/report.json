@@ -1,0 +1,169 @@
+{
+  "title": "Customer Churn Analysis Report",
+  "executive_summary": "This report presents the findings from the analysis of customer churn rates, segmented by plan, signup cohort, contract type, and an at-risk segment. Key metrics include overall churn rate, churn rates by plan and cohort, the impact of contract type on churn, identification of an at-risk segment, and lifetime value by plan. The analysis reveals significant insights into customer behavior and retention challenges.",
+  "key_findings": [
+    {
+      "finding_id": "q1",
+      "statement": "The overall analysis reveals a customer base of 676 individuals, with a churn rate of 37.3% and an average monthly fee of $41.93.",
+      "evidence_refs": [
+        "customer_count",
+        "churn_rate_pct",
+        "avg_monthly_fee"
+      ],
+      "reported_values": {
+        "customer_count": 676.0,
+        "churn_rate_pct": 37.278106508875744,
+        "avg_monthly_fee": 41.927869822485206
+      },
+      "direction": null,
+      "ranking": null,
+      "derived_values": []
+    },
+    {
+      "finding_id": "q2",
+      "statement": "Churn rates vary by plan, with Basic at 38.7%, Standard at 36.2%, and Premium at 36.0%.",
+      "evidence_refs": [
+        "churn_rate_basic_pct",
+        "churn_rate_standard_pct",
+        "churn_rate_premium_pct"
+      ],
+      "reported_values": {
+        "churn_rate_basic_pct": 38.68852459016394,
+        "churn_rate_standard_pct": 36.17021276595745,
+        "churn_rate_premium_pct": 36.029411764705884
+      },
+      "direction": null,
+      "ranking": [
+        "Basic",
+        "Standard",
+        "Premium"
+      ],
+      "derived_values": []
+    },
+    {
+      "finding_id": "q3",
+      "statement": "Churn rates by signup cohort show slight variations, with 2021 at 37.3%, 2022 at 36.8%, 2023 at 37.9%, and 2024 at 36.9%.",
+      "evidence_refs": [
+        "churn_rate_cohort_2021_pct",
+        "churn_rate_cohort_2022_pct",
+        "churn_rate_cohort_2023_pct",
+        "churn_rate_cohort_2024_pct"
+      ],
+      "reported_values": {
+        "churn_rate_cohort_2021_pct": 37.28813559322034,
+        "churn_rate_cohort_2022_pct": 36.787564766839374,
+        "churn_rate_cohort_2023_pct": 37.93103448275862,
+        "churn_rate_cohort_2024_pct": 36.89320388349515
+      },
+      "direction": null,
+      "ranking": [
+        "2023",
+        "2021",
+        "2024",
+        "2022"
+      ],
+      "derived_values": []
+    },
+    {
+      "finding_id": "q4",
+      "statement": "Monthly contracts exhibit a significantly higher churn rate (48.1%) compared to Annual contracts (21.0%), representing a 128.9% increase.",
+      "evidence_refs": [
+        "churn_rate_monthly_pct",
+        "churn_rate_annual_pct",
+        "churn_monthly_vs_annual_change_pct"
+      ],
+      "reported_values": {
+        "churn_rate_monthly_pct": 48.148148148148145,
+        "churn_rate_annual_pct": 21.033210332103323,
+        "churn_monthly_vs_annual_change_pct": 128.91487979207275
+      },
+      "direction": "increase",
+      "ranking": null,
+      "derived_values": [
+        {
+          "kind": "pct_change",
+          "operands": [
+            "churn_rate_monthly_pct",
+            "churn_rate_annual_pct"
+          ],
+          "value": 128.91487979207275
+        }
+      ]
+    },
+    {
+      "finding_id": "q5",
+      "statement": "Customers with high support ticket counts and low satisfaction scores are at a significantly higher risk of churn, with 71 customers identified and a churn rate of 73.2% among this group.",
+      "evidence_refs": [
+        "at_risk_customer_count",
+        "at_risk_churn_rate_pct"
+      ],
+      "reported_values": {
+        "at_risk_customer_count": 71.0,
+        "at_risk_churn_rate_pct": 73.23943661971832
+      },
+      "direction": null,
+      "ranking": null,
+      "derived_values": []
+    },
+    {
+      "finding_id": "q6",
+      "statement": "The average tenure among customers is 21.0 months, with a median of 19.0 months and a standard deviation of 13.3 months. The mean satisfaction score is 3.42, with 117 customers having missing satisfaction scores.",
+      "evidence_refs": [
+        "tenure_mean",
+        "tenure_median",
+        "tenure_std",
+        "satisfaction_mean",
+        "satisfaction_missing_count"
+      ],
+      "reported_values": {
+        "tenure_mean": 21.034023668639055,
+        "tenure_median": 19.0,
+        "tenure_std": 13.258468570055241,
+        "satisfaction_mean": 3.4239713774597496,
+        "satisfaction_missing_count": 117.0
+      },
+      "direction": null,
+      "ranking": null,
+      "derived_values": []
+    },
+    {
+      "finding_id": "q7",
+      "statement": "Lifetime value (LTV) varies significantly by plan, with Basic at $462.60, Standard at $880.94, and Premium at $1871.25. The Premium plan shows a 304.5% increase in LTV compared to the Basic plan.",
+      "evidence_refs": [
+        "ltv_basic",
+        "ltv_standard",
+        "ltv_premium",
+        "premium_vs_basic_ltv_change_pct"
+      ],
+      "reported_values": {
+        "ltv_basic": 462.5962950819672,
+        "ltv_standard": 880.9412765957447,
+        "ltv_premium": 1871.248088235294,
+        "premium_vs_basic_ltv_change_pct": 304.50996000815974
+      },
+      "direction": "increase",
+      "ranking": [
+        "Premium",
+        "Standard",
+        "Basic"
+      ],
+      "derived_values": [
+        {
+          "kind": "pct_change",
+          "operands": [
+            "ltv_premium",
+            "ltv_basic"
+          ],
+          "value": 304.50996000815974
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "The cleaning stage failed, which may have introduced inaccuracies in the data.",
+    "The analysis stage also failed, potentially affecting the reliability of the findings.",
+    "The sample size for certain segments, such as the at-risk group, is relatively small, which may limit the generalizability of the findings.",
+    "The satisfaction scores are missing for a significant number of customers, which could bias the analysis of satisfaction-related metrics."
+  ],
+  "conclusion": "The analysis highlights critical areas for improving customer retention, particularly among customers with high support needs and low satisfaction. Addressing the higher churn rates associated with monthly contracts and enhancing the value proposition of the Basic plan could be strategic priorities. However, the limitations of the data and analysis stages should be considered when interpreting these findings."
+}

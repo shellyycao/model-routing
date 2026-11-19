@@ -1,0 +1,24 @@
+You are debugging a Python module. The specification is authoritative.
+
+Specification:
+allowed(events, limit, window) returns booleans for (user,time) events in given order. An event is allowed if fewer than limit prior allowed events for that user fall in (time-window,time]; rejected events do not consume capacity.
+
+Buggy module:
+```python
+from collections import deque
+def allowed(events,limit,window):
+    q=deque();out=[]
+    for user,t in events:
+        while q and q[0][1]<=t-window:q.popleft()
+        ok=len(q)<limit;out.append(ok)
+        if ok:q.append((user,t))
+    return out
+
+```
+
+Visible checks:
+```python
+assert allowed([('u',0),('u',1)],1,1) == [True,True]
+```
+
+Return the complete corrected module. There may be multiple interacting defects. Do not hard-code the visible examples.

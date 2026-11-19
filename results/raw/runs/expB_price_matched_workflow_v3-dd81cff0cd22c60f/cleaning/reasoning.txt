@@ -1,0 +1,637 @@
+Let me write a Python script that handles all the cleaning requirements.
+
+Key points:
+- Read raw.csv as text (dtype=str), strip whitespace, treat NA-like values as missing.
+- Remove duplicates by order_id, keep first occurrence. Note: order_id missing? The spec doesn't say to drop missing order_id explicitly, but schema says not nullable. Hmm, R2 says rows sharing same order_id are duplicates. If order_id is missing, dropna in duplicated... Actually with keep='first', NaN values are treated as duplicates of each other in pandas drop_duplicates. Should I drop missing order_id rows? The schema says order_id not nullable. The spec doesn't have an explicit rule for dropping missing order_id, but to satisfy schema, I should drop rows with missing order_id. Let me add that — it's reasonable. Actually, careful: applying rules in order. R2 removes duplicates. If order_id missing, the row can't be identified; schema requires non-null. I'll drop rows with missing order_id as part of R2 (or after dedup). I'll track count.
+
+- order_date parsing with 5 formats:
+  - YYYY-MM-DD: %Y-%m-%d
+  - MM/DD/YYYY: %m/%d/%Y
+  - DD-Mon-YYYY: %d-%b-%Y (English abbrev, e.g. 05-Mar-2024). Need to ensure English locale — use a manual month map to be safe. Using %b with strptime depends on locale; default C locale is English, fine. But to be safe, I can implement custom parsing with a month dict.
+  - YYYY/MM/DD: %Y/%m/%d
+  - 'Month D, YYYY': %B %d, %Y (full month name). Again locale; manual map safer.
+
+Let me implement a parse function trying each format with datetime.strptime. The C locale is default so %b/%B work in English. I'll just use strptime with the five formats, plus exact regex checks maybe. Simpler: try each format.
+
+Actually careful: "YYYY-MM-DD" — strptime %Y-%m-%d would also parse "2023-1-4" (single digit). The spec says exactly these formats. Being lenient probably fine, but "exactly one of these formats" suggests strictness. I could use regex validation before strptime:
+- ^\d{4}-\d{2}-\d{2}$
+- ^\d{2}/\d{2}/\d{4}$
+- ^\d{2}-[A-Za-z]{3}-\d{4}$
+- ^\d{4}/\d{2}/\d{2}$
+- ^[A-Za-z]+ \d{1,2}, \d{4}$
+
+That's strict. I'll do that. For the month abbreviation and full name, map manually case-insensitively? The examples show "05-Mar-2024" with capital first letter. Case-insensitive compare is safer but spec says English 3-letter abbreviation. I'll use strptime which handles case-insensitively in CPython actually (it matches case-insensitively). I'll just use strptime after regex check.
+
+- region mapping: strip, lower, map {'north':'North','n':'North',...}. Drop if missing/unmapped.
+
+- product_category mapping: normalize whitespace? Values like "home & garden" appear. Map case-insensitively: electronics, electronic -> Electronics; clothing, apparel -> Clothing; home & garden, home and garden, home&garden -> Home & Garden; sports, sport -> Sports; books, book -> Books. Should I collapse internal multiple spaces? Possibly "Home  &  Garden". I'll normalize internal whitespace to single spaces before mapping to be safe. Also maybe remove spaces around '&'? "Home &Garden"? The variants listed: 'Home and Garden', 'Home&Garden'. I'll normalize by lowercasing and collapsing spaces; also create a key with spaces removed to catch "home&garden" vs "home & garden"? That could over-match but within these categories it's fine. Let me build mapping on normalized key: lower, collapse whitespace. Keys: 'electronics','electronic','clothing','apparel','home & garden','home and garden','home&garden','sports','sport','books','book'. Additionally I can also try removing spaces entirely as a fallback key mapping: 'home&garden' and 'home&garden' both -> same. Let me create both dicts.
+
+- unit_price: remove '$', 'USD', ',' and surrounding spaces. Use regex or replace: s.replace('$','').replace('USD','') — case? Spec says remove substrings '$', 'USD' and ','. Values like "USD 148.91". I'll remove 'USD' case-insensitively? Keep simple: replace '$' and ',' then re.sub(r'(?i)usd','', s), strip, then float. Then validate 0 < price <= 5000. Keep as float; format later without symbols. "Keep the value as given (raw prices have at most 2 decimals)" — meaning don't round. When writing, format to avoid trailing artifacts. Float like 97.72 writes as "97.72" via str(float). But values like 120.20 become 120.2 — that's fine as a number. Use repr-free formatting: I'll format with a function that prints int-like floats without '.0'? Schema says float. Writing "120.2" is fine. But floats can have binary representation issues, e.g. 0.1+... Here parse of "97.72" is exactly repr'd as 97.72. Python str(float) gives shortest repr, so fine.
+
+- quantity: parse as float, check finite, whole number (is_integer), 1<=q<=50, store int.
+
+- discount_pct: strip trailing '%' (one trailing), strip spaces, parse float. Missing -> 0. Drop if not number, <0, >100. Keep as float; if integer-valued maybe write as int-like? Schema float. Writing "30.0" vs "30" — both fine. I'll format numbers cleanly: use a formatter that writes integers without decimal point? The schema says float; writing "30" is still parseable as float. I'll just write values via pandas to_csv which writes floats as shortest repr, e.g. 30.0. Hmm, pandas will write 30.0 as "30.0". That's acceptable ("numbers are written without currency symbols, percent signs or thousands separators"). Fine.
+
+But to keep clean, I could format unit_price/discount/revenue with a custom function: format float to up to 2 decimals stripping trailing zeros? Revenue rounded to 2 decimals; str(round(...,2)) gives e.g. 123.45, 123.4, 123.0. Pandas writes floats with str. I'll keep simple.
+
+Actually, revenue rounding: round(quantity * unit_price * (1 - discount/100), 2). Use Python round (banker's rounding) — acceptable. Could use Decimal for half-up, but spec just says rounded to 2 decimals; round() fine.
+
+- customer_id: upper case; missing -> 'UNKNOWN'.
+
+- Column order and sort by order_id ascending. order_id strings like "R100001" — lexicographic sort fine.
+
+- Write cleaning_summary.json with raw_rows, cleaned_rows, per-rule counts: duplicates_removed, dropped_invalid_order_date, dropped_invalid_region, dropped_invalid_category, dropped_invalid_unit_price, dropped_invalid_quantity, dropped_invalid_discount_pct, missing_customer_id_filled, missing_discount_set_zero, missing_order_id_dropped maybe.
+
+Order of operations:
+R1: read all as str, strip, replace NA-like with NaN (pd.NA).
+R2: dedupe on order_id keep first. Also handle missing order_id: drop_duplicates treats NaN as equal, so multiple missing order_id rows would be deduped to one — but that one remains with NaN order_id, violating schema. I'll drop rows with missing order_id after dedup (count separately). Reasonable interpretation.
+
+Then apply filters R3-R8 sequentially, counting drops. R9 fill customer_id. R10 compute revenue. R11 select columns, sort, write.
+
+Implementation details:
+
+```python
+import os, json, re
+from datetime import datetime
+import pandas as pd
+import numpy as np
+
+INPUT_DIR = os.environ["INPUT_DIR"]
+OUTPUT_DIR = os.environ["OUTPUT_DIR"]
+
+raw_path = os.path.join(INPUT_DIR, "raw.csv")
+df = pd.read_csv(raw_path, dtype=str, keep_default_na=False, na_filter=False)
+raw_rows = len(df)
+
+# R1 strip
+df = df.applymap(lambda v: v.strip() if isinstance(v, str) else v)
+MISSING = {"", "na", "n/a", "null", "none", "-"}
+df = df.applymap(lambda v: pd.NA if isinstance(v, str) and v.lower() in MISSING else v)
+```
+
+applymap deprecated in newer pandas (use .map). To be safe across versions, use df.apply(lambda col: col.map(...)). I'll use:
+
+```python
+for col in df.columns:
+    df[col] = df[col].map(lambda v: v.strip() if isinstance(v, str) else v)
+    df[col] = df[col].map(lambda v: pd.NA if (isinstance(v, str) and v.lower() in MISSING) else v)
+```
+
+But after first map, v could be pd.NA already? No, read with na_filter=False gives all strings. But some columns may be missing entirely? Assume header present as shown.
+
+Note: keep_default_na=False and na_filter=False ensure everything is string, no automatic NaN. Good.
+
+Date parsing:
+
+```python
+MONTHS_ABBR = {m.lower(): i for i, m in enumerate(['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'], 1)}
+MONTHS_FULL = {m.lower(): i for i, m in enumerate(['January','February','March','April','May','June','July','August','September','October','November','December'], 1)}
+
+def parse_date(s):
+    if s is pd.NA or s is None:
+        return None
+    s = str(s)
+    m = re.fullmatch(r'(\d{4})-(\d{2})-(\d{2})', s)
+    if m:
+        y, mo, d = map(int, m.groups())
+    else:
+        m = re.fullmatch(r'(\d{2})/(\d{2})/(\d{4})', s)
+        if m:
+            mo, d, y = map(int, m.groups())
+        else:
+            m = re.fullmatch(r'(\d{2})-([A-Za-z]{3})-(\d{4})', s)
+            if m:
+                d = int(m.group(1)); mo = MONTHS_ABBR.get(m.group(2).lower()); y = int(m.group(3))
+                if mo is None: return None
+            else:
+                m = re.fullmatch(r'(\d{4})/(\d{2})/(\d{2})', s)
+                if m:
+                    y, mo, d = map(int, m.groups())
+                else:
+                    m = re.fullmatch(r'([A-Za-z]+) (\d{1,2}), (\d{4})', s)
+                    if m:
+                        mo = MONTHS_FULL.get(m.group(1).lower()); d = int(m.group(2)); y = int(m.group(3))
+                        if mo is None: return None
+                    else:
+                        return None
+    try:
+        return datetime(y, mo, d).strftime('%Y-%m-%d')
+    except ValueError:
+        return None
+```
+
+This is strict and English-locale independent. 
+
+Region map:
+
+```python
+REGION_MAP = {'north':'North','south':'South','east':'East','west':'West','n':'North','s':'South','e':'East','w':'West'}
+```
+
+Category map with normalization:
+
+```python
+def norm_key(s):
+    return re.sub(r'\s+', ' ', s.strip().lower())
+
+CAT_MAP = {
+ 'electronics':'Electronics','electronic':'Electronics',
+ 'clothing':'Clothing','apparel':'Clothing',
+ 'home & garden':'Home & Garden','home and garden':'Home & Garden','home&garden':'Home & Garden',
+ 'sports':'Sports','sport':'Sports',
+ 'books':'Books','book':'Books',
+}
+```
+
+Apply on norm_key.
+
+unit_price:
+
+```python
+def parse_price(s):
+    if s is pd.NA: return None
+    t = re.sub(r'(?i)usd', '', str(s))
+    t = t.replace('$', '').replace(',', '').strip()
+    # also collapse internal spaces? e.g. "1 234.56" unlikely. Just parse.
+    try:
+        v = float(t)
+    except ValueError:
+        return None
+    if not np.isfinite(v) or v <= 0 or v > 5000:
+        return None
+    return v
+```
+
+Note float('') fails -> None. Also float('inf') guarded.
+
+quantity:
+
+```python
+def parse_qty(s):
+    if s is pd.NA: return None
+    try:
+        v = float(str(s))
+    except ValueError:
+        return None
+    if not np.isfinite(v) or not v.is_integer(): return None
+    iv = int(v)
+    if iv < 1 or iv > 50: return None
+    return iv
+```
+
+Note: float(' 9 ') works (strip already done). Also "3.0" fine. Negative fails range. Note is_integer on float works. Guard against NaN via np.isfinite.
+
+discount:
+
+```python
+def parse_discount(s):
+    if s is pd.NA or (isinstance(s,str) and s==''):
+        return 0.0
+    t = str(s).strip()
+    if t.endswith('%'):
+        t = t[:-1].strip()
+    try:
+        v = float(t)
+    except ValueError:
+        return None
+    if not np.isfinite(v) or v < 0 or v > 100: return None
+    return v
+```
+
+Missing -> 0. Note missing already converted to pd.NA. Return sentinel for invalid vs missing: invalid returns None -> drop; missing returns 0.0.
+
+Wait — after R1, empty string becomes pd.NA, so discount missing is pd.NA -> set 0. Good.
+
+customer_id: fillna('UNKNOWN'), str.upper(). But if already uppercase, fine. "None" became pd.NA -> UNKNOWN.
+
+Row filtering approach: I'll apply each parser creating new columns plus validity masks, dropping sequentially and counting. Order R3 (date), R4 (region), R5 (category), R6 (price), R7 (quantity), R8 (discount). Counts per rule = rows dropped by that rule after previous rules applied.
+
+Implementation:
+
+```python
+summary = {"raw_rows": int(raw_rows)}
+
+# R2 dedupe
+before = len(df)
+df = df.drop_duplicates(subset=['order_id'], keep='first')
+summary['duplicates_removed'] = int(before - len(df))
+
+# drop missing order_id
+before = len(df)
+df = df[df['order_id'].notna()]
+summary['dropped_missing_order_id'] = int(before - len(df))
+```
+
+Hmm, drop_duplicates with pd.NA: pandas treats NaN as duplicated if multiple; keep first keeps one NaN row. Then we drop it. Fine.
+
+Then:
+
+```python
+parsed_date = df['order_date'].map(parse_date)
+mask = parsed_date.notna()
+summary['dropped_invalid_order_date'] = int((~mask).sum())
+df = df[mask].copy()
+df['order_date'] = parsed_date[mask]
+```
+
+Similarly for region:
+
+```python
+region_mapped = df['region'].map(lambda s: REGION_MAP.get(str(s).strip().lower()) if s is not pd.NA and pd.notna(s) else None)
+```
+
+Careful: comparing pd.NA with `is not pd.NA` — map passes actual values; pd.notna(s) works for scalar. Use pd.notna.
+
+Category:
+
+```python
+cat_mapped = df['product_category'].map(lambda s: CAT_MAP.get(norm_key(s)) if pd.notna(s) else None)
+```
+
+Also maybe secondary key removing spaces around &: I'll add fallback: also try key with spaces removed entirely:
+```python
+CAT_MAP_NOSPACE = {k.replace(' ',''): v for k,v in CAT_MAP.items()}
+```
+Try norm key, then nospace key. That catches "Home &Garden" etc. Harmless.
+
+Price: parse_price returns float or None.
+Quantity: parse_qty returns int or None.
+Discount: parse_discount returns float (0.0 for missing) or None for invalid. Count missing->0 separately:
+
+```python
+missing_discount_count = int(df['discount_pct'].isna().sum())
+```
+
+Compute before mapping (after prior drops). summary['missing_discount_set_to_zero'].
+
+customer_id:
+```python
+missing_cust = int(df['customer_id'].isna().sum())
+df['customer_id'] = df['customer_id'].fillna('UNKNOWN').astype(str).str.upper()
+summary['missing_customer_id_filled'] = missing_cust
+```
+
+Revenue:
+```python
+df['revenue'] = (df['quantity'] * df['unit_price'] * (1 - df['discount_pct']/100)).round(2)
+```
+round on pandas uses banker's rounding too (numpy round). Fine.
+
+Columns and sort:
+```python
+out = df[['order_id','order_date','customer_id','region','product_category','quantity','unit_price','discount_pct','revenue']].copy()
+out = out.sort_values('order_id', kind='mergesort')
+out.to_csv(os.path.join(OUTPUT_DIR,'cleaned.csv'), index=False)
+```
+
+summary['cleaned_rows'] = len(out).
+
+Formatting of floats in CSV: quantity int -> writes as int. unit_price float like 97.72 writes "97.72". discount 30.0 -> "30.0". Acceptable. Alternatively format discount as int when whole: spec says numbers written without symbols — "30.0" is fine.
+
+One consideration: unit_price values like "45.33" fine. What about trailing ".0" for quantity: stored int.
+
+Ensure OUTPUT_DIR exists: os.makedirs(OUTPUT_DIR, exist_ok=True).
+
+JSON summary: convert numpy ints to int — done via int().
+
+Date column: schema says date; we write string YYYY-MM-DD. Good.
+
+Potential edge: order_id values may have whitespace — stripped already. Duplicates compare after strip. Good. Case sensitivity of order_id: not specified; keep as-is, duplicates on exact match.
+
+Also should I treat order_id 'None' etc. as missing? R1 applies to every value, so yes, order_id 'None' -> NA -> dropped in dedup/missing step. Good.
+
+Now, applymap: I'll use df[col].map via loop.
+
+One subtlety: after `df = df[mask].copy()`, the parsed series aligned by index; assign `df.loc[:, 'order_date'] = parsed_date` filtered. Simpler: assign parsed column first to a temp column, then filter. Let me restructure: for each rule, compute new series `parsed`, mask = parsed.notna(); count; df = df.loc[mask].copy(); df[col] = parsed.loc[mask].values or parsed.loc[mask]. Since indices align, df[col] = parsed after filtering df — but df index changed; assignment by index aligns; parsed[mask] has matching index. Use:
+
+```python
+df = df.loc[mask].copy()
+df['order_date'] = parsed.loc[df.index]
+```
+
+Since df.index == mask-True indices. Or simpler: assign parsed to df before filtering:
+
+```python
+df['_parsed'] = parsed
+df = df[df['_parsed'].notna()].copy()
+df['order_date'] = df['_parsed']
+df = df.drop(columns=['_parsed'])
+```
+
+I'll write a helper function to reduce errors:
+
+```python
+def apply_rule(df, col, func, summary, drop_key):
+    parsed = df[col].map(func)
+    dropped = int(parsed.isna().sum())
+    summary[drop_key] = dropped
+    keep = parsed.notna()
+    df2 = df.loc[keep].copy()
+    df2[col] = parsed.loc[keep]
+    return df2
+```
+
+For discount, invalid returns None -> NaN; missing returns 0.0. So parse_discount handles NA -> 0.0. Good; but also count of missing-before: computed separately.
+
+For quantity, parsed returns int; storing into object column of mixed ints — df2[col] = parsed.loc[keep] gives object dtype; then convert .astype(int). Similarly unit_price float, discount float. I'll convert explicitly after.
+
+For order_date and region/category, parsed are strings or None; isna works with None -> treated as missing in object series. Yes, pandas treats None as NaN in isna. Good.
+
+Final dtypes: quantity int, unit_price float, discount float, revenue float.
+
+Sort ascending by order_id string.
+
+Write summary JSON with json.dump, indent=2.
+
+Also include raw_rows, cleaned_rows.
+
+Print nothing large; maybe print nothing at all or a short line. I'll avoid prints.
+
+Now write the full script cleanly.
+
+```python
+import os
+import re
+import json
+from datetime import datetime
+
+import numpy as np
+import pandas as pd
+
+INPUT_DIR = os.environ["INPUT_DIR"]
+OUTPUT_DIR = os.environ["OUTPUT_DIR"]
+os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+MISSING_TOKENS = {"", "na", "n/a", "null", "none", "-"}
+
+summary = {}
+
+# ---- R1: read everything as text, strip, normalise missing tokens ----
+raw_path = os.path.join(INPUT_DIR, "raw.csv")
+df = pd.read_csv(raw_path, dtype=str, keep_default_na=False, na_filter=False)
+summary["raw_rows"] = int(len(df))
+
+def clean_text(v):
+    if not isinstance(v, str):
+        return v
+    v = v.strip()
+    if v.lower() in MISSING_TOKENS:
+        return None
+    return v
+
+for col in df.columns:
+    df[col] = df[col].map(clean_text)
+
+# ---- R2: drop duplicate order_id, keep first occurrence ----
+before = len(df)
+df = df.drop_duplicates(subset="order_id", keep="first")
+summary["duplicates_removed"] = int(before - len(df))
+
+# order_id must be present (schema: not nullable)
+before = len(df)
+df = df[df["order_id"].notna()].copy()
+summary["dropped_missing_order_id"] = int(before - len(df))
+
+# ---- R3: order_date ----
+MONTHS_ABBR = {...}
+MONTHS_FULL = {...}
+
+def parse_order_date(s): ...
+
+df = apply_rule(...)
+```
+
+Wait: after drop_duplicates, index preserved (original). Fine.
+
+Note drop_duplicates treats None order_id as duplicates among themselves; the first None row kept, then removed by notna filter. Good.
+
+Date parser returns string 'YYYY-MM-DD' or None.
+
+Region:
+
+```python
+REGION_MAP = {
+    "north": "North", "south": "South", "east": "East", "west": "West",
+    "n": "North", "s": "South", "e": "East", "w": "West",
+}
+def parse_region(s):
+    if s is None: return None
+    return REGION_MAP.get(str(s).strip().lower())
+```
+
+Category:
+
+```python
+CAT_MAP = {
+    "electronics": "Electronics", "electronic": "Electronics",
+    "clothing": "Clothing", "apparel": "Clothing",
+    "home & garden": "Home & Garden", "home and garden": "Home & Garden",
+    "home&garden": "Home & Garden",
+    "sports": "Sports", "sport": "Sports",
+    "books": "Books", "book": "Books",
+}
+CAT_MAP_NOSPACE = {k.replace(" ", ""): v for k, v in CAT_MAP.items()}
+
+def parse_category(s):
+    if s is None: return None
+    key = re.sub(r"\s+", " ", str(s).strip().lower())
+    hit = CAT_MAP.get(key)
+    if hit: return hit
+    return CAT_MAP_NOSPACE.get(key.replace(" ", ""))
+```
+
+unit_price:
+
+```python
+def parse_unit_price(s):
+    if s is None: return None
+    t = re.sub(r"(?i)usd", "", str(s))
+    t = t.replace("$", "").replace(",", "").strip()
+    if not t: return None
+    try:
+        v = float(t)
+    except ValueError:
+        return None
+    if not np.isfinite(v) or v <= 0 or v > 5000:
+        return None
+    return v
+```
+
+quantity:
+
+```python
+def parse_quantity(s):
+    if s is None: return None
+    try:
+        v = float(str(s).strip())
+    except ValueError:
+        return None
+    if not np.isfinite(v) or not float(v).is_integer():
+        return None
+    iv = int(v)
+    if iv < 1 or iv > 50:
+        return None
+    return iv
+```
+
+discount:
+
+```python
+def parse_discount(s):
+    if s is None:
+        return 0.0
+    t = str(s).strip()
+    if t.endswith("%"):
+        t = t[:-1].strip()
+    if not t:
+        return 0.0
+    try:
+        v = float(t)
+    except ValueError:
+        return None
+    if not np.isfinite(v) or v < 0 or v > 100:
+        return None
+    return v
+```
+
+Hmm, if t becomes empty after stripping '%' (value was just "%"), treat as missing->0? Or invalid? Ambiguous; a bare '%' is arguably not a number -> drop. But empty after removing % — I'll treat as invalid (return None) since original wasn't missing. Actually R1 makes empty string missing. A lone '%' is weird. I'll return None for empty-after-strip unless original was None. Let me: if not t: return None. Safer to drop weird values. Count of missing discount set to 0: computed as isna before mapping.
+
+apply_rule helper as above.
+
+After rules:
+
+```python
+df["quantity"] = df["quantity"].astype(int)
+df["unit_price"] = df["unit_price"].astype(float)
+df["discount_pct"] = df["discount_pct"].astype(float)
+```
+
+customer_id:
+
+```python
+n_missing_cust = int(df["customer_id"].isna().sum())
+df["customer_id"] = df["customer_id"].fillna("UNKNOWN").astype(str).str.upper()
+summary["customer_id_missing_filled"] = n_missing_cust
+```
+
+discount missing count before rule: I need it before parse. In apply flow, compute summary["discount_pct_missing_set_to_zero"] = int(df["discount_pct"].isna().sum()) right before applying discount rule.
+
+Revenue:
+
+```python
+df["revenue"] = (df["quantity"] * df["unit_price"] * (1 - df["discount_pct"] / 100)).round(2)
+```
+
+Output:
+
+```python
+out = df[[...]].sort_values("order_id", kind="mergesort").reset_index(drop=True)
+out.to_csv(os.path.join(OUTPUT_DIR, "cleaned.csv"), index=False)
+summary["cleaned_rows"] = int(len(out))
+
+with open(os.path.join(OUTPUT_DIR, "cleaning_summary.json"), "w") as f:
+    json.dump(summary, f, indent=2)
+```
+
+Float formatting: to_csv default writes 97.72 as "97.72", 30.0 as "30.0", revenue e.g. 1759.82. Acceptable. Could format discount as int when whole, but not required.
+
+Wait — one concern: unit_price parsed via float("45.33") then CSV writes "45.33" (repr shortest). Good. Large like 5000 -> "5000.0". fine.
+
+Also order_date kept as string.
+
+apply_rule implementation careful with index alignment:
+
+```python
+def apply_rule(df, col, func, summary, drop_key):
+    parsed = df[col].map(func)
+    mask = parsed.notna()
+    summary[drop_key] = int((~mask).sum())
+    out = df.loc[mask].copy()
+    out[col] = parsed.loc[mask]
+    return out
+```
+
+parsed.loc[mask] — mask is boolean Series aligned with parsed index; works. Assign to out[col] aligns by index; same index. Good.
+
+The quantity column after apply_rule is object dtype with ints; astype(int) fine.
+
+Edge: df columns may include extra columns not in schema? Raw header has exactly 8 columns. Fine.
+
+Sorting: order_id strings ascending lexicographically. All "R100001" pattern, fine.
+
+Now also mention in cleaning_logic the steps.
+
+Also, the summary key names — I'll use descriptive: "raw_rows", "duplicates_removed", "dropped_missing_order_id", "dropped_invalid_order_date", "dropped_invalid_region", "dropped_invalid_product_category", "dropped_invalid_unit_price", "dropped_invalid_quantity", "dropped_invalid_discount_pct", "discount_pct_missing_set_to_zero", "customer_id_missing_filled", "cleaned_rows".
+
+Date regexes:
+- YYYY-MM-DD: r"^(\d{4})-(\d{2})-(\d{2})$"
+- MM/DD/YYYY: r"^(\d{1,2})/(\d{1,2})/(\d{4})$"? Spec says MM/DD/YYYY — two digits. Example "01/05/2023". Strict: \d{2}. I'll use \d{2} strict per "exactly these formats". Hmm, "1/5/2023" would fail then and row dropped — but maybe raw data contains single-digit? Spec explicitly lists formats; strict is per spec. But dropping valid-ish rows reduces data. The instruction "parse each value using exactly one of these formats" suggests strict adherence. I'll be strict with \d{2} but allow \d{1,2}? Risk: a grader may test that "1/5/2023" is dropped or kept? Ambiguous. The example data shows two-digit. I'll go strict (\d{2}) to match "exactly". Similarly Month D, YYYY allows one or two digit day ("March 5, 2024") — 'D' implies variable, so \d{1,2}.
+
+DD-Mon-YYYY: \d{2}. YYYY/MM/DD: \d{2} each.
+
+Validate date via datetime constructor; invalid like month 13 -> ValueError -> None.
+
+Let me write parse_order_date:
+
+```python
+def parse_order_date(s):
+    if s is None:
+        return None
+    s = str(s)
+    m = re.fullmatch(r"(\d{4})-(\d{2})-(\d{2})", s)
+    if m:
+        y, mo, d = int(m.group(1)), int(m.group(2)), int(m.group(3))
+    else:
+        m = re.fullmatch(r"(\d{2})/(\d{2})/(\d{4})", s)
+        if m:
+            mo, d, y = int(m.group(1)), int(m.group(2)), int(m.group(3))
+        else:
+            m = re.fullmatch(r"(\d{2})-([A-Za-z]{3})-(\d{4})", s)
+            if m:
+                mo = MONTHS_ABBR.get(m.group(2).lower())
+                if mo is None:
+                    return None
+                d, y = int(m.group(1)), int(m.group(3))
+            else:
+                m = re.fullmatch(r"(\d{4})/(\d{2})/(\d{2})", s)
+                if m:
+                    y, mo, d = int(m.group(1)), int(m.group(2)), int(m.group(3))
+                else:
+                    m = re.fullmatch(r"([A-Za-z]+) (\d{1,2}), (\d{4})", s)
+                    if not m:
+                        return None
+                    mo = MONTHS_FULL.get(m.group(1).lower())
+                    if mo is None:
+                        return None
+                    d, y = int(m.group(2)), int(m.group(3))
+    try:
+        return datetime(y, mo, d).strftime("%Y-%m-%d")
+    except ValueError:
+        return None
+```
+
+Good.
+
+Note: since values stripped in R1, no leading/trailing spaces.
+
+Now assemble final script. Also guard: if expected columns missing, could error — assume present.
+
+One more nuance in R6: "remove the substrings '$', 'USD' and ',' and surrounding spaces" — I remove USD case-insensitively; spec says substring 'USD' uppercase; values likely "USD 148.91". Case-insensitive is a superset; harmless. Fine.
+
+R8 note: discount value could be like "10%" -> 10. Good.
+
+Revenue round: use .round(2) — numpy rounding half-to-even. Acceptable. Alternatively apply lambda x: round(x,2). Same.
+
+Potential float artifact: quantity*price*(1-disc) e.g. 0.1 rounding — round handles.
+
+Let me also make sure writing revenue like 271.20000000000005 doesn't happen: round(271.2,2) -> 271.2, repr "271.2". to_csv uses str -> fine. Some values like round(2.675,2) classic issue but acceptable.
+
+Better: format floats with a helper to strip trailing zeros? Keep default.
+
+Also ensure JSON summary ints are Python ints.
+
+I think the script is solid. Also add `summary["cleaned_rows"]`.
+
+Print minimal: maybe print("cleaned_rows:", n). "must not print large amounts of data" — a small line is fine, but I'll print nothing to be safe.
+
+Write final JSON response.

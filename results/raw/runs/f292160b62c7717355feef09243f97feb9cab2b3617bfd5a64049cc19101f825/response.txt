@@ -1,0 +1,7 @@
+```json
+{
+  "fixed_code": "def clamp(x, low, high):\n    if low > high:\n        raise ValueError(\"low must not be greater than high\")\n    return min(max(x, low), high)",
+  "bug_locations": ["def clamp(x, low, high):"],
+  "explanation": "The original implementation did not validate that 'low' must not be greater than 'high', which is required by the specification. The fix adds a check to raise a ValueError when this condition is violated, while preserving the correct clamping logic for valid inputs."
+}
+```

@@ -1,0 +1,8 @@
+{
+  "fixed_code": "from collections import defaultdict, deque\n\n\ndef allowed(events, limit, window):\n    q = defaultdict(deque)\n    out = []\n    for user, t in events:\n        # The counting window is (t - window, t]: the left endpoint is\n        # exclusive, so evict prior allowed events at or before t - window.\n        while q[user] and q[user][0] <= t - window:\n            q[user].popleft()\n        ok = len(q[user]) < limit\n        out.append(ok)\n        # Rejected events do not consume capacity; only record allowed ones.\n        if ok:\n            q[user].append(t)\n    return out\n",
+  "bug_locations": [
+    "allowed: eviction loop condition `q[user][0] < t-window`",
+    "allowed: unconditional `q[user].append(t)` after computing `ok`"
+  ],
+  "explanation": "Two interacting defects. (1) Boundary error: the specification's window is (time-window, time], which excludes the left endpoint, so a prior allowed event at exactly t-window must not count. The old purge used `< t-window`, leaving such an event in the deque and causing false rejections (this is what fails the visible check); it is now `<= t-window`. (2) Capacity leak: every event, including rejected ones, was appended to the user's deque, so rejections consumed capacity and wrongly suppressed subsequent events. The append is now conditional on `ok`, matching the rule that rejected events do not consume capacity. The inclusive right endpoint is already handled correctly because the current event is only appended after the capacity check."
+}

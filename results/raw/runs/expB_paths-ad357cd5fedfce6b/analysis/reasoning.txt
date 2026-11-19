@@ -1,0 +1,60 @@
+We need to produce JSON with fields python_code (string containing script), expected_artifacts (list of filenames), methods_description (string). The script must read cleaned.csv from INPUT_DIR env var, compute metrics, write findings.json to OUTPUT_DIR, no other writes. Must output flat JSON with metric keys and numeric values (no NaN). Use pandas.
+
+We need to compute all metrics.
+
+Potential pitfalls: ensure revenue columns are float. Use pandas read_csv with parse_dates for order_date.
+
+Compute total_revenue = df['revenue'].sum()
+
+order_count = len(df)
+
+average_order_value = total_revenue / order_count
+
+Regional revenue: groupby region sum revenue. Ensure region values are exactly 'North', etc.
+
+Quarterly 2024: filter year == 2024, then quarter via dt.quarter. Compute sum per quarter.
+
+Yearly revenue: revenue_2023 sum where year==2023; revenue_2024 sum where year==2024. yoy change pct = (rev2024 - rev2023)/rev2023*100. Need handle division by zero? Not likely.
+
+High-discount electronics: filter product_category == 'Electronics' and discount_pct >=20. Count rows, sum revenue.
+
+Order revenue distribution: compute mean, median, std (sample), min, max.
+
+Customer concentration: unique_customer_count = df['customer_id'].nunique(). top_customer_revenue = df.groupby('customer_id')['revenue'].sum().max(). top_customer_revenue_share_pct = top_customer_revenue / total_revenue * 100.
+
+All metrics must be numeric (float or int). Use Python's default types; JSON will convert.
+
+Write findings.json with json.dump with ensure_ascii=False.
+
+expected_artifacts: ["findings.json"]
+
+methods_description: brief description.
+
+Now produce JSON with script as string. Ensure script is self-contained, imports os, pandas, json, maybe numpy for std? pandas .std() uses sample (ddof=1) by default.
+
+Make sure to not round.
+
+Edge Cases: If no 2024 data, quarter sums will be 0. Use .sum() default 0.0.
+
+Implementation steps:
+
+- input_path = os.path.join(os.environ["INPUT_DIR"], "cleaned.csv")
+- df = pd.read_csv(input_path, parse_dates=['order_date'])
+- Compute metrics.
+
+- Build dict findings = { ... }
+
+- output_path = os.path.join(os.environ["OUTPUT_DIR"], "findings.json")
+- with open(output_path, 'w') as f: json.dump(findings, f, allow_nan=False)
+
+Set allow_nan=False to ensure no NaN.
+
+Now produce final JSON.
+
+Let's craft script.
+
+Potential variable naming.
+
+Make sure to convert order_count to int (len). Others may be float.
+
+Now produce final answer.

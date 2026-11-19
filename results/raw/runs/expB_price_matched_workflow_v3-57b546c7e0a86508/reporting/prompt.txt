@@ -1,0 +1,300 @@
+STAGE: reporting
+PROJECT: retail_sales
+PROMPT_VERSION: v3-post-freeze
+
+You are the reporting stage of a three-stage data workflow (cleaning -> analysis -> reporting).
+The analysis stage has already run its code in a sandbox. Write a structured report of the VERIFIED
+findings below for business stakeholders.
+
+## Original objective
+Clean the raw retail order export and analyse 2023-2024 sales performance: overall revenue, regional differences, the 2024 quarterly trend, year-over-year growth, high-discount electronics orders, customer concentration and the distribution of order revenue, then report the verified findings to business stakeholders.
+
+## Handoff from the previous stages
+Completed stages: cleaning, analysis
+Validation status of previous stages: {"cleaning": "passed", "analysis": "passed"}
+Methods reported by the analysis stage:
+Reads cleaned.csv from INPUT_DIR, parses order_date as datetime and numeric columns defensively, then computes all required metrics with pandas: q1 overall totals (sum of revenue, row count, mean order value); q2 total revenue grouped by region (North/South/East/West); q3 total revenue grouped by calendar quarter (dt.quarter) for rows dated in 2024; q4 total 2023 and 2024 revenue and the year-over-year percentage change ((2024-2023)/2023*100); q5 count and revenue sum of orders filtered to product_category == 'Electronics' with discount_pct >= 20; q6 distribution statistics over all order revenues (mean, median, sample standard deviation with ddof=1, min, max); q7 distinct customer_id count, the maximum per-customer revenue (groupby sum), and that top customer's share of total revenue in percent. All metrics are cast to plain Python floats, validated as finite, and written unrounded as a flat JSON object to OUTPUT_DIR/findings.json.
+
+## Analysis questions and their metric_keys
+- q1: Overall performance (aggregation): total revenue (sum of revenue) -> total_revenue; number of orders (rows in the cleaned data) -> order_count; average order value = total_revenue / order_count -> average_order_value.
+  metric_keys: total_revenue, order_count, average_order_value
+- q2: Regional comparison (group comparison): total revenue per region -> revenue_north, revenue_south, revenue_east, revenue_west.
+  metric_keys: revenue_north, revenue_south, revenue_east, revenue_west
+- q3: Quarterly trend in 2024 (trend): total revenue of orders dated in each calendar quarter of 2024 (Q1 = Jan-Mar, Q2 = Apr-Jun, Q3 = Jul-Sep, Q4 = Oct-Dec) -> revenue_2024_q1, revenue_2024_q2, revenue_2024_q3, revenue_2024_q4.
+  metric_keys: revenue_2024_q1, revenue_2024_q2, revenue_2024_q3, revenue_2024_q4
+- q4: Year-over-year change (percentage change): total revenue of orders dated in 2023 -> revenue_2023; in 2024 -> revenue_2024; percentage change = (revenue_2024 - revenue_2023) / revenue_2023 * 100 -> revenue_yoy_change_pct, expressed as a percentage.
+  metric_keys: revenue_2023, revenue_2024, revenue_yoy_change_pct
+- q5: High-discount electronics (conditional filtering): among orders with product_category 'Electronics' and discount_pct >= 20: number of orders -> electronics_high_discount_orders; their total revenue -> electronics_high_discount_revenue.
+  metric_keys: electronics_high_discount_orders, electronics_high_discount_revenue
+- q6: Order revenue distribution (statistical summary) over all orders: mean -> order_revenue_mean; median -> order_revenue_median; sample standard deviation (denominator n - 1) -> order_revenue_std; minimum -> order_revenue_min; maximum -> order_revenue_max.
+  metric_keys: order_revenue_mean, order_revenue_median, order_revenue_std, order_revenue_min, order_revenue_max
+- q7: Customer concentration (derived step): number of distinct customer_id values -> unique_customer_count; revenue of the highest-revenue customer -> top_customer_revenue; top_customer_revenue / total revenue * 100 -> top_customer_revenue_share_pct.
+  metric_keys: unique_customer_count, top_customer_revenue, top_customer_revenue_share_pct
+
+## Structured claim requirements
+The following block is contract metadata, not answer data. For every `ranking_required: true`
+finding, return a complete high-to-low `ranking`. Use the display-label values in
+`ranking_metric_key_to_label` exactly. For every `direction_required: true` finding, return the
+direction implied by the named metric.
+```json
+{
+  "q1": {
+    "direction_required": false,
+    "direction_metric_key": null,
+    "ranking_required": false,
+    "ranking_metric_key_to_label": null
+  },
+  "q2": {
+    "direction_required": false,
+    "direction_metric_key": null,
+    "ranking_required": true,
+    "ranking_metric_key_to_label": {
+      "revenue_east": "East",
+      "revenue_north": "North",
+      "revenue_south": "South",
+      "revenue_west": "West"
+    }
+  },
+  "q3": {
+    "direction_required": false,
+    "direction_metric_key": null,
+    "ranking_required": true,
+    "ranking_metric_key_to_label": {
+      "revenue_2024_q1": "Q1",
+      "revenue_2024_q2": "Q2",
+      "revenue_2024_q3": "Q3",
+      "revenue_2024_q4": "Q4"
+    }
+  },
+  "q4": {
+    "direction_required": true,
+    "direction_metric_key": "revenue_yoy_change_pct",
+    "ranking_required": false,
+    "ranking_metric_key_to_label": null
+  },
+  "q5": {
+    "direction_required": false,
+    "direction_metric_key": null,
+    "ranking_required": false,
+    "ranking_metric_key_to_label": null
+  },
+  "q6": {
+    "direction_required": false,
+    "direction_metric_key": null,
+    "ranking_required": false,
+    "ranking_metric_key_to_label": null
+  },
+  "q7": {
+    "direction_required": false,
+    "direction_metric_key": null,
+    "ranking_required": false,
+    "ranking_metric_key_to_label": null
+  }
+}
+```
+
+## Verified findings (computed by the analysis code; metric_key -> value)
+VERIFIED_FINDINGS_JSON
+```json
+{
+  "total_revenue": 445325.08999999997,
+  "order_count": 520.0,
+  "average_order_value": 856.3944038461538,
+  "revenue_north": 124845.75,
+  "revenue_south": 90534.49,
+  "revenue_east": 130516.69,
+  "revenue_west": 99428.16,
+  "revenue_2024_q1": 36108.31,
+  "revenue_2024_q2": 56616.79,
+  "revenue_2024_q3": 71674.99,
+  "revenue_2024_q4": 68948.71,
+  "revenue_2023": 211976.28999999998,
+  "revenue_2024": 233348.80000000002,
+  "revenue_yoy_change_pct": 10.082500264534321,
+  "electronics_high_discount_orders": 22.0,
+  "electronics_high_discount_revenue": 50035.33,
+  "order_revenue_mean": 856.3944038461538,
+  "order_revenue_median": 313.275,
+  "order_revenue_std": 1295.7423896952698,
+  "order_revenue_min": 5.27,
+  "order_revenue_max": 7844.02,
+  "unique_customer_count": 222.0,
+  "top_customer_revenue": 27793.13,
+  "top_customer_revenue_share_pct": 6.241087830914715
+}
+```
+
+## Rules (mandatory)
+- Use ONLY the verified findings above. Do not invent or estimate numbers. Each `key_findings`
+  statement MUST state at least one verified numeric value for that finding. Rounding to a sensible
+  precision is fine; any number you derive must be declared in `derived_values`.
+- Write one entry in `key_findings` for each of these question ids: q1, q2, q3, q4, q5, q6, q7.
+  Set `finding_id` to the question id and list the metric_keys you rely on in `evidence_refs`.
+- In `reported_values`, include EVERY metric_key of that question with its verified value (copy it).
+- Follow the structured claim requirements exactly. A ranking is required whenever
+  `ranking_required` is true, including trend questions; order it from highest to lowest.
+- `derived_values` must declare every number in your text computed from findings (difference,
+  ratio, pct_change or share), with metric-key `operands` in formula order.
+- Keep the whole report (title, summary, statements, limitations, conclusion) under 600 words.
+- Mention genuine limitations of the data or analysis in `limitations`.
+
+
+Respond with a single JSON object that conforms to this JSON Schema. Put it in one ```json fenced block and include nothing else outside the block.
+```json
+{
+  "$defs": {
+    "DerivedValue": {
+      "description": "A number stated in the report that is computed from verified findings (v1.2).",
+      "properties": {
+        "kind": {
+          "description": "difference = a-b; ratio = a/b; pct_change = (a-b)/b*100; share = a/b*100",
+          "enum": [
+            "difference",
+            "ratio",
+            "pct_change",
+            "share"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "operands": {
+          "description": "metric_keys [a, b] used in the formula, in order.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Operands",
+          "type": "array"
+        },
+        "value": {
+          "description": "The number as stated in the report.",
+          "title": "Value",
+          "type": "number"
+        }
+      },
+      "required": [
+        "kind",
+        "operands",
+        "value"
+      ],
+      "title": "DerivedValue",
+      "type": "object"
+    },
+    "KeyFinding": {
+      "properties": {
+        "finding_id": {
+          "description": "The analysis question_id this finding addresses.",
+          "title": "Finding Id",
+          "type": "string"
+        },
+        "statement": {
+          "title": "Statement",
+          "type": "string"
+        },
+        "evidence_refs": {
+          "description": "metric_keys from findings.json supporting this statement.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Evidence Refs",
+          "type": "array"
+        },
+        "reported_values": {
+          "additionalProperties": {
+            "type": "number"
+          },
+          "description": "metric_key -> number as stated in the report. Required for EVERY metric_key of the finding.",
+          "title": "Reported Values",
+          "type": "object"
+        },
+        "direction": {
+          "anyOf": [
+            {
+              "enum": [
+                "increase",
+                "decrease",
+                "no_change",
+                "not_applicable"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "For change/trend findings: the direction you state in the text.",
+          "title": "Direction"
+        },
+        "ranking": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "For group comparisons: group labels ordered from highest to lowest value.",
+          "title": "Ranking"
+        },
+        "derived_values": {
+          "description": "Any number in the text computed from findings (share, difference, ...).",
+          "items": {
+            "$ref": "#/$defs/DerivedValue"
+          },
+          "title": "Derived Values",
+          "type": "array"
+        }
+      },
+      "required": [
+        "finding_id",
+        "statement",
+        "evidence_refs"
+      ],
+      "title": "KeyFinding",
+      "type": "object"
+    }
+  },
+  "properties": {
+    "title": {
+      "title": "Title",
+      "type": "string"
+    },
+    "executive_summary": {
+      "title": "Executive Summary",
+      "type": "string"
+    },
+    "key_findings": {
+      "items": {
+        "$ref": "#/$defs/KeyFinding"
+      },
+      "title": "Key Findings",
+      "type": "array"
+    },
+    "limitations": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Limitations",
+      "type": "array"
+    },
+    "conclusion": {
+      "title": "Conclusion",
+      "type": "string"
+    }
+  },
+  "required": [
+    "title",
+    "executive_summary",
+    "key_findings",
+    "limitations",
+    "conclusion"
+  ],
+  "title": "ReportOutput",
+  "type": "object"
+}
+```

@@ -1,0 +1,121 @@
+{
+  "stage": "cleaning",
+  "model_alias": "C",
+  "model_id": "zai.glm-5",
+  "prompt_version": "v3",
+  "prompt_hash": "4c80e726ad39dcec71d0f3668b55982f474546dfd54cafee800a7f420e1182ec",
+  "invocation_ids": [
+    "264f731a-644c-4735-9ca5-c83518ec0d9c"
+  ],
+  "cache_hit": false,
+  "shared_with_run_ids": [],
+  "status": "failed",
+  "structural_ok": false,
+  "failure_type": "execution_error",
+  "failure_detail": "execution runtime_error (exit 1): /sandbox/code/main.py:18: FutureWarning: DataFrame.applymap has been deprecated. Use DataFrame.map instead.\n  df_t = df_t.applymap(lambda x: x.strip() if isinstance(x, str) else x)\n/sandbox/code/main.py:24: FutureWarning: DataFrame.applymap has been deprecated. Use DataFrame.map instead.\n  df_a = df_a.applymap(lambda x: x.strip() if isinstance(x, str) else x)\nTraceback (most recent call last):\n  File \"/sandbox/code/main.py\", line 137, in <module>\n    clean_data()\n  File \"/sandbox/code/main.py\", line 63, in clean_data\n    df_t = df_t.merge(df_a[['agent_id', 'team', 'region', 'hour_cost']], on='agent_id', how='inner')\n                      ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/frame.py\", line 4108, in __getitem__\n    indexer = self.columns._get_indexer_strict(key, \"columns\")[1]\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/indexes/base.py\", line 6200, in _get_indexer_strict\n    self._raise_if_missing(keyarr, indexer, axis_name)\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/indexes/base.py\", line 6252, in _raise_if_missing\n    raise KeyError(f\"{not_found} not in index\")\nKeyError: \"['hour_cost'] not in index\"\n",
+  "parse_ok": true,
+  "execution": {
+    "status": "runtime_error",
+    "exit_code": 1,
+    "stdout": "",
+    "stderr": "/sandbox/code/main.py:18: FutureWarning: DataFrame.applymap has been deprecated. Use DataFrame.map instead.\n  df_t = df_t.applymap(lambda x: x.strip() if isinstance(x, str) else x)\n/sandbox/code/main.py:24: FutureWarning: DataFrame.applymap has been deprecated. Use DataFrame.map instead.\n  df_a = df_a.applymap(lambda x: x.strip() if isinstance(x, str) else x)\nTraceback (most recent call last):\n  File \"/sandbox/code/main.py\", line 137, in <module>\n    clean_data()\n  File \"/sandbox/code/main.py\", line 63, in clean_data\n    df_t = df_t.merge(df_a[['agent_id', 'team', 'region', 'hour_cost']], on='agent_id', how='inner')\n                      ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/frame.py\", line 4108, in __getitem__\n    indexer = self.columns._get_indexer_strict(key, \"columns\")[1]\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/indexes/base.py\", line 6200, in _get_indexer_strict\n    self._raise_if_missing(keyarr, indexer, axis_name)\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/indexes/base.py\", line 6252, in _raise_if_missing\n    raise KeyError(f\"{not_found} not in index\")\nKeyError: \"['hour_cost'] not in index\"\n",
+    "runtime_ms": 779.8177500008023,
+    "output_files": [],
+    "sandbox_image": "sha256:88988a15503bdb96538c3dd62244a79879d5c7848397db18b1267ccfd0a9727a"
+  },
+  "validation": {
+    "stage": "cleaning",
+    "hard_pass": false,
+    "checks": [
+      {
+        "name": "output_exists",
+        "passed": false,
+        "mandatory": true,
+        "detail": "cleaned CSV not found: /Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expB_price_matched_workflow_v3-9aff5938c07f6594/cleaning/output/cleaned.csv",
+        "value": null
+      },
+      {
+        "name": "output_parses",
+        "passed": false,
+        "mandatory": true,
+        "detail": "no output",
+        "value": null
+      },
+      {
+        "name": "required_columns_present",
+        "passed": false,
+        "mandatory": true,
+        "detail": "no output",
+        "value": null
+      },
+      {
+        "name": "schema_constraints",
+        "passed": false,
+        "mandatory": true,
+        "detail": "no output",
+        "value": null
+      },
+      {
+        "name": "no_duplicate_keys",
+        "passed": false,
+        "mandatory": true,
+        "detail": "no output",
+        "value": null
+      },
+      {
+        "name": "row_set_matches_reference",
+        "passed": false,
+        "mandatory": true,
+        "detail": "no output",
+        "value": null
+      },
+      {
+        "name": "values_match_reference",
+        "passed": false,
+        "mandatory": true,
+        "detail": "no output",
+        "value": null
+      }
+    ],
+    "quality": {
+      "cleaning_correctness": 0.0,
+      "data_integrity": 0.0,
+      "schema_compliance": 0.0
+    },
+    "quality_basis": "ground_truth",
+    "validator_version": "1.0"
+  },
+  "conditional_validation": null,
+  "input_artifacts": [
+    "datasets/projects/support_operations/raw.csv",
+    "datasets/projects/support_operations/agents.csv"
+  ],
+  "output_artifacts": [
+    "results/raw/runs/expB_price_matched_workflow_v3-9aff5938c07f6594/cleaning/prompt.txt",
+    "results/raw/runs/expB_price_matched_workflow_v3-9aff5938c07f6594/cleaning/response.txt",
+    "results/raw/runs/expB_price_matched_workflow_v3-9aff5938c07f6594/cleaning/parsed.json",
+    "results/raw/runs/expB_price_matched_workflow_v3-9aff5938c07f6594/cleaning/code.py"
+  ],
+  "input_artifact_hashes": {
+    "datasets/projects/support_operations/raw.csv": "d260e1c2251ade14aa044895797fa2d39647b6d1fe43ba7c79d8c5a48fd287fd",
+    "datasets/projects/support_operations/agents.csv": "51d9c560abc74a09ea32b0c667fc52c8d0f5479fd5a01314fc8f7f2fc0ff4442"
+  },
+  "output_artifact_hashes": {
+    "results/raw/runs/expB_price_matched_workflow_v3-9aff5938c07f6594/cleaning/prompt.txt": "4c80e726ad39dcec71d0f3668b55982f474546dfd54cafee800a7f420e1182ec",
+    "results/raw/runs/expB_price_matched_workflow_v3-9aff5938c07f6594/cleaning/response.txt": "f2d45dcbb8fa1b66deff2d2a04451158c4ee868354ff6129e819e9cba7ba1944",
+    "results/raw/runs/expB_price_matched_workflow_v3-9aff5938c07f6594/cleaning/parsed.json": "b2de0e4adeae0c2c8cb56372d15d3533474872da35734ee4d61561062bafd86d",
+    "results/raw/runs/expB_price_matched_workflow_v3-9aff5938c07f6594/cleaning/code.py": "7fb2bffd5f90faebb244c98fdbafcc9633cafa64461ddc4a212ce8e0a63ed6c5"
+  },
+  "handoff_in_path": "results/raw/runs/expB_price_matched_workflow_v3-9aff5938c07f6594/cleaning/handoff_in.json",
+  "handoff_size_bytes": 424,
+  "input_tokens": 1533,
+  "output_tokens": 1876,
+  "cost_usd": 0.0075362,
+  "cost_status": "estimated",
+  "timings": {
+    "generation_ms": 22950.86233299662,
+    "execution_ms": 779.8177500008023,
+    "validation_ms": 3.3659160035313107,
+    "handoff_ms": 0.28337500407360494
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "fixed_code": "def dedupe(xs):\n    \"\"\"Remove later duplicates while preserving first-occurrence order.\n\n    Membership is tested with ``==`` against the output list (not a set),\n    so unhashable values (e.g., lists, dicts) are supported.\n    \"\"\"\n    out = []\n    for item in xs:\n        if item not in out:\n            out.append(item)\n    return out\n",
+  "bug_locations": [
+    "dedupe: loop iterates over reversed(xs), which reverses the result order and retains last occurrences instead of first occurrences (e.g., dedupe([1, 2, 3]) returned [3, 2, 1])",
+    "dedupe: membership/dedup logic rebuilt to check against the first-occurrence-ordered output list so unhashable values remain supported while order is preserved"
+  ],
+  "explanation": "The root cause was iterating `reversed(xs)`: appending items not yet seen while scanning backwards produces the unique elements in reverse order and effectively keys off last occurrences rather than first occurrences, violating the required first-occurrence order (it only appeared to work on palindrome-like inputs such as [1,2,1]). The fix iterates `xs` in its original order and appends each item only if it is not already in `out`. Using list membership (`==`) instead of a `set` keeps the function working for unhashable values, as the specification requires."
+}

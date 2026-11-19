@@ -1,0 +1,10 @@
+```json
+{
+  "fixed_code": "from collections import deque\n\n\ndef shortest_path(graph, start, goal):\n    queue = deque([(start, [start])])\n    seen = {start}\n\n    while queue:\n        node, path = queue.popleft()\n        if node == goal:\n            return path\n\n        for neighbour in graph.get(node, []):\n            if neighbour not in seen:\n                seen.add(neighbour)\n                queue.append((neighbour, path + [neighbour]))\n\n    return None\n",
+  "bug_locations": [
+    "shortest_path: traversal used a LIFO stack (stack.pop()/stack +=), giving DFS rather than shortest-path BFS",
+    "shortest_path: visited handling added nodes only when popped and did not skip already-seen queue entries; nodes are now marked seen when first enqueued"
+  ],
+  "explanation": "The LIFO stack made the search depth-first, so it could return a reachable path that was not shortest. Visited marking was also too late, allowing duplicate or longer discoveries to remain in the frontier. The correction uses a FIFO deque, checks the goal on dequeue, marks neighbours as seen when first enqueued, and iterates graph.get(node, []) in listed order; it returns None only after the frontier is exhausted."
+}
+```

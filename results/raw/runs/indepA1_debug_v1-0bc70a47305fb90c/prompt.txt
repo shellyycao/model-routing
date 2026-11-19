@@ -1,0 +1,27 @@
+TASK: Python debugging (independent benchmark A1, prompt independent_v1)
+
+The function below contains exactly one bug. Fix it so that it satisfies the specification.
+
+SPECIFICATION:
+parse_duration(s) converts strings like '1h30m', '45s', '2h', '1h0m5s' to total seconds (int). Units h, m, s each appear at most once, in that order. Raise ValueError for an empty or invalid string.
+
+BUGGY CODE:
+```python
+import re
+
+def parse_duration(s):
+    m = re.fullmatch(r"(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?", s or "")
+    if not s or not m:
+        raise ValueError(s)
+    h, mi, se = (int(x) if x else 0 for x in m.groups())
+    return h * 60 + mi * 60 + se
+
+```
+
+EXAMPLE TESTS (these must pass; additional hidden tests will also be run):
+```python
+assert parse_duration('45s') == 45
+```
+
+Return the COMPLETE corrected source code (keep the same function names and signatures; standard library only),
+the location of the bug, and a short explanation.

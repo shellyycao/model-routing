@@ -1,0 +1,10 @@
+{
+  "fixed_code": "from collections import deque\n\ndef shortest_path(graph, start, goal):\n    \"\"\"Return a list of nodes representing a shortest path from start to goal\n    in an unweighted directed graph, or None if no such path exists.\n    Neighbours are explored in the order they appear in the adjacency list.\n    \"\"\"\n    # BFS queue holds tuples (current_node, path_to_current_node)\n    q = deque([(start, [start])])\n    seen = {start}\n    while q:\n        node, path = q.popleft()\n        if node == goal:\n            return path\n        for nxt in graph.get(node, []):\n            if nxt not in seen:\n                seen.add(nxt)\n                q.append((nxt, path + [nxt]))\n    return None",
+  "bug_locations": [
+    "Initialization of the queue: path should start with the start node.",
+    "Missing addition of the start node to the seen set before the loop.",
+    "Return value for the goal case: should return the full path including the start node.",
+    "Handling of the case where start == goal: the corrected initialization now returns [start]."
+  ],
+  "explanation": "The original implementation built paths that omitted the start node, causing incorrect results (e.g., returning ['b'] instead of ['a','b']). It also failed to handle the start‑equals‑goal case and did not mark the start node as visited, which could lead to revisiting it via a self‑loop. The fix initializes the BFS queue with a path containing the start node, adds the start node to the visited set, and returns the complete path when the goal is reached. The algorithm now correctly returns a shortest path respecting neighbour order or None when unreachable."
+}

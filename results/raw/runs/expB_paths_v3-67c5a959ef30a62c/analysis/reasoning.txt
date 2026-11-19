@@ -1,0 +1,68 @@
+We need to produce JSON with fields python_code (string containing script), expected_artifacts (list of filenames), methods_description (string). The script must read cleaned.csv from INPUT_DIR env var, compute metrics, write findings.json to OUTPUT_DIR. Must output flat JSON with all metric keys as numbers (no NaN). Must not round; full precision.
+
+We need to compute:
+
+- customer_count: number of rows (cleaned_rows). Should be integer.
+
+- churn_rate_pct: percentage of customers with churned=1. So (sum churned / count) * 100.
+
+- avg_monthly_fee: mean of monthly_fee.
+
+- churn_rate_basic_pct etc: for each plan, compute churn rate percent.
+
+- churn_rate_cohort_2021_pct etc: need to group by signup_date year. The cleaned data includes years 2021-2024 maybe. Compute percent churn per year.
+
+- churn_rate_monthly_pct, churn_rate_annual_pct: per contract_type.
+
+- churn_monthly_vs_annual_change_pct: (monthly - annual) / annual * 100.
+
+- at_risk_customer_count: customers with support_tickets >=5 AND satisfaction_score not missing AND <=2. Count.
+
+- at_risk_churn_rate_pct: among those, churn rate percent.
+
+- tenure_mean, tenure_median, tenure_std: compute over all customers. Use pandas .mean(), .median(), .std(ddof=1). Ensure float.
+
+- satisfaction_mean: mean of satisfaction_score over non-missing rows. Need to exclude NaN.
+
+- satisfaction_missing_count: count where satisfaction_score is NaN.
+
+- ltv_basic, ltv_standard, ltv_premium: mean lifetime_value per plan.
+
+- premium_vs_basic_ltv_change_pct: (ltv_premium - ltv_basic) / ltv_basic * 100.
+
+All metrics must be numbers (int or float). Use Python's default float representation; json dumps will convert.
+
+Potential issues: satisfaction_score column may be stored as float? In sample it's 2.0 etc. But cleaning stored as int? It says int; but sample shows 2.0. We'll treat as numeric; pandas will read as float because of empty cells. We'll convert to numeric.
+
+Implementation steps:
+
+- import os, pandas as pd, json, numpy as np.
+
+- read csv: path = os.path.join(os.environ["INPUT_DIR"], "cleaned.csv").
+
+- df = pd.read_csv(path, dtype={'customer_id': str}) (others auto). Ensure parse dates: parse_dates=['signup_date'].
+
+- Compute metrics.
+
+Edge Cases: division by zero for churn_rate_annual_pct if no annual contracts? But dataset likely has both. Still handle: if denominator zero, set result to 0.0.
+
+Similarly for premium_vs_basic_ltv_change_pct: if ltv_basic zero, set to np.inf? But not likely. We'll handle with conditional.
+
+All results must be finite numbers; avoid NaN. For satisfaction_mean if no non-missing, set to 0.0.
+
+Now produce script.
+
+Also need to write findings.json: with json.dump(metrics, open(...), ensure ensure_ascii=False). Use indent=None.
+
+expected_artifacts: ["findings.json"].
+
+methods_description: brief description.
+
+Now craft JSON output.
+
+Let's write script as a multi-line string.
+
+Be careful to escape triple quotes inside JSON. We'll embed script as raw string with newline characters.
+
+We'll produce final JSON block.
+

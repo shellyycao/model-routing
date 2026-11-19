@@ -1,0 +1,92 @@
+We need to produce JSON with fields python_code (script), output_filename "cleaned.csv", cleaning_logic description.
+
+The script must implement all cleaning steps, produce cleaned.csv and cleaning_summary.json with raw_rows, cleaned_rows, and per-rule counts.
+
+We need to read raw.csv as text, treat all columns as strings, strip whitespace, treat missing values as defined.
+
+Implementation plan:
+
+- import os, pandas as pd, numpy as np, json, datetime.
+
+- Input path: os.path.join(os.environ["INPUT_DIR"], "raw.csv")
+
+- Read raw CSV using pandas read_csv with dtype=str, keep default, but we need to preserve whitespace. Use keep_default_na=False, na_values=[] to avoid automatic conversion. Then we will strip whitespace manually.
+
+- raw_rows = len(df)
+
+- Apply R1: strip whitespace for all cells, then replace missing values: after stripping, if value.lower() in {'', 'na', 'n/a', 'null', 'none', '-'} then set to None (np.nan). We'll use df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x). Then replace.
+
+- R2: deduplicate based on customer_id, keep first. Count duplicates removed.
+
+- Then process each column sequentially, dropping rows as needed, tracking counts.
+
+We'll create a dict summary counts.
+
+Processing:
+
+Define helper functions for parsing dates.
+
+R3: parse signup_date using multiple formats. We'll attempt each format; if fails, set to NaT. Drop rows where missing or cannot parse. Count rows dropped.
+
+R4: plan mapping dict case-insensitive. Use .str.lower().strip() then map.
+
+R5: contract_type mapping.
+
+R6: monthly_fee: remove '$', 'USD', ',' and spaces. Use regex. Then convert to float. Drop rows where missing, not numeric, <=0 or >500.
+
+R7: tenure_months: remove trailing 'months'/'month' case-insensitive, strip, then parse int. Must be whole number, 0-120.
+
+R8: support_tickets: missing -> 0. Else parse int, 0-100.
+
+R9: satisfaction_score: parse int, if invalid set to np.nan (missing) but keep row.
+
+R10: churned mapping.
+
+R11: lifetime_value = monthly_fee * tenure_months, round 2.
+
+R12: select columns order, sort by customer_id ascending (string sort). Write CSV with header, index=False, float format maybe default but ensure no extra formatting.
+
+Write cleaning_summary.json with counts.
+
+Edge Cases: need to ensure that after each drop we update counts.
+
+Implementation details:
+
+- Use df = df.copy()
+
+- For each rule, we can compute mask of rows to keep.
+
+- For R9, we need to set invalid to np.nan.
+
+- For R8 missing -> 0: after R1 missing values are NaN; we fillna(0) after parsing.
+
+- For satisfaction_score missing after R1, we treat as missing; later we parse; if missing, set to np.nan.
+
+Parsing numeric: use pd.to_numeric with errors='coerce'.
+
+Now produce script as a string.
+
+Make sure to import re for regex.
+
+Write summary dict:
+
+summary = {
+    "raw_rows": raw_rows,
+    "duplicate_rows_removed": dup_removed,
+    "rows_after_R3": rows_after_R3,
+    ... maybe per rule.
+
+But requirement: at least raw_rows and cleaned_rows plus any per-rule counts you track.
+
+We'll include counts for each rule: "duplicate_rows_removed", "rows_dropped_R3", "rows_dropped_R4", "rows_dropped_R5", "rows_dropped_R6", "rows_dropped_R7", "rows_dropped_R8", "rows_dropped_R10". R9 does not drop.
+
+Now produce final JSON.
+
+Let's craft script.
+
+Potential pitfalls: reading raw.csv with spaces in column names? The header includes spaces? The sample shows header line without spaces. So fine.
+
+When stripping whitespace, we need to handle NaN values (float). Use isinstance(x,str).
+
+Now produce final answer.
+

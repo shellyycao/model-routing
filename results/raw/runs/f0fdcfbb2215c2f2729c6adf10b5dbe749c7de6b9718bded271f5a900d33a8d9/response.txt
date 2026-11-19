@@ -1,0 +1,9 @@
+```json
+{
+  "fixed_code": "def chunks(xs, size):\n    if size <= 0:\n        raise ValueError('size')\n    return [xs[i:i+size] for i in range(0, len(xs), size)]\n",
+  "bug_locations": [
+    "chunks: return statement's range expression"
+  ],
+  "explanation": "The range stop was computed as len(xs)-size+1, which only yields starting indices for full-sized chunks. As a result, a short final chunk (and the entire input when len(xs) < size) was silently dropped. Changing the stop to len(xs) makes range emit a start index for every chunk, including a short trailing one; slicing naturally truncates the final chunk. The size <= 0 validation already matches the spec, and slicing never mutates xs, so no other changes were needed."
+}
+```

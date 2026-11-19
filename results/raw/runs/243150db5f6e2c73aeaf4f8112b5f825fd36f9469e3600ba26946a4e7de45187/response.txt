@@ -1,0 +1,9 @@
+```json
+{
+  "fixed_code": "def allocate_stock(stock, requests):\n    remaining = dict(stock)\n    fulfilled = []\n    seen_ids = set()\n    for rid, sku, qty in requests:\n        if rid in seen_ids:\n            continue\n        seen_ids.add(rid)\n        if qty > 0 and remaining.get(sku, 0) >= qty:\n            remaining[sku] -= qty\n            fulfilled.append(rid)\n    return fulfilled, remaining\n",
+  "bug_locations": [
+    "allocate_stock function body"
+  ],
+  "explanation": "Three bugs were present: (1) `remaining=stock` assigned by reference, mutating the caller's stock dict — fixed by using `dict(stock)` to make a shallow copy. (2) Duplicate request_ids were not tracked or ignored — fixed by adding a `seen_ids` set. (3) Requests with non-positive qty were not filtered out — fixed by adding `qty > 0` check before fulfilling."
+}
+```

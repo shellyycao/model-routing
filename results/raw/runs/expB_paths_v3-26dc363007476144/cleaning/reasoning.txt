@@ -1,0 +1,236 @@
+We need to produce JSON with fields python_code (script), output_filename "cleaned.csv", cleaning_logic description.
+
+We must write script that follows all cleaning steps.
+
+Let's design script.
+
+Steps:
+
+- import os, pandas as pd, numpy as np, json, re, csv maybe.
+
+- Define helper to treat missing values: we can read csv with dtype str, keep as strings, then strip whitespace and replace missing tokens.
+
+R1: read both as text, strip whitespace, treat empty, NA, N/A, null, None, - as missing. We'll read using pd.read_csv with dtype=str, keep default na_values? We'll manually replace after reading.
+
+Implementation:
+
+def clean_strings(df):
+    for col in df.columns:
+        df[col] = df[col].astype(str).str.strip()
+    # replace missing tokens with np.nan
+    missing_vals = ['', 'NA', 'N/A', 'null', 'None', '-']
+    df.replace(missing_vals, np.nan, inplace=True)
+    return df
+
+- R2: tickets duplicate ticket_id rows, keep first. Use drop_duplicates(subset='ticket_id', keep='first').
+
+- R3: agents: normalize agent_id to upper case, then drop duplicates.
+
+- R4: roster mapping:
+
+team mapping: case-insensitive mapping: if team string contains 'alpha' -> 'Alpha', 'beta' -> 'Beta', 'gamma' -> 'Gamma'. Also handle 'Team Alpha' etc. We'll lower, strip 'team '.
+
+region mapping: East/E, West/W case-insensitive.
+
+hourly_cost: remove $ , USD, commas, spaces. Then convert to float. Exclude rows where cost invalid or <=0.
+
+Also exclude rows with invalid team or region after mapping (i.e., not in allowed sets). We'll filter.
+
+- R5: tickets: normalize agent_id to upper case. Join to cleaned agents on agent_id (inner). Drop tickets without match.
+
+- R6: channel mapping: case-insensitive mapping dict: {'email':'email', 'e-mail':'email', 'e mail':'email'? but spec only Email/E-mail. We'll map lower stripped string: if contains 'email' -> email, 'chat' or 'live chat' -> chat, 'phone' or 'call' -> phone. Drop invalid.
+
+- R7: resolution_minutes: remove trailing 'min' or 'minutes' (case-insensitive). Use regex to extract integer. Must be 1-480 inclusive. Drop invalid.
+
+- R8: satisfaction_score: parse whole number 1-5. Invalid or missing become empty (np.nan). Keep row.
+
+- R9: reopened mapping: map Yes/Y/True/1 to 1, No/N/False/0 to 0, case-insensitive. Drop invalid or missing.
+
+- R10: labor_cost = resolution_minutes / 60 * hourly_cost, round 2.
+
+- R11: output columns order, sort by ticket_id, write CSV without index.
+
+Also produce cleaning_summary.json with raw_rows (tickets rows read) and cleaned_rows (rows written) plus counts per rule maybe.
+
+We'll track counts: raw_rows_tickets, raw_rows_agents, after duplicates removal, after join, after channel filter, after resolution filter, after reopened filter, final rows.
+
+Implement.
+
+Edge Cases: Ensure ticket_id as string, keep leading zeros.
+
+Implementation details:
+
+Read tickets: tickets_path = os.path.join(os.environ['INPUT_DIR'], 'tickets.csv'); same for agents.
+
+Read with dtype=str, keep default.
+
+raw_rows_tickets = len(tickets_df)
+
+raw_rows_agents = len(agents_df)
+
+After each step, compute counts.
+
+When writing cleaned.csv: path = os.path.join(os.environ['OUTPUT_DIR'], 'cleaned.csv'); df.to_csv(path, index=False)
+
+Write summary json: path_summary = os.path.join(os.environ['OUTPUT_DIR'], 'cleaning_summary.json'); json.dump(summary, open(...), indent=2)
+
+Now produce script as a string.
+
+Make sure to import re.
+
+Now produce cleaning_logic description.
+
+Now produce final JSON.
+
+Let's craft script.
+
+Potential pitfalls: When reading CSV, pandas may interpret empty strings as NaN automatically; but we need to treat tokens as missing. We'll set keep_default_na=False to avoid default NA detection, then replace manually.
+
+Implementation:
+
+tickets_df = pd.read_csv(tickets_path, dtype=str, keep_default_na=False)
+
+Similarly for agents.
+
+Then apply strip: tickets_df = tickets_df.applymap(lambda x: x.strip() if isinstance(x, str) else x)
+
+Replace missing tokens: missing = {'': np.nan, 'NA': np.nan, 'N/A': np.nan, 'null': np.nan, 'None': np.nan, '-': np.nan}
+
+tickets_df.replace(missing, inplace=True)
+
+Same for agents.
+
+Now proceed.
+
+Team mapping function:
+
+def map_team(val):
+    if pd.isna(val):
+        return np.nan
+    low = val.lower()
+    if 'alpha' in low:
+        return 'Alpha'
+    if 'beta' in low:
+        return 'Beta'
+    if 'gamma' in low:
+        return 'Gamma'
+    return np.nan
+
+Region mapping:
+
+def map_region(val):
+    if pd.isna(val):
+        return np.nan
+    low = val.lower()
+    if low in ('east', 'e'):
+        return 'East'
+    if low in ('west', 'w'):
+        return 'West'
+    return np.nan
+
+Hourly cost parsing:
+
+def parse_cost(val):
+    if pd.isna(val):
+        return np.nan
+    cleaned = re.sub(r'[\$,]', '', val, flags=re.IGNORECASE)
+    cleaned = cleaned.replace('USD', '').strip()
+    try:
+        cost = float(cleaned)
+        return cost
+    except:
+        return np.nan
+
+Apply to agents.
+
+Then filter: agents_clean = agents_clean.dropna(subset=['team','region','hourly_cost']); also cost >0.
+
+Now tickets processing.
+
+Normalize agent_id: tickets_df['agent_id'] = tickets_df['agent_id'].str.upper()
+
+Join: tickets_df = tickets_df.merge(agents_clean[['agent_id','team','region','hourly_cost']], on='agent_id', how='inner')
+
+Now channel mapping:
+
+def map_channel(val):
+    if pd.isna(val):
+        return np.nan
+    low = val.lower()
+    if 'email' in low:
+        return 'email'
+    if 'chat' in low:
+        return 'chat'
+    if 'phone' in low or 'call' in low:
+        return 'phone'
+    return np.nan
+
+Apply, dropna.
+
+Resolution minutes:
+
+def parse_resolution(val):
+    if pd.isna(val):
+        return np.nan
+    # remove non-digit characters
+    m = re.search(r'(\d+)', val)
+    if m:
+        minutes = int(m.group(1))
+        if 1 <= minutes <= 480:
+            return minutes
+    return np.nan
+
+Apply, dropna.
+
+Satisfaction score:
+
+def parse_sat(val):
+    if pd.isna(val):
+        return np.nan
+    try:
+        i = int(float(val))
+        if 1 <= i <=5:
+            return i
+    except:
+        pass
+    return np.nan
+
+Apply, keep as is (allow NaN).
+
+Reopened mapping:
+
+def map_reopened(val):
+    if pd.isna(val):
+        return np.nan
+    low = str(val).strip().lower()
+    if low in ('yes','y','true','1'):
+        return 1
+    if low in ('no','n','false','0'):
+        return 0
+    return np.nan
+
+Apply, dropna.
+
+Now compute labor_cost:
+
+tickets_df['labor_cost'] = (tickets_df['resolution_minutes'] / 60.0) * tickets_df['hourly_cost']
+tickets_df['labor_cost'] = tickets_df['labor_cost'].round(2)
+
+Select columns order.
+
+Sort by ticket_id.
+
+Write.
+
+Now summary counts: we can compute after each step.
+
+Implementation details: Keep counts in dict.
+
+Now produce final JSON.
+
+Let's craft script as a multi-line string.
+
+Be careful to not exceed line length.
+
+Now produce final answer.
+

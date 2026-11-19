@@ -1,0 +1,11 @@
+```json
+{
+  "fixed_code": "def rolling_mean(xs, window, min_periods=1):\n    if not (1 <= min_periods <= window):\n        raise ValueError('min_periods must be between 1 and window')\n    if window <= 0:\n        raise ValueError('window must be greater than 0')\n    return [sum(xs[max(0, i-window+1):i+1])/max(len(xs[max(0, i-window+1):i+1]), 1) if len(xs[max(0, i-window+1):i+1]) >= min_periods else None for i in range(len(xs))]",
+  "bug_locations": [
+    "Validation of min_periods",
+    "Division by zero check",
+    "Handling of min_periods requirement"
+  ],
+  "explanation": "The original code did not validate the min_periods parameter to ensure it is within the required range (1 to window). It also did not handle the case where the number of elements in the window is less than min_periods, which should result in a null value. Additionally, there was a potential division by zero error if the window size was zero, which was not properly checked. The fixed code includes validation for min_periods, a check to avoid division by zero, and correctly handles the min_periods requirement by returning None when the condition is not met."
+}
+```

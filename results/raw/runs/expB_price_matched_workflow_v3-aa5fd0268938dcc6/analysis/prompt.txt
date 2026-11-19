@@ -1,0 +1,113 @@
+STAGE: analysis
+PROJECT: support_operations
+PROMPT_VERSION: v3
+
+You are the analysis stage of a three-stage data workflow (cleaning -> analysis -> reporting).
+The cleaning stage has already run. Write ONE self-contained Python 3 script that computes the
+required metrics from the cleaned data it produced.
+
+## Original objective
+Clean and join a support-ticket export with an agent roster, analyse cost, speed, reopening, satisfaction and agent concentration, then report verified findings.
+
+## Handoff from the previous stage
+Completed stages: cleaning
+Validation status of previous stages: {"cleaning": "passed"}
+Cleaning logic reported by the cleaning stage:
+The script performs the following cleaning steps in order: 1. Reads input CSVs, stripping whitespace and standardizing missing values. 2. Deduplicates tickets by ticket_id and agents by agent_id (normalized to uppercase). 3. Cleans the agent roster by mapping team/region names, parsing hourly_cost (removing currency symbols), and filtering out invalid entries. 4. Joins tickets with the cleaned roster, dropping tickets with missing agents. 5. Normalizes channel names and drops invalid entries. 6. Parses resolution_minutes, enforcing a 1-480 minute range. 7. Parses satisfaction_score (1-5), keeping rows with missing/invalid scores as empty cells. 8. Maps reopened status to binary 0/1, dropping rows with invalid values. 9. Calculates labor_cost based on resolution time and hourly cost. 10. Selects required columns, sorts by ticket_id, and writes the cleaned CSV and a summary JSON.
+Cleaning summary written by the cleaning code (cleaning_summary.json):
+{"raw_rows_tickets": 380, "raw_rows_agents": 18, "valid_agents": 18, "tickets_after_join": 354, "tickets_after_channel": 350, "tickets_after_resolution": 347, "tickets_after_reopened": 347, "cleaned_rows": 347, "raw_rows": 380}
+
+## Input/output contract (mandatory)
+- Your script runs in an isolated sandbox with NO network access. Available libraries: the Python
+  standard library, pandas and numpy.
+- Read the cleaned data from os.path.join(os.environ["INPUT_DIR"], "cleaned.csv").
+  It is the file the cleaning stage actually produced; use it as is.
+- Write os.path.join(os.environ["OUTPUT_DIR"], "findings.json"). Write nowhere else.
+- findings.json MUST be a FLAT JSON object mapping every metric_key listed below to a single
+  finite number, e.g. {"metric_a": 12.5, "metric_b": 3.0}. Do NOT nest it: an object such as
+  {"metrics": {"metric_a": 12.5}} FAILS validation. No strings, lists, null, NaN or Infinity as values.
+- Do not round results; write full precision.
+- List every file the script writes in `expected_artifacts`.
+
+## Cleaned data schema (columns in this order)
+- ticket_id: str; not nullable
+- agent_id: str; not nullable
+- team: category; not nullable; allowed values: 'Alpha', 'Beta', 'Gamma'
+- region: category; not nullable; allowed values: 'East', 'West'
+- channel: category; not nullable; allowed values: 'email', 'chat', 'phone'
+- resolution_minutes: int; not nullable; min 1; max 480
+- satisfaction_score: int; nullable; min 1; max 5
+- reopened: int; not nullable; min 0; max 1
+- hourly_cost: float; not nullable; min 0.01
+- labor_cost: float; not nullable; min 0
+
+## First lines of the cleaned file (cleaned.csv, 348 lines in total incl. header)
+```
+ticket_id,agent_id,team,region,channel,resolution_minutes,satisfaction_score,reopened,hourly_cost,labor_cost
+T00001,A007,Alpha,West,email,47,5.0,0,57.75,45.24
+T00002,A010,Alpha,East,email,69,4.0,0,64.5,74.18
+T00003,A018,Gamma,East,email,56,4.0,0,82.5,77.0
+T00004,A008,Beta,East,email,155,3.0,0,60.0,155.0
+T00005,A002,Beta,East,phone,30,5.0,1,46.5,23.25
+T00006,A015,Gamma,West,phone,27,4.0,0,75.75,34.09
+T00007,A010,Alpha,East,phone,65,4.0,0,64.5,69.88
+T00008,A002,Beta,East,chat,85,3.0,0,46.5,65.88
+T00009,A002,Beta,East,email,63,5.0,0,46.5,48.82
+T00010,A017,Beta,West,email,93,5.0,0,80.25,124.39
+T00011,A003,Gamma,West,chat,81,4.0,0,48.75,65.81
+```
+
+## Analysis questions and the metric_keys each must produce
+- q1: Overall: number of tickets -> ticket_count; mean resolution_minutes -> mean_resolution_minutes; sum of labor_cost -> total_labor_cost.
+  metric_keys: ticket_count, mean_resolution_minutes, total_labor_cost
+- q2: Team comparison: total labor_cost for Alpha, Beta and Gamma -> labor_cost_alpha, labor_cost_beta, labor_cost_gamma.
+  metric_keys: labor_cost_alpha, labor_cost_beta, labor_cost_gamma
+- q3: Channel comparison: mean resolution_minutes by channel -> resolution_email, resolution_chat, resolution_phone.
+  metric_keys: resolution_email, resolution_chat, resolution_phone
+- q4: Reopening change: reopened percentage for email and chat -> reopen_rate_email_pct, reopen_rate_chat_pct; (email rate - chat rate) / chat rate * 100 -> email_vs_chat_reopen_change_pct.
+  metric_keys: reopen_rate_email_pct, reopen_rate_chat_pct, email_vs_chat_reopen_change_pct
+- q5: High-cost low-satisfaction segment: tickets with labor_cost >= 100 and a non-missing satisfaction_score <= 2 -> count and reopened percentage as high_cost_low_sat_count and high_cost_low_sat_reopen_pct.
+  metric_keys: high_cost_low_sat_count, high_cost_low_sat_reopen_pct
+- q6: Distribution: median and sample standard deviation of resolution_minutes -> resolution_median, resolution_std; mean non-missing satisfaction_score -> satisfaction_mean; missing satisfaction count -> satisfaction_missing_count.
+  metric_keys: resolution_median, resolution_std, satisfaction_mean, satisfaction_missing_count
+- q7: Agent concentration (derived step): distinct agent_id count -> unique_agent_count; largest ticket count for one agent -> top_agent_ticket_count; top_agent_ticket_count / ticket_count * 100 -> top_agent_ticket_share_pct.
+  metric_keys: unique_agent_count, top_agent_ticket_count, top_agent_ticket_share_pct
+
+All required metric_keys: ticket_count, mean_resolution_minutes, total_labor_cost, labor_cost_alpha, labor_cost_beta, labor_cost_gamma, resolution_email, resolution_chat, resolution_phone, reopen_rate_email_pct, reopen_rate_chat_pct, email_vs_chat_reopen_change_pct, high_cost_low_sat_count, high_cost_low_sat_reopen_pct, resolution_median, resolution_std, satisfaction_mean, satisfaction_missing_count, unique_agent_count, top_agent_ticket_count, top_agent_ticket_share_pct
+
+## What to return
+Return the script in `python_code`, the list of files it writes in `expected_artifacts`, and a brief
+description of the methods in `methods_description`.
+
+
+Respond with a single JSON object that conforms to this JSON Schema. Put it in one ```json fenced block and include nothing else outside the block.
+```json
+{
+  "properties": {
+    "python_code": {
+      "description": "Python script. Reads the cleaned CSV from INPUT_DIR, writes findings.json to OUTPUT_DIR.",
+      "title": "Python Code",
+      "type": "string"
+    },
+    "expected_artifacts": {
+      "description": "Filenames the script writes to OUTPUT_DIR.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Expected Artifacts",
+      "type": "array"
+    },
+    "methods_description": {
+      "title": "Methods Description",
+      "type": "string"
+    }
+  },
+  "required": [
+    "python_code",
+    "expected_artifacts",
+    "methods_description"
+  ],
+  "title": "AnalysisOutput",
+  "type": "object"
+}
+```

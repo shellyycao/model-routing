@@ -1,0 +1,94 @@
+We need to produce JSON with fields python_code (string containing script), output_filename "cleaned.csv", cleaning_logic description.
+
+We must write script that follows all cleaning steps.
+
+Let's design script.
+
+Steps:
+
+- import os, pandas as pd, numpy as np, json, re, csv maybe.
+
+- Define helper to treat missing values: we can read csv with dtype str, keep as strings, then strip whitespace and replace missing tokens.
+
+R1: read both as text, strip whitespace, treat empty, NA, N/A, null, None, - as missing. We'll read using pd.read_csv with dtype=str, keep default. Then apply .applymap(lambda x: x.strip() if isinstance(x,str) else x). Then replace missing tokens with np.nan.
+
+- R2: tickets duplicate ticket_id rows: drop duplicates keep first.
+
+- R3: agents: normalize agent_id to upper case, then drop duplicates keep first.
+
+- R4: roster mapping: team mapping case-insensitively: strings like "Alpha", "Team Alpha" -> "Alpha". We'll define mapping dict with lower keys. Similarly region mapping: "East","E" -> "East"; "West","W" -> "West". Parse hourly_cost: remove $ , USD, commas, spaces. Then convert to float. Exclude rows with invalid field or cost <=0. We'll need to ensure after mapping, team and region not missing, cost valid >0.
+
+- R5: tickets: normalize agent_id to upper case. Join to cleaned agents on agent_id (inner). Drop tickets without match.
+
+- R6: channel mapping: case-insensitive mapping: Email/E-mail -> email; Chat/Live Chat -> chat; Phone/Call -> phone. Drop invalid.
+
+- R7: resolution_minutes: remove trailing 'min' or 'minutes' (case-insensitive). Parse integer. Must be 1-480 inclusive. Drop invalid.
+
+- R8: satisfaction_score: parse integer 1-5. Invalid or missing become empty (np.nan). Keep row.
+
+- R9: reopened mapping: map Yes/Y/True/1 to 1; No/N/False/0 to 0. Case-insensitive. Drop invalid or missing.
+
+- R10: labor_cost = resolution_minutes / 60 * hourly_cost, round 2.
+
+- R11: output columns order, sort by ticket_id, write CSV without index.
+
+Also produce cleaning_summary.json with raw_rows (tickets rows read) and cleaned_rows (rows written) plus per-rule counts maybe.
+
+We'll track counts: raw_rows_tickets, raw_rows_agents, duplicate_tickets_removed, duplicate_agents_removed, roster_invalid_excluded, tickets_no_agent, tickets_invalid_channel, tickets_invalid_resolution, tickets_invalid_reopened, final_rows.
+
+Implementation details:
+
+Read tickets: df_tickets = pd.read_csv(tickets_path, dtype=str, keep_default_na=False) (so we can treat missing ourselves). Then strip whitespace: df = df.applymap(lambda x: x.strip() if isinstance(x,str) else x). Then replace missing tokens: missing_vals = ['', 'NA', 'N/A', 'null', 'None', '-']; df.replace(missing_vals, np.nan, inplace=True).
+
+Similarly for agents.
+
+R2: before any filtering, duplicate ticket_id: count duplicates = len(df) - len(df.drop_duplicates(subset='ticket_id', keep='first')). Then df = df.drop_duplicates(subset='ticket_id', keep='first').
+
+R3: agents: normalize agent_id to upper case: df_agents['agent_id'] = df_agents['agent_id'].str.upper(). Then duplicate removal.
+
+R4: mapping: define functions.
+
+team_map = {'alpha':'Alpha','team alpha':'Alpha','beta':'Beta','team beta':'Beta','gamma':'Gamma','team gamma':'Gamma'}
+
+region_map = {'east':'East','e':'East','west':'West','w':'West'}
+
+Apply lower case strip then map; if not in map, set NaN.
+
+hourly_cost: remove $ , USD, commas, spaces: use regex: re.sub(r'[\$,USD\s]', '', val) but careful: 'USD 57.75' -> remove 'USD' and spaces. Use re.sub(r'[\$,]', '', val) then replace 'USD' with '' then strip. Then float.
+
+If conversion fails, set NaN.
+
+Then filter rows where team, region, hourly_cost not null and hourly_cost>0.
+
+R5: tickets: normalize agent_id to upper case. Then inner merge with agents on agent_id, bringing team, region, hourly_cost.
+
+R6: channel mapping: similar dict.
+
+R7: resolution_minutes: remove trailing 'min' or 'minutes' case-insensitively: use regex r'\s*(min|minutes)?\s*$' to strip. Then try int conversion. Keep rows where 1<=value<=480.
+
+R8: satisfaction_score: try int conversion; if fails or out of range, set NaN.
+
+R9: reopened mapping: define mapping sets.
+
+valid_yes = {'yes','y','true','1'}; valid_no = {'no','n','false','0'}
+
+lowercase value; map accordingly; else drop.
+
+R10: compute labor_cost.
+
+R11: select columns, ensure types: cast resolution_minutes to int, satisfaction_score to Int64 (pandas nullable int), reopened int, hourly_cost float, labor_cost float.
+
+Sort by ticket_id.
+
+Write cleaned.csv.
+
+Write summary JSON.
+
+Edge Cases: Ensure ticket_id as string.
+
+Now produce script as a string.
+
+We'll need to import warnings to ignore.
+
+Now produce final JSON.
+

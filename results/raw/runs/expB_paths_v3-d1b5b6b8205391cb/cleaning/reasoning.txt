@@ -1,0 +1,72 @@
+We need to produce JSON with fields python_code (script), output_filename ("cleaned.csv"), cleaning_logic (brief explanation). The script must implement all cleaning steps.
+
+We need to read raw.csv from INPUT_DIR, treat all columns as text, strip whitespace, treat missing values as per list. Then deduplicate by reading_id (keep first). Then parse reading_date with multiple formats, drop rows missing/unparseable. Convert to YYYY-MM-DD.
+
+Meter_id uppercase, drop missing.
+
+Building_type mapping case-insensitively: map to Residential, Commercial, Industrial. Accept variants: 'Res','Resi' -> Residential; 'Comm' -> Commercial; 'Ind' -> Industrial. Drop rows missing or not mapping.
+
+Tariff mapping: case-insensitively 'peak' -> peak; 'off-peak','offpeak','off peak' -> off-peak. Drop rows missing or not matching.
+
+Energy conversion: remove commas. If ends with MWh (case-insensitive, optional space before unit) remove unit and multiply number by 1000. If ends with kWh (case-insensitive) remove unit. No unit -> already kWh. Drop rows missing, not a number, <0 or >100000 after conversion. Round to 2 decimals.
+
+Temperature conversion: remove trailing degree sign and unit. If ends with F (or °F) convert to C. If ends with C or °C or no unit, treat as Celsius. Round to 1 decimal. If missing, not a number, or outside -40 to 50 after conversion, set temperature_c to missing (empty) but keep row.
+
+Output columns in order, sort by reading_id ascending (string). Write CSV with header, no index. Missing temperature empty cell.
+
+Also produce cleaning_summary.json with raw_rows, cleaned_rows, and per-rule counts maybe.
+
+Implementation details: Use pandas read_csv with dtype=str, keep default. We'll need to treat missing values after stripping. We'll read raw rows count.
+
+Processing steps:
+
+- Load raw DataFrame with all columns as object (string). Use keep_default_na=False to prevent pandas auto NA.
+
+- Strip whitespace: df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)
+
+- Define function to treat missing: after stripping, if lower in set {'', 'na', 'n/a', 'null', 'none', '-'} then set to None (np.nan). We'll apply across all columns.
+
+- Count raw rows: raw_rows = len(df)
+
+- Deduplicate: before other filters, keep first occurrence of reading_id. Use df.drop_duplicates(subset='reading_id', keep='first', inplace=False). Count duplicates removed.
+
+- Then apply row filters sequentially, tracking counts.
+
+We'll need to parse reading_date: define list of formats and try each. Use datetime.strptime. For format 'Month D, YYYY' we can use %B %d, %Y (full month name). Also need to handle possible extra spaces. We'll write a function parse_date(s) returning formatted string or None.
+
+Drop rows where reading_date missing or cannot parse.
+
+Meter_id: uppercase, drop missing.
+
+Building_type mapping: define dict mapping lower variants to canonical. Use .lower().
+
+Tariff mapping: similar.
+
+Energy conversion: function convert_energy(val). Steps: if val is None: return None. Remove commas. Strip. Use regex to detect unit. Eg pattern r'^\s*([\d\.]+)\s*(MWh|kWh)?\s*$' case-insensitive. If unit MWh multiply by 1000. If unit kWh or None, keep. Convert to float. Validate range.
+
+Temperature conversion: function convert_temp(val). If val is None: return None. Remove spaces. Remove trailing degree sign and unit. Use regex to capture number and optional unit. Eg r'^\s*([-+]?\d*\.?\d+)\s*(°?([CFcf]))?\s*$'. Determine unit: if unit is F or f, convert. If C or c or None, keep. Round. Validate -40 to 50; if outside, return None.
+
+After processing, create new columns energy_kwh, temperature_c.
+
+Drop rows where any of required non-null columns are missing: reading_id, reading_date, meter_id, building_type, tariff, energy_kwh must be non-null. Temperature can be null.
+
+Finally select columns, sort by reading_id.
+
+Write cleaned.csv.
+
+Write cleaning_summary.json: include raw_rows, cleaned_rows, duplicate_rows_removed, rows_dropped_reading_date, rows_dropped_meter_id, rows_dropped_building_type, rows_dropped_tariff, rows_dropped_energy, rows_with_invalid_temperature (maybe count of rows where temperature set to missing). Provide counts.
+
+Implementation details: Use os.getenv('INPUT_DIR'), etc.
+
+Edge Cases: reading_id may have whitespace; after stripping we treat missing? Not required to drop missing reading_id but schema says not nullable. We'll treat missing reading_id as drop.
+
+Make sure to convert reading_id to string.
+
+Now produce script as a string.
+
+We'll need to import json, os, pandas as pd, numpy as np, datetime.
+
+Write summary dict and dump to json file.
+
+Now produce final JSON output.
+

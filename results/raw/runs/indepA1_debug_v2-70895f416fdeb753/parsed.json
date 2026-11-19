@@ -1,0 +1,10 @@
+{
+  "fixed_code": "def overlap_minutes(a, b):\n    \"\"\"Return the length of overlap (in minutes) between two half‑open intervals.\n\n    Each interval is a tuple (start, end) where start and end are integers\n    representing minutes. The interval includes *start* and excludes *end*.\n    Raises ValueError if an interval has ``end < start``. Touching intervals\n    (where the end of one equals the start of the other) have zero overlap.\n    \"\"\"\n    # Basic validation: intervals must be two‑element sequences\n    if len(a) != 2 or len(b) != 2:\n        raise TypeError(\"Intervals must be 2‑element sequences\")\n    # Reject intervals where end is less than start (half‑open intervals allow start == end)\n    if a[1] < a[0] or b[1] < b[0]:\n        raise ValueError(\"interval end must not be less than start\")\n    # Compute overlap for half‑open intervals: max(0, min(end1, end2) - max(start1, start2))\n    overlap = min(a[1], b[1]) - max(a[0], b[0])\n    return overlap if overlap > 0 else 0",
+  "bug_locations": [
+    "Changed validation condition from `a[1]<=a[0] or b[1]<=b[0]` to `a[1] < a[0] or b[1] < b[0]` to allow empty intervals and match spec.",
+    "Removed erroneous `+1` in overlap calculation; now uses `min(end1, end2) - max(start1, start2)`.",
+    "Added explicit length check for the interval tuples and a descriptive docstring.",
+    "Replaced `max(0, ...)` pattern with a clearer conditional return to emphasize non‑negative result."
+  ],
+  "explanation": "The original implementation incorrectly rejected intervals where start == end and added an off‑by‑one (+1) to the overlap length, causing wrong results for half‑open intervals. The fix adjusts the validation to only raise on end < start, removes the +1, and adds input validation and documentation to clarify behavior."
+}

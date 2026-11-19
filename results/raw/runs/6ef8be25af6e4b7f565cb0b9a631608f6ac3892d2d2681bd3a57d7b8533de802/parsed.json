@@ -1,0 +1,8 @@
+{
+  "fixed_code": "def sessionize(events, gap):\n    out = {}\n    for user, t in sorted(events):\n        sessions = out.setdefault(user, [])\n        if not sessions or t - sessions[-1][-1] > gap:\n            sessions.append([t])\n        else:\n            sessions[-1].append(t)\n    return out\n",
+  "bug_locations": [
+    "sessionize: input iteration order",
+    "sessionize: session split comparison"
+  ],
+  "explanation": "The function must process events as sorted (user, timestamp) pairs; using sorted(events) orders them without mutating the input. The boundary rule was wrong: a new session starts only when the timestamp difference is strictly greater than gap, so >= had to become >."
+}

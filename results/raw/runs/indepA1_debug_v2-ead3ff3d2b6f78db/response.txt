@@ -1,0 +1,10 @@
+```json
+{
+  "fixed_code": "def chunks(xs, size):\n    if size <= 0:\n        raise ValueError('size')\n    # iterate over the list in steps of `size`, including a possible short final chunk\n    return [xs[i:i+size] for i in range(0, len(xs), size)]\n",
+  "bug_locations": [
+    "Changed range stop from `len(xs)-size+1` to `len(xs)` in the list comprehension",
+    "Adjusted comment and added clarification to ensure final short chunk is included"
+  ],
+  "explanation": "The original implementation used `range(0, len(xs)-size+1, size)`, which stops before the last segment when the list length is not an exact multiple of `size`. This omitted the short final chunk and also produced an empty result when `size` was larger than the list. Replacing the stop value with `len(xs)` iterates over the entire list, yielding all full chunks and a final partial chunk when needed, while preserving the non‑mutating slice behavior and existing error handling."
+}
+```

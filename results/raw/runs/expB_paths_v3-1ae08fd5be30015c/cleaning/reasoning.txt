@@ -1,0 +1,180 @@
+We need to produce JSON with fields python_code (script), output_filename "cleaned.csv", cleaning_logic description.
+
+The script must implement all cleaning steps, produce cleaned.csv and cleaning_summary.json with raw_rows, cleaned_rows, and per-rule counts.
+
+We need to read raw.csv as text, treat all columns as strings, strip whitespace, treat missing values as per list.
+
+Implementation plan:
+
+- import os, pandas as pd, numpy as np, json, datetime.
+
+- input_path = os.path.join(os.environ["INPUT_DIR"], "raw.csv")
+- df_raw = pd.read_csv(input_path, dtype=str, keep_default_na=False) # read as strings, no NA conversion.
+
+- raw_rows = len(df_raw)
+
+- Strip whitespace: df = df_raw.applymap(lambda x: x.strip() if isinstance(x, str) else x)
+
+- Define function to treat missing: after strip, lower case compare to set {'', 'na', 'n/a', 'null', 'none', '-'} -> set to None (np.nan)
+
+- Apply to all cells: df = df.replace(...). Actually we can use applymap.
+
+- R2 duplicate removal: keep first occurrence based on order_id. order_id column may have missing? Not specified; assume not missing. Use df.drop_duplicates(subset=['order_id'], keep='first', inplace=True). Count duplicates removed.
+
+- Then apply row filters sequentially, tracking counts per rule.
+
+We'll create counters dict.
+
+Processing each row: easier to iterate rows and build list of cleaned rows.
+
+But we can vectorize many steps.
+
+Given complexity, maybe iterate rows.
+
+Pseudo:
+
+cleaned_rows = []
+counters = { 'duplicates_removed': dup_count, 'invalid_order_date':0, ... }
+
+for idx, row in df.iterrows():
+   # each field already stripped and missing set to np.nan
+   # order_date
+   od = row['order_date']
+   if pd.isna(od): invalid_date++; continue
+   parse using list of formats; try datetime.strptime with each format; also need to handle 'Month D, YYYY' (e.g., March 5, 2024) using %B %d, %Y.
+   If fails, invalid_date++; continue
+   order_date_str = dt.strftime('%Y-%m-%d')
+   # region mapping
+   region_raw = row['region']
+   if pd.isna(region_raw): invalid_region++; continue
+   region_map = {'n':'North','north':'North','s':'South','south':'South','e':'East','east':'East','w':'West','west':'West'}
+   region_key = region_raw.lower()
+   region = region_map.get(region_key)
+   if not region: invalid_region++; continue
+   # product_category mapping
+   cat_raw = row['product_category']
+   if pd.isna(cat_raw): invalid_category++; continue
+   cat_key = cat_raw.lower().replace(' ', '').replace('&','').replace('_','')
+   # We'll define mapping dict with normalized keys.
+   mapping = {
+      'electronics':'Electronics',
+      'electronic':'Electronics',
+      'clothing':'Clothing',
+      'apparel':'Clothing',
+      'homegarden':'Home & Garden',
+      'homeandgarden':'Home & Garden',
+      'home&garden':'Home & Garden',
+      'homeandgarden':'Home & Garden',
+      'sports':'Sports',
+      'sport':'Sports',
+      'books':'Books',
+      'book':'Books'
+   }
+   # But need to handle 'Home & Garden' with spaces and ampersand.
+   # We'll normalize: remove spaces, '&', and lower.
+   cat_norm = cat_raw.lower().replace(' ', '').replace('&','')
+   product_category = mapping.get(cat_norm)
+   if not product_category: invalid_category++; continue
+   # unit_price
+   up_raw = row['unit_price']
+   if pd.isna(up_raw): invalid_price++; continue
+   # remove $ , USD and spaces
+   up_clean = up_raw.replace('$','').replace('USD','').replace(',','').strip()
+   try:
+       unit_price = float(up_clean)
+   except:
+       invalid_price++; continue
+   if unit_price <=0 or unit_price>5000: invalid_price++; continue
+   # quantity
+   qty_raw = row['quantity']
+   if pd.isna(qty_raw): invalid_qty++; continue
+   try:
+       qty_float = float(qty_raw)
+   except:
+       invalid_qty++; continue
+   if not qty_float.is_integer(): invalid_qty++; continue
+   quantity = int(qty_float)
+   if quantity<1 or quantity>50: invalid_qty++; continue
+   # discount_pct
+   disc_raw = row['discount_pct']
+   if pd.isna(disc_raw):
+       discount = 0.0
+   else:
+       disc_clean = disc_raw.strip()
+       if disc_clean.endswith('%'):
+           disc_clean = disc_clean[:-1]
+       try:
+           discount = float(disc_clean)
+       except:
+           invalid_discount++; continue
+   if discount<0 or discount>100:
+       invalid_discount++; continue
+   # customer_id
+   cust_raw = row['customer_id']
+   if pd.isna(cust_raw):
+       customer_id = 'UNKNOWN'
+   else:
+       customer_id = cust_raw.upper()
+   # revenue
+   revenue = round(quantity * unit_price * (1 - discount/100),2)
+   # Build cleaned row dict
+   cleaned_rows.append({
+       'order_id': row['order_id'],
+       'order_date': order_date_str,
+       'customer_id': customer_id,
+       'region': region,
+       'product_category': product_category,
+       'quantity': quantity,
+       'unit_price': unit_price,
+       'discount_pct': discount,
+       'revenue': revenue
+   })
+
+After loop, create df_clean = pd.DataFrame(cleaned_rows)
+
+Sort by order_id ascending (string sort). df_clean.sort_values('order_id', inplace=True)
+
+Write to CSV: output_path = os.path.join(os.environ["OUTPUT_DIR"], "cleaned.csv"); df_clean.to_csv(output_path, index=False)
+
+Create summary dict: raw_rows, cleaned_rows = len(df_clean), plus counts per rule: duplicates_removed, invalid_order_date, invalid_region, invalid_product_category, invalid_unit_price, invalid_quantity, invalid_discount_pct.
+
+Write summary JSON to cleaning_summary.json.
+
+Edge Cases: duplicates removal count: we need to compute before other filters. Use df_before_dup = df after stripping and missing conversion. duplicates = df_before_dup.duplicated(subset=['order_id']).sum(). Then drop duplicates.
+
+Implementation details: after stripping and missing conversion, we need to keep order of rows as original. So we should not reset index.
+
+Now produce script as a string.
+
+Make sure to import datetime.
+
+Parsing dates: list of formats:
+
+'%Y-%m-%d', '%m/%d/%Y', '%d-%b-%Y', '%Y/%m/%d', '%B %d, %Y'
+
+Note that %b expects locale abbreviation like 'Mar', case-insensitive? We'll lower? Use datetime.strptime after stripping.
+
+Potential issue: day-month abbreviation may have leading zero? Example '05-Mar-2024' works.
+
+Now produce script.
+
+Also ensure we treat missing values after stripping: we can define missing_set = {'', 'na', 'n/a', 'null', 'none', '-'}; then apply lambda.
+
+Implementation:
+
+def normalize_missing(val):
+    if pd.isna(val):
+        return np.nan
+    v = val.strip()
+    if v.lower() in missing_set:
+        return np.nan
+    return v
+
+df = df_raw.applymap(normalize_missing)
+
+Now duplicates removal: dup_mask = df.duplicated(subset=['order_id']); dup_count = dup_mask.sum(); df = df[~dup_mask]
+
+Now proceed.
+
+Now produce final JSON.
+

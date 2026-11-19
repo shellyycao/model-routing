@@ -1,0 +1,27 @@
+TASK: Python debugging (independent benchmark A1, prompt independent_v1)
+
+The function below contains exactly one bug. Fix it so that it satisfies the specification.
+
+SPECIFICATION:
+merge_intervals(intervals) merges overlapping or touching closed intervals [start, end] given in any order and returns them sorted by start as a list of [start, end] lists. Touching means next.start == current.end. The input must not be modified.
+
+BUGGY CODE:
+```python
+def merge_intervals(intervals):
+    out = []
+    for s, e in [list(iv) for iv in intervals]:
+        if out and s < out[-1][1]:
+            out[-1][1] = max(out[-1][1], e)
+        else:
+            out.append([s, e])
+    return out
+
+```
+
+EXAMPLE TESTS (these must pass; additional hidden tests will also be run):
+```python
+assert merge_intervals([[1, 3], [2, 6]]) == [[1, 6]]
+```
+
+Return the COMPLETE corrected source code (keep the same function names and signatures; standard library only),
+the location of the bug, and a short explanation.

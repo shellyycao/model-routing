@@ -1,0 +1,102 @@
+We need to produce JSON with fields title, executive_summary, key_findings (array of 7 entries), limitations, conclusion.
+
+Each key_finding must include finding_id, statement, evidence_refs, reported_values (include all metric_keys for that question), optional direction, ranking, derived_values.
+
+We must follow ranking requirements: q2 and q3 need ranking (high-to-low) using labels.
+
+q4 direction required: based on revenue_yoy_change_pct. Since it's positive 10.08%, direction is "increase". Provide direction field.
+
+Other findings no direction/ranking.
+
+We must include derived_values for any computed numbers not directly from findings. For q4 we could just state "Revenue grew by 10.08% year-over-year." That's using metric directly, no derived needed. But direction is derived? Not needed. Could include derived value for yoy change? It's already metric. So no derived.
+
+For q2 ranking: we need ranking list of region labels ordered highest to lowest revenue. Values: revenue_east 130,516.69; revenue_north 124,845.75; revenue_west 99,428.16; revenue_south 90,534.49. So ranking: ["East","North","West","South"].
+
+For q3 ranking: quarters values: Q3 71,674.99; Q4 68,948.71; Q2 56,616.79; Q1 36,108.31. So ranking: ["Q3","Q4","Q2","Q1"].
+
+We need to include reported_values for each metric key of that question. For q2: revenue_north, revenue_south, revenue_east, revenue_west. For q3: revenue_2024_q1 etc.
+
+For q1: total_revenue, order_count, average_order_value.
+
+q4: revenue_2023, revenue_2024, revenue_yoy_change_pct.
+
+q5: electronics_high_discount_orders, electronics_high_discount_revenue.
+
+q6: order_revenue_mean, order_revenue_median, order_revenue_std, order_revenue_min, order_revenue_max.
+
+q7: unique_customer_count, top_customer_revenue, top_customer_revenue_share_pct.
+
+All values as per verified findings. Possibly round to 2 decimals for readability but must be numbers. We can keep as given but maybe round to 2 decimals. The schema expects numbers; rounding is okay. Provide values with reasonable precision.
+
+Derived values: maybe compute share of top customer revenue as percent (already given). No need. Could compute difference between 2024 and 2023 revenue as derived value: difference = revenue_2024 - revenue_2023 = 21,372.51 (approx). That is derived; we can include derived_values for q4: kind "difference", operands ["revenue_2024","revenue_2023"], value 21372.51. Also maybe compute ratio of top_customer_revenue to total revenue (share) already given as metric. So not needed.
+
+But we must include derived_values array even if empty.
+
+Now craft statements.
+
+q1 statement: "In 2023‑2024 the company generated total revenue of $445,325.09 across 520 orders, yielding an average order value of $856.39." Use values.
+
+evidence_refs: list metric keys.
+
+q2 statement: "Regional revenue varies, with the East region leading, followed by North, West, and South." Provide ranking.
+
+q3 statement: "Quarterly revenue in 2024 shows a peak in Q3, then Q4, Q2, and Q1." Provide ranking.
+
+q4 statement: "Revenue increased from $211,976.29 in 2023 to $233,348.80 in 2024, a year‑over‑year growth of 10.08%." Direction "increase". Also derived difference.
+
+q5 statement: "There were 22 high‑discount (≥20%) electronics orders, contributing $50,035.33 in revenue.".
+
+q6 statement: "Order revenue distribution: mean $856.39, median $313.28, standard deviation $1,295.74, ranging from $5.27 to $7,844.02.".
+
+q7 statement: "The business served 222 distinct customers; the top customer accounted for $27,793.13, representing 6.24% of total revenue.".
+
+Now construct JSON.
+
+Need to ensure each key_finding includes reported_values with all metric_keys for that question.
+
+Let's round values to 2 decimals for readability but keep numeric.
+
+Compute rounded values:
+
+total_revenue 445325.09
+order_count 520 (maybe integer but number)
+average_order_value 856.39
+
+revenue_north 124845.75
+revenue_south 90534.49
+revenue_east 130516.69
+revenue_west 99428.16
+
+revenue_2024_q1 36108.31
+revenue_2024_q2 56616.79
+revenue_2024_q3 71674.99
+revenue_2024_q4 68948.71
+
+revenue_2023 211976.29
+revenue_2024 233348.80
+revenue_yoy_change_pct 10.08 (rounded)
+
+electronics_high_discount_orders 22
+electronics_high_discount_revenue 50035.33
+
+order_revenue_mean 856.39
+order_revenue_median 313.28
+order_revenue_std 1295.74
+order_revenue_min 5.27
+order_revenue_max 7844.02
+
+unique_customer_count 222
+top_customer_revenue 27793.13
+top_customer_revenue_share_pct 6.24
+
+Derived for q4: difference 21372.51 (233348.80-211976.29 = 21372.51). Round 2 decimals.
+
+Now produce JSON.
+
+Make sure each key_finding includes derived_values array (empty if none). For q4 include derived.
+
+Ranking arrays as described.
+
+Direction for q4: "increase".
+
+Now produce final JSON.

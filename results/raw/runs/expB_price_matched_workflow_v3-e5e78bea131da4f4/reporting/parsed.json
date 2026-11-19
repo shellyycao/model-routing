@@ -1,0 +1,187 @@
+{
+  "title": "2024 Smart-Meter Electricity Consumption: Verified Findings Report",
+  "executive_summary": "Analysis of 1,428 cleaned smart-meter readings shows total 2024 consumption of 1,207,699.96 kWh, averaging 845.73 kWh per reading. Industrial buildings account for the overwhelming majority of energy (82.4% share). Demand follows a winter-peaking seasonal pattern, with Q4 highest and Q3 lowest, and second-half consumption rose 4.71% versus the first half. Peak and off-peak tariff energy is nearly balanced (49.65% peak). Notably, commercial consumption shows a moderate negative correlation (-0.64) with temperature, and per-reading consumption is highly skewed (median 406.8 kWh vs. mean 845.73 kWh).",
+  "key_findings": [
+    {
+      "finding_id": "q1",
+      "statement": "The cleaned dataset contains 1,428 readings totalling 1,207,699.96 kWh in 2024, an average of 845.73 kWh per reading.",
+      "evidence_refs": [
+        "total_kwh",
+        "reading_count",
+        "mean_kwh_per_reading"
+      ],
+      "reported_values": {
+        "total_kwh": 1207699.96,
+        "reading_count": 1428.0,
+        "mean_kwh_per_reading": 845.7282633053221
+      },
+      "direction": null,
+      "ranking": null,
+      "derived_values": []
+    },
+    {
+      "finding_id": "q2",
+      "statement": "Industrial buildings dominate consumption at 995,362.16 kWh (82.4% of total), well ahead of Commercial at 196,367.15 kWh (16.3%) and Residential at 15,970.65 kWh (1.3%).",
+      "evidence_refs": [
+        "kwh_industrial",
+        "kwh_commercial",
+        "kwh_residential"
+      ],
+      "reported_values": {
+        "kwh_residential": 15970.65,
+        "kwh_commercial": 196367.15,
+        "kwh_industrial": 995362.16
+      },
+      "direction": null,
+      "ranking": [
+        "Industrial",
+        "Commercial",
+        "Residential"
+      ],
+      "derived_values": [
+        {
+          "kind": "share",
+          "operands": [
+            "kwh_industrial",
+            "total_kwh"
+          ],
+          "value": 82.4
+        },
+        {
+          "kind": "share",
+          "operands": [
+            "kwh_commercial",
+            "total_kwh"
+          ],
+          "value": 16.3
+        },
+        {
+          "kind": "share",
+          "operands": [
+            "kwh_residential",
+            "total_kwh"
+          ],
+          "value": 1.3
+        }
+      ]
+    },
+    {
+      "finding_id": "q3",
+      "statement": "Consumption follows a winter-peaking seasonal pattern: highest in Q4 (352,881.81 kWh), then Q1 (319,677.67 kWh), Q2 (270,277.36 kWh), and lowest in Q3 (264,863.12 kWh).",
+      "evidence_refs": [
+        "kwh_q4",
+        "kwh_q1",
+        "kwh_q2",
+        "kwh_q3"
+      ],
+      "reported_values": {
+        "kwh_q1": 319677.67,
+        "kwh_q2": 270277.36,
+        "kwh_q3": 264863.12,
+        "kwh_q4": 352881.81
+      },
+      "direction": null,
+      "ranking": [
+        "Q4",
+        "Q1",
+        "Q2",
+        "Q3"
+      ],
+      "derived_values": []
+    },
+    {
+      "finding_id": "q4",
+      "statement": "Second-half consumption (617,744.93 kWh) exceeded first-half consumption (589,955.03 kWh) by 27,789.90 kWh, an increase of 4.71%.",
+      "evidence_refs": [
+        "kwh_h2",
+        "kwh_h1",
+        "kwh_h2_vs_h1_change_pct"
+      ],
+      "reported_values": {
+        "kwh_h1": 589955.03,
+        "kwh_h2": 617744.93,
+        "kwh_h2_vs_h1_change_pct": 4.710511579162232
+      },
+      "direction": "increase",
+      "ranking": null,
+      "derived_values": [
+        {
+          "kind": "difference",
+          "operands": [
+            "kwh_h2",
+            "kwh_h1"
+          ],
+          "value": 27789.9
+        }
+      ]
+    },
+    {
+      "finding_id": "q5",
+      "statement": "Commercial sites recorded 19 readings on hot days (temperature >= 25 °C), averaging 415.29 kWh per reading.",
+      "evidence_refs": [
+        "hot_commercial_reading_count",
+        "hot_commercial_mean_kwh"
+      ],
+      "reported_values": {
+        "hot_commercial_reading_count": 19.0,
+        "hot_commercial_mean_kwh": 415.29368421052624
+      },
+      "direction": null,
+      "ranking": null,
+      "derived_values": []
+    },
+    {
+      "finding_id": "q6",
+      "statement": "Per-reading consumption is highly skewed and variable (median 406.8 kWh; sample standard deviation 913.44 kWh). Mean temperature was 11.61 °C, with 62 readings missing temperature. For Commercial readings, temperature and consumption correlate at -0.64, i.e. moderately negative.",
+      "evidence_refs": [
+        "kwh_median",
+        "kwh_std",
+        "temperature_mean",
+        "temperature_missing_count",
+        "commercial_temp_kwh_corr"
+      ],
+      "reported_values": {
+        "kwh_median": 406.8,
+        "kwh_std": 913.4385157872866,
+        "temperature_mean": 11.612298682284042,
+        "temperature_missing_count": 62.0,
+        "commercial_temp_kwh_corr": -0.637636239865442
+      },
+      "direction": null,
+      "ranking": null,
+      "derived_values": []
+    },
+    {
+      "finding_id": "q7",
+      "statement": "Tariff usage is nearly balanced: off-peak energy (608,075.89 kWh) slightly exceeds peak (599,624.07 kWh), with peak share at 49.65% of total. The network comprises 12 unique meters; the highest-use single meter consumed 252,241.26 kWh.",
+      "evidence_refs": [
+        "kwh_off_peak",
+        "kwh_peak",
+        "peak_kwh_share_pct",
+        "unique_meter_count",
+        "highest_use_meter_kwh"
+      ],
+      "reported_values": {
+        "kwh_peak": 599624.07,
+        "kwh_off_peak": 608075.89,
+        "peak_kwh_share_pct": 49.65008610251175,
+        "unique_meter_count": 12.0,
+        "highest_use_meter_kwh": 252241.26
+      },
+      "direction": null,
+      "ranking": [
+        "off-peak",
+        "peak"
+      ],
+      "derived_values": []
+    }
+  ],
+  "limitations": [
+    "62 readings are missing temperature values, so all temperature-based results (hot-day load, mean temperature, correlation) rely on a reduced subset.",
+    "The hot-day commercial sample is small (only 19 readings), so its average of 415.29 kWh may not be representative.",
+    "The negative commercial temperature-consumption correlation (-0.64) is counterintuitive for cooling demand and may be confounded (e.g. by season, occupancy or industrial mix); correlation does not imply causation.",
+    "Consumption is strongly right-skewed (median 406.8 kWh vs. mean 845.73 kWh), so averages are pulled up by large, mostly industrial, readings.",
+    "Only 12 meters feed the dataset; results may not generalise beyond this small portfolio, and one meter alone accounts for 252,241.26 kWh."
+  ],
+  "conclusion": "2024 electricity demand is concentrated in industrial sites, peaks in winter quarters, and grew modestly (+4.71%) in the second half of the year. Peak/off-peak usage is nearly even, suggesting limited tariff-driven load shifting. Stakeholders should prioritise the industrial segment and the single highest-use meter for efficiency measures, and improve temperature data completeness before drawing firm weather-demand conclusions."
+}

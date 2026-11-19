@@ -1,0 +1,26 @@
+{
+  "bug_locations": [
+    "shortest_path path initialization",
+    "shortest_path visited initialization"
+  ],
+  "buggy": "from collections import deque\ndef shortest_path(graph,start,goal):\n    q=deque([(start,[])]); seen=set()\n    while q:\n        node,path=q.popleft()\n        if node==goal:return path\n        for nxt in graph.get(node,[]):\n            if nxt not in seen:q.append((nxt,path+[nxt])); seen.add(nxt)\n    return None\n",
+  "case_id": "a1v2_m06_shortest_path_2",
+  "difficulty": "medium",
+  "family": "shortest_path",
+  "hidden": [
+    "shortest_path({'a':['b','c'],'b':['d'],'c':['e'],'e':['d']},'a','d')==['a','b','d']",
+    "shortest_path({},'a','a')==['a']",
+    "shortest_path({'a':['b']},'b','a') is None",
+    "shortest_path({'a':['a','b']},'a','b')==['a','b']"
+  ],
+  "label_source": "executable reference plus independently checked tests",
+  "reference": "from collections import deque\ndef shortest_path(graph, start, goal):\n    q=deque([(start,[start])]); seen={start}\n    while q:\n        node,path=q.popleft()\n        if node==goal: return path\n        for nxt in graph.get(node,[]):\n            if nxt not in seen: seen.add(nxt); q.append((nxt,path+[nxt]))\n    return None\n",
+  "spec": "shortest_path(graph, start, goal) returns a shortest node list in an unweighted directed graph, or null if unreachable. Neighbours are explored in listed order.",
+  "verification": {
+    "buggy_fails": 3,
+    "reference_passes": 4
+  },
+  "visible": [
+    "shortest_path({'a':['b'],'b':[]}, 'a', 'b') == ['a','b']"
+  ]
+}

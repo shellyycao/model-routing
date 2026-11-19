@@ -1,0 +1,57 @@
+We need to produce JSON with fields python_code (string containing script), expected_artifacts (list of filenames), methods_description (string). The script must read cleaned.csv from INPUT_DIR env var, compute metrics, write findings.json to OUTPUT_DIR. Must output flat JSON with all metric keys as numbers (no NaN). Use pandas.
+
+We need to compute percentages as percentages (i.e., churn_rate_pct = (churned count / total) * 100). Similarly for other churn rates.
+
+Mean monthly_fee: avg_monthly_fee = df['monthly_fee'].mean().
+
+Churn by plan: for each plan compute churn rate percent.
+
+Cohort by signup year: extract year from signup_date (datetime). Compute churn rate for each year present (2021-2024). If a year missing, still need metric key? Must produce metric keys for 2021-2024. If no rows for a year, churn rate should be 0? Or maybe NaN but not allowed. Safer to set 0. We'll compute for each year; if count=0, set 0.0.
+
+Contract effect: churn_rate_monthly_pct, churn_rate_annual_pct, relative change: (monthly - annual)/annual *100. If annual churn rate is 0, then division by zero; set change to inf? Not allowed. Could set to 0 or maybe None. But must be finite number. If annual churn rate is 0, then change is undefined; but likely not zero. We'll handle: if annual ==0, set change = np.inf? Not allowed. We'll set change = np.nan? Not allowed. So we can set change = 0.0 if annual==0 to avoid error.
+
+At-risk segment: support_tickets >=5 AND satisfaction_score not missing AND <=2. Count and churn rate percent.
+
+Tenure summary: mean, median, std (sample). Use pandas .mean(), .median(), .std(ddof=1). Tenure is int.
+
+Satisfaction mean: only non-missing satisfaction_score. Use .mean().
+
+Missing satisfaction count: df['satisfaction_score'].isna().sum().
+
+Lifetime value by plan: mean lifetime_value per plan. Compute premium vs basic change percent: (ltv_premium - ltv_basic)/ltv_basic*100. If ltv_basic ==0, handle similarly.
+
+All metrics must be numbers (float). Use Python float.
+
+Write findings.json with json.dump with ensure_ascii=False.
+
+Also need to list expected_artifacts: ["findings.json"].
+
+Now craft script.
+
+Edge Cases: satisfaction_score column is int but may have NaN. In pandas reading CSV, default dtype will be object; we can specify dtype? Not needed. We'll parse dates.
+
+Implementation steps:
+
+import os, json, pandas as pd, numpy as np
+
+input_path = os.path.join(os.environ["INPUT_DIR"], "cleaned.csv")
+df = pd.read_csv(input_path, parse_dates=['signup_date'])
+
+Compute metrics.
+
+Make dict findings = { ... }
+
+Write to output_path.
+
+Make sure to convert numpy types to Python float via float().
+
+Potential issues: .std() returns NaN if only one value; but still finite? NaN not allowed. Could set 0.0 if NaN. We'll handle: if np.isnan(val): val = 0.0.
+
+Similarly for mean etc.
+
+Now produce JSON output.
+
+Let's craft code string with triple quotes inside JSON; need to escape properly. We'll embed as raw string.
+
+Now produce final JSON.
+

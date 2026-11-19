@@ -1,0 +1,19 @@
+You are debugging a Python module. The specification is authoritative.
+
+Specification:
+invoice_total(lines, discount_pct, tax_pct) sums quantity*unit_price, applies discount, then tax, and rounds only the final result to 2 decimals.
+
+Buggy module:
+```python
+def invoice_total(lines, discount_pct=0, tax_pct=0):
+                 subtotal=sum(round(row['qty']*row['unit_price'],2) for row in lines)
+                 return round(subtotal*(1-discount_pct//100)*(1+tax_pct//100),2)
+
+```
+
+Visible checks:
+```python
+assert invoice_total([{'qty':2,'unit_price':10}],10,5) == 18.9
+```
+
+Return the complete corrected module. There may be multiple interacting defects. Do not hard-code the visible examples.

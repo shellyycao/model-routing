@@ -1,0 +1,105 @@
+We need to produce JSON with fields python_code (string containing script), expected_artifacts (list of filenames), methods_description (string). The script must read cleaned.csv from INPUT_DIR env var, compute metrics, write findings.json to OUTPUT_DIR. Must output flat JSON with all metric keys and numeric values (no NaN). Use pandas.
+
+We need to compute:
+
+- total_revenue: sum revenue column
+- order_count: number of rows
+- average_order_value: total_revenue / order_count
+
+- revenue per region: sum revenue where region == 'North', etc.
+
+- Quarterly trend 2024: filter order_date year 2024, then quarter based on month.
+
+- revenue_2023, revenue_2024, revenue_yoy_change_pct: sum revenue for each year, compute pct change.
+
+- electronics_high_discount_orders: count rows where product_category == 'Electronics' and discount_pct >= 20
+
+- electronics_high_discount_revenue: sum revenue for those rows.
+
+- order revenue distribution: mean, median, std (sample), min, max.
+
+- unique_customer_count: number of distinct customer_id
+
+- top_customer_revenue: max revenue per customer (sum revenue per customer, then max)
+
+- top_customer_revenue_share_pct: top_customer_revenue / total_revenue * 100
+
+All numeric values should be floats (or ints). Use pandas functions.
+
+Potential issues: revenue column may be float; discount_pct float.
+
+Make sure to convert order_date to datetime.
+
+Edge cases: If no 2024 data, revenue_2024_q* should be 0. Use .sum() default 0.
+
+Compute std with ddof=1 (sample). Use pandas .std(ddof=1). If only one row, std will be NaN; but dataset has many rows, fine.
+
+Write findings.json with json.dump ensuring default conversion of numpy types to python scalars. Use .item().
+
+Implementation steps:
+
+- import os, pandas as pd, json, numpy as np
+
+- input_path = os.path.join(os.environ["INPUT_DIR"], "cleaned.csv")
+
+- df = pd.read_csv(input_path, parse_dates=['order_date'])
+
+- Compute metrics.
+
+- Build dict findings = { ... }
+
+- Ensure all values are Python floats/ints: use float(val) for sums, etc. For counts use int.
+
+- Write to output_path = os.path.join(os.environ["OUTPUT_DIR"], "findings.json") with json.dump(findings, f, ensure_ascii=False)
+
+- expected_artifacts = ["findings.json"]
+
+Now produce JSON output with fields.
+
+Make sure script is self-contained, includes necessary imports, and uses no external network.
+
+Now craft methods_description: brief description of steps.
+
+Now produce final JSON block.
+
+Let's compute metric formulas in code.
+
+Potential pitfalls: revenue column may be string? but cleaned stage ensures numeric. Use df['revenue'].
+
+Quarter mapping: month 1-3 Q1, 4-6 Q2, 7-9 Q3, 10-12 Q4.
+
+Implementation:
+
+df_2024 = df[df['order_date'].dt.year == 2024]
+
+df_2024['quarter'] = ((df_2024['order_date'].dt.month - 1) // 3) + 1
+
+Then groupby quarter sum.
+
+But avoid SettingWithCopy warning; we can compute using pandas cut or map.
+
+Simpler: define function to map month to quarter.
+
+Or use pandas .dt.quarter attribute.
+
+df_2024['quarter'] = df_2024['order_date'].dt.quarter
+
+Then revenue_2024_q1 = sum where quarter==1, etc.
+
+Now compute revenue_2023 similarly.
+
+Now compute yoy change: if revenue_2023 == 0, set change to None? But must be finite number. If zero, division by zero. In dataset likely non-zero. We'll handle: if revenue_2023 == 0, set change = 0.0 (or maybe np.inf). But spec says finite number. We'll set 0.0.
+
+Now compute top_customer_revenue: groupby customer_id sum revenue, then max.
+
+Now compute top_customer_revenue_share_pct = top_customer_revenue / total_revenue * 100.
+
+Now produce findings dict.
+
+Now produce final JSON.
+
+Let's craft script as a multi-line string.
+
+Make sure to include shebang? Not needed.
+
+Now produce final answer.

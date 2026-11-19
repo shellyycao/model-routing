@@ -1,0 +1,21 @@
+TASK: Information extraction (independent benchmark A2, prompt independent_v1)
+
+Extract the fields defined below from the document. Rules:
+- Use EXACTLY these field names as keys (no extra keys).
+- Use null when the document does not state the value. Do not guess.
+- Follow each field's description; it resolves ambiguous cases.
+- Dates as YYYY-MM-DD, numbers as plain numbers (no currency symbols or thousands separators), booleans as true/false.
+
+FIELDS:
+- delivery_city: string: city goods are delivered to
+- item_count: integer: number of units ordered
+- order_date: date YYYY-MM-DD: the date the order was placed (not a delivery or quote date)
+- payment_terms_days: integer: payment due within N days; null if not stated
+- po_number: string: the purchase order number of THIS order (format PO-#####), not any referenced earlier order
+- total_usd: number: final amount payable in USD AFTER any discount
+- vendor_name: string: the supplying company
+
+DOCUMENT:
+"""
+Following up on our earlier order PO-23718, please find the new order details below. This purchase order, PO-46442, was placed with Halden & Rowe on February 17, 2026 (the vendor quote itself was dated August 9, 2026). We are ordering 106 units; list price $687.46 less a 10% volume discount of $68.75. Ship to our warehouse in Denver; invoices go to head office in Boise.
+"""

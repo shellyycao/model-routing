@@ -1,0 +1,15 @@
+Extract the requested fields from the document. Resolve conflicts using each field description, perform required unit conversions, and use null when the document does not support a value.
+
+Schema:
+- coverage_limit_usd: number
+- deductible_usd: number
+- effective_date: date
+- jurisdiction: string
+- policy_id: string
+- renewal_auto: boolean or null
+
+Document:
+ENDORSEMENT / POLICY POL-602
+Effective 2027-01-02 in New York. Coverage limit $1,060,200; deductible $5,000. A prior Nevada proposal listed $500,000 and is void. Automatic renewal: no.
+
+Return exactly one object with the required `fields` wrapper and no extra schema keys. Content correctness and schema/operational compliance are scored separately.

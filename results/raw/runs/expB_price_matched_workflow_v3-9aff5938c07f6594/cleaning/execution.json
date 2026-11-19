@@ -1,0 +1,9 @@
+{
+  "status": "runtime_error",
+  "exit_code": 1,
+  "stdout": "",
+  "stderr": "/sandbox/code/main.py:18: FutureWarning: DataFrame.applymap has been deprecated. Use DataFrame.map instead.\n  df_t = df_t.applymap(lambda x: x.strip() if isinstance(x, str) else x)\n/sandbox/code/main.py:24: FutureWarning: DataFrame.applymap has been deprecated. Use DataFrame.map instead.\n  df_a = df_a.applymap(lambda x: x.strip() if isinstance(x, str) else x)\nTraceback (most recent call last):\n  File \"/sandbox/code/main.py\", line 137, in <module>\n    clean_data()\n  File \"/sandbox/code/main.py\", line 63, in clean_data\n    df_t = df_t.merge(df_a[['agent_id', 'team', 'region', 'hour_cost']], on='agent_id', how='inner')\n                      ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/frame.py\", line 4108, in __getitem__\n    indexer = self.columns._get_indexer_strict(key, \"columns\")[1]\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/indexes/base.py\", line 6200, in _get_indexer_strict\n    self._raise_if_missing(keyarr, indexer, axis_name)\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/indexes/base.py\", line 6252, in _raise_if_missing\n    raise KeyError(f\"{not_found} not in index\")\nKeyError: \"['hour_cost'] not in index\"\n",
+  "runtime_ms": 779.8177500008023,
+  "output_files": [],
+  "sandbox_image": "sha256:88988a15503bdb96538c3dd62244a79879d5c7848397db18b1267ccfd0a9727a"
+}

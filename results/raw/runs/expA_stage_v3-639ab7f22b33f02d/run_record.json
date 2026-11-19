@@ -1,0 +1,166 @@
+{
+  "contract_version": "1.2",
+  "run_id": "expA_stage_v3-639ab7f22b33f02d",
+  "experiment_id": "expA_stage_v3",
+  "project_id": "energy_consumption",
+  "stage": "analysis",
+  "model_alias": "B",
+  "repeat_index": 0,
+  "canonical_inputs": [
+    "datasets/projects/energy_consumption/canonical/cleaned.csv"
+  ],
+  "canonical_input_hashes": {
+    "datasets/projects/energy_consumption/canonical/cleaned.csv": "19653e84736b2219e1a363c6ced69913751e4e7f40b011715226de1d561664d3"
+  },
+  "config_hash": "67f479388ac9d582d34e0983805fc1d6ee4b8a11be593666aff5031b6ee3af4c",
+  "record": {
+    "stage": "analysis",
+    "model_alias": "B",
+    "model_id": "us.amazon.nova-pro-v1:0",
+    "prompt_version": "v3",
+    "prompt_hash": "126fc4873a7477534a43084ee326cbc8973958d7e9f25656cf6a814f463aba83",
+    "invocation_ids": [
+      "ef37e68a-ea2f-44ff-943f-045f33325992"
+    ],
+    "cache_hit": false,
+    "shared_with_run_ids": [],
+    "status": "failed",
+    "structural_ok": false,
+    "failure_type": "execution_error",
+    "failure_detail": "execution runtime_error (exit 1): Traceback (most recent call last):\n  File \"/sandbox/code/main.py\", line 18, in <module>\n    kwh_q1 = df[df['reading_date'].dt.quarter == 1]['energy_kwh'].sum()\n                ^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/generic.py\", line 6299, in __getattr__\n    return object.__getattribute__(self, name)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/accessor.py\", line 224, in __get__\n    accessor_obj = self._accessor(obj)\n                   ^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/indexes/accessors.py\", line 643, in __new__\n    raise AttributeError(\"Can only use .dt accessor with datetimelike values\")\nAttributeError: Can only use .dt accessor with datetimelike values. Did you mean: 'at'?\n",
+    "parse_ok": true,
+    "execution": {
+      "status": "runtime_error",
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "Traceback (most recent call last):\n  File \"/sandbox/code/main.py\", line 18, in <module>\n    kwh_q1 = df[df['reading_date'].dt.quarter == 1]['energy_kwh'].sum()\n                ^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/generic.py\", line 6299, in __getattr__\n    return object.__getattribute__(self, name)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/accessor.py\", line 224, in __get__\n    accessor_obj = self._accessor(obj)\n                   ^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/indexes/accessors.py\", line 643, in __new__\n    raise AttributeError(\"Can only use .dt accessor with datetimelike values\")\nAttributeError: Can only use .dt accessor with datetimelike values. Did you mean: 'at'?\n",
+      "runtime_ms": 829.620917000284,
+      "output_files": [],
+      "sandbox_image": "sha256:88988a15503bdb96538c3dd62244a79879d5c7848397db18b1267ccfd0a9727a"
+    },
+    "validation": {
+      "stage": "analysis",
+      "hard_pass": false,
+      "checks": [
+        {
+          "name": "findings_exists",
+          "passed": false,
+          "mandatory": true,
+          "detail": "findings.json not found",
+          "value": null
+        },
+        {
+          "name": "findings_parses",
+          "passed": false,
+          "mandatory": true,
+          "detail": "no parseable findings",
+          "value": null
+        },
+        {
+          "name": "required_keys_present",
+          "passed": false,
+          "mandatory": true,
+          "detail": "no parseable findings",
+          "value": null
+        },
+        {
+          "name": "values_numeric",
+          "passed": false,
+          "mandatory": true,
+          "detail": "no parseable findings",
+          "value": null
+        },
+        {
+          "name": "values_within_tolerance",
+          "passed": false,
+          "mandatory": true,
+          "detail": "no parseable findings",
+          "value": null
+        }
+      ],
+      "quality": {
+        "numerical_accuracy": 0.0,
+        "calculation_coverage": 0.0
+      },
+      "quality_basis": "ground_truth",
+      "validator_version": "1.0"
+    },
+    "conditional_validation": {
+      "stage": "analysis",
+      "hard_pass": false,
+      "checks": [
+        {
+          "name": "findings_exists",
+          "passed": false,
+          "mandatory": true,
+          "detail": "findings.json not found",
+          "value": null
+        },
+        {
+          "name": "findings_parses",
+          "passed": false,
+          "mandatory": true,
+          "detail": "no parseable findings",
+          "value": null
+        },
+        {
+          "name": "required_keys_present",
+          "passed": false,
+          "mandatory": true,
+          "detail": "no parseable findings",
+          "value": null
+        },
+        {
+          "name": "values_numeric",
+          "passed": false,
+          "mandatory": true,
+          "detail": "no parseable findings",
+          "value": null
+        },
+        {
+          "name": "values_within_tolerance",
+          "passed": false,
+          "mandatory": true,
+          "detail": "no parseable findings",
+          "value": null
+        }
+      ],
+      "quality": {
+        "numerical_accuracy": 0.0,
+        "calculation_coverage": 0.0
+      },
+      "quality_basis": "conditional_reference",
+      "validator_version": "1.0"
+    },
+    "input_artifacts": [
+      "datasets/projects/energy_consumption/canonical/cleaned.csv"
+    ],
+    "output_artifacts": [
+      "results/raw/runs/expA_stage_v3-639ab7f22b33f02d/analysis/prompt.txt",
+      "results/raw/runs/expA_stage_v3-639ab7f22b33f02d/analysis/response.txt",
+      "results/raw/runs/expA_stage_v3-639ab7f22b33f02d/analysis/parsed.json",
+      "results/raw/runs/expA_stage_v3-639ab7f22b33f02d/analysis/code.py"
+    ],
+    "input_artifact_hashes": {
+      "datasets/projects/energy_consumption/canonical/cleaned.csv": "19653e84736b2219e1a363c6ced69913751e4e7f40b011715226de1d561664d3"
+    },
+    "output_artifact_hashes": {
+      "results/raw/runs/expA_stage_v3-639ab7f22b33f02d/analysis/prompt.txt": "126fc4873a7477534a43084ee326cbc8973958d7e9f25656cf6a814f463aba83",
+      "results/raw/runs/expA_stage_v3-639ab7f22b33f02d/analysis/response.txt": "b37cd1dfa4bba11789cb05e26665b01c255a7a71831dfcb8b305adc2c12669c2",
+      "results/raw/runs/expA_stage_v3-639ab7f22b33f02d/analysis/parsed.json": "6c6f8eb37b22324f8bdde2495e23af7a1547f3b7132e3467aaf1ba3f659dd76d",
+      "results/raw/runs/expA_stage_v3-639ab7f22b33f02d/analysis/code.py": "61f7723d4e65d75a1842c55cc17ff3a790bb3de5c008322f0aafdc5bcddc0e5e"
+    },
+    "handoff_in_path": "results/raw/runs/expA_stage_v3-639ab7f22b33f02d/analysis/handoff_in.json",
+    "handoff_size_bytes": 967,
+    "input_tokens": 2210,
+    "output_tokens": 1577,
+    "cost_usd": null,
+    "cost_status": "unavailable",
+    "timings": {
+      "generation_ms": 6879.163540997979,
+      "execution_ms": 829.620917000284,
+      "validation_ms": 11.179042001458583,
+      "handoff_ms": 0.23312499979510903
+    }
+  }
+}

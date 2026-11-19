@@ -1,0 +1,9 @@
+```json
+{
+  "fixed_code": "def rolling_mean(xs, window, min_periods=1):\n    if not (1 <= min_periods <= window):\n        raise ValueError(\"min_periods must satisfy 1 <= min_periods <= window\")\n    result = []\n    for i in range(len(xs)):\n        start = max(0, i - window + 1)\n        window_slice = xs[start:i+1]\n        if len(window_slice) >= min_periods:\n            result.append(sum(window_slice) / len(window_slice))\n        else:\n            result.append(None)\n    return result",
+  "bug_locations": [
+    "def rolling_mean(xs, window, min_periods=1):"
+  ],
+  "explanation": "The original code had multiple defects: 1) It did not validate that 1 <= min_periods <= window. 2) The window calculation was incorrect, using `i-window` instead of `i-window+1`, causing off-by-one errors. 3) It always divided by `window` instead of the actual number of elements in the window. 4) It did not handle the `min_periods` requirement, returning a mean even when insufficient data was available. The fixed version addresses all these issues by validating input, correctly calculating the window bounds, using the actual window size for division, and returning None when the window has fewer than `min_periods` elements."
+}
+```

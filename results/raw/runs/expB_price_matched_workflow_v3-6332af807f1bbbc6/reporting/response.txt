@@ -1,0 +1,123 @@
+```json
+{
+  "title": "Support Operations Analysis Report",
+  "executive_summary": "This report details verified findings on 347 support tickets, revealing a total labor cost of $27,742.90 and an average resolution time of 75.2 minutes. Key insights include a significant disparity in reopen rates between email and chat channels (email is 119.8% higher), and the identification of 12 high-cost, low-satisfaction tickets. The workload is distributed among 18 agents, with the top agent handling 7.5% of all tickets.",
+  "key_findings": [
+    {
+      "finding_id": "q1",
+      "statement": "The dataset contains 347 tickets. The average resolution time is 75.2 minutes, and the total labor cost amounts to $27,422.90.",
+      "evidence_refs": [
+        "ticket_count",
+        "mean_resolution_minutes",
+        "total_labor_cost"
+      ],
+      "reported_values": {
+        "ticket_count": 347.0,
+        "mean_resolution_minutes": 75.19308357348703,
+        "total_labor_cost": 27422.9
+      }
+    },
+    {
+      "finding_id": "q2",
+      "statement": "Team Beta incurred the highest labor cost at $10,247.36, followed by Gamma at $9,387.73 and Alpha at $7,787.81.",
+      "evidence_refs": [
+        "labor_cost_alpha",
+        "labor_cost_beta",
+        "labor_cost_gamma"
+      ],
+      "reported_values": {
+        "labor_cost_alpha": 7787.81,
+        "labor_cost_beta": 10247.36,
+        "labor_cost_gamma": 9387.73
+      },
+      "ranking": [
+        "Beta",
+        "Gamma",
+        "Alpha"
+      ]
+    },
+    {
+      "finding_id": "q3",
+      "statement": "Chat channels have the longest average resolution time at 83.0 minutes, while phone is fastest at 69.3 minutes. Email averages 73.0 minutes.",
+      "evidence_refs": [
+        "resolution_email",
+        "resolution_chat",
+        "resolution_phone"
+      ],
+      "reported_values": {
+        "resolution_email": 73.01724137931035,
+        "resolution_chat": 83.03921568627452,
+        "resolution_phone": 69.25352112676056
+      },
+      "ranking": [
+        "chat",
+        "email",
+        "phone"
+      ]
+    },
+    {
+      "finding_id": "q4",
+      "statement": "Email tickets have a reopen rate of 17.2%, compared to 7.8% for chat. This represents a 119.8% increase in the reopen rate for email relative to chat.",
+      "evidence_refs": [
+        "reopen_rate_email_pct",
+        "reopen_rate_chat_pct",
+        "email_vs_chat_reopen_change_pct"
+      ],
+      "reported_values": {
+        "reopen_rate_email_pct": 17.24137931034483,
+        "reopen_rate_chat_pct": 7.8431372549019605,
+        "email_vs_chat_reopen_change_pct": 119.82758620689657
+      },
+      "direction": "increase"
+    },
+    {
+      "finding_id": "q5",
+      "statement": "There are 12 tickets in the high-cost, low-satisfaction segment (labor cost >= $100 and satisfaction <= 2). This segment has a reopen rate of 8.3%.",
+      "evidence_refs": [
+        "high_cost_low_sat_count",
+        "high_cost_low_sat_reopen_pct"
+      ],
+      "reported_values": {
+        "high_cost_low_sat_count": 12.0,
+        "high_cost_low_sat_reopen_pct": 8.333333333333332
+      }
+    },
+    {
+      "finding_id": "q6",
+      "statement": "The median resolution time is 65.0 minutes with a standard deviation of 51.9 minutes. Average satisfaction is 4.15, with 19 tickets missing a satisfaction score.",
+      "evidence_refs": [
+        "resolution_median",
+        "resolution_std",
+        "satisfaction_mean",
+        "satisfaction_missing_count"
+      ],
+      "reported_values": {
+        "resolution_median": 65.0,
+        "resolution_std": 51.92574910613114,
+        "satisfaction_mean": 4.152439024390244,
+        "satisfaction_missing_count": 19.0
+      }
+    },
+    {
+      "finding_id": "q7",
+      "statement": "Tickets are handled by 18 unique agents. The most active agent handled 26 tickets, accounting for 7.5% of the total workload.",
+      "evidence_refs": [
+        "unique_agent_count",
+        "top_agent_ticket_count",
+        "top_agent_ticket_share_pct"
+      ],
+      "reported_values": {
+        "unique_agent_count": 18.0,
+        "top_agent_ticket_count": 26.0,
+        "top_agent_ticket_share_pct": 7.492795389048991
+      }
+    }
+  ],
+  "limitations": [
+    "Satisfaction scores were missing for 19 tickets, potentially biasing the average satisfaction metric.",
+    "The analysis assumes the 'cleaned.csv' export accurately represents the full support ticket history.",
+    "Reopen rate comparison was limited to email and chat channels as specified in the analysis scope."
+  ],
+  "conclusion": "The analysis highlights significant inefficiencies in email support, which shows a markedly higher reopen rate than chat. While phone support is the fastest channel, chat resolution times lag, suggesting potential process bottlenecks. The concentration of tickets among agents appears balanced, though attention should be paid to the specific high-cost, low-satisfaction tickets to prevent churn."
+}
+```

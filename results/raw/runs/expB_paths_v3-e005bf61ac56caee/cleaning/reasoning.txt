@@ -1,0 +1,88 @@
+We need to produce JSON with fields python_code (string containing script), output_filename = "cleaned.csv", cleaning_logic brief explanation.
+
+We must write script that follows cleaning steps.
+
+Implementation details:
+
+- Read raw.csv with pandas read_csv dtype=str, keep all columns as strings. Use na_values? But we need custom missing detection after stripping. So read as strings, then apply strip to all values.
+
+- Count raw_rows = number of rows read.
+
+- Apply R1: strip whitespace, treat missing values: after strip, if lowercased in set {'', 'na', 'n/a', 'null', 'none', '-'} then set to None (np.nan). We'll replace with np.nan.
+
+- R2: remove duplicate reading_id, keep first. Use duplicated(subset='reading_id').
+
+- Keep track counts: duplicates_removed.
+
+- R3: parse reading_date with multiple formats. We'll define list of formats and try datetime.strptime. For 'Month D, YYYY' we can use %B %d, %Y. Also need to handle possible extra spaces. Use pandas to_datetime with format list? Could loop.
+
+If missing or cannot parse, drop row.
+
+After parsing, format to YYYY-MM-DD string.
+
+- R4: meter_id to upper, drop if missing.
+
+- R5: building_type mapping: lower stripped, map variants. Use dict mapping lower to canonical. Drop if missing or not mapped.
+
+- R6: tariff mapping: lower stripped, map 'peak' -> 'peak', 'off-peak','offpeak','off peak' -> 'off-peak'. Drop if missing or not mapped.
+
+- R7: energy conversion: remove commas, strip. If endswith case-insensitive 'mwh' possibly with space: we can use regex. Use re.sub to remove commas, then detect unit. Use pattern r'(?i)^\s*([\d\.]+)\s*(mwh|kwh)?\s*$' but need to handle numbers with decimal. Also there may be values like '498.85kwh' (no space). So we can use regex to capture number and optional unit. If unit is mwh multiply by 1000. If unit is kwh or None, keep as is. Convert to float. Drop rows where missing, not numeric, <0 or >100000 after conversion. Round to 2 decimals.
+
+- R8: temperature conversion: strip, remove commas? Not needed. Remove trailing degree sign and unit. Use regex to capture number and optional unit. Cases: '33.62 °F', '29.48F', '1.1C', '0.2', '999.0' (no unit). We'll treat missing as np.nan. If unit is F, convert to C. If unit is C or None, keep as C. Round to 1 decimal. If after conversion not numeric or outside -40 to 50, set to missing (np.nan) but keep row.
+
+- R9: select columns, order, sort by reading_id ascending (string). Write CSV with header, index=False, float formatting: we can let pandas default but ensure no scientific notation. Use float_format='%.2f' for energy_kwh, but temperature may have 1 decimal; we can format after rounding.
+
+Simplify: after rounding, we can keep as float; pandas will output with default representation maybe many decimals. Use df['energy_kwh'] = df['energy_kwh'].map(lambda x: f"{x:.2f}")? But column should be numeric type per schema, but CSV can have formatted numbers. We'll use float_format='%.2f' for whole file, but temperature will also be 2 decimals then. To have 1 decimal for temperature, we could format column separately as string. Simpler: after rounding, we can set dtype float; pandas will output with default representation (maybe 2 decimals for energy). Acceptable.
+
+But requirement: numbers are written without units or thousands separators; missing temperature empty cell. That's fine.
+
+Write cleaning_summary.json with raw_rows, cleaned_rows, duplicates_removed, rows_dropped_due_to_date, etc.
+
+Implementation steps:
+
+- import os, pandas as pd, numpy as np, json, re, datetime.
+
+- define missing set.
+
+- read raw.csv.
+
+- raw_rows = len(df)
+
+- Strip whitespace: df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)
+
+- Convert missing: df = df.replace(missing_set, np.nan) after lower? We'll apply function: if isinstance(x,str) and x.strip().lower() in missing_set: return np.nan else x.
+
+Better: after strip, then apply lambda.
+
+- R2: duplicates_removed = df['reading_id'].duplicated().sum(); df = df[~df['reading_id'].duplicated(keep='first')]
+
+- R3: parse dates: define function parse_date(s). Return formatted string or None. Use list of formats: "%Y-%m-%d", "%m/%d/%Y", "%d-%b-%Y", "%Y/%m/%d", "%B %d, %Y". For %d-%b-%Y need month abbreviation case-insensitive; strptime handles case-insensitive? It expects proper case; we can .title() maybe. We'll try with strptime after lower? Use datetime.datetime.strptime(s, fmt). For abbreviation, we can .capitalize() maybe. We'll just try.
+
+If fails, return None.
+
+Apply to column, drop rows where result is None.
+
+- R4: meter_id upper, drop missing.
+
+- R5: building_type mapping dict.
+
+- R6: tariff mapping dict.
+
+- R7: energy conversion: function convert_energy(val). Return float or None.
+
+- R8: temperature conversion: function convert_temp(val). Return float or np.nan.
+
+- After all, select columns, sort.
+
+- Write cleaned.csv.
+
+- Write summary json.
+
+Edge Cases: reading_id may have leading/trailing spaces; already stripped.
+
+Now produce script as string.
+
+Make sure script sets output_filename variable? Not required but they ask to set output_filename to "cleaned.csv". We'll define variable output_filename = "cleaned.csv" at end.
+
+Now produce JSON.
+

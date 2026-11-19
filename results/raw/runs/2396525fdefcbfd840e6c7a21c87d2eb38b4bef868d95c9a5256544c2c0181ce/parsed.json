@@ -1,0 +1,7 @@
+{
+  "fixed_code": "def rotate(xs, k):\n    if not xs:\n        return []\n    k %= len(xs)\n    return list(xs[-k:] + xs[:-k])",
+  "bug_locations": [
+    "def rotate(xs, k):"
+  ],
+  "explanation": "The original code crashes when `xs` is empty because `len(xs)` is 0, causing a ZeroDivisionError in `k %= len(xs)`. The fix adds a check for an empty list at the start of the function, returning an empty list as specified. The rotation logic itself is correct for non-empty lists."
+}

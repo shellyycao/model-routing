@@ -1,0 +1,132 @@
+The task is to write a self-contained Python script that reads cleaned.csv from INPUT_DIR, computes metrics, and writes findings.json to OUTPUT_DIR.
+
+Key considerations:
+- Flat JSON, all values finite numbers.
+- No rounding.
+- Read os.environ["INPUT_DIR"] / cleaned.csv.
+- Write os.environ["OUTPUT_DIR"] / findings.json.
+- Use pandas/numpy.
+
+Metrics:
+1. total_revenue = sum(revenue), order_count = number of rows, average_order_value = total/count.
+2. Revenue per region (North, South, East, West).
+3. 2024 quarterly revenue.
+4. 2023 revenue, 2024 revenue, YoY % change.
+5. Electronics with discount >= 20: count and revenue.
+6. Distribution: mean, median, sample std (ddof=1), min, max over revenue.
+7. unique customers, top customer revenue, share pct.
+
+Edge cases: missing values handled; quantities appear as floats in the CSV sample ("8.0") — read and treat revenue as is. Use pd.read_csv normally.
+
+Sample std: pandas .std(ddof=1) default, or numpy std ddof=1.
+
+Ensure all outputs are floats (convert int counts to float? JSON numbers fine — "single finite number" — ints are numbers; but safe to make all floats). Counts can be int; schema says number. I'll cast counts to float for consistency? The example shows 3.0. I'll just convert to float all values to be safe. Actually order_count as float 520.0 is fine.
+
+Ensure no NaN: if some category/quarter missing, fill 0. Use reindex with 0 fill.
+
+Dates: parse order_date to datetime, derive year and quarter.
+
+Write JSON with json.dump.
+
+expected_artifacts: ["findings.json"].
+
+Methods description: brief.
+
+Let me write the script carefully.
+
+```python
+import json
+import os
+
+import numpy as np
+import pandas as pd
+
+
+def main():
+    input_path = os.path.join(os.environ["INPUT_DIR"], "cleaned.csv")
+    output_path = os.path.join(os.environ["OUTPUT_DIR"], "findings.json")
+
+    df = pd.read_csv(input_path)
+
+    # Ensure numeric types
+    df["revenue"] = pd.to_numeric(df["revenue"], errors="coerce")
+    df["discount_pct"] = pd.to_numeric(df["discount_pct"], errors="coerce")
+    df["order_date"] = pd.to_datetime(df["order_date"], errors="coerce")
+
+    df = df.dropna(subset=["revenue", "order_date"])  # should be no-op on cleaned data
+
+    findings = {}
+
+    # q1
+    total_revenue = float(df["revenue"].sum())
+    order_count = int(len(df))
+    findings["total_revenue"] = total_revenue
+    findings["order_count"] = float(order_count)
+    findings["average_order_value"] = total_revenue / order_count if order_count else 0.0
+
+    # q2
+    by_region = df.groupby("region")["revenue"].sum()
+    for region in ["North", "South", "East", "West"]:
+        findings[f"revenue_{region.lower()}"] = float(by_region.get(region, 0.0))
+
+    # q3
+    df["year"] = df["order_date"].dt.year
+    df["quarter"] = df["order_date"].dt.quarter
+    df24 = df[df["year"] == 2024]
+    by_q = df24.groupby("quarter")["revenue"].sum()
+    for q in [1, 2, 3, 4]:
+        findings[f"revenue_2024_q{q}"] = float(by_q.get(q, 0.0))
+
+    # q4
+    revenue_2023 = float(df.loc[df["year"] == 2023, "revenue"].sum())
+    revenue_2024 = float(df.loc[df["year"] == 2024, "revenue"].sum())
+    findings["revenue_2023"] = revenue_2023
+    findings["revenue_2024"] = revenue_2024
+    findings["revenue_yoy_change_pct"] = ((revenue_2024 - revenue_2023) / revenue_2023 * 100) if revenue_2023 else 0.0
+
+    # q5
+    mask = (df["product_category"] == "Electronics") & (df["discount_pct"] >= 20)
+    findings["electronics_high_discount_orders"] = float(int(mask.sum()))
+    findings["electronics_high_discount_revenue"] = float(df.loc[mask, "revenue"].sum())
+
+    # q6
+    rev = df["revenue"]
+    findings["order_revenue_mean"] = float(rev.mean())
+    findings["order_revenue_median"] = float(rev.median())
+    findings["order_revenue_std"] = float(rev.std(ddof=1))
+    findings["order_revenue_min"] = float(rev.min())
+    findings["order_revenue_max"] = float(rev.max())
+
+    # q7
+    by_cust = df.groupby("customer_id")["revenue"].sum()
+    findings["unique_customer_count"] = float(df["customer_id"].nunique())
+    top = float(by_cust.max()) if len(by_cust) else 0.0
+    findings["top_customer_revenue"] = top
+    findings["top_customer_revenue_share_pct"] = (top / total_revenue * 100) if total_revenue else 0.0
+
+    # sanitize
+    for k, v in findings.items():
+        if not np.isfinite(v):
+            findings[k] = 0.0
+
+    with open(output_path, "w") as f:
+        json.dump(findings, f, indent=2)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+Note: `.get(region, 0.0)` on a pandas Series works. Groupby on region could be categorical — the schema says region is category dtype in cleaned schema description, but when read via read_csv it will be object strings. Fine either way.
+
+Should counts be float or int? "mapping every metric_key listed below to a single finite number". Either is valid JSON number. I'll use float for everything for uniformity; validators might check numeric type only. Fine.
+
+Don't round — good.
+
+One thing: dropna could change order_count if there were NaN; cleaned data says not nullable, so safe. But maybe avoid dropping to keep order_count = row count of the file. I'll not drop rows; just compute. Actually to be safe, compute order_count as len(df) regardless. Keep it simple without dropna.
+
+Sanitization: better to ensure finite via math.isfinite. Fine.
+
+Methods description: sums, groupbys, filters, std ddof=1, etc.
+
+Format response: single JSON fenced block with python_code string, expected_artifacts, methods_description.

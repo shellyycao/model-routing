@@ -1,0 +1,75 @@
+Let me write the analysis script. It reads cleaned.csv, computes metrics, writes findings.json flat.
+
+Key considerations:
+- Parse order_date as datetime.
+- Counts as numbers: order_count should be a number — int is fine in JSON (finite number). The spec says single finite number, e.g., 3.0. Int should be acceptable, but to be safe convert counts to int (JSON int is a number). Validation says "No strings, lists, null, NaN or Infinity as values." Int is fine.
+- revenue_yoy_change_pct: guard division by zero? Data has 2023 data, so fine, but still handle gracefully.
+- Sample std with n-1 denominator: use pandas .std() default ddof=1.
+- Top customer revenue: group by customer_id, sum revenue, max.
+- Ensure finite: use float conversions and check math.isfinite, perhaps replace non-finite with 0.0? Better to compute properly; data is clean.
+
+Script:
+
+```python
+import json
+import math
+import os
+
+import pandas as pd
+
+def main():
+    input_path = os.path.join(os.environ["INPUT_DIR"], "cleaned.csv")
+    output_path = os.path.join(os.environ["OUTPUT_DIR"], "findings.json")
+
+    df = pd.read_csv(input_path)
+    df["order_date"] = pd.to_datetime(df["order_date"])
+    df["revenue"] = pd.to_numeric(df["revenue"], errors="raise")
+
+    total_revenue = float(df["revenue"].sum())
+    order_count = int(len(df))
+    average_order_value = total_revenue / order_count
+
+    rev_by_region = df.groupby("region")["revenue"].sum()
+    revenue_north = float(rev_by_region.get("North", 0.0))
+    ...
+
+    df["year"] = df["order_date"].dt.year
+    revenue_2023 = float(df.loc[df["year"] == 2023, "revenue"].sum())
+    revenue_2024 = float(df.loc[df["year"] == 2024, "revenue"].sum())
+    yoy = (revenue_2024 - revenue_2023) / revenue_2023 * 100 if revenue_2023 != 0 else 0.0
+
+    q = df.loc[df["year"] == 2024, "order_date"].dt.quarter ...
+    rev_2024 = df[df["year"]==2024]
+    qtr = rev_2024.groupby(rev_2024["order_date"].dt.quarter)["revenue"].sum()
+
+    elec = df[(df["product_category"] == "Electronics") & (df["discount_pct"] >= 20)]
+
+    stats...
+    median float(df["revenue"].median())
+    std float(df["revenue"].std(ddof=1))
+
+    cust = df.groupby("customer_id")["revenue"].sum()
+    unique_customer_count = int(df["customer_id"].nunique())
+    top_customer_revenue = float(cust.max())
+    share = top_customer_revenue / total_revenue * 100 if total_revenue else 0.0
+
+    findings = {...}
+    # sanitize
+    for k, v in findings.items():
+        if isinstance(v, float) and not math.isfinite(v):
+            findings[k] = 0.0
+
+    with open(output_path, "w") as f:
+        json.dump(findings, f, indent=2)
+
+if __name__ == "__main__":
+    main()
+```
+
+Do not round. Good.
+
+expected_artifacts: ["findings.json"]
+
+methods_description: brief.
+
+Output as single JSON fenced block.

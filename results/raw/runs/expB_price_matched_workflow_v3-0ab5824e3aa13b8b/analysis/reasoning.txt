@@ -1,0 +1,130 @@
+Let me write a self-contained Python script that reads the cleaned CSV and computes all the metrics.
+
+Key considerations:
+- satisfaction_score is nullable, so read with pandas; empty cells become NaN.
+- Need to handle cohorts by year extracted from signup_date.
+- Churn rates as percentages.
+- Sample std (ddof=1) for tenure.
+- At-risk segment: support_tickets >= 5 AND satisfaction_score (non-missing) <= 2.
+- All values must be finite numbers. If a cohort year has zero customers, division by zero would produce NaN/inf — need to guard. But given data spans 2021-2024 presumably all cohorts have members. Still, safe guard: if denominator is 0, return 0.0. The spec says values must be finite. I'll add guards.
+- churn_monthly_vs_annual_change_pct: if annual churn rate is 0, division by zero — guard.
+- premium_vs_basic_ltv_change_pct: guard against zero basic ltv.
+
+Write findings.json flat with floats. customer_count, at_risk_customer_count, satisfaction_missing_count as numbers — could be int; JSON numbers are fine. The spec says single finite number. I'll cast to float or int — int is fine for JSON. But to be safe, use float for rates and int for counts? JSON serializes both as numbers. Fine.
+
+Ensure no NaN: use float() conversions and guards.
+
+Script:
+
+```python
+import json
+import os
+
+import numpy as np
+import pandas as pd
+
+
+def main():
+    input_path = os.path.join(os.environ["INPUT_DIR"], "cleaned.csv")
+    output_path = os.path.join(os.environ["OUTPUT_DIR"], "findings.json")
+
+    df = pd.read_csv(input_path)
+
+    # Parse types
+    df["signup_date"] = pd.to_datetime(df["signup_date"], format="%Y-%m-%d")
+    df["churned"] = df["churned"].astype(int)
+    # satisfaction_score may be missing -> NaN
+    df["satisfaction_score"] = pd.to_numeric(df["satisfaction_score"], errors="coerce")
+
+    findings = {}
+
+    # q1
+    customer_count = int(len(df))
+    findings["customer_count"] = customer_count
+    churn_rate = df["churned"].mean() * 100 if customer_count else 0.0
+    findings["churn_rate_pct"] = float(churn_rate)
+    findings["avg_monthly_fee"] = float(df["monthly_fee"].mean())
+
+    # q2 churn by plan
+    for plan, key in [("Basic", "churn_rate_basic_pct"),
+                      ("Standard", "churn_rate_standard_pct"),
+                      ("Premium", "churn_rate_premium_pct")]:
+        sub = df[df["plan"] == plan]
+        findings[key] = float(sub["churned"].mean() * 100) if len(sub) else 0.0
+
+    # q3 cohorts
+    df["cohort_year"] = df["signup_date"].dt.year
+    for year in (2021, 2022, 2023, 2024):
+        sub = df[df["cohort_year"] == year]
+        findings[f"churn_rate_cohort_{year}_pct"] = float(sub["churned"].mean() * 100) if len(sub) else 0.0
+
+    # q4 contract effect
+    monthly = df[df["contract_type"] == "Monthly"]
+    annual = df[df["contract_type"] == "Annual"]
+    churn_monthly = float(monthly["churned"].mean() * 100) if len(monthly) else 0.0
+    churn_annual = float(annual["churned"].mean() * 100) if len(annual) else 0.0
+    findings["churn_rate_monthly_pct"] = churn_monthly
+    findings["churn_rate_annual_pct"] = churn_annual
+    if churn_annual != 0.0:
+        findings["churn_monthly_vs_annual_change_pct"] = (churn_monthly - churn_annual) / churn_annual * 100
+    else:
+        findings["churn_monthly_vs_annual_change_pct"] = 0.0
+
+    # q5 at-risk segment
+    at_risk = df[(df["support_tickets"] >= 5) & (df["satisfaction_score"].notna()) & (df["satisfaction_score"] <= 2)]
+    findings["at_risk_customer_count"] = int(len(at_risk))
+    findings["at_risk_churn_rate_pct"] = float(at_risk["churned"].mean() * 100) if len(at_risk) else 0.0
+
+    # q6 tenure and satisfaction
+    findings["tenure_mean"] = float(df["tenure_months"].mean())
+    findings["tenure_median"] = float(df["tenure_months"].median())
+    findings["tenure_std"] = float(df["tenure_months"].std(ddof=1)) if customer_count > 1 else 0.0
+    sat = df["satisfaction_score"].dropna()
+    findings["satisfaction_mean"] = float(sat.mean()) if len(sat) else 0.0
+    findings["satisfaction_missing_count"] = int(df["satisfaction_score"].isna().sum())
+
+    # q7 LTV by plan
+    ltv = {}
+    for plan, key in [("Basic", "ltv_basic"), ("Standard", "ltv_standard"), ("Premium", "ltv_premium")]:
+        sub = df[df["plan"] == plan]
+        ltv[key] = float(sub["lifetime_value"].mean()) if len(sub) else 0.0
+        findings[key] = ltv[key]
+    if ltv["ltv_basic"] != 0.0:
+        findings["premium_vs_basic_ltv_change_pct"] = (ltv["ltv_premium"] - ltv["ltv_basic"]) / ltv["ltv_basic"] * 100
+    else:
+        findings["premium_vs_basic_ltv_change_pct"] = 0.0
+
+    # Ensure all finite numbers
+    for k, v in findings.items():
+        v = float(v)
+        if not np.isfinite(v):
+            v = 0.0
+        findings[k] = v
+
+    with open(output_path, "w") as f:
+        json.dump(findings, f, indent=2)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+Wait — one nuance: converting counts to float — customer_count as float is fine (e.g., 749.0). Validators accept any finite number. Keep it uniform: cast all to float at the end.
+
+median of even count gives .5 values — fine.
+
+tenure std with ddof=1 — pandas default is ddof=1 anyway, but explicit.
+
+One caution: reading CSV — satisfaction_score column will be read as float with NaN for empties automatically. pd.to_numeric with coerce is a safety net. Fine.
+
+Churn rate for cohorts — guard on empty.
+
+The relative percentage change uses the percent values (churn_rate_monthly_pct etc.), which is equivalent to using proportions since the *100 cancels. Fine.
+
+Write findings with full precision — don't round. json.dump will write full float repr.
+
+expected_artifacts: ["findings.json"].
+
+methods_description: brief.
+
+Respond with single JSON fenced block.

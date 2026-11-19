@@ -1,0 +1,27 @@
+{
+  "bug_locations": [
+    "rate_limiter per-user queues",
+    "rate_limiter validation"
+  ],
+  "buggy": "from collections import deque\ndef allowed(events,limit,window):\n    q=deque();out=[]\n    for user,t in events:\n        while q and q[0][1]<=t-window:q.popleft()\n        ok=len(q)<limit;out.append(ok)\n        if ok:q.append((user,t))\n    return out\n",
+  "case_id": "a1v2_h04_rate_limiter_2",
+  "difficulty": "hard",
+  "family": "rate_limiter",
+  "hidden": [
+    "allowed([('u',0),('u',1)],1,1)==[True,True]",
+    "allowed([('u',0),('u',2)],1,2)==[True,True]",
+    "allowed([('u',0),('u',1),('u',2)],1,2)==[True,False,True]",
+    "allowed([('a',0),('b',0)],1,10)==[True,True]",
+    "_raises(lambda: allowed([],0,1),ValueError)"
+  ],
+  "label_source": "executable reference plus independently checked tests",
+  "reference": "from collections import defaultdict, deque\ndef allowed(events,limit,window):\n    if limit<1 or window<0: raise ValueError('config')\n    q=defaultdict(deque); out=[]\n    for user,t in events:\n        while q[user] and q[user][0] <= t-window:q[user].popleft()\n        ok=len(q[user])<limit; out.append(ok)\n        if ok:q[user].append(t)\n    return out\n",
+  "spec": "allowed(events, limit, window) returns booleans for (user,time) events in given order. An event is allowed if fewer than limit prior allowed events for that user fall in (time-window,time]; rejected events do not consume capacity.",
+  "verification": {
+    "buggy_fails": 2,
+    "reference_passes": 5
+  },
+  "visible": [
+    "allowed([('u',0),('u',1)],1,1) == [True,True]"
+  ]
+}

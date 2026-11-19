@@ -1,0 +1,12 @@
+```json
+{
+  "fixed_code": "def rolling_mean(xs, window, min_periods=1):\n    \"\"\"\n    Compute a rolling (trailing) mean of the sequence ``xs``.\n\n    Parameters\n    ----------\n    xs : sequence of numbers\n        Input data.\n    window : int\n        Size of the trailing window (must be >= 1).\n    min_periods : int, optional\n        Minimum number of observations in the window required to produce a\n        result. If the window contains fewer than ``min_periods`` values,\n        ``None`` is returned for that position. Must satisfy 1 <= min_periods <= window.\n\n    Returns\n    -------\n    list\n        List of rolling means (float) or ``None`` where the requirement is not met.\n    \"\"\"\n    # Validate arguments\n    if not isinstance(window, int) or window < 1:\n        raise ValueError(\"window must be a positive integer\")\n    if not isinstance(min_periods, int) or min_periods < 1:\n        raise ValueError(\"min_periods must be a positive integer\")\n    if min_periods > window:\n        raise ValueError(\"min_periods must be less than or equal to window\")\n\n    result = []\n    for i in range(len(xs)):\n        # inclusive start index of the trailing window\n        start = max(0, i - window + 1)\n        count = i - start + 1  # actual number of elements in the window\n        if count < min_periods:\n            result.append(None)\n        else:\n            window_sum = sum(xs[start:i + 1])\n            result.append(window_sum / count)\n    return result\n",
+  "bug_locations": [
+    "Incorrect slice (excluded current element) and fixed denominator",
+    "Missing handling of min_periods requirement",
+    "No validation of window and min_periods arguments",
+    "Returned raw division result even when insufficient data"
+  ],
+  "explanation": "The original implementation sliced ``xs[max(0,i-window):i]`` which omitted the current element and always divided by ``window`` regardless of how many values were actually present. It also ignored the ``min_periods`` contract and lacked validation of the input parameters. The fix adjusts the slice to ``xs[start:i+1]`` where ``start = max(0, i - window + 1)`` so the window is trailing and inclusive, divides by the actual count of elements, returns ``None`` when the count is below ``min_periods``, and adds explicit argument validation per the specification."
+}
+```

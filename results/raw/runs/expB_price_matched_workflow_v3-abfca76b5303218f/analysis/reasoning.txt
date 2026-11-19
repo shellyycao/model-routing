@@ -1,0 +1,110 @@
+Let me write a straightforward analysis script that reads the cleaned CSV and computes all required metrics, handling edge cases (empty groups, division by zero) so values remain finite.
+
+Key considerations:
+- satisfaction_score written as empty cell → NaN when read.
+- Cohort years 2021–2024: filter by signup year; if a cohort has zero customers, churn rate would be undefined — but data presumably has all years. Still, guard to avoid NaN (validator rejects NaN). Use 0.0 if group empty? That could produce misleading numbers, but validation requires finite. I'll guard.
+- Sample std with n-1: pandas default ddof=1. If n=1, NaN — guard.
+- churn_monthly_vs_annual_change_pct: division by annual churn rate; if annual rate is 0, division by zero → inf. Guard.
+- premium_vs_basic_ltv_change_pct: similar guard.
+
+Write finite numbers, no rounding.
+
+Script:
+
+```python
+import json
+import os
+
+import numpy as np
+import pandas as pd
+
+
+def churn_rate_pct(series):
+    if len(series) == 0:
+        return 0.0
+    return float(series.mean() * 100.0)
+
+
+def safe_div(a, b):
+    if b == 0:
+        return 0.0
+    return a / b
+
+
+def main():
+    input_path = os.path.join(os.environ["INPUT_DIR"], "cleaned.csv")
+    output_path = os.path.join(os.environ["OUTPUT_DIR"], "findings.json")
+
+    df = pd.read_csv(input_path)
+    df["signup_date"] = pd.to_datetime(df["signup_date"], format="%Y-%m-%d")
+    # satisfaction_score comes in as float with NaN for empty cells
+
+    findings = {}
+
+    # q1
+    findings["customer_count"] = float(len(df))
+    findings["churn_rate_pct"] = churn_rate_pct(df["churned"])
+    findings["avg_monthly_fee"] = float(df["monthly_fee"].mean())
+
+    # q2
+    for plan, key in [("Basic", "churn_rate_basic_pct"), ("Standard", "churn_rate_standard_pct"), ("Premium", "churn_rate_premium_pct")]:
+        sub = df.loc[df["plan"] == plan, "churned"]
+        findings[key] = churn_rate_pct(sub)
+
+    # q3
+    df["signup_year"] = df["signup_date"].dt.year
+    for year in (2021, 2022, 2023, 2024):
+        sub = df.loc[df["signup_year"] == year, "churned"]
+        findings[f"churn_rate_cohort_{year}_pct"] = churn_rate_pct(sub)
+
+    # q4
+    monthly_rate = churn_rate_pct(df.loc[df["contract_type"] == "Monthly", "churned"])
+    annual_rate = churn_rate_pct(df.loc[df["contract_type"] == "Annual", "churned"])
+    findings["churn_rate_monthly_pct"] = monthly_rate
+    findings["churn_rate_annual_pct"] = annual_rate
+    findings["churn_monthly_vs_annual_change_pct"] = float(safe_div(monthly_rate - annual_rate, annual_rate) * 100.0)
+
+    # q5
+    at_risk = df[(df["support_tickets"] >= 5) & (df["satisfaction_score"].notna()) & (df["satisfaction_score"] <= 2)]
+    findings["at_risk_customer_count"] = float(len(at_risk))
+    findings["at_risk_churn_rate_pct"] = churn_rate_pct(at_risk["churned"])
+
+    # q6
+    tenure = df["tenure_months"].astype(float)
+    findings["tenure_mean"] = float(tenure.mean())
+    findings["tenure_median"] = float(tenure.median())
+    std = tenure.std(ddof=1)
+    findings["tenure_std"] = float(std) if np.isfinite(std) else 0.0
+    sat = df["satisfaction_score"].dropna()
+    findings["satisfaction_mean"] = float(sat.mean()) if len(sat) else 0.0
+    findings["satisfaction_missing_count"] = float(df["satisfaction_score"].isna().sum())
+
+    # q7
+    ltv = {}
+    for plan, key in [("Basic", "ltv_basic"), ("Standard", "ltv_standard"), ("Premium", "ltv_premium")]:
+        sub = df.loc[df["plan"] == plan, "lifetime_value"]
+        val = float(sub.mean()) if len(sub) else 0.0
+        ltv[key] = val
+        findings[key] = val
+    findings["premium_vs_basic_ltv_change_pct"] = float(safe_div(ltv["ltv_premium"] - ltv["ltv_basic"], ltv["ltv_basic"]) * 100.0)
+
+    # ensure all values are finite numbers
+    for k, v in findings.items():
+        if not np.isfinite(v):
+            findings[k] = 0.0
+
+    with open(output_path, "w") as f:
+        json.dump(findings, f)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+customer_count: metric says "number of customers (rows)" — a number; float is fine. satisfaction_missing_count similarly.
+
+Methods description: brief.
+
+One note: contract change pct — (monthly - annual)/annual*100. Guard division by zero returning 0.0.
+
+Output only JSON block.

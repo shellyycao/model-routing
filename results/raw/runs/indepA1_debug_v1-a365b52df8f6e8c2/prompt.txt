@@ -1,0 +1,24 @@
+TASK: Python debugging (independent benchmark A1, prompt independent_v1)
+
+The function below contains exactly one bug. Fix it so that it satisfies the specification.
+
+SPECIFICATION:
+count_words(text) returns a dict mapping each lower-cased word to its count. Words are separated by any whitespace (spaces, tabs, newlines, repeated). Empty or whitespace-only text gives {}.
+
+BUGGY CODE:
+```python
+def count_words(text):
+    counts = {}
+    for w in text.lower().split(" "):
+        counts[w] = counts.get(w, 0) + 1
+    return counts
+
+```
+
+EXAMPLE TESTS (these must pass; additional hidden tests will also be run):
+```python
+assert count_words('a b a') == {'a': 2, 'b': 1}
+```
+
+Return the COMPLETE corrected source code (keep the same function names and signatures; standard library only),
+the location of the bug, and a short explanation.

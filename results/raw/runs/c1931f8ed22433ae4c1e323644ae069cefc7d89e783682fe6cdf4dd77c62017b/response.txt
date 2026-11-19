@@ -1,0 +1,9 @@
+```json
+{
+  "fixed_code": "def clamp(x, low, high):\n    if low > high: raise ValueError('bounds')\n    return max(min(x, high), low)\n",
+  "bug_locations": [
+    "clamp: return statement had low and high swapped (max(min(x, low), high))"
+  ],
+  "explanation": "The bounds arguments were swapped in the return expression. max(min(x, low), high) clamps x to be at least high and at most low, which is inverted (and always returns high when low <= high). The correct inclusive clamp is max(min(x, high), low): first cap x at high, then floor it at low. The low > high ValueError check was already correct and is preserved."
+}
+```

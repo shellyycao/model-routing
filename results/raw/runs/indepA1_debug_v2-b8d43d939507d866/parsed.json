@@ -1,0 +1,7 @@
+{
+  "fixed_code": "def clamp(x, low, high):\n    if low > high: raise ValueError('bounds')\n    return max(min(x, high), low)",
+  "bug_locations": [
+    "clamp function body"
+  ],
+  "explanation": "The original code incorrectly ordered the arguments in the max and min functions. The min function should compare x with high to ensure x does not exceed the upper bound, and the max function should compare the result with low to ensure x does not fall below the lower bound. The corrected code properly uses high in the min function and low in the max function to achieve the desired clamping effect."
+}

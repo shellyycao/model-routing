@@ -1,0 +1,9 @@
+{
+  "fixed_code": "def summarize_logs(lines):\n    counts={};errors=[]\n    for line in lines:\n        parts=line.split('|')\n        if len(parts)<4:continue\n        ts,level,service=parts[:3]\n        norm_level=level.upper()\n        counts.setdefault(service,{})\n        counts[service][norm_level]=counts[service].get(norm_level,0)+1\n        if norm_level=='ERROR':errors.append(ts)\n    return {'counts':counts,'first_error':min(errors) if errors else None}",
+  "bug_locations": [
+    "counts.setdefault(service,{})[level.upper()]=counts.setdefault(service,{}).get(level,0)+1",
+    "if level.upper()=='ERROR':errors.append(ts)",
+    "'first_error':max(errors) if errors else None"
+  ],
+  "explanation": "The original code had three defects: (1) The count update logic used the raw 'level' key in the .get() call instead of the normalized uppercase key, causing incorrect counts. (2) The count update logic called setdefault twice redundantly and assigned to the normalized key while reading from the raw key. (3) The 'first_error' calculation used max() instead of min(), returning the latest error timestamp rather than the earliest. The fix normalizes the level once, ensures setdefault is called only once, uses the normalized key consistently for counting, and uses min() to find the lexicographically earliest timestamp."
+}

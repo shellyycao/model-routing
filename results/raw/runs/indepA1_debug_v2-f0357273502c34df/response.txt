@@ -1,0 +1,11 @@
+```json
+{
+  "fixed_code": "def rotate(xs, k):\n    \"\"\"Return a new list rotated right by *k* positions.\n    Negative *k* rotates left. Empty input returns an empty list.\n    \"\"\"\n    if not xs:\n        return []\n    k %= len(xs)\n    return xs[-k:] + xs[:-k]\n",
+  "bug_locations": [
+    "Added guard for empty input to avoid ZeroDivisionError.",
+    "Added docstring for clarity.",
+    "Removed unnecessary list() wrapper around the slice concatenation."
+  ],
+  "explanation": "The original implementation performed `k %= len(xs)` unconditionally, which raises a ZeroDivisionError when `xs` is empty. Adding an early return for empty inputs fixes this. The rest of the logic correctly handles positive, negative, and large `k` values, so no further changes are needed."
+}
+```

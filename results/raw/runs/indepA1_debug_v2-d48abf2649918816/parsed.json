@@ -1,0 +1,10 @@
+{
+  "fixed_code": "def invoice_total(lines, discount_pct=0, tax_pct=0):\n    subtotal = sum(row['qty'] * row['unit_price'] for row in lines)\n    discounted_total = subtotal * (1 - discount_pct / 100)\n    final_total = discounted_total * (1 + tax_pct / 100)\n    return round(final_total, 2)",
+  "bug_locations": [
+    "Line 2: Removed unnecessary rounding inside the sum function.",
+    "Line 3: Changed '//' to '/' for discount and tax percentage calculations.",
+    "Line 4: Added a step to calculate the discounted total before applying tax.",
+    "Line 5: Moved the rounding to the final result as per the specification."
+  ],
+  "explanation": "The original code had several issues: 1) It rounded the product of quantity and unit price prematurely, which could lead to inaccuracies in the subtotal. 2) It used integer division '//' instead of float division '/' for calculating the effects of discount and tax, leading to incorrect results. 3) It applied rounding too early in the calculation process, contrary to the specification which requires rounding only the final result. The fixed code calculates the subtotal without premature rounding, uses correct float division for discount and tax calculations, and rounds only the final result to two decimal places."
+}

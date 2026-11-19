@@ -1,0 +1,7 @@
+{
+  "fixed_code": "def chunks(xs, size):\n    if size <= 0: raise ValueError('size')\n    return [xs[i:i+size] for i in range(0, len(xs), size)]\n",
+  "bug_locations": [
+    "chunks: the range() upper bound in the list comprehension"
+  ],
+  "explanation": "The range used `len(xs)-size+1` as its stop, so the loop never started an iteration that would produce a short final chunk (and returned [] whenever len(xs) < size). Per the spec, a short final chunk must be included, so the stop must be `len(xs)`; slicing naturally truncates the last chunk. The ValueError check for size <= 0 was correct, and slicing already avoids mutating xs."
+}

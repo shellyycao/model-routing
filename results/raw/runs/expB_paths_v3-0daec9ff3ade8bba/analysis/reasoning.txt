@@ -1,0 +1,58 @@
+We need to produce JSON with fields python_code (string containing script), expected_artifacts (list with findings.json), methods_description (brief description). The script must compute all metrics.
+
+We need to read cleaned.csv from INPUT_DIR env var. Use pandas.
+
+Compute:
+
+total_revenue = df['revenue'].sum()
+order_count = len(df)
+average_order_value = total_revenue / order_count
+
+Regional revenue: groupby region, sum revenue. Ensure keys revenue_north etc. If region missing, set 0.
+
+Quarterly 2024: filter year == 2024, then quarter. Use pandas dt.quarter. Compute sum per quarter.
+
+Yearly revenue: revenue_2023 sum where year 2023; revenue_2024 sum where year 2024. yoy change pct = (rev2024 - rev2023)/rev2023*100. If rev2023 zero, maybe set to inf? But dataset likely has revenue. We'll compute safely: if rev2023 == 0, set yoy_change = 0 (or maybe NaN). But must be finite number. We'll handle: if rev2023 == 0, set yoy_change = 0.0.
+
+High-discount electronics: filter product_category == 'Electronics' and discount_pct >= 20. Count rows, sum revenue.
+
+Order revenue distribution: mean, median, std (sample), min, max.
+
+Customer concentration: unique_customer_count = df['customer_id'].nunique(). top_customer_revenue = df.groupby('customer_id')['revenue'].sum().max(). top_customer_revenue_share_pct = top_customer_revenue / total_revenue * 100.
+
+Write findings.json with all metric keys.
+
+Make sure to not round.
+
+Potential issues: region values are capitalized? In cleaned data they are 'North', etc. So groupby.
+
+Quarterly: need to ensure quarters for 2024 only. Use df['order_date'] as datetime.
+
+Implementation steps:
+
+import os, json, pandas as pd, numpy as np
+
+input_path = os.path.join(os.environ['INPUT_DIR'], 'cleaned.csv')
+df = pd.read_csv(input_path, parse_dates=['order_date'])
+
+Compute metrics.
+
+Create dict findings = {...}
+
+Write to output_path = os.path.join(os.environ['OUTPUT_DIR'], 'findings.json')
+with open(output_path, 'w') as f: json.dump(findings, f, allow_nan=False)
+
+Make sure all values are Python native types (float, int). Pandas may produce numpy types; convert using float() or int().
+
+Edge Cases: revenue sums may be numpy.float64; json.dump can handle but may produce NaN? Not if finite. We'll cast to float.
+
+Similarly std may be NaN if only one row; but dataset >1. So fine.
+
+Now produce JSON output.
+
+Let's craft script.
+
+Potential import warnings: need to set pandas options? Not needed.
+
+Now produce final JSON.
+

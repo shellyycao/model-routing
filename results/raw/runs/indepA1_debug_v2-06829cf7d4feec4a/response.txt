@@ -1,0 +1,9 @@
+```json
+{
+  "fixed_code": "def rolling_mean(xs, window, min_periods=1):\n    if not (1 <= min_periods <= window):\n        raise ValueError('min_periods must be between 1 and window')\n    result = []\n    for i in range(len(xs)):\n        start = max(0, i - window + 1)\n        subset = xs[start:i + 1]\n        if len(subset) >= min_periods:\n            result.append(sum(subset) / len(subset))\n        else:\n            result.append(None)\n    return result",
+  "bug_locations": [
+    "rolling_mean"
+  ],
+  "explanation": "The original function did not correctly handle the 'min_periods' parameter and did not return 'None' when there were insufficient data points. It also did not validate the 'min_periods' parameter. The fixed function now correctly calculates the rolling mean by considering the 'min_periods' parameter, returns 'None' when there are insufficient data points, and validates the 'min_periods' parameter."
+}
+```

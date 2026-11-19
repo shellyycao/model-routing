@@ -1,0 +1,10 @@
+```json
+{
+  "fixed_code": "def clamp(x, low, high):\n    \"\"\"Return *x* bounded inclusively between *low* and *high*.\n\n    If *low* is greater than *high* a :class:`ValueError` is raised.\n    \"\"\"\n    if low > high:\n        raise ValueError('low must not be greater than high')\n    # First limit *x* to the upper bound, then enforce the lower bound.\n    return max(min(x, high), low)\n",
+  "bug_locations": [
+    "return statement logic (max/min arguments reversed)",
+    "error message could be more descriptive (optional)"
+  ],
+  "explanation": "The original implementation used `max(min(x, low), high)`, which incorrectly swapped the low and high bounds, causing values to be clamped to the wrong range. The fix changes the order to `max(min(x, high), low)`, correctly limiting *x* to the inclusive interval [low, high]. The ValueError message was also clarified, though the original raise was functionally correct."
+}
+```

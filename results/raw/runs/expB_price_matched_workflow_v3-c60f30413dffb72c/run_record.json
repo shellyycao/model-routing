@@ -1,0 +1,692 @@
+{
+  "contract_version": "1.2",
+  "run_id": "expB_price_matched_workflow_v3-c60f30413dffb72c",
+  "experiment_id": "expB_price_matched_workflow_v3",
+  "project_id": "energy_consumption",
+  "path_id": "A-C-C",
+  "models": [
+    "A",
+    "C",
+    "C"
+  ],
+  "repeat_index": 2,
+  "config_hash": "1f941d36ae84702ff9967205d5a29052495f4edc6f2106603d6fe7281670bec0",
+  "failure_policy": "continue_with_actual_artifact",
+  "started_at": "2026-11-19T06:22:29.419582+00:00",
+  "finished_at": "2026-11-19T06:23:43.919572+00:00",
+  "stages": [
+    {
+      "stage": "cleaning",
+      "model_alias": "A",
+      "model_id": "us.anthropic.claude-sonnet-4-6",
+      "prompt_version": "v3",
+      "prompt_hash": "54fccecaa4539ea6f9bf17463a0da069f9e72816d3512b9a1510b4481adbcc9d",
+      "invocation_ids": [
+        "0ad252f1-88c8-4288-ab3b-161e520c26e6"
+      ],
+      "cache_hit": false,
+      "shared_with_run_ids": [],
+      "status": "passed",
+      "structural_ok": true,
+      "failure_type": null,
+      "failure_detail": null,
+      "parse_ok": true,
+      "execution": {
+        "status": "success",
+        "exit_code": 0,
+        "stdout": "Cleaning complete: 1560 raw rows -> 1428 cleaned rows.\n",
+        "stderr": "/sandbox/code/main.py:19: FutureWarning: DataFrame.applymap has been deprecated. Use DataFrame.map instead.\n  raw_df = raw_df.applymap(lambda x: x.strip() if isinstance(x, str) else x)\n/sandbox/code/main.py:28: FutureWarning: DataFrame.applymap has been deprecated. Use DataFrame.map instead.\n  raw_df = raw_df.applymap(to_missing)\n",
+        "runtime_ms": 727.205999995931,
+        "output_files": [
+          "/Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expB_price_matched_workflow_v3-c60f30413dffb72c/cleaning/output/cleaned.csv",
+          "/Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expB_price_matched_workflow_v3-c60f30413dffb72c/cleaning/output/cleaning_summary.json"
+        ],
+        "sandbox_image": "sha256:88988a15503bdb96538c3dd62244a79879d5c7848397db18b1267ccfd0a9727a"
+      },
+      "validation": {
+        "stage": "cleaning",
+        "hard_pass": true,
+        "checks": [
+          {
+            "name": "output_exists",
+            "passed": true,
+            "mandatory": true,
+            "detail": "/Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expB_price_matched_workflow_v3-c60f30413dffb72c/cleaning/output/cleaned.csv",
+            "value": null
+          },
+          {
+            "name": "output_parses",
+            "passed": true,
+            "mandatory": true,
+            "detail": "1428 rows, 7 columns",
+            "value": null
+          },
+          {
+            "name": "required_columns_present",
+            "passed": true,
+            "mandatory": true,
+            "detail": "all present",
+            "value": null
+          },
+          {
+            "name": "schema_constraints",
+            "passed": true,
+            "mandatory": true,
+            "detail": "all constraints satisfied",
+            "value": 1.0
+          },
+          {
+            "name": "no_extra_columns",
+            "passed": true,
+            "mandatory": false,
+            "detail": "",
+            "value": null
+          },
+          {
+            "name": "no_duplicate_keys",
+            "passed": true,
+            "mandatory": true,
+            "detail": "",
+            "value": 0.0
+          },
+          {
+            "name": "row_set_matches_reference",
+            "passed": true,
+            "mandatory": true,
+            "detail": "0 reference rows missing (e.g. []); 0 unexpected rows (e.g. []); output rows=1428, reference rows=1428",
+            "value": null
+          },
+          {
+            "name": "values_match_reference",
+            "passed": true,
+            "mandatory": true,
+            "detail": "9996/9996 cells match (abs_tol=0.01, rel_tol=1e-06)",
+            "value": 1.0
+          }
+        ],
+        "quality": {
+          "cleaning_correctness": 1.0,
+          "data_integrity": 1.0,
+          "schema_compliance": 1.0
+        },
+        "quality_basis": "ground_truth",
+        "validator_version": "1.0"
+      },
+      "conditional_validation": null,
+      "input_artifacts": [
+        "datasets/projects/energy_consumption/raw.csv"
+      ],
+      "output_artifacts": [
+        "results/raw/runs/expB_price_matched_workflow_v3-c60f30413dffb72c/cleaning/prompt.txt",
+        "results/raw/runs/expB_price_matched_workflow_v3-c60f30413dffb72c/cleaning/response.txt",
+        "results/raw/runs/expB_price_matched_workflow_v3-c60f30413dffb72c/cleaning/parsed.json",
+        "results/raw/runs/expB_price_matched_workflow_v3-c60f30413dffb72c/cleaning/code.py",
+        "results/raw/runs/expB_price_matched_workflow_v3-c60f30413dffb72c/cleaning/output/cleaned.csv",
+        "results/raw/runs/expB_price_matched_workflow_v3-c60f30413dffb72c/cleaning/output/cleaning_summary.json"
+      ],
+      "input_artifact_hashes": {
+        "datasets/projects/energy_consumption/raw.csv": "615e9dd3f351c49e26a813e2a6b47e6c9e2c812b579dae7b15497467a0d01572"
+      },
+      "output_artifact_hashes": {
+        "results/raw/runs/expB_price_matched_workflow_v3-c60f30413dffb72c/cleaning/prompt.txt": "54fccecaa4539ea6f9bf17463a0da069f9e72816d3512b9a1510b4481adbcc9d",
+        "results/raw/runs/expB_price_matched_workflow_v3-c60f30413dffb72c/cleaning/response.txt": "b25df978f1cbddb5ea86337e598fcaa01c9dff78937cf44641307fbc750ed488",
+        "results/raw/runs/expB_price_matched_workflow_v3-c60f30413dffb72c/cleaning/parsed.json": "a7a126dc34fd8efcb62d609c856da6c0fd88402471ee5ef7598fc21187f38251",
+        "results/raw/runs/expB_price_matched_workflow_v3-c60f30413dffb72c/cleaning/code.py": "7aea3fecc5bb46cff0632eeb8564b73092f0a1e5940cc73889bc4a4b5e5ecfce",
+        "results/raw/runs/expB_price_matched_workflow_v3-c60f30413dffb72c/cleaning/output/cleaned.csv": "af6205ceec17c06a12a266d765064aa1497a408f91f7b8a1b04ddf5b6213fc62",
+        "results/raw/runs/expB_price_matched_workflow_v3-c60f30413dffb72c/cleaning/output/cleaning_summary.json": "71e1a9f5b989ed16caa23e79a5f4b3bb6c9c37afa3e935ba122154f2150f769c"
+      },
+      "handoff_in_path": "results/raw/runs/expB_price_matched_workflow_v3-c60f30413dffb72c/cleaning/handoff_in.json",
+      "handoff_size_bytes": 616,
+      "input_tokens": 2031,
+      "output_tokens": 2940,
+      "cost_usd": 0.0552123,
+      "cost_status": "estimated",
+      "timings": {
+        "generation_ms": 18423.04929200327,
+        "execution_ms": 727.205999995931,
+        "validation_ms": 17.39050000469433,
+        "handoff_ms": 0.20179100101813674
+      }
+    },
+    {
+      "stage": "analysis",
+      "model_alias": "C",
+      "model_id": "zai.glm-5",
+      "prompt_version": "v3",
+      "prompt_hash": "5657f92fa96f87afee6d388ec02fab80374fe1e3e04511bf4a5060c724a238a2",
+      "invocation_ids": [
+        "9cb26fd9-fe4c-4eda-9dfe-008b568b4c46"
+      ],
+      "cache_hit": false,
+      "shared_with_run_ids": [],
+      "status": "passed",
+      "structural_ok": true,
+      "failure_type": null,
+      "failure_detail": null,
+      "parse_ok": true,
+      "execution": {
+        "status": "success",
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "runtime_ms": 668.9073749948875,
+        "output_files": [
+          "/Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expB_price_matched_workflow_v3-c60f30413dffb72c/analysis/output/findings.json"
+        ],
+        "sandbox_image": "sha256:88988a15503bdb96538c3dd62244a79879d5c7848397db18b1267ccfd0a9727a"
+      },
+      "validation": {
+        "stage": "analysis",
+        "hard_pass": true,
+        "checks": [
+          {
+            "name": "findings_exists",
+            "passed": true,
+            "mandatory": true,
+            "detail": "",
+            "value": null
+          },
+          {
+            "name": "findings_parses",
+            "passed": true,
+            "mandatory": true,
+            "detail": "",
+            "value": null
+          },
+          {
+            "name": "required_keys_present",
+            "passed": true,
+            "mandatory": true,
+            "detail": "all 25 present",
+            "value": null
+          },
+          {
+            "name": "values_numeric",
+            "passed": true,
+            "mandatory": true,
+            "detail": "",
+            "value": null
+          },
+          {
+            "name": "values_within_tolerance",
+            "passed": true,
+            "mandatory": true,
+            "detail": "25/25 correct",
+            "value": 1.0
+          },
+          {
+            "name": "reproducible_across_executions",
+            "passed": true,
+            "mandatory": false,
+            "detail": "25/25 keys agree",
+            "value": 1.0
+          }
+        ],
+        "quality": {
+          "numerical_accuracy": 1.0,
+          "calculation_coverage": 1.0,
+          "reproducibility": 1.0
+        },
+        "quality_basis": "ground_truth",
+        "validator_version": "1.0"
+      },
+      "conditional_validation": {
+        "stage": "analysis",
+        "hard_pass": true,
+        "checks": [
+          {
+            "name": "findings_exists",
+            "passed": true,
+            "mandatory": true,
+            "detail": "",
+            "value": null
+          },
+          {
+            "name": "findings_parses",
+            "passed": true,
+            "mandatory": true,
+            "detail": "",
+            "value": null
+          },
+          {
+            "name": "required_keys_present",
+            "passed": true,
+            "mandatory": true,
+            "detail": "all 25 present",
+            "value": null
+          },
+          {
+            "name": "values_numeric",
+            "passed": true,
+            "mandatory": true,
+            "detail": "",
+            "value": null
+          },
+          {
+            "name": "values_within_tolerance",
+            "passed": true,
+            "mandatory": true,
+            "detail": "25/25 correct",
+            "value": 1.0
+          },
+          {
+            "name": "reproducible_across_executions",
+            "passed": true,
+            "mandatory": false,
+            "detail": "25/25 keys agree",
+            "value": 1.0
+          }
+        ],
+        "quality": {
+          "numerical_accuracy": 1.0,
+          "calculation_coverage": 1.0,
+          "reproducibility": 1.0
+        },
+        "quality_basis": "conditional_reference",
+        "validator_version": "1.0"
+      },
+      "input_artifacts": [
+        "results/raw/runs/expB_price_matched_workflow_v3-c60f30413dffb72c/cleaning/output/cleaned.csv"
+      ],
+      "output_artifacts": [
+        "results/raw/runs/expB_price_matched_workflow_v3-c60f30413dffb72c/analysis/prompt.txt",
+        "results/raw/runs/expB_price_matched_workflow_v3-c60f30413dffb72c/analysis/response.txt",
+        "results/raw/runs/expB_price_matched_workflow_v3-c60f30413dffb72c/analysis/parsed.json",
+        "results/raw/runs/expB_price_matched_workflow_v3-c60f30413dffb72c/analysis/code.py",
+        "results/raw/runs/expB_price_matched_workflow_v3-c60f30413dffb72c/analysis/output/findings.json"
+      ],
+      "input_artifact_hashes": {
+        "results/raw/runs/expB_price_matched_workflow_v3-c60f30413dffb72c/cleaning/output/cleaned.csv": "af6205ceec17c06a12a266d765064aa1497a408f91f7b8a1b04ddf5b6213fc62"
+      },
+      "output_artifact_hashes": {
+        "results/raw/runs/expB_price_matched_workflow_v3-c60f30413dffb72c/analysis/prompt.txt": "5657f92fa96f87afee6d388ec02fab80374fe1e3e04511bf4a5060c724a238a2",
+        "results/raw/runs/expB_price_matched_workflow_v3-c60f30413dffb72c/analysis/response.txt": "34bc7023b3e74ec7d20a107b05a146ae5929e0e19916c376e1f405d3a39b8ee9",
+        "results/raw/runs/expB_price_matched_workflow_v3-c60f30413dffb72c/analysis/parsed.json": "bfd7ab1d37be70a0a02caa5be5c3f91553ea534c372faff50d76c5faf087ab74",
+        "results/raw/runs/expB_price_matched_workflow_v3-c60f30413dffb72c/analysis/code.py": "9c078ce22fe4883ca0c0991578b637e2443a3c5bcbe6040e283c60a82aa8327c",
+        "results/raw/runs/expB_price_matched_workflow_v3-c60f30413dffb72c/analysis/output/findings.json": "d0e171ea3c67d0e1b2cd7fa3820eed743b4c89d574fcf66aed7c43f99ff70b27"
+      },
+      "handoff_in_path": "results/raw/runs/expB_price_matched_workflow_v3-c60f30413dffb72c/analysis/handoff_in.json",
+      "handoff_size_bytes": 15657,
+      "input_tokens": 2301,
+      "output_tokens": 1559,
+      "cost_usd": 0.007289800000000001,
+      "cost_status": "estimated",
+      "timings": {
+        "generation_ms": 25100.492458004737,
+        "execution_ms": 668.9073749948875,
+        "validation_ms": 9.21204100450268,
+        "handoff_ms": 0.378332995751407
+      }
+    },
+    {
+      "stage": "reporting",
+      "model_alias": "C",
+      "model_id": "zai.glm-5",
+      "prompt_version": "v3",
+      "prompt_hash": "5dd44102552cf9bee46a737ccbd6581801d0c43eaeefe1fdf294601a5bd7e095",
+      "invocation_ids": [
+        "294afaf1-3744-4a82-9ea8-672bb93f2c2f"
+      ],
+      "cache_hit": false,
+      "shared_with_run_ids": [],
+      "status": "passed",
+      "structural_ok": true,
+      "failure_type": null,
+      "failure_detail": null,
+      "parse_ok": true,
+      "execution": null,
+      "validation": {
+        "stage": "reporting",
+        "hard_pass": true,
+        "checks": [
+          {
+            "name": "report_valid",
+            "passed": true,
+            "mandatory": true,
+            "detail": "",
+            "value": null
+          },
+          {
+            "name": "required_findings_covered",
+            "passed": true,
+            "mandatory": true,
+            "detail": "7/7",
+            "value": 1.0
+          },
+          {
+            "name": "required_metric_keys_present",
+            "passed": true,
+            "mandatory": true,
+            "detail": "every required metric key reported in its finding",
+            "value": null
+          },
+          {
+            "name": "reported_values_consistent",
+            "passed": true,
+            "mandatory": true,
+            "detail": "all consistent",
+            "value": 1.0
+          },
+          {
+            "name": "directions_correct",
+            "passed": true,
+            "mandatory": true,
+            "detail": "all required directions correct",
+            "value": null
+          },
+          {
+            "name": "rankings_correct",
+            "passed": true,
+            "mandatory": true,
+            "detail": "all ranking semantics correct",
+            "value": null
+          },
+          {
+            "name": "rankings_explicit",
+            "passed": true,
+            "mandatory": false,
+            "detail": "all required rankings explicitly structured",
+            "value": 1.0
+          },
+          {
+            "name": "derived_values_correct",
+            "passed": true,
+            "mandatory": true,
+            "detail": "all declared derived values recompute",
+            "value": null
+          },
+          {
+            "name": "finding_statements_substantive",
+            "passed": true,
+            "mandatory": true,
+            "detail": "every statement has a supported numeric finding",
+            "value": null
+          },
+          {
+            "name": "prose_claims_consistent",
+            "passed": true,
+            "mandatory": true,
+            "detail": "structured claims agree with prose",
+            "value": null
+          },
+          {
+            "name": "numeric_attribution_correct",
+            "passed": true,
+            "mandatory": true,
+            "detail": "all finding numbers belong to their finding",
+            "value": null
+          },
+          {
+            "name": "unsupported_claims_within_threshold",
+            "passed": true,
+            "mandatory": false,
+            "detail": "none (28 numeric claims checked)",
+            "value": 0.0
+          },
+          {
+            "name": "evidence_refs_valid",
+            "passed": true,
+            "mandatory": false,
+            "detail": "",
+            "value": null
+          },
+          {
+            "name": "within_word_limit",
+            "passed": true,
+            "mandatory": false,
+            "detail": "320 words (limit 600)",
+            "value": 320.0
+          }
+        ],
+        "quality": {
+          "finding_coverage": 1.0,
+          "numerical_consistency": 1.0,
+          "unsupported_claim_count": 0.0
+        },
+        "quality_basis": "ground_truth",
+        "validator_version": "3.0-post-freeze"
+      },
+      "conditional_validation": {
+        "stage": "reporting",
+        "hard_pass": true,
+        "checks": [
+          {
+            "name": "report_valid",
+            "passed": true,
+            "mandatory": true,
+            "detail": "",
+            "value": null
+          },
+          {
+            "name": "required_findings_covered",
+            "passed": true,
+            "mandatory": true,
+            "detail": "7/7",
+            "value": 1.0
+          },
+          {
+            "name": "required_metric_keys_present",
+            "passed": true,
+            "mandatory": true,
+            "detail": "every required metric key reported in its finding",
+            "value": null
+          },
+          {
+            "name": "reported_values_consistent",
+            "passed": true,
+            "mandatory": true,
+            "detail": "all consistent",
+            "value": 1.0
+          },
+          {
+            "name": "directions_correct",
+            "passed": true,
+            "mandatory": true,
+            "detail": "all required directions correct",
+            "value": null
+          },
+          {
+            "name": "rankings_correct",
+            "passed": true,
+            "mandatory": true,
+            "detail": "all ranking semantics correct",
+            "value": null
+          },
+          {
+            "name": "rankings_explicit",
+            "passed": true,
+            "mandatory": false,
+            "detail": "all required rankings explicitly structured",
+            "value": 1.0
+          },
+          {
+            "name": "derived_values_correct",
+            "passed": true,
+            "mandatory": true,
+            "detail": "all declared derived values recompute",
+            "value": null
+          },
+          {
+            "name": "finding_statements_substantive",
+            "passed": true,
+            "mandatory": true,
+            "detail": "every statement has a supported numeric finding",
+            "value": null
+          },
+          {
+            "name": "prose_claims_consistent",
+            "passed": true,
+            "mandatory": true,
+            "detail": "structured claims agree with prose",
+            "value": null
+          },
+          {
+            "name": "numeric_attribution_correct",
+            "passed": true,
+            "mandatory": true,
+            "detail": "all finding numbers belong to their finding",
+            "value": null
+          },
+          {
+            "name": "unsupported_claims_within_threshold",
+            "passed": true,
+            "mandatory": false,
+            "detail": "none (28 numeric claims checked)",
+            "value": 0.0
+          },
+          {
+            "name": "evidence_refs_valid",
+            "passed": true,
+            "mandatory": false,
+            "detail": "",
+            "value": null
+          },
+          {
+            "name": "within_word_limit",
+            "passed": true,
+            "mandatory": false,
+            "detail": "320 words (limit 600)",
+            "value": 320.0
+          }
+        ],
+        "quality": {
+          "finding_coverage": 1.0,
+          "numerical_consistency": 1.0,
+          "unsupported_claim_count": 0.0
+        },
+        "quality_basis": "conditional_reference",
+        "validator_version": "3.0-post-freeze"
+      },
+      "input_artifacts": [
+        "results/raw/runs/expB_price_matched_workflow_v3-c60f30413dffb72c/analysis/output/findings.json"
+      ],
+      "output_artifacts": [
+        "results/raw/runs/expB_price_matched_workflow_v3-c60f30413dffb72c/reporting/prompt.txt",
+        "results/raw/runs/expB_price_matched_workflow_v3-c60f30413dffb72c/reporting/response.txt",
+        "results/raw/runs/expB_price_matched_workflow_v3-c60f30413dffb72c/reporting/parsed.json",
+        "results/raw/runs/expB_price_matched_workflow_v3-c60f30413dffb72c/reporting/output/report.json",
+        "results/raw/runs/expB_price_matched_workflow_v3-c60f30413dffb72c/reporting/output/report.md"
+      ],
+      "input_artifact_hashes": {
+        "results/raw/runs/expB_price_matched_workflow_v3-c60f30413dffb72c/analysis/output/findings.json": "d0e171ea3c67d0e1b2cd7fa3820eed743b4c89d574fcf66aed7c43f99ff70b27"
+      },
+      "output_artifact_hashes": {
+        "results/raw/runs/expB_price_matched_workflow_v3-c60f30413dffb72c/reporting/prompt.txt": "5dd44102552cf9bee46a737ccbd6581801d0c43eaeefe1fdf294601a5bd7e095",
+        "results/raw/runs/expB_price_matched_workflow_v3-c60f30413dffb72c/reporting/response.txt": "37646da5f3b020ec8f27523df2a2133e792e4ee4abe3a517a19a33bee5913f03",
+        "results/raw/runs/expB_price_matched_workflow_v3-c60f30413dffb72c/reporting/parsed.json": "ebed352d02f5c98dc59cffd8887c93aa139f50b6e06df439aa2898e377466cb7",
+        "results/raw/runs/expB_price_matched_workflow_v3-c60f30413dffb72c/reporting/output/report.json": "ebed352d02f5c98dc59cffd8887c93aa139f50b6e06df439aa2898e377466cb7",
+        "results/raw/runs/expB_price_matched_workflow_v3-c60f30413dffb72c/reporting/output/report.md": "d90cdc025994da8b9926e5b57491baba8adad9eda251bfaf09853b6463e68220"
+      },
+      "handoff_in_path": "results/raw/runs/expB_price_matched_workflow_v3-c60f30413dffb72c/reporting/handoff_in.json",
+      "handoff_size_bytes": 26966,
+      "input_tokens": 3041,
+      "output_tokens": 1497,
+      "cost_usd": 0.0078314,
+      "cost_status": "estimated",
+      "timings": {
+        "generation_ms": 26836.51495799859,
+        "execution_ms": null,
+        "validation_ms": 6.676333003269974,
+        "handoff_ms": 0.5390420046751387
+      }
+    }
+  ],
+  "feasibility": {
+    "outcome": "feasible",
+    "stage_status": {
+      "cleaning": "passed",
+      "analysis": "passed",
+      "reporting": "passed"
+    },
+    "first_failure_stage": null,
+    "failure_type": null
+  },
+  "quality": {
+    "cleaning": {
+      "cleaning_correctness": 1.0,
+      "data_integrity": 1.0,
+      "schema_compliance": 1.0
+    },
+    "analysis": {
+      "numerical_accuracy": 1.0,
+      "calculation_coverage": 1.0,
+      "reproducibility": 1.0
+    },
+    "reporting": {
+      "finding_coverage": 1.0,
+      "numerical_consistency": 1.0,
+      "unsupported_claim_count": 0.0
+    }
+  },
+  "conditional_quality": {
+    "analysis": {
+      "numerical_accuracy": 1.0,
+      "calculation_coverage": 1.0,
+      "reproducibility": 1.0
+    },
+    "reporting": {
+      "finding_coverage": 1.0,
+      "numerical_consistency": 1.0,
+      "unsupported_claim_count": 0.0
+    }
+  },
+  "efficiency": {
+    "total_api_latency_ms": 70360.0567080066,
+    "total_execution_ms": 1396.1133749908186,
+    "total_validation_ms": 33.278874012466986,
+    "total_handoff_ms": 1.1191660014446825,
+    "end_to_end_ms": 74499.25562499993,
+    "input_tokens": 7373,
+    "output_tokens": 5996,
+    "cost_usd": 0.0703335,
+    "cost_status": "estimated",
+    "n_calls": 3,
+    "n_cache_hits": 0,
+    "n_switches": 1,
+    "handoff_bytes_total": 43239
+  },
+  "propagation": {
+    "downstream_executable": {
+      "cleaning": true,
+      "analysis": true,
+      "reporting": true
+    },
+    "upstream_error_severity": {
+      "analysis": {
+        "cleaning_correctness": 0.0,
+        "data_integrity": 0.0,
+        "schema_compliance": 0.0
+      },
+      "reporting": {
+        "numerical_accuracy": 0.0,
+        "calculation_coverage": 0.0,
+        "reproducibility": 0.0
+      }
+    },
+    "end_to_end_accuracy": {
+      "finding_coverage": 1.0,
+      "numerical_consistency": 1.0,
+      "unsupported_claim_count": 0.0
+    },
+    "propagation_impact": {
+      "analysis": {
+        "calculation_coverage": 0.0,
+        "numerical_accuracy": 0.0,
+        "reproducibility": 0.0
+      },
+      "reporting": {
+        "finding_coverage": 0.0,
+        "numerical_consistency": 0.0,
+        "unsupported_claim_count": 0.0
+      }
+    },
+    "blocked_stages": []
+  },
+  "final_artifacts": [
+    "results/raw/runs/expB_price_matched_workflow_v3-c60f30413dffb72c/reporting/prompt.txt",
+    "results/raw/runs/expB_price_matched_workflow_v3-c60f30413dffb72c/reporting/response.txt",
+    "results/raw/runs/expB_price_matched_workflow_v3-c60f30413dffb72c/reporting/parsed.json",
+    "results/raw/runs/expB_price_matched_workflow_v3-c60f30413dffb72c/reporting/output/report.json",
+    "results/raw/runs/expB_price_matched_workflow_v3-c60f30413dffb72c/reporting/output/report.md"
+  ]
+}

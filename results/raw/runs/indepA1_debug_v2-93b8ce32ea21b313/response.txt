@@ -1,0 +1,9 @@
+```json
+{
+  "fixed_code": "def invoice_total(lines, discount_pct=0, tax_pct=0):\n    subtotal = sum(row['qty'] * row['unit_price'] for row in lines)\n    discounted_total = subtotal * (1 - discount_pct / 100)\n    final_total = discounted_total * (1 + tax_pct / 100)\n    return round(final_total, 2)\n",
+  "bug_locations": [
+    "invoice_total function body"
+  ],
+  "explanation": "The original code incorrectly applied the discount and tax in a single step, which led to incorrect calculations. The discount should be applied to the subtotal first, and then the tax should be applied to the discounted total. Additionally, the rounding should only be applied to the final result, not intermediate calculations."
+}
+```

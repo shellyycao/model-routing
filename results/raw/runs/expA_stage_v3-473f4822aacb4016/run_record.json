@@ -1,0 +1,139 @@
+{
+  "contract_version": "1.2",
+  "run_id": "expA_stage_v3-473f4822aacb4016",
+  "experiment_id": "expA_stage_v3",
+  "project_id": "support_operations",
+  "stage": "cleaning",
+  "model_alias": "B",
+  "repeat_index": 0,
+  "canonical_inputs": [
+    "datasets/projects/support_operations/raw.csv",
+    "datasets/projects/support_operations/agents.csv"
+  ],
+  "canonical_input_hashes": {
+    "datasets/projects/support_operations/raw.csv": "d260e1c2251ade14aa044895797fa2d39647b6d1fe43ba7c79d8c5a48fd287fd",
+    "datasets/projects/support_operations/agents.csv": "51d9c560abc74a09ea32b0c667fc52c8d0f5479fd5a01314fc8f7f2fc0ff4442"
+  },
+  "config_hash": "c8000d0a14b6fcffb337fb017a986db3292d1ba85070643066892f196bb61319",
+  "record": {
+    "stage": "cleaning",
+    "model_alias": "B",
+    "model_id": "us.amazon.nova-pro-v1:0",
+    "prompt_version": "v3",
+    "prompt_hash": "4c80e726ad39dcec71d0f3668b55982f474546dfd54cafee800a7f420e1182ec",
+    "invocation_ids": [
+      "bc1c92f9-b184-44a7-9156-ada75778fc02"
+    ],
+    "cache_hit": false,
+    "shared_with_run_ids": [],
+    "status": "failed",
+    "structural_ok": false,
+    "failure_type": "execution_error",
+    "failure_detail": "execution runtime_error (exit 1): ckages/pandas/core/indexing.py\", line 2035, in _setitem_with_indexer_split_path\n    self._setitem_single_column(loc, value, pi)\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/indexing.py\", line 2175, in _setitem_single_column\n    self.obj._mgr.column_setitem(loc, plane_indexer, value)\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/internals/managers.py\", line 1337, in column_setitem\n    new_mgr = col_mgr.setitem((idx,), value)\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/internals/managers.py\", line 415, in setitem\n    return self.apply(\"setitem\", indexer=indexer, value=value)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/internals/managers.py\", line 363, in apply\n    applied = getattr(b, f)(**kwargs)\n              ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/internals/blocks.py\", line 2063, in setitem\n    values[indexer] = value\n    ~~~~~~^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/arrays/masked.py\", line 314, in __setitem__\n    value = self._validate_setitem_value(value)\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/arrays/masked.py\", line 305, in _validate_setitem_value\n    raise TypeError(f\"Invalid value '{str(value)}' for dtype {self.dtype}\")\nTypeError: Invalid value '' for dtype Int64\n",
+    "parse_ok": true,
+    "execution": {
+      "status": "runtime_error",
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "/sandbox/code/main.py:29: SyntaxWarning: invalid escape sequence '\\$'\n  agents_df['hourly_cost'] = agents_df['hourly_cost'].replace({'\\$|USD|,': ''}, regex=True).astype(float)\nTraceback (most recent call last):\n  File \"/sandbox/code/main.py\", line 46, in <module>\n    tickets_df.loc[tickets_df['satisfaction_score'].isna(),'satisfaction_score'] = ''\n    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/indexing.py\", line 911, in __setitem__\n    iloc._setitem_with_indexer(indexer, value, self.name)\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/indexing.py\", line 1942, in _setitem_with_indexer\n    self._setitem_with_indexer_split_path(indexer, value, name)\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/indexing.py\", line 2035, in _setitem_with_indexer_split_path\n    self._setitem_single_column(loc, value, pi)\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/indexing.py\", line 2175, in _setitem_single_column\n    self.obj._mgr.column_setitem(loc, plane_indexer, value)\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/internals/managers.py\", line 1337, in column_setitem\n    new_mgr = col_mgr.setitem((idx,), value)\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/internals/managers.py\", line 415, in setitem\n    return self.apply(\"setitem\", indexer=indexer, value=value)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/internals/managers.py\", line 363, in apply\n    applied = getattr(b, f)(**kwargs)\n              ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/internals/blocks.py\", line 2063, in setitem\n    values[indexer] = value\n    ~~~~~~^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/arrays/masked.py\", line 314, in __setitem__\n    value = self._validate_setitem_value(value)\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/arrays/masked.py\", line 305, in _validate_setitem_value\n    raise TypeError(f\"Invalid value '{str(value)}' for dtype {self.dtype}\")\nTypeError: Invalid value '' for dtype Int64\n",
+      "runtime_ms": 889.8325000009208,
+      "output_files": [],
+      "sandbox_image": "sha256:88988a15503bdb96538c3dd62244a79879d5c7848397db18b1267ccfd0a9727a"
+    },
+    "validation": {
+      "stage": "cleaning",
+      "hard_pass": false,
+      "checks": [
+        {
+          "name": "output_exists",
+          "passed": false,
+          "mandatory": true,
+          "detail": "cleaned CSV not found: /Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expA_stage_v3-473f4822aacb4016/cleaning/output/cleaned.csv",
+          "value": null
+        },
+        {
+          "name": "output_parses",
+          "passed": false,
+          "mandatory": true,
+          "detail": "no output",
+          "value": null
+        },
+        {
+          "name": "required_columns_present",
+          "passed": false,
+          "mandatory": true,
+          "detail": "no output",
+          "value": null
+        },
+        {
+          "name": "schema_constraints",
+          "passed": false,
+          "mandatory": true,
+          "detail": "no output",
+          "value": null
+        },
+        {
+          "name": "no_duplicate_keys",
+          "passed": false,
+          "mandatory": true,
+          "detail": "no output",
+          "value": null
+        },
+        {
+          "name": "row_set_matches_reference",
+          "passed": false,
+          "mandatory": true,
+          "detail": "no output",
+          "value": null
+        },
+        {
+          "name": "values_match_reference",
+          "passed": false,
+          "mandatory": true,
+          "detail": "no output",
+          "value": null
+        }
+      ],
+      "quality": {
+        "cleaning_correctness": 0.0,
+        "data_integrity": 0.0,
+        "schema_compliance": 0.0
+      },
+      "quality_basis": "ground_truth",
+      "validator_version": "1.0"
+    },
+    "conditional_validation": null,
+    "input_artifacts": [
+      "datasets/projects/support_operations/raw.csv",
+      "datasets/projects/support_operations/agents.csv"
+    ],
+    "output_artifacts": [
+      "results/raw/runs/expA_stage_v3-473f4822aacb4016/cleaning/prompt.txt",
+      "results/raw/runs/expA_stage_v3-473f4822aacb4016/cleaning/response.txt",
+      "results/raw/runs/expA_stage_v3-473f4822aacb4016/cleaning/parsed.json",
+      "results/raw/runs/expA_stage_v3-473f4822aacb4016/cleaning/code.py"
+    ],
+    "input_artifact_hashes": {
+      "datasets/projects/support_operations/raw.csv": "d260e1c2251ade14aa044895797fa2d39647b6d1fe43ba7c79d8c5a48fd287fd",
+      "datasets/projects/support_operations/agents.csv": "51d9c560abc74a09ea32b0c667fc52c8d0f5479fd5a01314fc8f7f2fc0ff4442"
+    },
+    "output_artifact_hashes": {
+      "results/raw/runs/expA_stage_v3-473f4822aacb4016/cleaning/prompt.txt": "4c80e726ad39dcec71d0f3668b55982f474546dfd54cafee800a7f420e1182ec",
+      "results/raw/runs/expA_stage_v3-473f4822aacb4016/cleaning/response.txt": "e3e14b2962121e1baf5a3d7d52415af9bb25b4d620586217b64ae78f1bcc7c3b",
+      "results/raw/runs/expA_stage_v3-473f4822aacb4016/cleaning/parsed.json": "e547933940491d9c7957bf9a7f52759b1cba2093a8d64828fed994adca7d5c94",
+      "results/raw/runs/expA_stage_v3-473f4822aacb4016/cleaning/code.py": "456173b5844703e70e0dc23a813c07b083143c0c399bec05c1e83b10f4a95397"
+    },
+    "handoff_in_path": "results/raw/runs/expA_stage_v3-473f4822aacb4016/cleaning/handoff_in.json",
+    "handoff_size_bytes": 420,
+    "input_tokens": 1826,
+    "output_tokens": 1662,
+    "cost_usd": null,
+    "cost_status": "unavailable",
+    "timings": {
+      "generation_ms": 8613.617041999532,
+      "execution_ms": 889.8325000009208,
+      "validation_ms": 0.898375001270324,
+      "handoff_ms": 0.19166600031894632
+    }
+  }
+}

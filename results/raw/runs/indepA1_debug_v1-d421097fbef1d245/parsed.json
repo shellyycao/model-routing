@@ -1,0 +1,5 @@
+{
+  "fixed_code": "def append_item(item, items=None):\n    if items is None:\n        items = []\n    items.append(item)\n    return items",
+  "bug_location": "Function append_item: default argument items=[] creates a shared mutable list across calls.",
+  "explanation": "Using a mutable default argument caused state to be shared between invocations. Changing the default to None and initializing a new list inside the function ensures each call gets its own list."
+}

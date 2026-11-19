@@ -1,0 +1,9 @@
+```json
+{
+  "fixed_code": "def paginate(items, size, cursor=None):\n    if size <= 0:\n        raise ValueError(\"size must be positive\")\n    if cursor is None:\n        start = 0\n    else:\n        try:\n            start = int(cursor)\n        except (ValueError, TypeError):\n            raise ValueError(\"invalid cursor\")\n        if start < 0 or start > len(items):\n            raise ValueError(\"invalid cursor\")\n    end = start + size\n    page = list(items[start:end])\n    next_cursor = None if end >= len(items) else str(end)\n    return page, next_cursor\n",
+  "bug_locations": [
+    "paginate function body"
+  ],
+  "explanation": "Multiple bugs were present: 1) The original code used semicolons to chain statements on one line in a way that's syntactically invalid for an assignment after a function signature (missing proper indentation/body structure). 2) next_cursor was always set to str(end) instead of None when the end of the list is reached. 3) No validation for nonpositive size (should raise ValueError). 4) No validation for invalid cursor values (should raise ValueError). The fix properly structures the function, validates inputs, and returns None as next_cursor when there are no more items."
+}
+```

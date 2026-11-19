@@ -1,0 +1,12 @@
+```json
+{
+  "fixed_code": "def invoice_total(lines, discount_pct=0, tax_pct=0):\n    \"\"\"Calculate the total invoice amount.\n\n    * `lines` is an iterable of mappings with keys ``'qty'`` and ``'unit_price'``.\n    * `discount_pct` is the discount percentage (e.g., ``10`` for 10%).\n    * `tax_pct` is the tax percentage (e.g., ``5`` for 5%).\n\n    The function sums ``qty * unit_price`` for all lines, applies the discount,\n    then applies tax, and finally rounds the *final* result to two decimal places.\n    \"\"\"\n    # 1. Compute raw subtotal without any intermediate rounding.\n    subtotal = sum(row['qty'] * row['unit_price'] for row in lines)\n\n    # 2. Apply discount (percentage expressed as a fraction).\n    discounted = subtotal * (1 - discount_pct / 100)\n\n    # 3. Apply tax on the discounted amount.\n    total = discounted * (1 + tax_pct / 100)\n\n    # 4. Round only the final total to two decimal places.\n    return round(total, 2)\n",
+  "bug_locations": [
+    "Removed per‑line rounding in the subtotal calculation; now sums raw qty*unit_price values.",
+    "Replaced integer division (//) with true division (/) for discount_pct and tax_pct to correctly compute percentage fractions.",
+    "Introduced explicit intermediate variables (discounted, total) to clearly apply discount before tax.",
+    "Added comprehensive docstring and comments for clarity."
+  ],
+  "explanation": "The original implementation rounded each line item before summing, violating the spec that only the final result should be rounded. It also used integer division (//) for percentage calculations, causing discount and tax to be ignored for typical values (<100). By summing the exact line totals, using float division for percentages, and rounding only the final amount, the function now conforms to the specification."
+}
+```

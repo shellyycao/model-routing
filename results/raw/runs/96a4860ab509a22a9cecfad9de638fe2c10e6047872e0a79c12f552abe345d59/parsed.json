@@ -1,0 +1,8 @@
+{
+  "fixed_code": "def sessionize(events, gap):\n    sessions = {}\n    last_by_user = {}\n    for user, t in sorted(events, key=lambda e: (e[0], e[1])):\n        if user not in sessions:\n            sessions[user] = [[]]\n        elif t - last_by_user[user] > gap:\n            sessions[user].append([])\n        sessions[user][-1].append(t)\n        last_by_user[user] = t\n    return sessions\n",
+  "bug_locations": [
+    "sessionize sorting key",
+    "sessionize session-boundary tracking"
+  ],
+  "explanation": "The buggy code sorted only by timestamp and used one global last timestamp, so events from different users could suppress or create incorrect session boundaries. It also could add an empty leading session when a user's first event was far from the previously seen global event. The fix sorts by (user, timestamp), tracks the last timestamp per user, creates the first session for each user once, and starts a new session only when that user's consecutive timestamps differ by strictly more than gap. The input is not mutated because sorted returns a new list."
+}

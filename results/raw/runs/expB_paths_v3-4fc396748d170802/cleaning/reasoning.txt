@@ -1,0 +1,282 @@
+We need to produce JSON with fields python_code (script), output_filename ("cleaned.csv"), cleaning_logic (brief explanation). The script must implement all cleaning steps, produce cleaned.csv and cleaning_summary.json with raw_rows, cleaned_rows, and per-rule counts.
+
+We need to read raw.csv as text, treat all columns as strings, strip whitespace, treat missing values as defined.
+
+Implementation plan:
+
+- import os, pandas as pd, numpy as np, json, datetime.
+
+- input_path = os.path.join(os.environ["INPUT_DIR"], "raw.csv")
+- output_path = os.path.join(os.environ["OUTPUT_DIR"], "cleaned.csv")
+- summary_path = os.path.join(os.environ["OUTPUT_DIR"], "cleaning_summary.json")
+
+- Read raw CSV using pandas read_csv with dtype=str, keep default. Use na_filter=False to keep as strings.
+
+- raw_rows = len(df)
+
+- Apply R1: strip whitespace from all values, convert missing values: define missing_set = {'', 'na', 'n/a', 'null', 'none', '-'} after stripping lower.
+
+We can apply df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x). Then replace missing values with np.nan where lower stripped in missing_set.
+
+- R2: Remove duplicate order_id, keep first. Count duplicates removed.
+
+- Then apply row filters sequentially, tracking counts per rule.
+
+We'll create a mask (boolean series) initially all True.
+
+Define counters dict.
+
+Implement each rule:
+
+R3 order_date parsing: define function parse_date(s). Try each format using datetime.strptime. Formats:
+
+'%Y-%m-%d'
+'%m/%d/%Y'
+'%d-%b-%Y' (need month abbreviation, case-insensitive)
+'%Y/%m/%d'
+'%B %d, %Y' (full month name)
+
+If parsing fails, return None.
+
+Apply to column, produce parsed date string in ISO format. If missing or None, drop.
+
+R4 region mapping: map case-insensitive values: {'n':'North','north':'North','s':'South','south':'South','e':'East','east':'East','w':'West','west':'West'}
+
+If not in mapping, drop.
+
+R5 product_category mapping: define mapping dict with lower keys.
+
+Mapping list:
+
+'electronics' -> 'Electronics'
+'electronic' -> 'Electronics'
+'clothing' -> 'Clothing'
+'apparel' -> 'Clothing'
+'home & garden' -> 'Home & Garden'
+'home and garden' -> 'Home & Garden'
+'home&garden' -> 'Home & Garden'
+'sports' -> 'Sports'
+'sport' -> 'Sports'
+'books' -> 'Books'
+'book' -> 'Books'
+
+Also ensure case-insensitive.
+
+If not mapped, drop.
+
+R6 unit_price: remove '$','USD',',' and surrounding spaces. Use regex: replace r'[\$,]' and 'USD' case-insensitive. Then strip. If after cleaning empty -> missing. Parse float. Drop if missing, not number, <=0, >5000.
+
+R7 quantity: parse as float, then check if integer (abs(val - round(val)) < small epsilon). Convert to int. Drop if missing, not number, not whole, <1 or >50.
+
+R8 discount_pct: if missing (NaN) set to 0. Else remove trailing '%' and strip, parse float. Drop if not number or <0 or >100.
+
+R9 customer_id: if missing (NaN) set to 'UNKNOWN', else upper case.
+
+R10 revenue: compute quantity * unit_price * (1 - discount_pct/100). Round to 2 decimals.
+
+R11 output columns order, sort by order_id ascending (string sort). Write CSV with header, index=False.
+
+Create summary JSON: include raw_rows, cleaned_rows, and counts per rule: duplicates_removed, rows_dropped_order_date, rows_dropped_region, rows_dropped_product_category, rows_dropped_unit_price, rows_dropped_quantity, rows_dropped_discount_pct (maybe count of rows dropped due to discount invalid). Also maybe rows_kept.
+
+Implementation details:
+
+- For counting rows dropped per rule, we can compute before and after each rule.
+
+Simplify: after each rule, compute number dropped = previous_len - new_len, store.
+
+- For discount_pct missing handling, we don't drop rows; only count rows dropped due to invalid discount.
+
+Edge Cases: need to treat missing values after R1 as NaN.
+
+Implementation steps:
+
+```
+import os, pandas as pd, numpy as np, json, datetime, re
+
+def clean():
+    input_file = os.path.join(os.environ["INPUT_DIR"], "raw.csv")
+    output_file = os.path.join(os.environ["OUTPUT_DIR"], "cleaned.csv")
+    summary_file = os.path.join(os.environ["OUTPUT_DIR"], "cleaning_summary.json")
+    
+    df = pd.read_csv(input_file, dtype=str, keep_default_na=False)  # keep as strings
+    raw_rows = len(df)
+    
+    # R1 strip and missing
+    missing_vals = {'', 'na', 'n/a', 'null', 'none', '-'}
+    df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)
+    df = df.replace(to_replace=lambda v: isinstance(v,str) and v.lower() in missing_vals, value=np.nan)
+    
+    summary = {"raw_rows": raw_rows}
+    counts = {}
+    
+    # R2 duplicates
+    before = len(df)
+    df = df.drop_duplicates(subset=['order_id'], keep='first')
+    dup_removed = before - len(df)
+    counts['duplicates_removed'] = dup_removed
+    
+    # R3 order_date
+    def parse_date(val):
+        if pd.isna(val):
+            return None
+        val = val.strip()
+        formats = ['%Y-%m-%d','%m/%d/%Y','%d-%b-%Y','%Y/%m/%d','%B %d, %Y']
+        for fmt in formats:
+            try:
+                dt = datetime.datetime.strptime(val, fmt)
+                return dt.strftime('%Y-%m-%d')
+            except Exception:
+                continue
+        return None
+    df['order_date_parsed'] = df['order_date'].apply(parse_date)
+    before = len(df)
+    df = df[~df['order_date_parsed'].isna()]
+    dropped = before - len(df)
+    counts['rows_dropped_order_date'] = dropped
+    df = df.drop(columns=['order_date']).rename(columns={'order_date_parsed':'order_date'})
+    
+    # R4 region
+    region_map = {
+        'n':'North','north':'North',
+        's':'South','south':'South',
+        'e':'East','east':'East',
+        'w':'West','west':'West'
+    }
+    def map_region(val):
+        if pd.isna(val):
+            return None
+        key = val.strip().lower()
+        return region_map.get(key)
+    df['region_mapped'] = df['region'].apply(map_region)
+    before = len(df)
+    df = df[~df['region_mapped'].isna()]
+    counts['rows_dropped_region'] = before - len(df)
+    df = df.drop(columns=['region']).rename(columns={'region_mapped':'region'})
+    
+    # R5 product_category
+    cat_map = {
+        'electronics':'Electronics',
+        'electronic':'Electronics',
+        'clothing':'Clothing',
+        'apparel':'Clothing',
+        'home & garden':'Home & Garden',
+        'home and garden':'Home & Garden',
+        'home&garden':'Home & Garden',
+        'sports':'Sports',
+        'sport':'Sports',
+        'books':'Books',
+        'book':'Books'
+    }
+    def map_cat(val):
+        if pd.isna(val):
+            return None
+        key = val.strip().lower()
+        return cat_map.get(key)
+    df['product_category_mapped'] = df['product_category'].apply(map_cat)
+    before = len(df)
+    df = df[~df['product_category_mapped'].isna()]
+    counts['rows_dropped_product_category'] = before - len(df)
+    df = df.drop(columns=['product_category']).rename(columns={'product_category_mapped':'product_category'})
+    
+    # R6 unit_price
+    def clean_price(val):
+        if pd.isna(val):
+            return None
+        s = val.strip()
+        s = re.sub(r'(?i)usd', '', s)  # remove USD case-insensitive
+        s = s.replace('$','')
+        s = s.replace(',','')
+        s = s.strip()
+        if s == '':
+            return None
+        try:
+            return float(s)
+        except:
+            return None
+    df['unit_price_clean'] = df['unit_price'].apply(clean_price)
+    before = len(df)
+    df = df[~df['unit_price_clean'].isna()]
+    df = df[(df['unit_price_clean']>0) & (df['unit_price_clean']<=5000)]
+    counts['rows_dropped_unit_price'] = before - len(df)
+    df = df.drop(columns=['unit_price']).rename(columns={'unit_price_clean':'unit_price'})
+    
+    # R7 quantity
+    def parse_qty(val):
+        if pd.isna(val):
+            return None
+        s = val.strip()
+        try:
+            f = float(s)
+            if abs(f - round(f)) > 1e-6:
+                return None
+            i = int(round(f))
+            return i
+        except:
+            return None
+    df['quantity_int'] = df['quantity'].apply(parse_qty)
+    before = len(df)
+    df = df[~df['quantity_int'].isna()]
+    df = df[(df['quantity_int']>=1) & (df['quantity_int']<=50)]
+    counts['rows_dropped_quantity'] = before - len(df)
+    df = df.drop(columns=['quantity']).rename(columns={'quantity_int':'quantity'})
+    
+    # R8 discount_pct
+    def parse_discount(val):
+        if pd.isna(val):
+            return 0.0
+        s = val.strip()
+        if s.endswith('%'):
+            s = s[:-1].strip()
+        if s == '':
+            return 0.0
+        try:
+            return float(s)
+        except:
+            return np.nan
+    df['discount_pct_clean'] = df['discount_pct'].apply(parse_discount)
+    before = len(df)
+    df = df[~df['discount_pct_clean'].isna()]  # drop rows where parsing failed
+    df = df[(df['discount_pct_clean']>=0) & (df['discount_pct_clean']<=100)]
+    counts['rows_dropped_discount_pct'] = before - len(df)
+    df = df.drop(columns=['discount_pct']).rename(columns={'discount_pct_clean':'discount_pct'})
+    
+    # R9 customer_id
+    df['customer_id'] = df['customer_id'].fillna('UNKNOWN')
+    df['customer_id'] = df['customer_id'].apply(lambda x: x.strip().upper())
+    
+    # R10 revenue
+    df['revenue'] = (df['quantity'] * df['unit_price'] * (1 - df['discount_pct']/100)).round(2)
+    
+    # R11 final columns order
+    final_cols = ['order_id','order_date','customer_id','region','product_category','quantity','unit_price','discount_pct','revenue']
+    df = df[final_cols]
+    df = df.sort_values('order_id')
+    
+    cleaned_rows = len(df)
+    summary.update(counts)
+    summary['cleaned_rows'] = cleaned_rows
+    
+    df.to_csv(output_file, index=False)
+    with open(summary_path, 'w') as f:
+        json.dump(summary, f, indent=2)
+    
+if __name__ == "__main__":
+    clean()
+```
+
+Need to ensure we treat missing values after R1 as NaN. The replace lambda may not work; better to use df = df.applymap(lambda x: x if not (isinstance(x,str) and x.strip().lower() in missing_vals) else np.nan). Simpler: after strip, we can set df = df.replace(missing_vals, np.nan) but need case-insensitive. We'll just loop.
+
+Implementation details: after reading, we can strip all values using df = df.applymap(lambda x: x.strip() if isinstance(x,str) else x). Then for each column, replace missing values: df = df.replace(to_replace=r'(?i)^\s*(na|n/a|null|none|-)?\s*$', value=np.nan, regex=True). But we already stripped, so just replace exact strings.
+
+Simplify: after strip, we can set df = df.where(~df.isin(missing_vals), np.nan). Since missing_vals are lower-case strings, but after strip we have original case; we can convert to lower for comparison: df = df.applymap(lambda x: np.nan if isinstance(x,str) and x.lower() in missing_vals else x). Good.
+
+Edge Cases: order_id column may have missing? Not specified; we keep as is.
+
+Now produce JSON output with fields.
+
+We need to set output_filename to "cleaned.csv".
+
+Provide cleaning_logic brief.
+
+Now produce final JSON block.
+

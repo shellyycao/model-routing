@@ -1,0 +1,11 @@
+{
+  "fixed_code": "def allocate_stock(stock, requests):\n    \"\"\"Allocate stock to requests.\n\n    Args:\n        stock (dict): Mapping of SKU to available quantity.\n        requests (iterable): Iterable of (request_id, sku, qty) tuples.\n\n    Returns:\n        tuple: (list of fulfilled request_ids in order, remaining stock dict).\n    \"\"\"\n    # Work on a copy so the original stock is not mutated\n    remaining = dict(stock)\n    seen = set()\n    fulfilled = []\n\n    for request_id, sku, qty in requests:\n        # Ignore duplicate request IDs\n        if request_id in seen:\n            continue\n        seen.add(request_id)\n\n        # Only consider positive quantities\n        if qty <= 0:\n            continue\n\n        # Fulfil the request only if enough stock is available\n        if remaining.get(sku, 0) >= qty:\n            remaining[sku] = remaining.get(sku, 0) - qty\n            fulfilled.append(request_id)\n\n    return fulfilled, remaining",
+  "bug_locations": [
+    "Changed condition from > qty to >= qty to allow exact stock matches.",
+    "Added explicit check for qty > 0 to ignore non‑positive requests.",
+    "Moved request_id tracking (seen.add) to occur for every first occurrence, not only when fulfilled.",
+    "Rewrote loop body for clarity and added documentation/comments.",
+    "Ensured remaining stock is updated using get to handle missing SKUs safely."
+  ],
+  "explanation": "The original implementation used a strict greater‑than check, preventing allocation when stock exactly matched the request quantity. It also failed to ignore zero or negative quantities and only recorded request IDs when a request was fulfilled, allowing later duplicates to be processed again. The fix introduces a >= comparison, a positive‑quantity guard, records every processed request ID regardless of outcome, and adds clear documentation and safe handling of missing SKUs."
+}

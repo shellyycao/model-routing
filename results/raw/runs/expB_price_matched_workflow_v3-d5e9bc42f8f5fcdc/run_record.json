@@ -1,0 +1,690 @@
+{
+  "contract_version": "1.2",
+  "run_id": "expB_price_matched_workflow_v3-d5e9bc42f8f5fcdc",
+  "experiment_id": "expB_price_matched_workflow_v3",
+  "project_id": "customer_churn",
+  "path_id": "C-B-B",
+  "models": [
+    "C",
+    "B",
+    "B"
+  ],
+  "repeat_index": 0,
+  "config_hash": "206947037154f31bc7cea5ed182f5a4df8167008f2f9ef2c1a2132549bf8bbf4",
+  "failure_policy": "continue_with_actual_artifact",
+  "started_at": "2026-11-19T04:27:10.924414+00:00",
+  "finished_at": "2026-11-19T04:28:23.281324+00:00",
+  "stages": [
+    {
+      "stage": "cleaning",
+      "model_alias": "C",
+      "model_id": "zai.glm-5",
+      "prompt_version": "v3",
+      "prompt_hash": "75d018237537d053a761286adc2946865bc568d7563b334eb22d7222cdd285d5",
+      "invocation_ids": [
+        "5bc101cf-4eb5-4897-bc23-7656b8c160c2"
+      ],
+      "cache_hit": false,
+      "shared_with_run_ids": [],
+      "status": "passed",
+      "structural_ok": true,
+      "failure_type": null,
+      "failure_detail": null,
+      "parse_ok": true,
+      "execution": {
+        "status": "success",
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "/sandbox/code/main.py:41: FutureWarning: DataFrame.applymap has been deprecated. Use DataFrame.map instead.\n  df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)\n/sandbox/code/main.py:45: FutureWarning: DataFrame.applymap has been deprecated. Use DataFrame.map instead.\n  df = df.applymap(lambda x: '' if isinstance(x, str) and x.lower() in [v.lower() for v in missing_vals] else x)\n",
+        "runtime_ms": 843.6862919988926,
+        "output_files": [
+          "/Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expB_price_matched_workflow_v3-d5e9bc42f8f5fcdc/cleaning/output/cleaned.csv",
+          "/Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expB_price_matched_workflow_v3-d5e9bc42f8f5fcdc/cleaning/output/cleaning_summary.json"
+        ],
+        "sandbox_image": "sha256:88988a15503bdb96538c3dd62244a79879d5c7848397db18b1267ccfd0a9727a"
+      },
+      "validation": {
+        "stage": "cleaning",
+        "hard_pass": true,
+        "checks": [
+          {
+            "name": "output_exists",
+            "passed": true,
+            "mandatory": true,
+            "detail": "/Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expB_price_matched_workflow_v3-d5e9bc42f8f5fcdc/cleaning/output/cleaned.csv",
+            "value": null
+          },
+          {
+            "name": "output_parses",
+            "passed": true,
+            "mandatory": true,
+            "detail": "749 rows, 10 columns",
+            "value": null
+          },
+          {
+            "name": "required_columns_present",
+            "passed": true,
+            "mandatory": true,
+            "detail": "all present",
+            "value": null
+          },
+          {
+            "name": "schema_constraints",
+            "passed": true,
+            "mandatory": true,
+            "detail": "all constraints satisfied",
+            "value": 1.0
+          },
+          {
+            "name": "no_extra_columns",
+            "passed": true,
+            "mandatory": false,
+            "detail": "",
+            "value": null
+          },
+          {
+            "name": "no_duplicate_keys",
+            "passed": true,
+            "mandatory": true,
+            "detail": "",
+            "value": 0.0
+          },
+          {
+            "name": "row_set_matches_reference",
+            "passed": true,
+            "mandatory": true,
+            "detail": "0 reference rows missing (e.g. []); 0 unexpected rows (e.g. []); output rows=749, reference rows=749",
+            "value": null
+          },
+          {
+            "name": "values_match_reference",
+            "passed": true,
+            "mandatory": true,
+            "detail": "7490/7490 cells match (abs_tol=0.011, rel_tol=1e-06)",
+            "value": 1.0
+          }
+        ],
+        "quality": {
+          "cleaning_correctness": 1.0,
+          "data_integrity": 1.0,
+          "schema_compliance": 1.0
+        },
+        "quality_basis": "ground_truth",
+        "validator_version": "1.0"
+      },
+      "conditional_validation": null,
+      "input_artifacts": [
+        "datasets/projects/customer_churn/raw.csv"
+      ],
+      "output_artifacts": [
+        "results/raw/runs/expB_price_matched_workflow_v3-d5e9bc42f8f5fcdc/cleaning/prompt.txt",
+        "results/raw/runs/expB_price_matched_workflow_v3-d5e9bc42f8f5fcdc/cleaning/response.txt",
+        "results/raw/runs/expB_price_matched_workflow_v3-d5e9bc42f8f5fcdc/cleaning/parsed.json",
+        "results/raw/runs/expB_price_matched_workflow_v3-d5e9bc42f8f5fcdc/cleaning/code.py",
+        "results/raw/runs/expB_price_matched_workflow_v3-d5e9bc42f8f5fcdc/cleaning/output/cleaned.csv",
+        "results/raw/runs/expB_price_matched_workflow_v3-d5e9bc42f8f5fcdc/cleaning/output/cleaning_summary.json"
+      ],
+      "input_artifact_hashes": {
+        "datasets/projects/customer_churn/raw.csv": "85dac8de024e160a903ebbe93296e8559aac12a30deb203e3eb85937afc2e281"
+      },
+      "output_artifact_hashes": {
+        "results/raw/runs/expB_price_matched_workflow_v3-d5e9bc42f8f5fcdc/cleaning/prompt.txt": "75d018237537d053a761286adc2946865bc568d7563b334eb22d7222cdd285d5",
+        "results/raw/runs/expB_price_matched_workflow_v3-d5e9bc42f8f5fcdc/cleaning/response.txt": "9458df47424ac61bce32a954aa61e698553d5066fa40ece79226cbf7603c8c72",
+        "results/raw/runs/expB_price_matched_workflow_v3-d5e9bc42f8f5fcdc/cleaning/parsed.json": "68f2738dea2acee482fd0455028292f2425418bcef6f1bce564c218a92b89967",
+        "results/raw/runs/expB_price_matched_workflow_v3-d5e9bc42f8f5fcdc/cleaning/code.py": "caa9189e4101afdf791befdaeef48b365050f206ba20fdfc90018065217ebd67",
+        "results/raw/runs/expB_price_matched_workflow_v3-d5e9bc42f8f5fcdc/cleaning/output/cleaned.csv": "f17ff3137645168b7fe3a3e553e985f38d197630810d32bf94eff5c2e25497cc",
+        "results/raw/runs/expB_price_matched_workflow_v3-d5e9bc42f8f5fcdc/cleaning/output/cleaning_summary.json": "ade289c6437280d5bc27f8f77c55e7b16f8699c93b71cdcabbae64a840fbff3b"
+      },
+      "handoff_in_path": "results/raw/runs/expB_price_matched_workflow_v3-d5e9bc42f8f5fcdc/cleaning/handoff_in.json",
+      "handoff_size_bytes": 595,
+      "input_tokens": 1923,
+      "output_tokens": 1924,
+      "cost_usd": 0.0080798,
+      "cost_status": "estimated",
+      "timings": {
+        "generation_ms": 19403.729333003866,
+        "execution_ms": 843.6862919988926,
+        "validation_ms": 13.188332995923702,
+        "handoff_ms": 0.3717500003403984
+      }
+    },
+    {
+      "stage": "analysis",
+      "model_alias": "B",
+      "model_id": "us.moonshotai.kimi-k3",
+      "prompt_version": "v3",
+      "prompt_hash": "850275844811757716f62ead188e3823bf45fa91b26d971609a781a038795515",
+      "invocation_ids": [
+        "242a58bb-d792-4449-ab74-c3f47e768482"
+      ],
+      "cache_hit": false,
+      "shared_with_run_ids": [],
+      "status": "passed",
+      "structural_ok": true,
+      "failure_type": null,
+      "failure_detail": null,
+      "parse_ok": true,
+      "execution": {
+        "status": "success",
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "runtime_ms": 849.7509579974576,
+        "output_files": [
+          "/Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expB_price_matched_workflow_v3-d5e9bc42f8f5fcdc/analysis/output/findings.json"
+        ],
+        "sandbox_image": "sha256:88988a15503bdb96538c3dd62244a79879d5c7848397db18b1267ccfd0a9727a"
+      },
+      "validation": {
+        "stage": "analysis",
+        "hard_pass": true,
+        "checks": [
+          {
+            "name": "findings_exists",
+            "passed": true,
+            "mandatory": true,
+            "detail": "",
+            "value": null
+          },
+          {
+            "name": "findings_parses",
+            "passed": true,
+            "mandatory": true,
+            "detail": "",
+            "value": null
+          },
+          {
+            "name": "required_keys_present",
+            "passed": true,
+            "mandatory": true,
+            "detail": "all 24 present",
+            "value": null
+          },
+          {
+            "name": "values_numeric",
+            "passed": true,
+            "mandatory": true,
+            "detail": "",
+            "value": null
+          },
+          {
+            "name": "values_within_tolerance",
+            "passed": true,
+            "mandatory": true,
+            "detail": "24/24 correct",
+            "value": 1.0
+          },
+          {
+            "name": "reproducible_across_executions",
+            "passed": true,
+            "mandatory": false,
+            "detail": "24/24 keys agree",
+            "value": 1.0
+          }
+        ],
+        "quality": {
+          "numerical_accuracy": 1.0,
+          "calculation_coverage": 1.0,
+          "reproducibility": 1.0
+        },
+        "quality_basis": "ground_truth",
+        "validator_version": "1.0"
+      },
+      "conditional_validation": {
+        "stage": "analysis",
+        "hard_pass": true,
+        "checks": [
+          {
+            "name": "findings_exists",
+            "passed": true,
+            "mandatory": true,
+            "detail": "",
+            "value": null
+          },
+          {
+            "name": "findings_parses",
+            "passed": true,
+            "mandatory": true,
+            "detail": "",
+            "value": null
+          },
+          {
+            "name": "required_keys_present",
+            "passed": true,
+            "mandatory": true,
+            "detail": "all 24 present",
+            "value": null
+          },
+          {
+            "name": "values_numeric",
+            "passed": true,
+            "mandatory": true,
+            "detail": "",
+            "value": null
+          },
+          {
+            "name": "values_within_tolerance",
+            "passed": true,
+            "mandatory": true,
+            "detail": "24/24 correct",
+            "value": 1.0
+          },
+          {
+            "name": "reproducible_across_executions",
+            "passed": true,
+            "mandatory": false,
+            "detail": "24/24 keys agree",
+            "value": 1.0
+          }
+        ],
+        "quality": {
+          "numerical_accuracy": 1.0,
+          "calculation_coverage": 1.0,
+          "reproducibility": 1.0
+        },
+        "quality_basis": "conditional_reference",
+        "validator_version": "1.0"
+      },
+      "input_artifacts": [
+        "results/raw/runs/expB_price_matched_workflow_v3-d5e9bc42f8f5fcdc/cleaning/output/cleaned.csv"
+      ],
+      "output_artifacts": [
+        "results/raw/runs/expB_price_matched_workflow_v3-d5e9bc42f8f5fcdc/analysis/prompt.txt",
+        "results/raw/runs/expB_price_matched_workflow_v3-d5e9bc42f8f5fcdc/analysis/response.txt",
+        "results/raw/runs/expB_price_matched_workflow_v3-d5e9bc42f8f5fcdc/analysis/reasoning.txt",
+        "results/raw/runs/expB_price_matched_workflow_v3-d5e9bc42f8f5fcdc/analysis/parsed.json",
+        "results/raw/runs/expB_price_matched_workflow_v3-d5e9bc42f8f5fcdc/analysis/code.py",
+        "results/raw/runs/expB_price_matched_workflow_v3-d5e9bc42f8f5fcdc/analysis/output/findings.json"
+      ],
+      "input_artifact_hashes": {
+        "results/raw/runs/expB_price_matched_workflow_v3-d5e9bc42f8f5fcdc/cleaning/output/cleaned.csv": "f17ff3137645168b7fe3a3e553e985f38d197630810d32bf94eff5c2e25497cc"
+      },
+      "output_artifact_hashes": {
+        "results/raw/runs/expB_price_matched_workflow_v3-d5e9bc42f8f5fcdc/analysis/prompt.txt": "850275844811757716f62ead188e3823bf45fa91b26d971609a781a038795515",
+        "results/raw/runs/expB_price_matched_workflow_v3-d5e9bc42f8f5fcdc/analysis/response.txt": "d60be4a09020e30fabbab319c3e3d6453d96104c5e44602d1dcdb380b9244f23",
+        "results/raw/runs/expB_price_matched_workflow_v3-d5e9bc42f8f5fcdc/analysis/reasoning.txt": "88b49697b917852ae9664508d3fc83727ae0f4f3675b855c0a5cee7405e2301a",
+        "results/raw/runs/expB_price_matched_workflow_v3-d5e9bc42f8f5fcdc/analysis/parsed.json": "93db1416b5379d9dfea821482088533635e5eb9e736e2f028d9b3a6ba19457ea",
+        "results/raw/runs/expB_price_matched_workflow_v3-d5e9bc42f8f5fcdc/analysis/code.py": "db80954382d22a34979cf5cbadcd2629c2481a8433e6bf780681dd4bd053ab75",
+        "results/raw/runs/expB_price_matched_workflow_v3-d5e9bc42f8f5fcdc/analysis/output/findings.json": "44ce94defdb0736584997f50c2e0d8b60a5d21b7724695b15581a6f942424129"
+      },
+      "handoff_in_path": "results/raw/runs/expB_price_matched_workflow_v3-d5e9bc42f8f5fcdc/analysis/handoff_in.json",
+      "handoff_size_bytes": 13536,
+      "input_tokens": 2196,
+      "output_tokens": 3070,
+      "cost_usd": 0.057901799999999996,
+      "cost_status": "estimated",
+      "timings": {
+        "generation_ms": 10680.712499997753,
+        "execution_ms": 849.7509579974576,
+        "validation_ms": 4.686416999902576,
+        "handoff_ms": 1.4569580016541295
+      }
+    },
+    {
+      "stage": "reporting",
+      "model_alias": "B",
+      "model_id": "us.moonshotai.kimi-k3",
+      "prompt_version": "v3",
+      "prompt_hash": "49c65cbfd3584bdf2929bcd7327e07176ef6c5a1d7e5b804effc576ddaa50540",
+      "invocation_ids": [
+        "9b4d4e97-c8b7-4671-8dec-d67d62f3e417"
+      ],
+      "cache_hit": false,
+      "shared_with_run_ids": [],
+      "status": "failed",
+      "structural_ok": true,
+      "failure_type": "validation_failed",
+      "failure_detail": "required_metric_keys_present: missing []; wrong finding/group ['q5.churn_rate_pct', 'q5.customer_count', 'q6.customer_count']; reported_values_consistent: q5.customer_count=749.0 (key belongs to another finding or is unknown); q5.churn_rate_pct=37.6502002670227 (key belongs to another finding or is unknown); q6.customer_count=749.0 (key belongs to another finding or is unknown); numeric_attribution_correct: key_findings[4].statement: '37.65%' matches another finding",
+      "parse_ok": true,
+      "execution": null,
+      "validation": {
+        "stage": "reporting",
+        "hard_pass": false,
+        "checks": [
+          {
+            "name": "report_valid",
+            "passed": true,
+            "mandatory": true,
+            "detail": "",
+            "value": null
+          },
+          {
+            "name": "required_findings_covered",
+            "passed": true,
+            "mandatory": true,
+            "detail": "7/7",
+            "value": 1.0
+          },
+          {
+            "name": "required_metric_keys_present",
+            "passed": false,
+            "mandatory": true,
+            "detail": "missing []; wrong finding/group ['q5.churn_rate_pct', 'q5.customer_count', 'q6.customer_count']",
+            "value": null
+          },
+          {
+            "name": "reported_values_consistent",
+            "passed": false,
+            "mandatory": true,
+            "detail": "q5.customer_count=749.0 (key belongs to another finding or is unknown); q5.churn_rate_pct=37.6502002670227 (key belongs to another finding or is unknown); q6.customer_count=749.0 (key belongs to another finding or is unknown)",
+            "value": 0.8888888888888888
+          },
+          {
+            "name": "directions_correct",
+            "passed": true,
+            "mandatory": true,
+            "detail": "all required directions correct",
+            "value": null
+          },
+          {
+            "name": "rankings_correct",
+            "passed": true,
+            "mandatory": true,
+            "detail": "all ranking semantics correct",
+            "value": null
+          },
+          {
+            "name": "rankings_explicit",
+            "passed": true,
+            "mandatory": false,
+            "detail": "all required rankings explicitly structured",
+            "value": 1.0
+          },
+          {
+            "name": "derived_values_correct",
+            "passed": true,
+            "mandatory": true,
+            "detail": "all declared derived values recompute",
+            "value": null
+          },
+          {
+            "name": "finding_statements_substantive",
+            "passed": true,
+            "mandatory": true,
+            "detail": "every statement has a supported numeric finding",
+            "value": null
+          },
+          {
+            "name": "prose_claims_consistent",
+            "passed": true,
+            "mandatory": true,
+            "detail": "structured claims agree with prose",
+            "value": null
+          },
+          {
+            "name": "numeric_attribution_correct",
+            "passed": false,
+            "mandatory": true,
+            "detail": "key_findings[4].statement: '37.65%' matches another finding",
+            "value": null
+          },
+          {
+            "name": "unsupported_claims_within_threshold",
+            "passed": true,
+            "mandatory": false,
+            "detail": "none (45 numeric claims checked)",
+            "value": 0.0
+          },
+          {
+            "name": "evidence_refs_valid",
+            "passed": true,
+            "mandatory": false,
+            "detail": "",
+            "value": null
+          },
+          {
+            "name": "within_word_limit",
+            "passed": true,
+            "mandatory": false,
+            "detail": "520 words (limit 600)",
+            "value": 520.0
+          }
+        ],
+        "quality": {
+          "finding_coverage": 1.0,
+          "numerical_consistency": 0.8888888888888888,
+          "unsupported_claim_count": 0.0
+        },
+        "quality_basis": "ground_truth",
+        "validator_version": "3.0-post-freeze"
+      },
+      "conditional_validation": {
+        "stage": "reporting",
+        "hard_pass": false,
+        "checks": [
+          {
+            "name": "report_valid",
+            "passed": true,
+            "mandatory": true,
+            "detail": "",
+            "value": null
+          },
+          {
+            "name": "required_findings_covered",
+            "passed": true,
+            "mandatory": true,
+            "detail": "7/7",
+            "value": 1.0
+          },
+          {
+            "name": "required_metric_keys_present",
+            "passed": false,
+            "mandatory": true,
+            "detail": "missing []; wrong finding/group ['q5.churn_rate_pct', 'q5.customer_count', 'q6.customer_count']",
+            "value": null
+          },
+          {
+            "name": "reported_values_consistent",
+            "passed": false,
+            "mandatory": true,
+            "detail": "q5.customer_count=749.0 (key belongs to another finding or is unknown); q5.churn_rate_pct=37.6502002670227 (key belongs to another finding or is unknown); q6.customer_count=749.0 (key belongs to another finding or is unknown)",
+            "value": 0.8888888888888888
+          },
+          {
+            "name": "directions_correct",
+            "passed": true,
+            "mandatory": true,
+            "detail": "all required directions correct",
+            "value": null
+          },
+          {
+            "name": "rankings_correct",
+            "passed": true,
+            "mandatory": true,
+            "detail": "all ranking semantics correct",
+            "value": null
+          },
+          {
+            "name": "rankings_explicit",
+            "passed": true,
+            "mandatory": false,
+            "detail": "all required rankings explicitly structured",
+            "value": 1.0
+          },
+          {
+            "name": "derived_values_correct",
+            "passed": true,
+            "mandatory": true,
+            "detail": "all declared derived values recompute",
+            "value": null
+          },
+          {
+            "name": "finding_statements_substantive",
+            "passed": true,
+            "mandatory": true,
+            "detail": "every statement has a supported numeric finding",
+            "value": null
+          },
+          {
+            "name": "prose_claims_consistent",
+            "passed": true,
+            "mandatory": true,
+            "detail": "structured claims agree with prose",
+            "value": null
+          },
+          {
+            "name": "numeric_attribution_correct",
+            "passed": false,
+            "mandatory": true,
+            "detail": "key_findings[4].statement: '749' matches another finding; key_findings[4].statement: '37.65%' matches another finding",
+            "value": null
+          },
+          {
+            "name": "unsupported_claims_within_threshold",
+            "passed": true,
+            "mandatory": false,
+            "detail": "none (45 numeric claims checked)",
+            "value": 0.0
+          },
+          {
+            "name": "evidence_refs_valid",
+            "passed": true,
+            "mandatory": false,
+            "detail": "",
+            "value": null
+          },
+          {
+            "name": "within_word_limit",
+            "passed": true,
+            "mandatory": false,
+            "detail": "520 words (limit 600)",
+            "value": 520.0
+          }
+        ],
+        "quality": {
+          "finding_coverage": 1.0,
+          "numerical_consistency": 0.8888888888888888,
+          "unsupported_claim_count": 0.0
+        },
+        "quality_basis": "conditional_reference",
+        "validator_version": "3.0-post-freeze"
+      },
+      "input_artifacts": [
+        "results/raw/runs/expB_price_matched_workflow_v3-d5e9bc42f8f5fcdc/analysis/output/findings.json"
+      ],
+      "output_artifacts": [
+        "results/raw/runs/expB_price_matched_workflow_v3-d5e9bc42f8f5fcdc/reporting/prompt.txt",
+        "results/raw/runs/expB_price_matched_workflow_v3-d5e9bc42f8f5fcdc/reporting/response.txt",
+        "results/raw/runs/expB_price_matched_workflow_v3-d5e9bc42f8f5fcdc/reporting/reasoning.txt",
+        "results/raw/runs/expB_price_matched_workflow_v3-d5e9bc42f8f5fcdc/reporting/parsed.json",
+        "results/raw/runs/expB_price_matched_workflow_v3-d5e9bc42f8f5fcdc/reporting/output/report.json",
+        "results/raw/runs/expB_price_matched_workflow_v3-d5e9bc42f8f5fcdc/reporting/output/report.md"
+      ],
+      "input_artifact_hashes": {
+        "results/raw/runs/expB_price_matched_workflow_v3-d5e9bc42f8f5fcdc/analysis/output/findings.json": "44ce94defdb0736584997f50c2e0d8b60a5d21b7724695b15581a6f942424129"
+      },
+      "output_artifact_hashes": {
+        "results/raw/runs/expB_price_matched_workflow_v3-d5e9bc42f8f5fcdc/reporting/prompt.txt": "49c65cbfd3584bdf2929bcd7327e07176ef6c5a1d7e5b804effc576ddaa50540",
+        "results/raw/runs/expB_price_matched_workflow_v3-d5e9bc42f8f5fcdc/reporting/response.txt": "80bbcd04fb114b8b32baf8914a4a40d31e3c132c05c31e864b30c9ce32cbe958",
+        "results/raw/runs/expB_price_matched_workflow_v3-d5e9bc42f8f5fcdc/reporting/reasoning.txt": "627e8eb9ae3c6c926305d97f69956b3fd8517db07d4c2c8f83428801f317a478",
+        "results/raw/runs/expB_price_matched_workflow_v3-d5e9bc42f8f5fcdc/reporting/parsed.json": "5849d374392151783ae5fddc8b731b2acabd32bcd01d7bbcd934ea326d87c503",
+        "results/raw/runs/expB_price_matched_workflow_v3-d5e9bc42f8f5fcdc/reporting/output/report.json": "5849d374392151783ae5fddc8b731b2acabd32bcd01d7bbcd934ea326d87c503",
+        "results/raw/runs/expB_price_matched_workflow_v3-d5e9bc42f8f5fcdc/reporting/output/report.md": "5b0b8022143ec50bb2cf24bc4c473df30b9d40ebb5f02b075c368830d0999c82"
+      },
+      "handoff_in_path": "results/raw/runs/expB_price_matched_workflow_v3-d5e9bc42f8f5fcdc/reporting/handoff_in.json",
+      "handoff_size_bytes": 23288,
+      "input_tokens": 3237,
+      "output_tokens": 9252,
+      "cost_usd": 0.1633401,
+      "cost_status": "estimated",
+      "timings": {
+        "generation_ms": 36183.98233300104,
+        "execution_ms": null,
+        "validation_ms": 7.631542001035996,
+        "handoff_ms": 0.4595420032273978
+      }
+    }
+  ],
+  "feasibility": {
+    "outcome": "infeasible",
+    "stage_status": {
+      "cleaning": "passed",
+      "analysis": "passed",
+      "reporting": "failed"
+    },
+    "first_failure_stage": "reporting",
+    "failure_type": "validation_failed"
+  },
+  "quality": {
+    "cleaning": {
+      "cleaning_correctness": 1.0,
+      "data_integrity": 1.0,
+      "schema_compliance": 1.0
+    },
+    "analysis": {
+      "numerical_accuracy": 1.0,
+      "calculation_coverage": 1.0,
+      "reproducibility": 1.0
+    },
+    "reporting": {
+      "finding_coverage": 1.0,
+      "numerical_consistency": 0.8888888888888888,
+      "unsupported_claim_count": 0.0
+    }
+  },
+  "conditional_quality": {
+    "analysis": {
+      "numerical_accuracy": 1.0,
+      "calculation_coverage": 1.0,
+      "reproducibility": 1.0
+    },
+    "reporting": {
+      "finding_coverage": 1.0,
+      "numerical_consistency": 0.8888888888888888,
+      "unsupported_claim_count": 0.0
+    }
+  },
+  "efficiency": {
+    "total_api_latency_ms": 66268.42416600266,
+    "total_execution_ms": 1693.4372499963501,
+    "total_validation_ms": 25.506291996862274,
+    "total_handoff_ms": 2.2882500052219257,
+    "end_to_end_ms": 72357.44866700406,
+    "input_tokens": 7356,
+    "output_tokens": 14246,
+    "cost_usd": 0.2293217,
+    "cost_status": "estimated",
+    "n_calls": 3,
+    "n_cache_hits": 0,
+    "n_switches": 1,
+    "handoff_bytes_total": 37419
+  },
+  "propagation": {
+    "downstream_executable": {
+      "cleaning": true,
+      "analysis": true,
+      "reporting": true
+    },
+    "upstream_error_severity": {
+      "analysis": {
+        "cleaning_correctness": 0.0,
+        "data_integrity": 0.0,
+        "schema_compliance": 0.0
+      },
+      "reporting": {
+        "numerical_accuracy": 0.0,
+        "calculation_coverage": 0.0,
+        "reproducibility": 0.0
+      }
+    },
+    "end_to_end_accuracy": {
+      "finding_coverage": 1.0,
+      "numerical_consistency": 0.8888888888888888,
+      "unsupported_claim_count": 0.0
+    },
+    "propagation_impact": {
+      "analysis": {
+        "calculation_coverage": 0.0,
+        "numerical_accuracy": 0.0,
+        "reproducibility": 0.0
+      },
+      "reporting": {
+        "finding_coverage": 0.0,
+        "numerical_consistency": 0.0,
+        "unsupported_claim_count": 0.0
+      }
+    },
+    "blocked_stages": []
+  },
+  "final_artifacts": []
+}

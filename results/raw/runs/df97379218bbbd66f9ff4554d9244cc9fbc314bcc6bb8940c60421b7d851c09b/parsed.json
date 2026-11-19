@@ -1,0 +1,7 @@
+{
+  "fixed_code": "def rotate(xs, k):\n    if not xs:\n        return []\n    n = len(xs)\n    k %= n\n    # Rotate right by k: take last k elements, then the rest\n    return xs[-k:] + xs[:-k] if k != 0 else list(xs)\n",
+  "bug_locations": [
+    "return list(xs[k:] + xs[:k])"
+  ],
+  "explanation": "The original implementation performed a left rotation instead of the specified right rotation. The fix changes the slicing logic from `xs[k:] + xs[:k]` (left rotation) to `xs[-k:] + xs[:-k]` (right rotation). The modulo operation and empty list handling were correct."
+}

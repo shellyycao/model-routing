@@ -1,0 +1,7 @@
+```json
+{
+  "fixed_code": "def normalize(scores):\n    total = sum(scores.values())\n    if total == 0:\n        return {k: 0.0 for k in scores}\n    return {k: v / total for k, v in scores.items()}",
+  "bug_location": "normalize, line 4: Changed '//' to '/' for correct float division.",
+  "explanation": "The bug was using '//' which performs integer division, resulting in incorrect share values. It should use '/' for true division to get the correct float shares."
+}
+```

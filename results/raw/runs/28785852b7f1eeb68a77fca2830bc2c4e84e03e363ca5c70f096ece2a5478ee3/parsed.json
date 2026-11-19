@@ -1,0 +1,10 @@
+{
+  "fixed_code": "def rolling_mean(xs, window, min_periods=1):\n    if not (1 <= min_periods <= window):\n        raise ValueError(\"require 1 <= min_periods <= window\")\n    result = []\n    for i in range(len(xs)):\n        start = max(0, i - window + 1)\n        vals = xs[start:i + 1]\n        if len(vals) < min_periods:\n            result.append(None)\n        else:\n            result.append(sum(vals) / len(vals))\n    return result\n",
+  "bug_locations": [
+    "rolling_mean: trailing window slice bounds were off by one (xs[max(0,i-window):i] excludes the current element and reaches one element too far back)",
+    "rolling_mean: mean divided by the constant 'window' instead of the actual number of values in the partial window",
+    "rolling_mean: min_periods parameter was ignored; positions with fewer than min_periods values must yield null (None)",
+    "rolling_mean: missing validation that 1 <= min_periods <= window"
+  ],
+  "explanation": "The original list comprehension had three interacting defects plus a missing validation. (1) Off-by-one slice: xs[max(0,i-window):i] excludes the current element, so every position reported the mean of the preceding window rather than the trailing window ending at i; the correct slice is xs[max(0,i-window+1):i+1]. (2) Wrong divisor: dividing by 'window' understates the mean when only a partial window is available at the start of the input; the divisor must be the actual count of values. (3) min_periods was never used: positions with fewer than min_periods available values must emit None instead of a mean. (4) The spec requires validating 1 <= min_periods <= window, which now raises ValueError (this also implicitly rejects window < 1). The rewritten function slices the correct trailing window, emits None when the window has fewer than min_periods values, and otherwise returns the mean of the available values, matching rolling_mean([1,2,3], 2) == [1, 1.5, 2.5]."
+}

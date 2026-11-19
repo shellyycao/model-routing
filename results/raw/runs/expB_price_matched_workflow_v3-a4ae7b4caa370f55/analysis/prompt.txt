@@ -1,0 +1,113 @@
+STAGE: analysis
+PROJECT: customer_churn
+PROMPT_VERSION: v3
+
+You are the analysis stage of a three-stage data workflow (cleaning -> analysis -> reporting).
+The cleaning stage has already run. Write ONE self-contained Python 3 script that computes the
+required metrics from the cleaned data it produced.
+
+## Original objective
+Clean the raw customer snapshot and analyse churn: the overall churn rate, differences between plans, signup cohorts and contract types, an at-risk segment with many support tickets and low satisfaction, lifetime value by plan, and the distribution of tenure and satisfaction, then report the verified findings to business stakeholders.
+
+## Handoff from the previous stage
+Completed stages: cleaning
+Validation status of previous stages: {"cleaning": "passed"}
+Cleaning logic reported by the cleaning stage:
+The script performs 12 cleaning steps in order: (R1) reads raw CSV as text, strips whitespace, and standardizes missing values (empty, NA, N/A, null, None, -); (R2) removes duplicate customer_id records keeping first occurrence; (R3) parses signup_date using 5 formats (YYYY-MM-DD, MM/DD/YYYY, DD-Mon-YYYY, YYYY/MM/DD, Month D, YYYY) and drops invalid rows; (R4) maps plan variants to Basic/Standard/Premium; (R5) maps contract_type variants to Monthly/Annual; (R6) cleans monthly_fee by removing $/USD/comma and validates range 0-500; (R7) cleans tenure_months by removing 'month(s)' suffix and validates range 0-120; (R8) sets missing support_tickets to 0 and validates range 0-100; (R9) validates satisfaction_score range 1-5, keeping rows with missing scores; (R10) maps churned variants to 0/1; (R11) calculates lifetime_value as monthly_fee * tenure_months; (R12) sorts by customer_id and outputs the final schema.
+Cleaning summary written by the cleaning code (cleaning_summary.json):
+{"raw_rows": 840, "cleaned_rows": 749, "duplicates_removed": 40, "invalid_signup_date": 9, "invalid_plan": 3, "invalid_contract_type": 3, "invalid_monthly_fee": 17, "invalid_tenure_months": 7, "invalid_support_tickets": 4, "invalid_churned": 8}
+
+## Input/output contract (mandatory)
+- Your script runs in an isolated sandbox with NO network access. Available libraries: the Python
+  standard library, pandas and numpy.
+- Read the cleaned data from os.path.join(os.environ["INPUT_DIR"], "cleaned.csv").
+  It is the file the cleaning stage actually produced; use it as is.
+- Write os.path.join(os.environ["OUTPUT_DIR"], "findings.json"). Write nowhere else.
+- findings.json MUST be a FLAT JSON object mapping every metric_key listed below to a single
+  finite number, e.g. {"metric_a": 12.5, "metric_b": 3.0}. Do NOT nest it: an object such as
+  {"metrics": {"metric_a": 12.5}} FAILS validation. No strings, lists, null, NaN or Infinity as values.
+- Do not round results; write full precision.
+- List every file the script writes in `expected_artifacts`.
+
+## Cleaned data schema (columns in this order)
+- customer_id: str; not nullable
+- signup_date: date; not nullable
+- plan: category; not nullable; allowed values: 'Basic', 'Standard', 'Premium'
+- contract_type: category; not nullable; allowed values: 'Monthly', 'Annual'
+- monthly_fee: float; not nullable; min 0.01; max 500
+- tenure_months: int; not nullable; min 0; max 120
+- support_tickets: int; not nullable; min 0; max 100
+- satisfaction_score: int; nullable; min 1; max 5
+- churned: int; not nullable; min 0; max 1
+- lifetime_value: float; not nullable; min 0
+
+## First lines of the cleaned file (cleaned.csv, 750 lines in total incl. header)
+```
+customer_id,signup_date,plan,contract_type,monthly_fee,tenure_months,support_tickets,satisfaction_score,churned,lifetime_value
+CUST-0001,2021-01-01,Standard,Monthly,39.99,47.0,8.0,2.0,1,1879.53
+CUST-0002,2021-01-05,Basic,Monthly,24.99,35.0,6.0,3.0,1,874.65
+CUST-0004,2021-01-07,Basic,Monthly,19.99,47.0,2.0,4.0,0,939.53
+CUST-0005,2021-01-09,Basic,Monthly,24.99,47.0,0.0,3.0,0,1174.53
+CUST-0006,2021-01-18,Basic,Monthly,24.99,47.0,5.0,4.0,0,1174.53
+CUST-0007,2021-01-19,Basic,Monthly,19.99,42.0,0.0,5.0,1,839.58
+CUST-0008,2021-01-21,Basic,Annual,19.99,47.0,1.0,5.0,0,939.53
+CUST-0009,2021-01-21,Standard,Monthly,39.99,47.0,2.0,3.0,0,1879.53
+CUST-0010,2021-01-21,Premium,Annual,79.99,47.0,0.0,5.0,0,3759.53
+CUST-0012,2021-01-23,Basic,Monthly,19.99,36.0,9.0,2.0,1,719.64
+CUST-0013,2021-01-25,Standard,Monthly,39.99,42.0,2.0,5.0,1,1679.58
+```
+
+## Analysis questions and the metric_keys each must produce
+- q1: Overall (aggregation): number of customers (rows) -> customer_count; percentage of customers with churned = 1 -> churn_rate_pct, expressed as a percentage; mean monthly_fee -> avg_monthly_fee.
+  metric_keys: customer_count, churn_rate_pct, avg_monthly_fee
+- q2: Churn by plan (group comparison): churn rate in percent among customers of each plan -> churn_rate_basic_pct, churn_rate_standard_pct, churn_rate_premium_pct.
+  metric_keys: churn_rate_basic_pct, churn_rate_standard_pct, churn_rate_premium_pct
+- q3: Churn by signup cohort (trend): churn rate in percent among customers whose signup_date falls in each calendar year -> churn_rate_cohort_2021_pct, churn_rate_cohort_2022_pct, churn_rate_cohort_2023_pct, churn_rate_cohort_2024_pct.
+  metric_keys: churn_rate_cohort_2021_pct, churn_rate_cohort_2022_pct, churn_rate_cohort_2023_pct, churn_rate_cohort_2024_pct
+- q4: Contract effect (percentage change): churn rate in percent for Monthly contracts -> churn_rate_monthly_pct; for Annual contracts -> churn_rate_annual_pct; relative difference = (churn_rate_monthly_pct - churn_rate_annual_pct) / churn_rate_annual_pct * 100 -> churn_monthly_vs_annual_change_pct.
+  metric_keys: churn_rate_monthly_pct, churn_rate_annual_pct, churn_monthly_vs_annual_change_pct
+- q5: At-risk segment (conditional filtering): customers with support_tickets >= 5 AND a non-missing satisfaction_score <= 2: their number -> at_risk_customer_count; their churn rate in percent -> at_risk_churn_rate_pct.
+  metric_keys: at_risk_customer_count, at_risk_churn_rate_pct
+- q6: Tenure and satisfaction summary (statistical summary): mean, median and sample standard deviation (denominator n - 1) of tenure_months over all customers -> tenure_mean, tenure_median, tenure_std; mean satisfaction_score over customers with a non-missing score -> satisfaction_mean; number of customers with a missing satisfaction_score -> satisfaction_missing_count.
+  metric_keys: tenure_mean, tenure_median, tenure_std, satisfaction_mean, satisfaction_missing_count
+- q7: Lifetime value by plan (derived step): mean lifetime_value for each plan -> ltv_basic, ltv_standard, ltv_premium; (ltv_premium - ltv_basic) / ltv_basic * 100 -> premium_vs_basic_ltv_change_pct.
+  metric_keys: ltv_basic, ltv_standard, ltv_premium, premium_vs_basic_ltv_change_pct
+
+All required metric_keys: customer_count, churn_rate_pct, avg_monthly_fee, churn_rate_basic_pct, churn_rate_standard_pct, churn_rate_premium_pct, churn_rate_cohort_2021_pct, churn_rate_cohort_2022_pct, churn_rate_cohort_2023_pct, churn_rate_cohort_2024_pct, churn_rate_monthly_pct, churn_rate_annual_pct, churn_monthly_vs_annual_change_pct, at_risk_customer_count, at_risk_churn_rate_pct, tenure_mean, tenure_median, tenure_std, satisfaction_mean, satisfaction_missing_count, ltv_basic, ltv_standard, ltv_premium, premium_vs_basic_ltv_change_pct
+
+## What to return
+Return the script in `python_code`, the list of files it writes in `expected_artifacts`, and a brief
+description of the methods in `methods_description`.
+
+
+Respond with a single JSON object that conforms to this JSON Schema. Put it in one ```json fenced block and include nothing else outside the block.
+```json
+{
+  "properties": {
+    "python_code": {
+      "description": "Python script. Reads the cleaned CSV from INPUT_DIR, writes findings.json to OUTPUT_DIR.",
+      "title": "Python Code",
+      "type": "string"
+    },
+    "expected_artifacts": {
+      "description": "Filenames the script writes to OUTPUT_DIR.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Expected Artifacts",
+      "type": "array"
+    },
+    "methods_description": {
+      "title": "Methods Description",
+      "type": "string"
+    }
+  },
+  "required": [
+    "python_code",
+    "expected_artifacts",
+    "methods_description"
+  ],
+  "title": "AnalysisOutput",
+  "type": "object"
+}
+```

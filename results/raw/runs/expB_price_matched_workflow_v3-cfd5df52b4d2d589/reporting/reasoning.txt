@@ -1,0 +1,153 @@
+Let me work through this carefully.
+
+I need to produce a JSON report with key_findings for q1-q7, following the rules.
+
+Verified findings:
+- total_revenue: 445325.07
+- order_count: 520.0
+- average_order_value: 856.3943653846154
+- revenue_north: 124845.75
+- revenue_south: 90534.48
+- revenue_east: 130516.68000000001
+- revenue_west: 99428.16
+- revenue_2024_q1: 36108.32
+- revenue_2024_q2: 56616.79
+- revenue_2024_q3: 71674.98
+- revenue_2024_q4: 68948.7
+- revenue_2023: 211976.28
+- revenue_2024: 233348.78999999998
+- revenue_yoy_change_pct: 10.082500740177146
+- electronics_high_discount_orders: 22.0
+- electronics_high_discount_revenue: 50035.32
+- order_revenue_mean: 856.3943653846154
+- order_revenue_median: 313.275
+- order_revenue_std: 1295.7423548861245
+- order_revenue_min: 5.27
+- order_revenue_max: 7844.02
+- unique_customer_count: 222.0
+- top_customer_revenue: 27793.12
+- top_customer_revenue_share_pct: 6.241085865657642
+
+Requirements:
+- q2: ranking required: East (130516.68) > North (124845.75) > West (99428.16) > South (90534.48). Labels: "East", "North", "West", "South".
+- q3: ranking required: Q3 (71674.98) > Q4 (68948.7) > Q2 (56616.79) > Q1 (36108.32). Labels: "Q3", "Q4", "Q2", "Q1".
+- q4: direction required: revenue_yoy_change_pct = +10.08% → "increase".
+
+derived_values: any number computed from findings must be declared. Let me decide what derived values I'll include:
+
+- q2: East vs South difference? Maybe East leads South by ~$39,982.20 (130516.68 - 90534.48 = 39982.20). Let me compute: 130516.68 - 90534.48 = 39982.20. Yes. Declare as difference, operands [revenue_east, revenue_south].
+- q3: Q3 vs Q1 difference: 71674.98 - 36108.32 = 35566.66. Declare difference operands [revenue_2024_q3, revenue_2024_q1].
+- q4: YoY change is directly a metric, so no derivation needed if I just use revenue_yoy_change_pct. But maybe I state revenue increased by ~$21,372.51 (233348.79 - 211976.28 = 21372.51). Compute: 233348.79 - 211976.28 = 21372.51. Declare difference operands [revenue_2024, revenue_2023].
+- q5: share of high-discount electronics revenue of total: 50035.32/445325.07*100 = 11.236... Let me compute: 50035.32 / 445325.07 = 0.112357... ×100 = 11.2357%. Declare share operands [electronics_high_discount_revenue, total_revenue], value 11.24. Let me compute more precisely: 50035.32 / 445325.07 = ?
+
+445325.07 × 0.1124 = 50062.5... Let me do properly: 445325.07 × 0.1123 = 50010.0 (445325.07*0.1 = 44532.507; *0.0123 = 5477.5; sum 50010.0). Difference to 50035.32: 25.32. 25.32/445325.07 ≈ 0.0000569. So ratio ≈ 0.1123569 → 11.24%. Good.
+- q6: mean vs median ratio maybe: 856.39/313.275 ≈ 2.73. Could state mean is ~2.7× the median. Declare ratio operands [order_revenue_mean, order_revenue_median], value 2.73. Compute: 856.3944/313.275 = 2.7337. Yes ~2.73.
+- q7: top customer share is a metric directly (6.24%). No derivation needed. Maybe average revenue per customer? That would be total_revenue/unique_customer_count = 445325.07/222 = 2005.97. If I state it, declare ratio. I might skip to keep word count down, or include. Keep simple.
+
+Also q1: just state values.
+
+Rounding: sensible precision. I'll round money to 2 decimals, percents to 2 decimals.
+
+Note average_order_value = order_revenue_mean (same value 856.3943653846154). Report as 856.39.
+
+reported_values must include EVERY metric_key of the question with verified value. "copy it" — as stated in the report. I'll use rounded values in reported_values? The rule says "include EVERY metric_key of that question with its verified value (copy it)". To be safe, I'll copy exact values as given (e.g., 856.3943653846154) or rounded? "copy it" suggests exact. But schema description says "metric_key -> number as stated in the report." Hmm, "as stated in the report" — so it should match what's in the statement text. If I state 856.39 in text, reported value should be 856.39? There's tension. The rule says "with its verified value (copy it)". I'll copy exact values to be safe; rounding in text is allowed. Actually "as stated in the report" vs "copy it" — copying exact verified values is safest and consistent with "copy it". I'll copy exact values.
+
+For order_count: 520.0 → 520. electronics_high_discount_orders: 22.0 → 22. unique_customer_count: 222.0 → 222. These are numbers; fine.
+
+Word count: keep under 600 words total.
+
+Now draft statements:
+
+q1: "In 2023-2024 the business generated total revenue of $445,325.07 across 520 orders, an average order value of $856.39."
+evidence_refs: total_revenue, order_count, average_order_value.
+reported_values: all three.
+direction: not_applicable? The direction field is for change/trend findings; q1 direction_required false. Set direction null or "not_applicable". I'll set null. Schema allows null. For q4, direction "increase". For others null. Or "not_applicable". I'll use null for non-required, "increase" for q4.
+
+q2: "The East region leads with $130,516.68 in revenue, followed by North ($124,845.75), West ($99,428.16) and South ($90,534.48); East outperforms South by $39,982.20."
+ranking: ["East","North","West","South"].
+derived_values: difference operands [revenue_east, revenue_south] value 39982.2. Check: 130516.68 - 90534.48 = 39982.20. Yes.
+
+q3: "2024 revenue built through the year: Q1 $36,108.32, Q2 $56,616.79, Q3 $71,674.98 (peak), Q4 $68,948.70; Q3 exceeded Q1 by $35,566.66."
+ranking: ["Q3","Q4","Q2","Q1"].
+derived: difference [revenue_2024_q3, revenue_2024_q1] = 35566.66.
+
+q4: "Revenue grew year over year, from $211,976.28 in 2023 to $233,348.79 in 2024, an increase of 10.08% (about $21,372.51 more)."
+direction: increase.
+derived: difference [revenue_2024, revenue_2023] = 21372.51. The pct 10.08% is the metric itself (rounded), not derived. Fine.
+
+q5: "22 electronics orders had discounts of 20% or more, generating $50,035.32 in revenue — about 11.24% of total revenue."
+derived: share [electronics_high_discount_revenue, total_revenue] = 11.24.
+
+q6: "Order revenue is highly skewed: mean $856.39 vs median $313.28 (mean ~2.73× the median), standard deviation $1,295.74, ranging from $5.27 to $7,844.02."
+derived: ratio [order_revenue_mean, order_revenue_median] = 2.73.
+Median rounding: 313.275 → $313.28 (rounded). Fine.
+
+q7: "The customer base is broad (222 unique customers) and not overly concentrated: the top customer contributed $27,793.12, or 6.24% of total revenue."
+No derived values (6.24% is the metric rounded).
+
+Limitations:
+- Data covers only 2023-2024; no earlier baseline for longer trends.
+- Revenue figures don't account for returns/cancellations or profitability (discounts reduce margin; high-discount electronics revenue doesn't reflect margin).
+- Q4 2024 dipped vs Q3; without seasonality context can't determine cause.
+- Analysis is descriptive; no statistical significance testing.
+- Customer concentration measured only by top customer; no full distribution (e.g., top-10 share).
+
+Conclusion: brief.
+
+Title: "Retail Sales Performance Report 2023–2024"
+
+Executive summary: 2-3 sentences with key numbers.
+
+Let me count words roughly. Keep everything tight.
+
+Executive summary: "Total 2023–2024 revenue was $445,325.07 across 520 orders (avg. $856.39 per order). Revenue grew 10.08% year over year, from $211,976.28 in 2023 to $233,348.79 in 2024, with 2024 momentum peaking in Q3. The East region leads regional sales, order values are highly skewed toward a few large orders, and customer concentration is low — the top customer accounts for just 6.24% of revenue."
+
+That's fine.
+
+Word count check: statements are concise. Total likely ~350-450 words. Good.
+
+Numbers formatting in text: rounding allowed. Ensure each key_findings statement states at least one verified numeric value — yes, all do.
+
+derived_values across findings — declare each in the finding's derived_values array. The schema has derived_values per KeyFinding. Yes.
+
+Let me double-check computed numbers:
+
+- East - South: 130516.68 - 90534.48. 130516.68 - 90000 = 40516.68; minus 534.48 = 39982.20. ✓
+- Q3 - Q1: 71674.98 - 36108.32 = 35566.66. ✓
+- 2024 - 2023: 233348.79 - 211976.28 = 21372.51. ✓ (233348.79 - 211976.28: 233348.79-211976.28 = 21372.51 ✓)
+- share: 50035.32/445325.07*100 = 11.2357 → 11.24. Let me verify more precisely: 445325.07 × 0.1124 = 50054.5? Compute: 445325.07 × 0.11 = 48985.7577; × 0.0024 = 1068.78; sum = 50054.54. That's above 50035.32, so ratio slightly less than 0.1124. 445325.07 × 0.11235 = 48985.7577 + 445325.07×0.00235 = 48985.7577 + 1046.51 = 50032.27. Slightly below 50035.32. Diff 3.05 → 3.05/445325 ≈ 0.0000068. So 0.1123568 → 11.2357% → 11.24%. ✓
+- mean/median: 856.3944/313.275. 313.275×2.73 = 855.24. Diff 1.15 → /313.275 ≈ 0.00367 → 2.7337 → 2.73. ✓
+
+Rounding 856.3943653846154 → 856.39. Median 313.275 → 313.28 (or 313.27 depending on rounding mode; standard round-half-up → 313.28). I'll write 313.28.
+
+YoY 10.0825 → 10.08%.
+
+Top customer share 6.2411 → 6.24%.
+
+Std 1295.74.
+
+Now the JSON. Include all fields per schema: title, executive_summary, key_findings (7 entries), limitations (array), conclusion.
+
+For each KeyFinding: finding_id, statement, evidence_refs, reported_values, direction, ranking, derived_values.
+
+q1: direction null, ranking null, derived_values [].
+q2: direction null, ranking list, derived_values [difference].
+q3: direction null (trend question but direction_required false), ranking list, derived [difference].
+q4: direction "increase", ranking null, derived [difference].
+q5: direction null, ranking null, derived [share].
+q6: direction null, ranking null, derived [ratio].
+q7: direction null, ranking null, derived [].
+
+reported_values exact copies:
+q1: total_revenue 445325.07, order_count 520, average_order_value 856.3943653846154.
+q2: revenue_north 124845.75, revenue_south 90534.48, revenue_east 130516.68000000001, revenue_west 99428.16. Should I copy 130516.68000000001 exactly or 130516.68? "copy it" — the verified value is 130516.68000000001 (float artifact). I'll write 130516.68 since that's the verified value sensibly; hmm. The rule: "include EVERY metric_key of that question with its verified value (copy it)". Safest to copy exactly: 130516.68000000001 and 233348.78999999998. I'll copy exact JSON values to be literal.
+
+q3: exact values.
+q4: revenue_2023 211976.28, revenue_2024 233348.78999999998, revenue_yoy_change_pct 10.082500740177146.
+q5: 22.0 → 22? The verified value is 22.0; JSON number 22 is equal. I'll write 22.
+q6: exact.
+q7: exact.
+
+Word count: JSON keys don't really count as "report words" but the instruction says keep the whole report under 600 words — the text content. We're fine.
+
+Output only the fenced JSON block.

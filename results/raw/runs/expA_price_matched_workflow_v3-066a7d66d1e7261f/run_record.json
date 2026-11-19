@@ -1,0 +1,153 @@
+{
+  "contract_version": "1.2",
+  "run_id": "expA_price_matched_workflow_v3-066a7d66d1e7261f",
+  "experiment_id": "expA_price_matched_workflow_v3",
+  "project_id": "support_operations",
+  "stage": "cleaning",
+  "model_alias": "A",
+  "repeat_index": 0,
+  "canonical_inputs": [
+    "datasets/projects/support_operations/raw.csv",
+    "datasets/projects/support_operations/agents.csv"
+  ],
+  "canonical_input_hashes": {
+    "datasets/projects/support_operations/raw.csv": "d260e1c2251ade14aa044895797fa2d39647b6d1fe43ba7c79d8c5a48fd287fd",
+    "datasets/projects/support_operations/agents.csv": "51d9c560abc74a09ea32b0c667fc52c8d0f5479fd5a01314fc8f7f2fc0ff4442"
+  },
+  "config_hash": "00c5cc266a810ae38223fc4c30bbc2b587351dfc23b0729b19f4726b2402f7f6",
+  "record": {
+    "stage": "cleaning",
+    "model_alias": "A",
+    "model_id": "us.anthropic.claude-sonnet-4-6",
+    "prompt_version": "v3",
+    "prompt_hash": "4c80e726ad39dcec71d0f3668b55982f474546dfd54cafee800a7f420e1182ec",
+    "invocation_ids": [
+      "173a517e-568c-40be-9145-8bff6d71b0a0"
+    ],
+    "cache_hit": false,
+    "shared_with_run_ids": [],
+    "status": "failed",
+    "structural_ok": true,
+    "failure_type": "validation_failed",
+    "failure_detail": "row_set_matches_reference: 127 reference rows missing (e.g. ['T00004', 'T00006', 'T00016', 'T00017', 'T00019']); 0 unexpected rows (e.g. []); output rows=220, reference rows=347",
+    "parse_ok": true,
+    "execution": {
+      "status": "success",
+      "exit_code": 0,
+      "stdout": "Cleaning complete: 380 raw rows -> 220 cleaned rows.\n",
+      "stderr": "",
+      "runtime_ms": 930.1047499975539,
+      "output_files": [
+        "/Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expA_price_matched_workflow_v3-066a7d66d1e7261f/cleaning/output/cleaned.csv",
+        "/Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expA_price_matched_workflow_v3-066a7d66d1e7261f/cleaning/output/cleaning_summary.json"
+      ],
+      "sandbox_image": "sha256:88988a15503bdb96538c3dd62244a79879d5c7848397db18b1267ccfd0a9727a"
+    },
+    "validation": {
+      "stage": "cleaning",
+      "hard_pass": false,
+      "checks": [
+        {
+          "name": "output_exists",
+          "passed": true,
+          "mandatory": true,
+          "detail": "/Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expA_price_matched_workflow_v3-066a7d66d1e7261f/cleaning/output/cleaned.csv",
+          "value": null
+        },
+        {
+          "name": "output_parses",
+          "passed": true,
+          "mandatory": true,
+          "detail": "220 rows, 10 columns",
+          "value": null
+        },
+        {
+          "name": "required_columns_present",
+          "passed": true,
+          "mandatory": true,
+          "detail": "all present",
+          "value": null
+        },
+        {
+          "name": "schema_constraints",
+          "passed": true,
+          "mandatory": true,
+          "detail": "all constraints satisfied",
+          "value": 1.0
+        },
+        {
+          "name": "no_extra_columns",
+          "passed": true,
+          "mandatory": false,
+          "detail": "",
+          "value": null
+        },
+        {
+          "name": "no_duplicate_keys",
+          "passed": true,
+          "mandatory": true,
+          "detail": "",
+          "value": 0.0
+        },
+        {
+          "name": "row_set_matches_reference",
+          "passed": false,
+          "mandatory": true,
+          "detail": "127 reference rows missing (e.g. ['T00004', 'T00006', 'T00016', 'T00017', 'T00019']); 0 unexpected rows (e.g. []); output rows=220, reference rows=347",
+          "value": null
+        },
+        {
+          "name": "values_match_reference",
+          "passed": true,
+          "mandatory": true,
+          "detail": "2200/2200 cells match (abs_tol=0.011, rel_tol=1e-06)",
+          "value": 1.0
+        }
+      ],
+      "quality": {
+        "cleaning_correctness": 0.6340057636887608,
+        "data_integrity": 0.6340057636887608,
+        "schema_compliance": 1.0
+      },
+      "quality_basis": "ground_truth",
+      "validator_version": "1.0"
+    },
+    "conditional_validation": null,
+    "input_artifacts": [
+      "datasets/projects/support_operations/raw.csv",
+      "datasets/projects/support_operations/agents.csv"
+    ],
+    "output_artifacts": [
+      "results/raw/runs/expA_price_matched_workflow_v3-066a7d66d1e7261f/cleaning/prompt.txt",
+      "results/raw/runs/expA_price_matched_workflow_v3-066a7d66d1e7261f/cleaning/response.txt",
+      "results/raw/runs/expA_price_matched_workflow_v3-066a7d66d1e7261f/cleaning/parsed.json",
+      "results/raw/runs/expA_price_matched_workflow_v3-066a7d66d1e7261f/cleaning/code.py",
+      "results/raw/runs/expA_price_matched_workflow_v3-066a7d66d1e7261f/cleaning/output/cleaned.csv",
+      "results/raw/runs/expA_price_matched_workflow_v3-066a7d66d1e7261f/cleaning/output/cleaning_summary.json"
+    ],
+    "input_artifact_hashes": {
+      "datasets/projects/support_operations/raw.csv": "d260e1c2251ade14aa044895797fa2d39647b6d1fe43ba7c79d8c5a48fd287fd",
+      "datasets/projects/support_operations/agents.csv": "51d9c560abc74a09ea32b0c667fc52c8d0f5479fd5a01314fc8f7f2fc0ff4442"
+    },
+    "output_artifact_hashes": {
+      "results/raw/runs/expA_price_matched_workflow_v3-066a7d66d1e7261f/cleaning/prompt.txt": "4c80e726ad39dcec71d0f3668b55982f474546dfd54cafee800a7f420e1182ec",
+      "results/raw/runs/expA_price_matched_workflow_v3-066a7d66d1e7261f/cleaning/response.txt": "6c505730d5755b31e309d466e309bbab0ad51f949cb38c5a03b2f5ed54352332",
+      "results/raw/runs/expA_price_matched_workflow_v3-066a7d66d1e7261f/cleaning/parsed.json": "12fd2e34fac838d59392d1eacceb49ebff7d5f231ff8f459641b96723b9a67c0",
+      "results/raw/runs/expA_price_matched_workflow_v3-066a7d66d1e7261f/cleaning/code.py": "470f43f054ffec32eaf6a4964e7d76bdbbc936e6542e00fe670d62452768d997",
+      "results/raw/runs/expA_price_matched_workflow_v3-066a7d66d1e7261f/cleaning/output/cleaned.csv": "b565e02b4bf534a01bd76e12a1445e68a4b98691efedeb37241d845f8dfeff66",
+      "results/raw/runs/expA_price_matched_workflow_v3-066a7d66d1e7261f/cleaning/output/cleaning_summary.json": "2a282e040ac05cfb3248b126555798864debf76e2eec1235800046d6c6b253af"
+    },
+    "handoff_in_path": "results/raw/runs/expA_price_matched_workflow_v3-066a7d66d1e7261f/cleaning/handoff_in.json",
+    "handoff_size_bytes": 420,
+    "input_tokens": 1757,
+    "output_tokens": 3242,
+    "cost_usd": 0.0592911,
+    "cost_status": "estimated",
+    "timings": {
+      "generation_ms": 18997.354958999495,
+      "execution_ms": 930.1047499975539,
+      "validation_ms": 8.818750000500586,
+      "handoff_ms": 0.28295799711486325
+    }
+  }
+}

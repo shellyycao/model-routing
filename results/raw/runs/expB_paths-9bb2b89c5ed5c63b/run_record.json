@@ -1,0 +1,407 @@
+{
+  "contract_version": "1.2",
+  "run_id": "expB_paths-9bb2b89c5ed5c63b",
+  "experiment_id": "expB_paths",
+  "project_id": "retail_sales",
+  "path_id": "A-B-A",
+  "models": [
+    "A",
+    "B",
+    "A"
+  ],
+  "repeat_index": 0,
+  "config_hash": "f91fe0c4676e5c366dbdfba4b48ccb42330d548b67030ac623b9cd2fdeed4733",
+  "failure_policy": "continue_with_actual_artifact",
+  "started_at": "2026-11-18T03:12:05.144388+00:00",
+  "finished_at": "2026-11-18T03:12:33.006457+00:00",
+  "stages": [
+    {
+      "stage": "cleaning",
+      "model_alias": "A",
+      "model_id": "us.anthropic.claude-sonnet-4-6",
+      "prompt_version": "v2",
+      "prompt_hash": "db9085b5641fae0b1962e16963671aa36c598358db09e4a841d5a054b0253296",
+      "invocation_ids": [
+        "fdb35b60-2fd5-474e-8aa2-1eeb10b5a8b8"
+      ],
+      "cache_hit": false,
+      "shared_with_run_ids": [],
+      "status": "passed",
+      "structural_ok": true,
+      "failure_type": null,
+      "failure_detail": null,
+      "parse_ok": true,
+      "execution": {
+        "status": "success",
+        "exit_code": 0,
+        "stdout": "Cleaning complete: 636 raw rows -> 520 cleaned rows.\n",
+        "stderr": "/sandbox/code/main.py:18: FutureWarning: DataFrame.applymap has been deprecated. Use DataFrame.map instead.\n  raw_df = raw_df.applymap(lambda x: x.strip() if isinstance(x, str) else x)\n/sandbox/code/main.py:27: FutureWarning: DataFrame.applymap has been deprecated. Use DataFrame.map instead.\n  raw_df = raw_df.applymap(to_missing)\n",
+        "runtime_ms": 796.8241670005227,
+        "output_files": [
+          "/Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expB_paths-9bb2b89c5ed5c63b/cleaning/output/cleaned.csv",
+          "/Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expB_paths-9bb2b89c5ed5c63b/cleaning/output/cleaning_summary.json"
+        ],
+        "sandbox_image": "sha256:7f95c0dedbe5dedde14b03130fce5c5e889062d63d7bde9dd10c3f7891bbb738"
+      },
+      "validation": {
+        "stage": "cleaning",
+        "hard_pass": true,
+        "checks": [
+          {
+            "name": "output_exists",
+            "passed": true,
+            "mandatory": true,
+            "detail": "/Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expB_paths-9bb2b89c5ed5c63b/cleaning/output/cleaned.csv",
+            "value": null
+          },
+          {
+            "name": "output_parses",
+            "passed": true,
+            "mandatory": true,
+            "detail": "520 rows, 9 columns",
+            "value": null
+          },
+          {
+            "name": "required_columns_present",
+            "passed": true,
+            "mandatory": true,
+            "detail": "all present",
+            "value": null
+          },
+          {
+            "name": "schema_constraints",
+            "passed": true,
+            "mandatory": true,
+            "detail": "all constraints satisfied",
+            "value": 1.0
+          },
+          {
+            "name": "no_extra_columns",
+            "passed": true,
+            "mandatory": false,
+            "detail": "",
+            "value": null
+          },
+          {
+            "name": "no_duplicate_keys",
+            "passed": true,
+            "mandatory": true,
+            "detail": "",
+            "value": 0.0
+          },
+          {
+            "name": "row_set_matches_reference",
+            "passed": true,
+            "mandatory": true,
+            "detail": "0 reference rows missing (e.g. []); 0 unexpected rows (e.g. []); output rows=520, reference rows=520",
+            "value": null
+          },
+          {
+            "name": "values_match_reference",
+            "passed": true,
+            "mandatory": true,
+            "detail": "4680/4680 cells match (abs_tol=0.011, rel_tol=1e-06)",
+            "value": 1.0
+          }
+        ],
+        "quality": {
+          "cleaning_correctness": 1.0,
+          "data_integrity": 1.0,
+          "schema_compliance": 1.0
+        },
+        "quality_basis": "ground_truth",
+        "validator_version": "1.0"
+      },
+      "conditional_validation": null,
+      "input_artifacts": [
+        "datasets/projects/retail_sales/raw.csv"
+      ],
+      "output_artifacts": [
+        "results/raw/runs/expB_paths-9bb2b89c5ed5c63b/cleaning/prompt.txt",
+        "results/raw/runs/expB_paths-9bb2b89c5ed5c63b/cleaning/response.txt",
+        "results/raw/runs/expB_paths-9bb2b89c5ed5c63b/cleaning/parsed.json",
+        "results/raw/runs/expB_paths-9bb2b89c5ed5c63b/cleaning/code.py",
+        "results/raw/runs/expB_paths-9bb2b89c5ed5c63b/cleaning/output/cleaned.csv",
+        "results/raw/runs/expB_paths-9bb2b89c5ed5c63b/cleaning/output/cleaning_summary.json"
+      ],
+      "input_artifact_hashes": {
+        "datasets/projects/retail_sales/raw.csv": "a1c513b0966bc95bb7cf521bc8920d7a70ccac71ff98d1564a6d84e013f33a5c"
+      },
+      "output_artifact_hashes": {
+        "results/raw/runs/expB_paths-9bb2b89c5ed5c63b/cleaning/prompt.txt": "db9085b5641fae0b1962e16963671aa36c598358db09e4a841d5a054b0253296",
+        "results/raw/runs/expB_paths-9bb2b89c5ed5c63b/cleaning/response.txt": "c7306882b27ffac3c76ec92ad8958473d08ad7c9473c932c8405d7eac5d325dd",
+        "results/raw/runs/expB_paths-9bb2b89c5ed5c63b/cleaning/parsed.json": "50d6e33959922f3cde728893d0d91125b39c5a95d33f07a1f95ce690721b8bad",
+        "results/raw/runs/expB_paths-9bb2b89c5ed5c63b/cleaning/code.py": "a4d8bca25693fa1c747d7c7e0e87ae7ae8c17b098d934034a649d8d4df88b13d",
+        "results/raw/runs/expB_paths-9bb2b89c5ed5c63b/cleaning/output/cleaned.csv": "f0a6cc19ff470e786eda7a9e5fd148d55fc370f08e4cb656256f0aa9922cfca6",
+        "results/raw/runs/expB_paths-9bb2b89c5ed5c63b/cleaning/output/cleaning_summary.json": "3e30a66006a341fef6b5ef8dc68062cb3a932717348a89c2cf4057539322a145"
+      },
+      "handoff_in_path": "results/raw/runs/expB_paths-9bb2b89c5ed5c63b/cleaning/handoff_in.json",
+      "handoff_size_bytes": 575,
+      "input_tokens": 2060,
+      "output_tokens": 2777,
+      "cost_usd": null,
+      "cost_status": "unavailable",
+      "timings": {
+        "generation_ms": 16591.776708000907,
+        "execution_ms": 796.8241670005227,
+        "validation_ms": 6.818374999056687,
+        "handoff_ms": 0.34841600063373335
+      }
+    },
+    {
+      "stage": "analysis",
+      "model_alias": "B",
+      "model_id": "us.amazon.nova-pro-v1:0",
+      "prompt_version": "v2",
+      "prompt_hash": "8e3d4b64c07e539853793420f018941d7fc473cbf907cbfc81aecbb7d9b7f074",
+      "invocation_ids": [
+        "1eb136fd-c92c-40fb-9c20-6d6ee7ec7b33"
+      ],
+      "cache_hit": false,
+      "shared_with_run_ids": [],
+      "status": "failed",
+      "structural_ok": false,
+      "failure_type": "execution_error",
+      "failure_detail": "execution runtime_error (exit 1): Traceback (most recent call last):\n  File \"/sandbox/code/main.py\", line 70, in <module>\n    pd.json.dump(findings, f)\n    ^^^^^^^\nAttributeError: module 'pandas' has no attribute 'json'\n",
+      "parse_ok": true,
+      "execution": {
+        "status": "runtime_error",
+        "exit_code": 1,
+        "stdout": "",
+        "stderr": "Traceback (most recent call last):\n  File \"/sandbox/code/main.py\", line 70, in <module>\n    pd.json.dump(findings, f)\n    ^^^^^^^\nAttributeError: module 'pandas' has no attribute 'json'\n",
+        "runtime_ms": 870.8910420009488,
+        "output_files": [
+          "/Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expB_paths-9bb2b89c5ed5c63b/analysis/output/findings.json"
+        ],
+        "sandbox_image": "sha256:7f95c0dedbe5dedde14b03130fce5c5e889062d63d7bde9dd10c3f7891bbb738"
+      },
+      "validation": {
+        "stage": "analysis",
+        "hard_pass": false,
+        "checks": [
+          {
+            "name": "findings_exists",
+            "passed": true,
+            "mandatory": true,
+            "detail": "",
+            "value": null
+          },
+          {
+            "name": "findings_parses",
+            "passed": false,
+            "mandatory": true,
+            "detail": "invalid JSON: Expecting value: line 1 column 1 (char 0)",
+            "value": null
+          },
+          {
+            "name": "required_keys_present",
+            "passed": false,
+            "mandatory": true,
+            "detail": "no parseable findings",
+            "value": null
+          },
+          {
+            "name": "values_numeric",
+            "passed": false,
+            "mandatory": true,
+            "detail": "no parseable findings",
+            "value": null
+          },
+          {
+            "name": "values_within_tolerance",
+            "passed": false,
+            "mandatory": true,
+            "detail": "no parseable findings",
+            "value": null
+          }
+        ],
+        "quality": {
+          "numerical_accuracy": 0.0,
+          "calculation_coverage": 0.0
+        },
+        "quality_basis": "ground_truth",
+        "validator_version": "1.0"
+      },
+      "conditional_validation": {
+        "stage": "analysis",
+        "hard_pass": false,
+        "checks": [
+          {
+            "name": "findings_exists",
+            "passed": true,
+            "mandatory": true,
+            "detail": "",
+            "value": null
+          },
+          {
+            "name": "findings_parses",
+            "passed": false,
+            "mandatory": true,
+            "detail": "invalid JSON: Expecting value: line 1 column 1 (char 0)",
+            "value": null
+          },
+          {
+            "name": "required_keys_present",
+            "passed": false,
+            "mandatory": true,
+            "detail": "no parseable findings",
+            "value": null
+          },
+          {
+            "name": "values_numeric",
+            "passed": false,
+            "mandatory": true,
+            "detail": "no parseable findings",
+            "value": null
+          },
+          {
+            "name": "values_within_tolerance",
+            "passed": false,
+            "mandatory": true,
+            "detail": "no parseable findings",
+            "value": null
+          }
+        ],
+        "quality": {
+          "numerical_accuracy": 0.0,
+          "calculation_coverage": 0.0
+        },
+        "quality_basis": "conditional_reference",
+        "validator_version": "1.0"
+      },
+      "input_artifacts": [
+        "results/raw/runs/expB_paths-9bb2b89c5ed5c63b/cleaning/output/cleaned.csv"
+      ],
+      "output_artifacts": [
+        "results/raw/runs/expB_paths-9bb2b89c5ed5c63b/analysis/prompt.txt",
+        "results/raw/runs/expB_paths-9bb2b89c5ed5c63b/analysis/response.txt",
+        "results/raw/runs/expB_paths-9bb2b89c5ed5c63b/analysis/parsed.json",
+        "results/raw/runs/expB_paths-9bb2b89c5ed5c63b/analysis/code.py",
+        "results/raw/runs/expB_paths-9bb2b89c5ed5c63b/analysis/output/findings.json"
+      ],
+      "input_artifact_hashes": {
+        "results/raw/runs/expB_paths-9bb2b89c5ed5c63b/cleaning/output/cleaned.csv": "f0a6cc19ff470e786eda7a9e5fd148d55fc370f08e4cb656256f0aa9922cfca6"
+      },
+      "output_artifact_hashes": {
+        "results/raw/runs/expB_paths-9bb2b89c5ed5c63b/analysis/prompt.txt": "8e3d4b64c07e539853793420f018941d7fc473cbf907cbfc81aecbb7d9b7f074",
+        "results/raw/runs/expB_paths-9bb2b89c5ed5c63b/analysis/response.txt": "7dd9123159dd9a1027b93ad216b4a615e81b00ff53c9b0a16042b26bef64a944",
+        "results/raw/runs/expB_paths-9bb2b89c5ed5c63b/analysis/parsed.json": "0a93a8701fde4dcb4dcbc6887b1fdc17a781feb11c73a55b4d3e90015c9848c8",
+        "results/raw/runs/expB_paths-9bb2b89c5ed5c63b/analysis/code.py": "14cf4d535a5b91a1a294feccac40610c029a9cd7e73f196e65a295b095fac1f5",
+        "results/raw/runs/expB_paths-9bb2b89c5ed5c63b/analysis/output/findings.json": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "handoff_in_path": "results/raw/runs/expB_paths-9bb2b89c5ed5c63b/analysis/handoff_in.json",
+      "handoff_size_bytes": 14523,
+      "input_tokens": 2899,
+      "output_tokens": 1299,
+      "cost_usd": null,
+      "cost_status": "unavailable",
+      "timings": {
+        "generation_ms": 7345.736375000342,
+        "execution_ms": 870.8910420009488,
+        "validation_ms": 4.4567090008058585,
+        "handoff_ms": 0.533667000127025
+      }
+    },
+    {
+      "stage": "reporting",
+      "model_alias": "A",
+      "model_id": "us.anthropic.claude-sonnet-4-6",
+      "prompt_version": "v2",
+      "prompt_hash": null,
+      "invocation_ids": [],
+      "cache_hit": false,
+      "shared_with_run_ids": [],
+      "status": "blocked_by_invalid_artifact",
+      "structural_ok": null,
+      "failure_type": null,
+      "failure_detail": "upstream analysis artifact 'findings' unusable: failed structural checks findings_parses, required_keys_present",
+      "parse_ok": null,
+      "execution": null,
+      "validation": null,
+      "conditional_validation": null,
+      "input_artifacts": [],
+      "output_artifacts": [],
+      "input_artifact_hashes": {},
+      "output_artifact_hashes": {},
+      "handoff_in_path": null,
+      "handoff_size_bytes": null,
+      "input_tokens": null,
+      "output_tokens": null,
+      "cost_usd": null,
+      "cost_status": "not_incurred",
+      "timings": {
+        "generation_ms": null,
+        "execution_ms": null,
+        "validation_ms": null,
+        "handoff_ms": null
+      }
+    }
+  ],
+  "feasibility": {
+    "outcome": "infeasible",
+    "stage_status": {
+      "cleaning": "passed",
+      "analysis": "failed",
+      "reporting": "blocked_by_invalid_artifact"
+    },
+    "first_failure_stage": "analysis",
+    "failure_type": "execution_error"
+  },
+  "quality": {
+    "cleaning": {
+      "cleaning_correctness": 1.0,
+      "data_integrity": 1.0,
+      "schema_compliance": 1.0
+    },
+    "analysis": {
+      "numerical_accuracy": 0.0,
+      "calculation_coverage": 0.0
+    }
+  },
+  "conditional_quality": {
+    "analysis": {
+      "numerical_accuracy": 0.0,
+      "calculation_coverage": 0.0
+    }
+  },
+  "efficiency": {
+    "total_api_latency_ms": 23937.51308300125,
+    "total_execution_ms": 1667.7152090014715,
+    "total_validation_ms": 11.275083999862545,
+    "total_handoff_ms": 0.8820830007607583,
+    "end_to_end_ms": 27862.389416999576,
+    "input_tokens": 4959,
+    "output_tokens": 4076,
+    "cost_usd": null,
+    "cost_status": "unavailable",
+    "n_calls": 2,
+    "n_cache_hits": 0,
+    "n_switches": 2,
+    "handoff_bytes_total": 15098
+  },
+  "propagation": {
+    "downstream_executable": {
+      "cleaning": true,
+      "analysis": false,
+      "reporting": false
+    },
+    "upstream_error_severity": {
+      "analysis": {
+        "cleaning_correctness": 0.0,
+        "data_integrity": 0.0,
+        "schema_compliance": 0.0
+      }
+    },
+    "end_to_end_accuracy": {},
+    "propagation_impact": {
+      "analysis": {
+        "calculation_coverage": 0.0,
+        "numerical_accuracy": 0.0
+      }
+    },
+    "blocked_stages": [
+      "reporting"
+    ]
+  },
+  "final_artifacts": []
+}

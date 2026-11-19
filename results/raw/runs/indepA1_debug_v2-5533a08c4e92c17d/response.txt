@@ -1,0 +1,12 @@
+```json
+{
+  "fixed_code": "def invoice_total(lines, discount_pct=0, tax_pct=0):\n    \"\"\"\n    Calculate the total invoice amount.\n\n    Parameters\n    ----------\n    lines : iterable of dict\n        Each dict must contain 'qty' and 'unit_price' keys.\n    discount_pct : float, optional\n        Discount percentage to apply to the subtotal (default 0).\n    tax_pct : float, optional\n        Tax percentage to apply after discount (default 0).\n\n    Returns\n    -------\n    float\n        Total amount rounded to two decimal places.\n    \"\"\"\n    # 1. Compute the raw subtotal.\n    subtotal = sum(row['qty'] * row['unit_price'] for row in lines)\n    # 2. Apply discount first.\n    discounted = subtotal * (1 - discount_pct / 100)\n    # 3. Apply tax to the discounted amount.\n    total = discounted * (1 + tax_pct / 100)\n    # 4. Round only the final result.\n    return round(total, 2)\n",
+  "bug_locations": [
+    "Incorrect order of discount and tax calculations in return expression",
+    "Missing intermediate variables for clarity (discounted amount)",
+    "Discount applied after tax leading to wrong total",
+    "Rounding applied to an intermediate expression instead of final total"
+  ],
+  "explanation": "The original function subtracted the discount from the subtotal *after* adding tax, which contradicts the specification that discount must be applied first and tax on the discounted amount. The return expression also combined operations in a way that could produce rounding errors. The fix introduces explicit steps: compute subtotal, apply discount, then apply tax, and finally round the final total to two decimal places."
+}
+```

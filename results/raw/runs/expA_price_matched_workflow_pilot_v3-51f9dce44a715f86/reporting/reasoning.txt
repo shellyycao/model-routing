@@ -1,0 +1,72 @@
+Let me construct the report.
+
+Verified findings:
+- total_revenue: 445325.07
+- order_count: 520
+- average_order_value: 856.394365
+- revenue_north: 124845.75
+- revenue_south: 90534.48
+- revenue_east: 130516.68
+- revenue_west: 99428.16
+- 2024 quarters: Q1 36108.32, Q2 56616.79, Q3 71674.98, Q4 68948.70
+- revenue_2023: 211976.28; revenue_2024: 233348.79; yoy +10.082501%
+- electronics high discount: 22 orders, 50035.32 revenue
+- distribution: mean 856.394365, median 313.275, std 1295.742355, min 5.27, max 7844.02
+- customers: 222 unique, top customer revenue 27793.12, share 6.241086%
+
+Rankings:
+- q2 (regions high to low): East (130516.68), North (124845.75), West (99428.16), South (90534.48)
+- q3 (quarters high to low): Q3 (71674.98), Q4 (68948.70), Q2 (56616.79), Q1 (36108.32)
+
+Direction q4: increase (revenue_yoy_change_pct positive, +10.08%).
+
+Derived values: any numbers I state in text that I compute. If I mention e.g. difference between East and South, I must declare. Keep it minimal. I might mention the Q1-to-Q3 increase — that would need derived value. Better to mention a few and declare them.
+
+Let me decide derived values:
+- q1: average order value is verified (856.39), no derivation needed. Maybe none.
+- q2: difference East vs South: 130516.68 - 90534.48 = 39982.20. Declare as difference with operands [revenue_east, revenue_south]. I could state that. Or avoid. I'll include it: "East led South by $39,982.20."
+- q3: maybe state Q3 exceeded Q1 by 35566.66 (71674.98 - 36108.32 = 35566.66). Declare difference.
+- q4: difference 2024 - 2023 = 233348.79 - 211976.28 = 21372.51. Declare difference. pct_change is verified already, so the 10.08% is reported not derived. But if I state the $21,372.51 increase, declare difference.
+- q5: maybe share of electronics high-discount revenue of total: 50035.32/445325.07*100 = 11.24%. Declare share. Let me compute: 50035.32/445325.07 = 0.112357... *100 = 11.2357 ≈ 11.24. Declare share operands [electronics_high_discount_revenue, total_revenue].
+- q6: maybe note median well below mean — no numeric derivation needed if just comparing. Could state ratio mean/median = 856.394365/313.275 ≈ 2.73. Declare ratio. Optional. I'll include ratio: 856.394365/313.275 = 2.73368... ≈ 2.73.
+- q7: top customer share 6.24% is verified. None derived.
+
+Word count: keep under 600 words total for title, summary, statements, limitations, conclusion. Should be fine.
+
+Write statements with numeric values.
+
+q1 statement: "In 2023–2024 the business generated total revenue of $445,325.07 across 520 orders, an average order value of $856.39."
+
+q2: "East was the top region with $130,516.68, followed by North ($124,845.75), West ($99,428.16) and South ($90,534.48); East exceeded South by $39,982.20."
+
+q3: "2024 revenue climbed through the year: Q1 $36,108.32, Q2 $56,616.79, Q3 $71,674.98 (peak), Q4 $68,948.70. Q3 exceeded Q1 by $35,566.66." Ranking: Q3, Q4, Q2, Q1.
+
+q4: "Revenue grew from $211,976.28 in 2023 to $233,348.79 in 2024, a 10.08% increase (+$21,372.51)." Direction: increase.
+
+q5: "22 Electronics orders had discounts of 20% or more, generating $50,035.32 in revenue — about 11.24% of total revenue."
+
+q6: "Order revenue is right-skewed: mean $856.39 vs median $313.28 (mean ≈2.73× median), std $1,295.74, ranging from $5.27 to $7,844.02."
+
+q7: "222 unique customers; the top customer contributed $27,793.12, or 6.24% of total revenue, indicating low concentration."
+
+Limitations: 2024 Q4 dip vs Q3; only two years of data, no monthly seasonality; high discounts may erode margin (no cost/profit data); skew driven by few large orders; no returns/cancellations info (we don't know, but can say cleaned data only). Keep genuine: revenue only, no profit/cost; discount analysis limited to electronics with ≥20% threshold; data limited to two years.
+
+Rounding: use consistent rounding to 2 decimals. average_order_value 856.39. order_revenue_median 313.275 -> 313.28 (or 313.275). I'll use 313.28.
+
+reported_values must include every metric_key of that question with its verified value — copy it. So use exact verified values, not rounded? "copy it" — include verified values. I'll copy exact values.
+
+Derived values values: as stated in report. So if I state $39,982.20, value 39982.20. Compute: 130516.68 - 90534.48 = 39982.20. Yes.
+
+71674.98 - 36108.32 = 35566.66. Yes.
+
+233348.79 - 211976.28 = 21372.51. Yes.
+
+50035.32/445325.07*100: compute precisely: 50035.32/445325.07 = 0.1123576... Let me compute: 445325.07 * 0.1123 = 50010.0 (445325.07*0.1123 = 445325.07*0.1=44532.507 + 445325.07*0.0123=5477.50 => 50010.0). Difference 50035.32-50010.0=25.3; 25.3/445325.07=0.0000568. So 0.1123568 => 11.24%. Good.
+
+856.394365/313.275 = 2.7337. 313.275*2.73=855.24; remainder 1.154; /313.275=0.00368 => 2.7337. So 2.73.
+
+Word count check: keep concise.
+
+Now build JSON. Ensure key_findings includes all required fields? Only finding_id, statement, evidence_refs required, but include reported_values, direction, ranking, derived_values as appropriate. For non-direction findings, direction can be null or "not_applicable". I'll set "not_applicable" where not required, and ranking null where not required.
+
+Word count: aim well under 600.

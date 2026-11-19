@@ -1,0 +1,9 @@
+```json
+{
+  "fixed_code": "def rolling_mean(xs, window, min_periods=1):\n    if not (1 <= min_periods <= window):\n        raise ValueError(\"min_periods must satisfy 1 <= min_periods <= window\")\n    result = []\n    for i in range(len(xs)):\n        start = max(0, i - window + 1)\n        window_vals = xs[start:i+1]\n        if len(window_vals) >= min_periods:\n            result.append(sum(window_vals) / len(window_vals))\n        else:\n            result.append(None)\n    return result\n",
+  "bug_locations": [
+    "rolling_mean function body"
+  ],
+  "explanation": "Multiple bugs were present: (1) The slice `xs[max(0,i-window):i]` used `i` as the exclusive end, so it excluded the current element at index `i`. It should be `xs[max(0, i-window+1):i+1]` to include the current position. (2) The divisor was always `window` instead of the actual number of elements in the window slice, causing wrong results when fewer than `window` elements are available (e.g., at the start). It should divide by `len(window_vals)`. (3) There was no validation that `1 <= min_periods <= window`. (4) There was no null (None) return for positions where the count of available values is less than `min_periods`."
+}
+```

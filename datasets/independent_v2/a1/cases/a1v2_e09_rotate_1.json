@@ -1,0 +1,26 @@
+{
+  "bug_locations": [
+    "rotate slice direction"
+  ],
+  "buggy": "def rotate(xs, k):\n                 if not xs: return []\n                 k %= len(xs)\n                 return list(xs[k:] + xs[:k])\n",
+  "case_id": "a1v2_e09_rotate_1",
+  "difficulty": "easy",
+  "family": "rotate",
+  "hidden": [
+    "rotate([1,2,3],1)==[3,1,2]",
+    "rotate([1,2,3],-1)==[2,3,1]",
+    "rotate([1,2,3],4)==[3,1,2]",
+    "rotate([],3)==[]",
+    "rotate((1,2),0)==[1,2]"
+  ],
+  "label_source": "executable reference plus independently checked tests",
+  "reference": "def rotate(xs, k):\n             if not xs: return []\n             k %= len(xs)\n             return list(xs[-k:] + xs[:-k]) if k else list(xs)\n",
+  "spec": "rotate(xs, k) returns a new list rotated right by k; negative k rotates left; empty input returns [].",
+  "verification": {
+    "buggy_fails": 3,
+    "reference_passes": 5
+  },
+  "visible": [
+    "rotate([1,2,3], 1) == [3,1,2]"
+  ]
+}

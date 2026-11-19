@@ -1,0 +1,9 @@
+```json
+{
+  "fixed_code": "def dedupe(xs):\n    seen = []\n    result = []\n    for x in xs:\n        if x not in seen:\n            seen.append(x)\n            result.append(x)\n    return result\n",
+  "bug_locations": [
+    "dedupe function body"
+  ],
+  "explanation": "Two bugs: (1) `sorted(set(xs))` sorts the output instead of preserving first-occurrence order; (2) `set()` requires hashable values, but the spec requires support for unhashable values. The fix iterates through xs, tracking seen items in a list (supporting unhashable values via `in` operator with equality checks) and appending first occurrences to the result in order."
+}
+```

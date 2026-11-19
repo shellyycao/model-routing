@@ -1,0 +1,10 @@
+```json
+{
+  "fixed_code": "def summarize_logs(lines):\n    counts = {}\n    errors = []\n    for line in lines:\n        parts = line.split('|')\n        if len(parts) < 4:\n            continue\n        ts, level, service = parts[0], parts[1], parts[2]\n        level_upper = level.upper()\n        counts.setdefault(service, {})\n        counts[service][level_upper] = counts[service].get(level_upper, 0) + 1\n        if level_upper == 'ERROR':\n            errors.append(ts)\n    return {'counts': counts, 'first_error': min(errors) if errors else None}\n",
+  "bug_locations": [
+    "counts increment line: used level (not level.upper()) for .get() lookup, and called setdefault twice creating two separate dicts",
+    "return statement: used max(errors) instead of min(errors) for lexicographically earliest ERROR timestamp"
+  ],
+  "explanation": "Two bugs: (1) The increment line called `counts.setdefault(service, {})` twice, which could return different dict objects, and used `level` (original case) for `.get()` but stored under `level.upper()`, causing counts to always be 1. Fixed by using a single dict reference and always using `level_upper`. (2) The spec requires the lexicographically *earliest* ERROR timestamp, but the code used `max(errors)` instead of `min(errors)`."
+}
+```

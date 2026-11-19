@@ -1,0 +1,11 @@
+```json
+{
+  "fixed_code": "import heapq\n\ndef dependency_order(deps):\n    # Every key and every referenced node is part of the graph.\n    nodes = set(deps)\n    for key in deps:\n        nodes.update(deps[key])\n\n    # dependencies[n]: nodes that must appear before n.\n    dependencies = {n: set(deps.get(n, ())) for n in nodes}\n    # dependents[n]: nodes that list n as a dependency.\n    dependents = {n: set() for n in nodes}\n    for n in nodes:\n        for d in dependencies[n]:\n            dependents[d].add(n)\n\n    ready = [n for n in nodes if not dependencies[n]]\n    heapq.heapify(ready)\n    out = []\n    while ready:\n        n = heapq.heappop(ready)\n        out.append(n)\n        for m in dependents[n]:\n            dependencies[m].discard(n)\n            if not dependencies[m]:\n                heapq.heappush(ready, m)\n\n    if len(out) != len(nodes):\n        raise ValueError(\"dependency cycle detected\")\n    return out\n",
+  "bug_locations": [
+    "dependency_order: node universe construction built nodes only from deps keys, dropping referenced nodes",
+    "dependency_order: missing cycle detection (must raise ValueError instead of returning a partial/empty order)",
+    "dependency_order: readiness tracking rewritten to an explicit dependents adjacency so each node is enqueued exactly once when its last dependency is satisfied"
+  ],
+  "explanation": "Two interacting defects: (1) nodes=set(deps) ignored referenced-only nodes, so a node like 'a' in {'b':['a']} never became a node; it also sat forever in incoming['b'], so 'b' was never emitted and the result was incomplete. The fix unions all dependency values into the node set and builds dependencies/dependents over that full set. (2) There was no cycle check; cyclic or unresolvable inputs silently returned a partial/empty list. After Kahn's loop, any node not emitted means the remaining subgraph has a cycle, so we raise ValueError when len(out) != len(nodes). The min-heap still yields the alphabetical choice among ready nodes, and the dependents map makes each node enter the heap exactly once."
+}
+```

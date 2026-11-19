@@ -1,0 +1,187 @@
+Let me carefully work through the verified findings and construct the report.
+
+Verified findings:
+- ticket_count: 347.0
+- mean_resolution_minutes: 75.19308357348703
+- total_labor_cost: 27422.9
+- labor_cost_alpha: 7787.81
+- labor_cost_beta: 10247.36
+- labor_cost_gamma: 9387.73
+- resolution_email: 73.01724137931035
+- resolution_chat: 83.03921568627452
+- resolution_phone: 69.25352112676056
+- reopen_rate_email_pct: 17.24137931034483
+- reopen_rate_chat_pct: 7.8431372549019605
+- email_vs_chat_reopen_change_pct: 119.82758620689657
+- high_cost_low_sat_count: 12.0
+- high_cost_low_sat_reopen_pct: 8.333333333333332
+- resolution_median: 65.0
+- resolution_std: 51.92574910613114
+- satisfaction_mean: 4.152439024390244
+- satisfaction_missing_count: 19.0
+- unique_agent_count: 18.0
+- top_agent_ticket_count: 26.0
+- top_agent_ticket_share_pct: 7.492795389048991
+
+Rankings:
+- q2: labor costs: Beta (10247.36) > Gamma (9387.73) > Alpha (7787.81). Ranking: ["Beta", "Gamma", "Alpha"]
+- q3: resolution minutes by channel: chat (83.04) > email (73.02) > phone (69.25). Ranking: ["chat", "email", "phone"]
+
+Direction:
+- q4: email_vs_chat_reopen_change_pct = +119.83% → increase.
+
+Derived values: I need to declare any computed numbers in my text. Let me think about which numbers I might derive:
+
+- q2: differences between teams, e.g., Beta - Alpha = 10247.36 - 7787.81 = 2459.55. If I state this, declare as difference with operands [labor_cost_beta, labor_cost_alpha].
+- q3: chat vs phone difference: 83.04 - 69.25 = 13.79 minutes. If stated, declare difference [resolution_chat, resolution_phone].
+- q4: the percentage point difference: 17.24 - 7.84 = 9.40 pp. Declare difference [reopen_rate_email_pct, reopen_rate_chat_pct].
+- q5: high_cost_low_sat_count as share of tickets: 12/347*100 = 3.46%. Declare share [high_cost_low_sat_count, ticket_count].
+- q7: top agent share already given (7.49%), no need to derive.
+
+To keep it safe, I could minimize derived values. But they add value. Let me include a few and declare them precisely.
+
+Let me compute exactly:
+
+q2: Beta - Alpha = 10247.36 - 7787.81 = 2459.55. 
+Also maybe Beta vs Gamma: 10247.36 - 9387.73 = 859.63. I'll mention just one difference.
+
+q3: chat - phone = 83.03921568627452 - 69.25352112676056 = 13.785694559513963 ≈ 13.79 minutes.
+
+q4: 17.24137931034483 - 7.8431372549019605 = 9.39824205544287 ≈ 9.40 percentage points.
+
+q5: 12/347*100 = 3.4582132564841496 ≈ 3.46%.
+
+q7: average tickets per agent = 347/18 = 19.28; top agent 26 vs average... that would be a ratio 26/19.28 — but that involves a two-step derivation. Better to avoid or declare ratio [top_agent_ticket_count, ticket_count]? Actually 26/347*100 = 7.49% is already the verified value top_agent_ticket_share_pct. I don't need to derive anything for q7. Keep derived_values empty for q7.
+
+Word count: title, summary, statements, limitations, conclusion under 650 words. JSON keys presumably don't count, but to be safe keep text concise.
+
+Let me draft statements:
+
+q1: "The cleaned dataset contains 347 tickets, with a mean resolution time of 75.19 minutes and total labor cost of $27,422.90."
+
+q2: "Beta accounts for the most labor cost at $10,247.36, ahead of Gamma ($9,387.73) and Alpha ($7,787.81); Beta spends $2,459.55 more than Alpha." Ranking: ["Beta","Gamma","Alpha"]. Derived: difference [labor_cost_beta, labor_cost_alpha] = 2459.55.
+
+q3: "Chat tickets take longest to resolve on average at 83.04 minutes, followed by email (73.02) and phone (69.25) — chat averages 13.79 minutes more than phone." Ranking: ["chat","email","phone"]. Derived: difference [resolution_chat, resolution_phone] = 13.79.
+
+q4: "Email's reopen rate is 17.24% versus 7.84% for chat, a 119.83% relative increase (about 9.40 percentage points higher), so reopening moves in an increasing direction from chat to email." Direction: increase. Derived: difference [reopen_rate_email_pct, reopen_rate_chat_pct] = 9.4. Note the pct_change is a verified metric itself (email_vs_chat_reopen_change_pct), so it doesn't need to be declared as derived — it's in reported_values.
+
+q5: "12 tickets have labor_cost >= $100 and satisfaction <= 2 — 3.46% of all tickets — and 8.33% of them were reopened." Derived: share [high_cost_low_sat_count, ticket_count] = 3.46.
+
+q6: "Resolution time median is 65 minutes with a sample standard deviation of 51.93 minutes; mean satisfaction is 4.15 (missing for 19 tickets)."
+
+q7: "18 distinct agents handled the tickets; the busiest single agent handled 26 tickets, 7.49% of the total — indicating no heavy concentration in one agent."
+
+Rounding: I'll round values in reported_values? The rule says "include EVERY metric_key of that question with its verified value (copy it)." So reported_values should copy exact verified values, not rounded. Yes — copy exact values. The statement text can use rounded numbers.
+
+Executive summary: brief overview. Limitations: missing satisfaction scores (19), sample-based stats, no time period info, cost threshold arbitrary, no statistical significance testing, satisfaction only non-missing mean, etc.
+
+Word count check: keep total text under 650 words. Let me draft and count roughly.
+
+Title: "Support Ticket Operations Report: Cost, Speed, Reopening, Satisfaction, and Agent Concentration" (~13 words)
+
+Executive summary (~80 words):
+"This report summarizes verified findings from 347 cleaned support tickets. Total labor cost reached $27,422.90, with Team Beta spending the most ($10,247.36). Average resolution time was 75.19 minutes; chat is the slowest channel (83.04 minutes) and phone the fastest (69.25). Email reopens at 17.24%, a 119.83% relative increase over chat's 7.84%. Satisfaction averages 4.15. Workload is spread across 18 agents, with the top agent handling only 7.49% of tickets."
+
+That's about 78 words.
+
+Key findings statements: each ~30-40 words → ~230 words.
+
+Limitations: 4 items, ~20 words each → 80 words.
+
+Conclusion: ~50 words.
+
+Total ≈ 13+78+230+80+50 = 451 words. Fine.
+
+Now build the JSON. Ensure all numbers copied exactly.
+
+reported_values for q1: ticket_count: 347.0, mean_resolution_minutes: 75.19308357348703, total_labor_cost: 27422.9
+q2: labor_cost_alpha: 7787.81, labor_cost_beta: 10247.36, labor_cost_gamma: 9387.73
+q3: resolution_email: 73.01724137931035, resolution_chat: 83.03921568627452, resolution_phone: 69.25352112676056
+q4: reopen_rate_email_pct: 17.24137931034483, reopen_rate_chat_pct: 7.8431372549019605, email_vs_chat_reopen_change_pct: 119.82758620689657
+q5: high_cost_low_sat_count: 12.0, high_cost_low_sat_reopen_pct: 8.333333333333332
+q6: resolution_median: 65.0, resolution_std: 51.92574910613114, satisfaction_mean: 4.152439024390244, satisfaction_missing_count: 19.0
+q7: unique_agent_count: 18.0, top_agent_ticket_count: 26.0, top_agent_ticket_share_pct: 7.492795389048991
+
+evidence_refs: same metric keys.
+
+Derived values declarations:
+q2: difference, [labor_cost_beta, labor_cost_alpha], 2459.55
+q3: difference, [resolution_chat, resolution_phone], 13.79
+q4: difference, [reopen_rate_email_pct, reopen_rate_chat_pct], 9.4
+q5: share, [high_cost_low_sat_count, ticket_count], 3.46
+
+Direction field: q4 → "increase". Others: "not_applicable" or null. Schema allows null default. I'll set "not_applicable" for non-direction findings? The field description says "For change/trend findings: the direction you state in the text." For others, null is fine. I'll use null for non-q4 and "increase" for q4. Actually "not_applicable" is also valid enum. I'll use null to be safe — either works. Let me use "not_applicable" for clarity? The structured claim requirements say q4 direction_required true. Others direction_required false. I'll set null for others.
+
+Ranking field: q2: ["Beta", "Gamma", "Alpha"]; q3: ["chat", "email", "phone"]; others null.
+
+Executive summary uses derived numbers too ($2,459.55 not there; 119.83% verified; fine). Wait — in the summary I mention "chat is the slowest (83.04) and phone fastest (69.25)" — verified values. OK.
+
+Word count of statements: let me write them concisely.
+
+q1 statement: "The final cleaned dataset contains 347 tickets. Mean resolution time is 75.19 minutes, and total labor cost across all tickets is $27,422.90 — the overall workload and spend baseline for this analysis." (~32 words)
+
+q2: "Labor cost ranks Beta ($10,247.36) > Gamma ($9,387.73) > Alpha ($7,787.81). Beta, the highest-spending team, spends $2,459.55 more than Alpha, the lowest." (~23 words)
+
+q3: "Average resolution time ranks chat (83.04 minutes) > email (73.02) > phone (69.25). Chat, the slowest channel, takes 13.79 minutes longer than phone, the fastest." (~27 words)
+
+q4: "Email reopens 17.24% of tickets versus 7.84% for chat — a 119.83% relative increase (9.40 percentage points higher). The email-to-chat reopen change is an increase, flagging email quality as a concern." (~33 words)
+
+q5: "Only 12 tickets combine labor cost ≥ $100 with satisfaction ≤ 2 (3.46% of all tickets); 8.33% of this segment reopened. The high-cost, dissatisfied segment is small and not a major reopen driver." (~34 words)
+
+q6: "Resolution time is right-skewed: median 65 minutes, sample standard deviation 51.93 minutes. Mean satisfaction is 4.15 out of 5, though 19 tickets have no satisfaction score." (~29 words)
+
+Hmm "right-skewed" — mean 75.19 > median 65, supports right-skewed. OK.
+
+q7: "18 distinct agents handled the workload. The busiest agent closed 26 tickets, just 7.49% of the total, so workload is broadly distributed with no single-agent concentration risk." (~29 words)
+
+Limitations:
+1. "19 tickets lack a satisfaction score, so the 4.15 mean reflects only responded tickets and may carry non-response bias." (~19 words)
+2. "Findings are descriptive only; no statistical significance tests were run, so differences (e.g., channel reopen rates) may reflect sampling noise." (~19 words)
+3. "The high-cost low-satisfaction segment uses fixed thresholds ($100, score ≤ 2) that are arbitrary and yield a very small sample of 12 tickets." (~22 words)
+4. "The data export provides no time period, region, or ticket-complexity fields, so results cannot be trended or adjusted for case mix." (~22 words)
+
+Conclusion (~55 words): "Operations are broadly healthy: satisfaction is high (4.15) and workload is well spread across 18 agents. Priorities are (1) investigating email's 17.24% reopen rate, which more than doubles chat's, and (2) reviewing why chat resolution (83.04 minutes) lags phone by 13.79 minutes. Team Beta's leading labor spend ($10,247.36) warrants a cost-driver review."
+
+Let me count total words more carefully.
+
+Title: "Support Ticket Operations: Cost, Speed, Reopening, Satisfaction, and Agent Concentration" = 11 words.
+
+Executive summary: "This report summarizes verified findings from 347 cleaned support tickets. Total labor cost reached $27,422.90, with Team Beta spending the most ($10,247.36). Mean resolution time is 75.19 minutes; chat is the slowest channel (83.04 minutes) and phone the fastest (69.25). Email's reopen rate of 17.24% is a 119.83% relative increase over chat's 7.84%. Satisfaction averages 4.15, and the 12-ticket high-cost, low-satisfaction segment is small. Workload is spread evenly across 18 agents; the busiest handles 7.49% of tickets."
+
+Count: This(1) report2 summarizes3 verified4 findings5 from6 347(7) cleaned8 support9 tickets10. Total11 labor12 cost13 reached14 $27,422.90(15), with16 Team17 Beta18 spending19 the20 most21 ($10,247.36)(22). Mean23 resolution24 time25 is26 75.19(27) minutes28; chat29 is30 the31 slowest32 channel33 (83.04(34) minutes)35 and36 phone37 the38 fastest39 (69.25)40. Email's41 reopen42 rate43 of44 17.24%45 is46 a47 119.83%48 relative49 increase50 over51 chat's52 7.84%53. Satisfaction54 averages55 4.15,56 and57 the58 12-ticket59 high-cost,60 low-satisfaction61 segment62 is63 small64. Workload65 is66 spread67 evenly68 across69 18(70) agents71; the72 busiest73 handles74 7.49%75 of76 tickets77.
+= 77 words.
+
+Statements: 32+23+27+33+34+29+29 = 207.
+
+Limitations: 19+19+22+22 = 82.
+
+Conclusion: count: Operations1 are2 broadly3 healthy4: satisfaction5 is6 high7 (4.15)8 and9 workload10 is11 well12 spread13 across14 18(15) agents16. Priorities17 are18 (1)19 investigating20 email's21 17.24%22 reopen23 rate,24 which25 more26 than27 doubles28 chat's,29 and30 (2)31 reviewing32 why33 chat34 resolution35 (83.04(36) minutes)37 lags38 phone39 by40 13.79(41) minutes42. Team43 Beta's44 leading45 labor46 spend47 ($10,247.36)48 warrants49 a50 cost-driver51 review52.
+= 52 words.
+
+Total: 11+77+207+82+52 = 429 words. Under 650. 
+
+Note: conclusion mentions "13.79 minutes" — that's a derived value declared under q3. The rule says derived_values must declare every number computed from findings "with metric-key operands in formula order." Derived values are declared per-finding in key_findings. Does the conclusion's use of 13.79 need declaration? The schema has derived_values only inside KeyFinding. Since it's declared in q3, that should suffice. The executive summary: "more than doubles" relates to 119.83% which is verified. OK.
+
+Also conclusion says "more than doubles chat's" — implies ratio >2, derived from verified 119.83% increase which is itself a verified metric. Fine.
+
+One concern: In q4 statement I say "9.40 percentage points higher" — derived difference declared. Good.
+
+q5 statement: "labor cost ≥ $100 with satisfaction ≤ 2 (3.46% of all tickets)" — 3.46 derived share declared. Good.
+
+Now, should reported_values round? "copy it" — I'll copy exact values.
+
+For numbers in text, rounding: 75.19, 27,422.90, etc. Fine.
+
+Let me double check derived computations:
+- 10247.36 - 7787.81 = 2459.55 ✓
+- 83.03921568627452 - 69.25352112676056 = 13.785694... ≈ 13.79 ✓
+- 17.24137931034483 - 7.8431372549019605 = 9.398242055442870 ≈ 9.40 ✓
+- 12/347*100 = 3.4582... ≈ 3.46 ✓
+
+Now assemble final JSON. Ensure valid JSON, no trailing commas. Include direction: null for non-q4 findings (schema anyOf null ok). ranking null where not required.
+
+Also include "derived_values": [] for findings without derived numbers (q1, q6, q7).
+
+Executive summary and conclusion text check for any undeclared derived numbers: summary has only verified numbers. Conclusion: "13.79 minutes" derived — declared in q3. "doubles" — from verified 119.83%. OK.
+
+Final JSON assembly.

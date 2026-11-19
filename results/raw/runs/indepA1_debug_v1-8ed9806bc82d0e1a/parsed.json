@@ -1,0 +1,5 @@
+{
+  "fixed_code": "def normalize(scores):\n    total = sum(scores.values())\n    if total == 0:\n        return {k: 0.0 for k in scores}\n    return {k: v / total for k, v in scores.items()}",
+  "bug_location": "normalize: the return dict comprehension uses integer division (//) instead of true division (/).",
+  "explanation": "Using // performs floor division, yielding integer results (often 0) rather than the required float shares. Replacing it with / computes the correct proportional float values."
+}

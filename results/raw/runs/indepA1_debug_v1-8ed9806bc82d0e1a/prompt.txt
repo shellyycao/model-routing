@@ -1,0 +1,24 @@
+TASK: Python debugging (independent benchmark A1, prompt independent_v1)
+
+The function below contains exactly one bug. Fix it so that it satisfies the specification.
+
+SPECIFICATION:
+normalize(scores) takes a dict name->non-negative number and returns name->share of the total as a float (shares sum to 1). If the total is 0, every share is 0.0.
+
+BUGGY CODE:
+```python
+def normalize(scores):
+    total = sum(scores.values())
+    if total == 0:
+        return {k: 0.0 for k in scores}
+    return {k: v // total for k, v in scores.items()}
+
+```
+
+EXAMPLE TESTS (these must pass; additional hidden tests will also be run):
+```python
+assert normalize({'a': 1, 'b': 1}) == {'a': 0.5, 'b': 0.5}
+```
+
+Return the COMPLETE corrected source code (keep the same function names and signatures; standard library only),
+the location of the bug, and a short explanation.

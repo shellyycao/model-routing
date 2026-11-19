@@ -1,0 +1,74 @@
+import os
+import json
+import pandas as pd
+import numpy as np
+
+def main():
+    # Read cleaned data
+    input_path = os.path.join(os.environ["INPUT_DIR"], "cleaned.csv")
+    df = pd.read_csv(input_path)
+    
+    # Initialize results dictionary
+    results = {}
+    
+    # Q1: Overall metrics
+    results['ticket_count'] = len(df)
+    results['mean_resolution_minutes'] = df['resolution_minutes'].mean()
+    results['total_labor_cost'] = df['labor_cost'].sum()
+    
+    # Q2: Team comparison
+    team_costs = df.groupby('team')['labor_cost'].sum()
+    results['labor_cost_alpha'] = team_costs.get('Alpha', 0.0)
+    results['labor_cost_beta'] = team_costs.get('Beta', 0.0)
+    results['labor_cost_gamma'] = team_costs.get('Gamma', 0.0)
+    
+    # Q3: Channel comparison - mean resolution minutes
+    channel_resolution = df.groupby('channel')['resolution_minutes'].mean()
+    results['resolution_email'] = channel_resolution.get('email', np.nan)
+    results['resolution_chat'] = channel_resolution.get('chat', np.nan)
+    results['resolution_phone'] = channel_resolution.get('phone', np.nan)
+    
+    # Q4: Reopening change
+    email_tickets = df[df['channel'] == 'email']
+    chat_tickets = df[df['channel'] == 'chat']
+    
+    email_reopen_rate = email_tickets['reopened'].mean() * 100
+    chat_reopen_rate = chat_tickets['reopened'].mean() * 100
+    
+    results['reopen_rate_email_pct'] = email_reopen_rate
+    results['reopen_rate_chat_pct'] = chat_reopen_rate
+    
+    if chat_reopen_rate != 0:
+        results['email_vs_chat_reopen_change_pct'] = (email_reopen_rate - chat_reopen_rate) / chat_reopen_rate * 100
+    else:
+        results['email_vs_chat_reopen_change_pct'] = 0.0
+    
+    # Q5: High-cost low-satisfaction segment
+    high_cost_low_sat = df[(df['labor_cost'] >= 100) & 
+                           (df['satisfaction_score'].notna()) & 
+                           (df['satisfaction_score'] <= 2)]
+    results['high_cost_low_sat_count'] = len(high_cost_low_sat)
+    if len(high_cost_low_sat) > 0:
+        results['high_cost_low_sat_reopen_pct'] = high_cost_low_sat['reopened'].mean() * 100
+    else:
+        results['high_cost_low_sat_reopen_pct'] = 0.0
+    
+    # Q6: Distribution metrics
+    results['resolution_median'] = df['resolution_minutes'].median()
+    results['resolution_std'] = df['resolution_minutes'].std(ddof=1)
+    results['satisfaction_mean'] = df['satisfaction_score'].mean()
+    results['satisfaction_missing_count'] = df['satisfaction_score'].isna().sum()
+    
+    # Q7: Agent concentration
+    results['unique_agent_count'] = df['agent_id'].nunique()
+    agent_ticket_counts = df['agent_id'].value_counts()
+    results['top_agent_ticket_count'] = agent_ticket_counts.max()
+    results['top_agent_ticket_share_pct'] = results['top_agent_ticket_count'] / results['ticket_count'] * 100
+    
+    # Write results to JSON
+    output_path = os.path.join(os.environ["OUTPUT_DIR"], "findings.json")
+    with open(output_path, 'w') as f:
+        json.dump(results, f)
+
+if __name__ == "__main__":
+    main()

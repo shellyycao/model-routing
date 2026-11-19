@@ -1,0 +1,10 @@
+```json
+{
+  "fixed_code": "def rotate(xs, k):\n    xs = list(xs)\n    n = len(xs)\n    if n == 0:\n        return []\n    k %= n\n    return xs[-k:] + xs[:-k]\n",
+  "bug_locations": [
+    "rotate: `k %= len(xs)` raises ZeroDivisionError when xs is empty; an empty-input guard returning [] was added before the modulo.",
+    "rotate: input normalized with list(xs) and the abnormal body indentation cleaned up so the function always builds and returns a fresh list."
+  ],
+  "explanation": "The functional defect is that `k %= len(xs)` divides by zero for empty input, violating the spec that empty input returns []; this is fixed by returning [] when len(xs) == 0 before performing the modulo. The rotation logic itself is sound: Python's `%` maps negative k to the equivalent right rotation (so negative k correctly rotates left), the modulo reduces oversized k, and when k == 0 the expression `xs[-k:] + xs[:-k]` evaluates to a full copy plus an empty slice, i.e., the unchanged list, which is the correct result for rotating by 0 or by a multiple of the length. Normalizing with list(xs) first guarantees a new list is always returned and that any sequence input works."
+}
+```

@@ -1,0 +1,9 @@
+{
+  "fixed_code": "def sessionize(events, gap):\n    out = {}\n    last = {}\n    for user, t in sorted(events, key=lambda x: (x[0], x[1])):\n        if user not in out:\n            out[user] = [[]]\n            last[user] = None\n        if last[user] is not None and t - last[user] > gap:\n            out[user].append([])\n        out[user][-1].append(t)\n        last[user] = t\n    return out",
+  "bug_locations": [
+    "Sorting key: lambda x:x[1]",
+    "Global 'last' variable",
+    "Session gap logic"
+  ],
+  "explanation": "The original code had three defects: 1) Sorting by timestamp alone (lambda x:x[1]) instead of (user, timestamp) caused events from different users to interleave, breaking session continuity. 2) A single global 'last' variable tracked timestamps across all users, causing incorrect session boundaries when switching between users. 3) The session gap logic used a global 'last' instead of per-user tracking. The fix sorts by (user, timestamp), maintains per-user 'last' timestamps in a dictionary, and correctly checks gaps using the user's last timestamp."
+}

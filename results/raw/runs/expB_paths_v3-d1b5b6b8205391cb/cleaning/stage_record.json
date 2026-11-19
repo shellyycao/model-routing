@@ -1,0 +1,135 @@
+{
+  "stage": "cleaning",
+  "model_alias": "C",
+  "model_id": "openai.gpt-oss-120b-1:0",
+  "prompt_version": "v3",
+  "prompt_hash": "54fccecaa4539ea6f9bf17463a0da069f9e72816d3512b9a1510b4481adbcc9d",
+  "invocation_ids": [
+    "83a73f84-e976-4a4e-99b4-e39083f616dc"
+  ],
+  "cache_hit": false,
+  "shared_with_run_ids": [],
+  "status": "failed",
+  "structural_ok": true,
+  "failure_type": "execution_error",
+  "failure_detail": "execution runtime_error (exit 1): /sandbox/code/main.py:128: FutureWarning: DataFrame.applymap has been deprecated. Use DataFrame.map instead.\n  df = df_raw.applymap(lambda x: x.strip() if isinstance(x, str) else x)\n/sandbox/code/main.py:19: FutureWarning: DataFrame.applymap has been deprecated. Use DataFrame.map instead.\n  return df.applymap(lambda x: np.nan if is_missing(x) else x)\nTraceback (most recent call last):\n  File \"/sandbox/code/main.py\", line 227, in <module>\n    main()\n  File \"/sandbox/code/main.py\", line 224, in main\n    json.dump(summary, f, indent=2)\n  File \"/usr/local/lib/python3.12/json/__init__.py\", line 179, in dump\n    for chunk in iterable:\n                 ^^^^^^^^\n  File \"/usr/local/lib/python3.12/json/encoder.py\", line 432, in _iterencode\n    yield from _iterencode_dict(o, _current_indent_level)\n  File \"/usr/local/lib/python3.12/json/encoder.py\", line 406, in _iterencode_dict\n    yield from chunks\n  File \"/usr/local/lib/python3.12/json/encoder.py\", line 439, in _iterencode\n    o = _default(o)\n        ^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/json/encoder.py\", line 180, in default\n    raise TypeError(f'Object of type {o.__class__.__name__} '\nTypeError: Object of type int64 is not JSON serializable\n",
+  "parse_ok": true,
+  "execution": {
+    "status": "runtime_error",
+    "exit_code": 1,
+    "stdout": "",
+    "stderr": "/sandbox/code/main.py:128: FutureWarning: DataFrame.applymap has been deprecated. Use DataFrame.map instead.\n  df = df_raw.applymap(lambda x: x.strip() if isinstance(x, str) else x)\n/sandbox/code/main.py:19: FutureWarning: DataFrame.applymap has been deprecated. Use DataFrame.map instead.\n  return df.applymap(lambda x: np.nan if is_missing(x) else x)\nTraceback (most recent call last):\n  File \"/sandbox/code/main.py\", line 227, in <module>\n    main()\n  File \"/sandbox/code/main.py\", line 224, in main\n    json.dump(summary, f, indent=2)\n  File \"/usr/local/lib/python3.12/json/__init__.py\", line 179, in dump\n    for chunk in iterable:\n                 ^^^^^^^^\n  File \"/usr/local/lib/python3.12/json/encoder.py\", line 432, in _iterencode\n    yield from _iterencode_dict(o, _current_indent_level)\n  File \"/usr/local/lib/python3.12/json/encoder.py\", line 406, in _iterencode_dict\n    yield from chunks\n  File \"/usr/local/lib/python3.12/json/encoder.py\", line 439, in _iterencode\n    o = _default(o)\n        ^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/json/encoder.py\", line 180, in default\n    raise TypeError(f'Object of type {o.__class__.__name__} '\nTypeError: Object of type int64 is not JSON serializable\n",
+    "runtime_ms": 706.1050410011376,
+    "output_files": [
+      "/Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expB_paths_v3-d1b5b6b8205391cb/cleaning/output/cleaned.csv",
+      "/Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expB_paths_v3-d1b5b6b8205391cb/cleaning/output/cleaning_summary.json"
+    ],
+    "sandbox_image": "sha256:88988a15503bdb96538c3dd62244a79879d5c7848397db18b1267ccfd0a9727a"
+  },
+  "validation": {
+    "stage": "cleaning",
+    "hard_pass": true,
+    "checks": [
+      {
+        "name": "output_exists",
+        "passed": true,
+        "mandatory": true,
+        "detail": "/Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expB_paths_v3-d1b5b6b8205391cb/cleaning/output/cleaned.csv",
+        "value": null
+      },
+      {
+        "name": "output_parses",
+        "passed": true,
+        "mandatory": true,
+        "detail": "1428 rows, 7 columns",
+        "value": null
+      },
+      {
+        "name": "required_columns_present",
+        "passed": true,
+        "mandatory": true,
+        "detail": "all present",
+        "value": null
+      },
+      {
+        "name": "schema_constraints",
+        "passed": true,
+        "mandatory": true,
+        "detail": "all constraints satisfied",
+        "value": 1.0
+      },
+      {
+        "name": "no_extra_columns",
+        "passed": true,
+        "mandatory": false,
+        "detail": "",
+        "value": null
+      },
+      {
+        "name": "no_duplicate_keys",
+        "passed": true,
+        "mandatory": true,
+        "detail": "",
+        "value": 0.0
+      },
+      {
+        "name": "row_set_matches_reference",
+        "passed": true,
+        "mandatory": true,
+        "detail": "0 reference rows missing (e.g. []); 0 unexpected rows (e.g. []); output rows=1428, reference rows=1428",
+        "value": null
+      },
+      {
+        "name": "values_match_reference",
+        "passed": true,
+        "mandatory": true,
+        "detail": "9996/9996 cells match (abs_tol=0.01, rel_tol=1e-06)",
+        "value": 1.0
+      }
+    ],
+    "quality": {
+      "cleaning_correctness": 1.0,
+      "data_integrity": 1.0,
+      "schema_compliance": 1.0
+    },
+    "quality_basis": "ground_truth",
+    "validator_version": "1.0"
+  },
+  "conditional_validation": null,
+  "input_artifacts": [
+    "datasets/projects/energy_consumption/raw.csv"
+  ],
+  "output_artifacts": [
+    "results/raw/runs/expB_paths_v3-d1b5b6b8205391cb/cleaning/prompt.txt",
+    "results/raw/runs/expB_paths_v3-d1b5b6b8205391cb/cleaning/response.txt",
+    "results/raw/runs/expB_paths_v3-d1b5b6b8205391cb/cleaning/reasoning.txt",
+    "results/raw/runs/expB_paths_v3-d1b5b6b8205391cb/cleaning/parsed.json",
+    "results/raw/runs/expB_paths_v3-d1b5b6b8205391cb/cleaning/code.py",
+    "results/raw/runs/expB_paths_v3-d1b5b6b8205391cb/cleaning/output/cleaned.csv",
+    "results/raw/runs/expB_paths_v3-d1b5b6b8205391cb/cleaning/output/cleaning_summary.json"
+  ],
+  "input_artifact_hashes": {
+    "datasets/projects/energy_consumption/raw.csv": "615e9dd3f351c49e26a813e2a6b47e6c9e2c812b579dae7b15497467a0d01572"
+  },
+  "output_artifact_hashes": {
+    "results/raw/runs/expB_paths_v3-d1b5b6b8205391cb/cleaning/prompt.txt": "54fccecaa4539ea6f9bf17463a0da069f9e72816d3512b9a1510b4481adbcc9d",
+    "results/raw/runs/expB_paths_v3-d1b5b6b8205391cb/cleaning/response.txt": "54a2b2963b1069ec4b0b2b7fd7db5fb89064e191ea46f6024f0df6310db94735",
+    "results/raw/runs/expB_paths_v3-d1b5b6b8205391cb/cleaning/reasoning.txt": "147bc2b7549a4216352f12976099be807fc5c756a4b7e75270e01cb532386512",
+    "results/raw/runs/expB_paths_v3-d1b5b6b8205391cb/cleaning/parsed.json": "cb441617b93d06595d6f5b5373ff8f1a2ca3cac21ef505ca9bd44b0ca80e8c7b",
+    "results/raw/runs/expB_paths_v3-d1b5b6b8205391cb/cleaning/code.py": "55095a68da1696aeb738efcaae55c252f4257c6ae95273e41d2fa407dc14ace3",
+    "results/raw/runs/expB_paths_v3-d1b5b6b8205391cb/cleaning/output/cleaned.csv": "105f52d35dd5abce9034167bf42f0584adf6e05cb5833883db5c54c7f70d3da7",
+    "results/raw/runs/expB_paths_v3-d1b5b6b8205391cb/cleaning/output/cleaning_summary.json": "d9979a70c2ac8db487ec183c50e26a8457220b9bc7dbc9f0bd77f9f4e97a824a"
+  },
+  "handoff_in_path": "results/raw/runs/expB_paths_v3-d1b5b6b8205391cb/cleaning/handoff_in.json",
+  "handoff_size_bytes": 616,
+  "input_tokens": 1819,
+  "output_tokens": 3331,
+  "cost_usd": null,
+  "cost_status": "unavailable",
+  "timings": {
+    "generation_ms": 11633.578708999266,
+    "execution_ms": 706.1050410011376,
+    "validation_ms": 12.994417000300018,
+    "handoff_ms": 0.9693329993751831
+  }
+}

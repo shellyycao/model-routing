@@ -1,0 +1,11 @@
+```json
+{
+  "fixed_code": "def rolling_mean(xs, window, min_periods=1):\n    if window <= 0:\n        raise ValueError('window')\n    if not (1 <= min_periods <= window):\n        raise ValueError('min_periods must satisfy 1 <= min_periods <= window')\n    result = []\n    for i in range(len(xs)):\n        start = max(0, i - window + 1)\n        window_slice = xs[start:i+1]\n        if len(window_slice) >= min_periods:\n            result.append(sum(window_slice) / len(window_slice))\n        else:\n            result.append(None)\n    return result",
+  "bug_locations": [
+    "The list comprehension logic",
+    "The missing validation for min_periods",
+    "The calculation of the mean without checking min_periods"
+  ],
+  "explanation": "The original code had multiple defects: 1) It did not validate that min_periods is between 1 and window, as required by the specification. 2) It always calculated a mean for every position, ignoring the min_periods requirement to return null when insufficient data is available. 3) The list comprehension was too dense to properly handle the conditional logic for min_periods. The fix adds the missing validation, replaces the list comprehension with a loop for clarity, and correctly returns None when the window has fewer than min_periods values."
+}
+```

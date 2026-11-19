@@ -1,0 +1,5 @@
+{
+  "fixed_code": "import re\n\ndef parse_duration(s):\n    if not s:\n        raise ValueError(s)\n    m = re.fullmatch(r\"(?:(\\d+)h)?(?:(\\d+)m)?(?:(\\d+)s)?\", s)\n    if not m or not m.group(0):\n        raise ValueError(s)\n    h, mi, se = (int(x) if x else 0 for x in m.groups())\n    return h * 3600 + mi * 60 + se\n",
+  "bug_location": "parse_duration function, return statement: `return h * 60 + mi * 60 + se`",
+  "explanation": "The bug is that hours were multiplied by 60 instead of 3600. One hour equals 3600 seconds, so the fix is `h * 3600 + mi * 60 + se`. Additionally, the regex can match an empty string, so an extra check `not m.group(0)` is added to raise ValueError for invalid input."
+}

@@ -1,0 +1,74 @@
+We need to produce JSON with fields python_code (string containing script), expected_artifacts (list of filenames), methods_description (string). The script must read cleaned.csv from INPUT_DIR env var, compute metrics, write findings.json to OUTPUT_DIR. Must output flat JSON with all metric keys as numbers (no NaN). Need to handle missing temperature values etc.
+
+Let's outline calculations.
+
+Read CSV with pandas, parse reading_date as datetime.
+
+Metrics:
+
+total_kwh = df['energy_kwh'].sum()
+reading_count = len(df)
+mean_kwh_per_reading = total_kwh / reading_count
+
+Building type totals:
+kwh_residential = df.loc[df['building_type']=='Residential','energy_kwh'].sum()
+Similarly commercial, industrial.
+
+Quarterly totals: need to filter year 2024 (all data). Use dt.quarter.
+
+kwh_q1 = sum where quarter==1, etc.
+
+Half-year: months 1-6 vs 7-12.
+
+kwh_h1 = sum where month <=6
+kwh_h2 = sum where month >=7
+kwh_h2_vs_h1_change_pct = (kwh_h2 - kwh_h1) / kwh_h1 * 100 (if kwh_h1 zero? unlikely). Use float.
+
+Hot-day commercial load: building_type == 'Commercial' and temperature_c >=25 (non-missing). Count and mean energy_kwh. If count zero, mean should be NaN? But must be finite number. Could set 0.0. But spec says finite number; we can set 0.0 for mean when count zero. We'll compute count, then mean = sum/ count if count>0 else 0.0.
+
+Distribution summary:
+kwh_median = df['energy_kwh'].median()
+kwh_std = df['energy_kwh'].std(ddof=1) (sample std). If only one row, std NaN; but dataset large. We'll fill NaN with 0.0 maybe. But spec expects finite number. Safer to replace NaN with 0.0.
+
+temperature_mean: mean of temperature_c over non-missing. Use df['temperature_c'].mean(skipna=True). If all missing, set 0.0.
+
+temperature_missing_count: df['temperature_c'].isna().sum()
+
+commercial_temp_kwh_corr: Pearson correlation between temperature_c and energy_kwh for Commercial rows with non-missing temperature. Use pandas .corr(). If insufficient data (<2), result NaN; replace with 0.0.
+
+Tariff and meter usage:
+kwh_peak = sum where tariff == 'peak'
+kwh_off_peak = sum where tariff == 'off-peak'
+peak_kwh_share_pct = kwh_peak / total_kwh * 100 (if total_kwh zero -> 0)
+unique_meter_count = df['meter_id'].nunique()
+highest_use_meter_kwh = df.groupby('meter_id')['energy_kwh'].sum().max()
+
+All metrics must be numbers (float or int). We'll keep as Python numbers; json dumps will convert.
+
+Write findings.json with json.dump.
+
+expected_artifacts: ["findings.json"]
+
+methods_description: brief.
+
+Now produce script.
+
+Edge Cases: Ensure reading_date parsed as datetime; pandas read_csv will parse automatically if parse_dates param.
+
+Implementation steps:
+
+import os, json, pandas as pd, numpy as np
+
+input_path = os.path.join(os.environ["INPUT_DIR"], "cleaned.csv")
+df = pd.read_csv(input_path, parse_dates=['reading_date'])
+
+Compute metrics.
+
+When rounding not required.
+
+Make dict.
+
+Write to output_path.
+
+Now produce final JSON.
+

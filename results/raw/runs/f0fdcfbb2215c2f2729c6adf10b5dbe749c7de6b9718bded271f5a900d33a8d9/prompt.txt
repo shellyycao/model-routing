@@ -1,0 +1,19 @@
+You are debugging a Python module. The specification is authoritative.
+
+Specification:
+chunks(xs, size) returns consecutive list chunks, including a short final chunk; raise ValueError if size <= 0; do not mutate xs.
+
+Buggy module:
+```python
+def chunks(xs, size):
+                 if size <= 0: raise ValueError('size')
+                 return [xs[i:i+size] for i in range(0, len(xs)-size+1, size)]
+
+```
+
+Visible checks:
+```python
+assert chunks([1,2,3,4], 2) == [[1,2],[3,4]]
+```
+
+Return the complete corrected module. There may be multiple interacting defects. Do not hard-code the visible examples.

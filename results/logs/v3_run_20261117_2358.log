@@ -1,0 +1,48 @@
+=== Exp A v3 start Tue Nov 17 23:58:28 EST 2026
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/Users/shellyy/Desktop/model-routing-xai/experiments/run_stage_benchmark.py", line 186, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/Users/shellyy/Desktop/model-routing-xai/experiments/run_stage_benchmark.py", line 159, in main
+    plan = plan_stage_benchmark(args.projects, stages=stages, models=args.models, repeats=args.repeats,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shellyy/Desktop/model-routing-xai/experiments/run_stage_benchmark.py", line 127, in plan_stage_benchmark
+    spec, _, pdir = load_project(projects_dir / proj)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shellyy/Desktop/model-routing-xai/src/evaluation/cleaning.py", line 39, in load_project
+    spec = ProjectSpec.model_validate_json((pdir / "project.json").read_text(encoding="utf-8"))
+                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shellyy/miniforge3/lib/python3.12/pathlib.py", line 1027, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shellyy/miniforge3/lib/python3.12/pathlib.py", line 1013, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/Users/shellyy/Desktop/model-routing-xai/datasets/projects/customer_churn energy_consumption retail_sales support_operations /project.json'
+=== Exp A exit 1 Tue Nov 17 23:58:29 EST 2026
+=== Exp B v3 start Tue Nov 17 23:58:29 EST 2026
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/Users/shellyy/Desktop/model-routing-xai/experiments/run_workflow_grid.py", line 297, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/Users/shellyy/Desktop/model-routing-xai/experiments/run_workflow_grid.py", line 262, in main
+    plan = plan_grid(args.projects, args.stages, paths=args.paths, repeats=args.repeats,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shellyy/Desktop/model-routing-xai/experiments/run_workflow_grid.py", line 143, in plan_grid
+    spec = _spec(proj, projects_dir)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shellyy/Desktop/model-routing-xai/experiments/run_workflow_grid.py", line 59, in _spec
+    return ProjectSpec.model_validate_json((projects_dir / project_id / "project.json").read_text())
+                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shellyy/miniforge3/lib/python3.12/pathlib.py", line 1027, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shellyy/miniforge3/lib/python3.12/pathlib.py", line 1013, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/Users/shellyy/Desktop/model-routing-xai/datasets/projects/customer_churn energy_consumption retail_sales support_operations /project.json'
+=== Exp B exit 1 Tue Nov 17 23:58:29 EST 2026

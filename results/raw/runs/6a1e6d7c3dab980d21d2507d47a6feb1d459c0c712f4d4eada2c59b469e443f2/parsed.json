@@ -1,0 +1,7 @@
+{
+  "fixed_code": "def chunks(xs, size):\n    if size <= 0: raise ValueError('size')\n    return [xs[i:i+size] for i in range(0, len(xs), size)]\n",
+  "bug_locations": [
+    "return statement in chunks function"
+  ],
+  "explanation": "The range upper bound was `len(xs)-size+1` instead of `len(xs)`. Using `len(xs)-size+1` stops too early and misses the final (possibly short) chunk when the list length is not a perfect multiple of size. Changing it to `len(xs)` ensures all chunks, including a short final chunk, are included."
+}

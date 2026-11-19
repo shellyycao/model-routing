@@ -1,0 +1,121 @@
+{
+  "stage": "cleaning",
+  "model_alias": "B",
+  "model_id": "us.amazon.nova-pro-v1:0",
+  "prompt_version": "v3",
+  "prompt_hash": "4c80e726ad39dcec71d0f3668b55982f474546dfd54cafee800a7f420e1182ec",
+  "invocation_ids": [
+    "8518bc33-4f5b-4839-8a6b-8679d9e0145c"
+  ],
+  "cache_hit": false,
+  "shared_with_run_ids": [],
+  "status": "failed",
+  "structural_ok": false,
+  "failure_type": "execution_error",
+  "failure_detail": "execution runtime_error (exit 1):  \"/usr/local/lib/python3.12/site-packages/pandas/core/generic.py\", line 6643, in astype\n    new_data = self._mgr.astype(dtype=dtype, copy=copy, errors=errors)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/internals/managers.py\", line 430, in astype\n    return self.apply(\n           ^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/internals/managers.py\", line 363, in apply\n    applied = getattr(b, f)(**kwargs)\n              ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/internals/blocks.py\", line 758, in astype\n    new_values = astype_array_safe(values, dtype, copy=copy, errors=errors)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/dtypes/astype.py\", line 237, in astype_array_safe\n    new_values = astype_array(values, dtype, copy=copy)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/dtypes/astype.py\", line 182, in astype_array\n    values = _astype_nansafe(values, dtype, copy=copy)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/dtypes/astype.py\", line 133, in _astype_nansafe\n    return arr.astype(dtype, copy=True)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nValueError: invalid literal for int() with base 10: '47 utes'\n",
+  "parse_ok": true,
+  "execution": {
+    "status": "runtime_error",
+    "exit_code": 1,
+    "stdout": "",
+    "stderr": "/sandbox/code/main.py:28: SyntaxWarning: invalid escape sequence '\\$'\n  agents_df['hourly_cost'] = agents_df['hourly_cost'].replace({'\\$|USD|,': ''}, regex=True).astype(float)\nTraceback (most recent call last):\n  File \"/sandbox/code/main.py\", line 40, in <module>\n    tickets_df['resolution_minutes'] = tickets_df['resolution_minutes'].replace({'min|minutes': ''}, regex=True).astype(int)\n                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/generic.py\", line 6643, in astype\n    new_data = self._mgr.astype(dtype=dtype, copy=copy, errors=errors)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/internals/managers.py\", line 430, in astype\n    return self.apply(\n           ^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/internals/managers.py\", line 363, in apply\n    applied = getattr(b, f)(**kwargs)\n              ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/internals/blocks.py\", line 758, in astype\n    new_values = astype_array_safe(values, dtype, copy=copy, errors=errors)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/dtypes/astype.py\", line 237, in astype_array_safe\n    new_values = astype_array(values, dtype, copy=copy)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/dtypes/astype.py\", line 182, in astype_array\n    values = _astype_nansafe(values, dtype, copy=copy)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/dtypes/astype.py\", line 133, in _astype_nansafe\n    return arr.astype(dtype, copy=True)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nValueError: invalid literal for int() with base 10: '47 utes'\n",
+    "runtime_ms": 790.0240829985705,
+    "output_files": [],
+    "sandbox_image": "sha256:88988a15503bdb96538c3dd62244a79879d5c7848397db18b1267ccfd0a9727a"
+  },
+  "validation": {
+    "stage": "cleaning",
+    "hard_pass": false,
+    "checks": [
+      {
+        "name": "output_exists",
+        "passed": false,
+        "mandatory": true,
+        "detail": "cleaned CSV not found: /Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expB_paths_v3-52466469ba98bb45/cleaning/output/cleaned.csv",
+        "value": null
+      },
+      {
+        "name": "output_parses",
+        "passed": false,
+        "mandatory": true,
+        "detail": "no output",
+        "value": null
+      },
+      {
+        "name": "required_columns_present",
+        "passed": false,
+        "mandatory": true,
+        "detail": "no output",
+        "value": null
+      },
+      {
+        "name": "schema_constraints",
+        "passed": false,
+        "mandatory": true,
+        "detail": "no output",
+        "value": null
+      },
+      {
+        "name": "no_duplicate_keys",
+        "passed": false,
+        "mandatory": true,
+        "detail": "no output",
+        "value": null
+      },
+      {
+        "name": "row_set_matches_reference",
+        "passed": false,
+        "mandatory": true,
+        "detail": "no output",
+        "value": null
+      },
+      {
+        "name": "values_match_reference",
+        "passed": false,
+        "mandatory": true,
+        "detail": "no output",
+        "value": null
+      }
+    ],
+    "quality": {
+      "cleaning_correctness": 0.0,
+      "data_integrity": 0.0,
+      "schema_compliance": 0.0
+    },
+    "quality_basis": "ground_truth",
+    "validator_version": "1.0"
+  },
+  "conditional_validation": null,
+  "input_artifacts": [
+    "datasets/projects/support_operations/raw.csv",
+    "datasets/projects/support_operations/agents.csv"
+  ],
+  "output_artifacts": [
+    "results/raw/runs/expB_paths_v3-52466469ba98bb45/cleaning/prompt.txt",
+    "results/raw/runs/expB_paths_v3-52466469ba98bb45/cleaning/response.txt",
+    "results/raw/runs/expB_paths_v3-52466469ba98bb45/cleaning/parsed.json",
+    "results/raw/runs/expB_paths_v3-52466469ba98bb45/cleaning/code.py"
+  ],
+  "input_artifact_hashes": {
+    "datasets/projects/support_operations/raw.csv": "d260e1c2251ade14aa044895797fa2d39647b6d1fe43ba7c79d8c5a48fd287fd",
+    "datasets/projects/support_operations/agents.csv": "51d9c560abc74a09ea32b0c667fc52c8d0f5479fd5a01314fc8f7f2fc0ff4442"
+  },
+  "output_artifact_hashes": {
+    "results/raw/runs/expB_paths_v3-52466469ba98bb45/cleaning/prompt.txt": "4c80e726ad39dcec71d0f3668b55982f474546dfd54cafee800a7f420e1182ec",
+    "results/raw/runs/expB_paths_v3-52466469ba98bb45/cleaning/response.txt": "254bd0a9a1ef97aa8ff6a7c39814a65d822ede310ca9be3bafa6014de53cddb8",
+    "results/raw/runs/expB_paths_v3-52466469ba98bb45/cleaning/parsed.json": "b4b707f3c8f95dec1c5b72704698b72d767880026faf7799cc39f2a50985c994",
+    "results/raw/runs/expB_paths_v3-52466469ba98bb45/cleaning/code.py": "e936714f2d8a8907764a3a0d877a787e84830831be2e3d753490bd5617852eeb"
+  },
+  "handoff_in_path": "results/raw/runs/expB_paths_v3-52466469ba98bb45/cleaning/handoff_in.json",
+  "handoff_size_bytes": 424,
+  "input_tokens": 1826,
+  "output_tokens": 1609,
+  "cost_usd": null,
+  "cost_status": "unavailable",
+  "timings": {
+    "generation_ms": 10469.892541997979,
+    "execution_ms": 790.0240829985705,
+    "validation_ms": 0.8082499989541247,
+    "handoff_ms": 0.21241600188659504
+  }
+}

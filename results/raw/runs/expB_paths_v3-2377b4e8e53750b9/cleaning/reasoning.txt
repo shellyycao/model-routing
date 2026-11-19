@@ -1,0 +1,70 @@
+We need to produce JSON with fields python_code (script), output_filename "cleaned.csv", cleaning_logic description.
+
+We must write script that follows cleaning steps.
+
+Let's design script.
+
+Steps:
+
+- import os, pandas as pd, numpy as np, json, re, csv.
+
+- Get input_dir = os.getenv('INPUT_DIR'), output_dir = os.getenv('OUTPUT_DIR').
+
+- Define helper to treat missing values: we can read csv with dtype str, keep as strings, then strip whitespace and replace missing tokens.
+
+R1: read both as text, strip whitespace, treat empty, NA, N/A, null, None, - as missing.
+
+We'll read using pd.read_csv with dtype=str, keep default. Then apply strip to all string columns: df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x). Then replace missing tokens with np.nan.
+
+R2: tickets duplicate ticket_id rows: drop duplicates keep first.
+
+R3: agents: normalize agent_id to upper case, then drop duplicates keep first.
+
+R4: roster mapping:
+
+- team mapping: case-insensitive mapping: if team contains 'alpha' -> 'Alpha', 'beta' -> 'Beta', 'gamma' -> 'Gamma'. Also handle 'Team Alpha' etc. We'll lower, check if 'alpha' in string.
+
+- region mapping: case-insensitive: 'east' or 'e' -> 'East', 'west' or 'w' -> 'West'.
+
+- hourly_cost: remove $ , USD, commas, spaces. Then parse float. If parsing fails or <=0, drop row.
+
+Also need to ensure after mapping, rows with invalid fields are excluded.
+
+R5: tickets: normalize agent_id to upper case. Join to cleaned agents on agent_id (inner). Drop tickets without match.
+
+R6: channel mapping: case-insensitive mapping: 'email' or 'e-mail' -> 'email', 'chat' or 'live chat' -> 'chat', 'phone' or 'call' -> 'phone'. Drop invalid.
+
+R7: resolution_minutes: remove trailing 'min' or 'minutes' (case-insensitive). Extract integer. Must be 1-480 inclusive. Drop invalid.
+
+R8: satisfaction_score: parse int 1-5. If invalid or missing, set NaN (empty cell). Keep row.
+
+R9: reopened: map Yes/Y/True/1 -> 1, No/N/False/0 -> 0. Case-insensitive. Drop invalid or missing.
+
+R10: labor_cost = resolution_minutes / 60 * hourly_cost, round 2.
+
+R11: output columns order, sort by ticket_id, write CSV without index.
+
+Also produce cleaning_summary.json with raw_rows (tickets rows read), cleaned_rows (rows written), plus counts per rule maybe.
+
+We'll track counts: duplicates_removed_tickets, duplicates_removed_agents, invalid_agents_excluded, tickets_without_agent, invalid_channels, invalid_resolution, invalid_reopened, final_rows.
+
+Implementation details:
+
+- raw_rows = len(tickets_df_original)
+
+- cleaned_rows = len(final_df)
+
+- counts dict.
+
+Now produce script as a string.
+
+Edge Cases: Ensure ticket_id as string, keep leading zeros.
+
+When reading CSV, ensure keep as string: dtype=str.
+
+When writing CSV, ensure quoting minimal.
+
+Now produce final JSON.
+
+Let's craft script.
+

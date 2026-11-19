@@ -1,0 +1,124 @@
+We need to produce JSON with fields: title, executive_summary, key_findings (array of objects per q1..q7), limitations, conclusion.
+
+Each key_finding must include finding_id, statement, evidence_refs, reported_values (all metric_keys for that question), optional direction, ranking, derived_values.
+
+We must follow ranking requirements:
+
+- q2 ranking_required true, ranking_metric_key_to_label mapping: kwh_commercial, kwh_industrial, kwh_residential. Need ranking list of labels ordered highest to lowest value. Values: kwh_commercial 196,367.15; kwh_industrial 995,362.16; kwh_residential 15,970.65. Highest is industrial, then commercial, then residential. So ranking = ["Industrial", "Commercial", "Residential"].
+
+- q3 ranking_required true, mapping: kwh_q1, kwh_q2, kwh_q3, kwh_q4. Values: Q1 319,677.67; Q2 270,277.36; Q3 264,863.12; Q4 352,881.81. Highest Q4, then Q1, then Q2, then Q3. So ranking = ["Q4", "Q1", "Q2", "Q3"].
+
+- q7 ranking_required true, mapping: kwh_off_peak, kwh_peak. Values: off-peak 608,075.89; peak 599,624.07. Highest off-peak, then peak. So ranking = ["off-peak", "peak"].
+
+Direction required for q4: direction_metric_key = kwh_h2_vs_h1_change_pct. Value is 4.7105% positive, so direction = "increase". Provide direction field.
+
+Other questions direction not required.
+
+Now statements: need to write concise statements referencing findings.
+
+Also need derived_values: any numbers we compute beyond verified metrics. For q4 we might compute the absolute difference: kwh_h2 - kwh_h1 = 27,789.9 (approx). Let's compute: 617,744.93 - 589,955.03 = 27,789.90. Provide derived value with kind "difference", operands ["kwh_h2","kwh_h1"], value 27789.9 (rounded maybe 27789.9). Also maybe compute share of peak: peak_kwh_share_pct is already given as 49.650086..., but that's derived from kwh_peak/total_kwh*100. However metric already provided. We could still include derived value for share? Not required but could. But derived_values only needed for numbers we state in text that are not directly metric. If we mention "peak accounts for about 49.7% of total consumption", that's using metric peak_kwh_share_pct directly, no derived needed. If we mention "total consumption increased by 4.7% in H2 vs H1", that's using metric directly. So only derived maybe difference.
+
+Check other possible derived: maybe compute total residential+commercial+industrial equals total_kwh? Let's see: sum = 15970.65 + 196367.15 + 995362.16 = 1,207,700 - actually compute: 15,970.65 + 196,367.15 = 212,337.8; + 995,362.16 = 1,207,699.96 which matches total_kwh 1,207,699.96. Could mention that they sum to total, but that's derived. Could include derived value with kind "difference"? Not needed.
+
+But we can include derived for "peak share" as ratio: kwh_peak / total_kwh * 100 = 49.650... but metric already given. So not needed.
+
+Thus derived_values array for q4 includes one entry.
+
+Now each key_finding must include reported_values with all metric_keys for that question.
+
+Let's list metric_keys per question:
+
+q1: total_kwh, reading_count, mean_kwh_per_reading.
+
+q2: kwh_residential, kwh_commercial, kwh_industrial.
+
+q3: kwh_q1, kwh_q2, kwh_q3, kwh_q4.
+
+q4: kwh_h1, kwh_h2, kwh_h2_vs_h1_change_pct.
+
+q5: hot_commercial_reading_count, hot_commercial_mean_kwh.
+
+q6: kwh_median, kwh_std, temperature_mean, temperature_missing_count, commercial_temp_kwh_corr.
+
+q7: kwh_peak, kwh_off_peak, peak_kwh_share_pct, unique_meter_count, highest_use_meter_kwh.
+
+Now statements: need to be concise, business-friendly.
+
+Let's craft each statement.
+
+q1: "The dataset contains 1,428 readings with a total electricity consumption of 1,207,700 kWh, averaging about 846 kWh per reading."
+
+Include numbers rounded.
+
+q2: "Industrial buildings dominate electricity use, consuming roughly 995,362 kWh, followed by Commercial at 196,367 kWh, and Residential at 15,971 kWh."
+
+Ranking provided.
+
+q3: "Quarterly consumption peaked in Q4 with 352,882 kWh, then Q1 (319,678 kWh), Q2 (270,277 kWh), and Q3 (264,863 kWh)."
+
+Ranking.
+
+q4: "Second‑half consumption (H2) was 617,745 kWh, a 4.7 % increase over the first half (H1 = 589,955 kWh), representing an absolute rise of 27,790 kWh."
+
+Include derived diff.
+
+direction "increase".
+
+q5: "On hot days (≥ 25 °C) there were 19 Commercial readings, averaging 415 kWh each."
+
+q6: "Across all readings, the median consumption is 406.8 kWh with a standard deviation of 913.4 kWh. The average temperature recorded is 11.6 °C, with 62 readings missing temperature data. For Commercial meters, consumption and temperature are negatively correlated (‑0.64)."
+
+q7: "Peak‑time usage accounts for 49.7 % of total consumption (599,624 kWh) versus 50.3 % off‑peak (608,076 kWh). Twelve distinct meters are represented, and the highest‑consumption meter recorded 252,241 kWh."
+
+Ranking off-peak then peak.
+
+Now need to ensure each statement includes evidence_refs list of metric_keys used. Provide list of all metric_keys for that question.
+
+Now produce JSON.
+
+Need to ensure numbers are numbers (not strings). Use rounding to reasonable precision.
+
+Let's compute rounded values:
+
+- total_kwh: 1207699.96 (keep as is)
+- reading_count: 1428.0 (maybe integer 1428)
+- mean_kwh_per_reading: 845.7282633053221 -> round to 845.73.
+
+- kwh_residential: 15970.65
+- kwh_commercial: 196367.15
+- kwh_industrial: 995362.16
+
+- kwh_q1: 319677.67
+- kwh_q2: 270277.36
+- kwh_q3: 264863.12
+- kwh_q4: 352881.81
+
+- kwh_h1: 589955.03
+- kwh_h2: 617744.93
+- kwh_h2_vs_h1_change_pct: 4.710511579162232 -> round to 4.71
+
+- hot_commercial_reading_count: 19.0 (19)
+- hot_commercial_mean_kwh: 415.29368421052624 -> round 415.29
+
+- kwh_median: 406.8
+- kwh_std: 913.4385157872866 -> 913.44
+- temperature_mean: 11.612298682284042 -> 11.61
+- temperature_missing_count: 62.0 (62)
+- commercial_temp_kwh_corr: -0.637636239865442 -> -0.64
+
+- kwh_peak: 599624.07
+- kwh_off_peak: 608075.89
+- peak_kwh_share_pct: 49.65008610251175 -> 49.65
+- unique_meter_count: 12.0 (12)
+- highest_use_meter_kwh: 252241.26
+
+Derived diff: 27789.9 (maybe 27789.90). Compute: 617744.93 - 589955.03 = 27789.9 exactly? Let's compute: 617,744.93 - 589,955.03 = 27,789.90. So value 27789.9.
+
+Now produce JSON.
+
+Need to include derived_values array for q4 with one entry.
+
+For other findings derived_values can be empty array or omitted? Schema expects derived_values optional? Not required. We can omit or include empty array. We'll include empty array for clarity.
+
+Now produce final JSON.
+

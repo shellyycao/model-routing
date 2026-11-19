@@ -1,0 +1,55 @@
+Write a self-contained Python script that reads cleaned.csv from INPUT_DIR, computes metrics, writes findings.json to OUTPUT_DIR.
+
+Key considerations:
+- Read order_date as string, parse year/quarter.
+- Compute all metrics with full precision (no rounding).
+- Ensure finite numbers; write flat JSON.
+
+Let me write the script:
+
+```python
+import json
+import os
+
+import numpy as np
+import pandas as pd
+
+INPUT_DIR = os.environ["INPUT_DIR"]
+OUTPUT_DIR = os.environ["OUTPUT_DIR"]
+
+df = pd.read_csv(os.path.join(INPUT_DIR, "cleaned.csv"), dtype={"order_id": str, "customer_id": str})
+
+df["order_date"] = pd.to_datetime(df["order_date"], format="%Y-%m-%d")
+
+total_revenue = float(df["revenue"].sum())
+order_count = int(len(df))
+average_order_value = total_revenue / order_count
+
+# regional
+rev_by_region = df.groupby("region")["revenue"].sum()
+
+# 2024 quarters
+df["year"] = df["order_date"].dt.year
+df["quarter"] = df["order_date"].dt.quarter
+df2024 = df[df["year"] == 2024]
+q_rev = df2024.groupby("quarter")["revenue"].sum()
+
+revenue_2023 = float(df.loc[df["year"] == 2023, "revenue"].sum())
+revenue_2024 = float(df2024["revenue"].sum())
+yoy = (revenue_2024 - revenue_2023) / revenue_2023 * 100
+
+hd = df[(df["product_category"] == "Electronics") & (df["discount_pct"] >= 20)]
+
+rev = df["revenue"]
+stats...
+std with ddof=1.
+
+customer: groupby customer_id sum; unique count = df["customer_id"].nunique() (UNKNOWN counts as one customer — presumably fine per spec "number of distinct customer_id values").
+
+Build dict and write with json.dump. Ensure floats finite. Convert all to float except counts which can be int? Schema says single finite number; ints are fine as JSON numbers. But to be safe, convert counts to float? "mapping every metric_key ... to a single finite number, e.g. {"metric_a": 12.5, "metric_b": 3.0}". Ints are numbers. But maybe validation expects float-parseable; ints are fine. I'll keep counts as int but could convert to float for safety. Actually json.dump writes int as e.g. 520, which is a valid number. Fine either way; I'll use float for everything to be uniform? Hmm, "Do not round results; write full precision." Float conversion fine. I'll cast counts to float? Some validators check isinstance (int, float). Both fine. I'll keep ints for counts and floats for the rest.
+
+Guard against NaN: if a quarter has no rows, q_rev.get(q, 0.0). Regions all present presumably. Use float(rev_by_region.get("North", 0.0)).
+
+Write findings.json only.
+
+Methods description brief.

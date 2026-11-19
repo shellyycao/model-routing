@@ -1,0 +1,9 @@
+{
+  "fixed_code": "def paginate(items, size, cursor=None):\n    if size <= 0:\n        raise ValueError('size')\n    if cursor is None:\n        start = 0\n    else:\n        try:\n            start = int(cursor)\n        except (TypeError, ValueError):\n            raise ValueError('cursor') from None\n        if start < 0:\n            raise ValueError('cursor')\n    end = min(start + size, len(items))\n    next_cursor = str(end) if end < len(items) else None\n    return list(items[start:end]), next_cursor\n",
+  "bug_locations": [
+    "paginate: size guard (`if size < 0` -> `if size <= 0`) so zero, a nonpositive size, also raises ValueError",
+    "paginate: start-index computation (removed the erroneous `+1`; `None` now maps to 0 and a supplied cursor is used directly as the zero-based index)",
+    "paginate: added cursor validation (unparseable cursors and negative indices now raise ValueError instead of being silently mis-sliced)"
+  ],
+  "explanation": "Three interacting defects. (1) The guard `size < 0` admitted `size == 0`, but the spec requires nonpositive sizes to raise ValueError, so it must be `size <= 0`. (2) The start index was off by one: it used `1` when cursor was None and `int(cursor) + 1` otherwise, contradicting the spec that the cursor is a zero-based start index; this is exactly why the visible check produced `([2, 3], None)` instead of `([1, 2], '2')`. The fix uses `start = 0` for None and `start = int(cursor)` otherwise. (3) Cursors were never validated: malformed strings relied on incidental `int` errors and negative strings like '-1' were silently accepted (causing negative-index slicing). Now parse failures and any parsed value `< 0` raise ValueError. The `end`/`next_cursor` logic (null only when `end` reaches `len(items)`) was already correct and is unchanged."
+}

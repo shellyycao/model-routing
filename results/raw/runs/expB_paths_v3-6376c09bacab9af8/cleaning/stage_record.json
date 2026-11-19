@@ -1,0 +1,121 @@
+{
+  "stage": "cleaning",
+  "model_alias": "B",
+  "model_id": "us.amazon.nova-pro-v1:0",
+  "prompt_version": "v3",
+  "prompt_hash": "4c80e726ad39dcec71d0f3668b55982f474546dfd54cafee800a7f420e1182ec",
+  "invocation_ids": [
+    "39a6e0c1-138d-41f7-802f-9ac714d124b6"
+  ],
+  "cache_hit": false,
+  "shared_with_run_ids": [],
+  "status": "failed",
+  "structural_ok": false,
+  "failure_type": "execution_error",
+  "failure_detail": "execution runtime_error (exit 1): ': '', ',': ''}, regex=True).astype(float)\nTraceback (most recent call last):\n  File \"/sandbox/code/main.py\", line 43, in <module>\n    tickets_df['resolution_minutes'] = tickets_df['resolution_minutes'].replace({' minutes': '', 'min': ''}, regex=True).astype(int, errors='coerce')\n                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/generic.py\", line 6643, in astype\n    new_data = self._mgr.astype(dtype=dtype, copy=copy, errors=errors)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/internals/managers.py\", line 430, in astype\n    return self.apply(\n           ^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/internals/managers.py\", line 363, in apply\n    applied = getattr(b, f)(**kwargs)\n              ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/internals/blocks.py\", line 758, in astype\n    new_values = astype_array_safe(values, dtype, copy=copy, errors=errors)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/dtypes/astype.py\", line 222, in astype_array_safe\n    raise ValueError(invalid_arg)\nValueError: Expected value of kwarg 'errors' to be one of ['raise', 'ignore']. Supplied value is 'coerce'\n",
+  "parse_ok": true,
+  "execution": {
+    "status": "runtime_error",
+    "exit_code": 1,
+    "stdout": "",
+    "stderr": "/sandbox/code/main.py:31: SyntaxWarning: invalid escape sequence '\\$'\n  agents_df['hourly_cost'] = agents_df['hourly_cost'].replace({'\\$': '', 'USD': '', ',': ''}, regex=True).astype(float)\nTraceback (most recent call last):\n  File \"/sandbox/code/main.py\", line 43, in <module>\n    tickets_df['resolution_minutes'] = tickets_df['resolution_minutes'].replace({' minutes': '', 'min': ''}, regex=True).astype(int, errors='coerce')\n                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/generic.py\", line 6643, in astype\n    new_data = self._mgr.astype(dtype=dtype, copy=copy, errors=errors)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/internals/managers.py\", line 430, in astype\n    return self.apply(\n           ^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/internals/managers.py\", line 363, in apply\n    applied = getattr(b, f)(**kwargs)\n              ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/internals/blocks.py\", line 758, in astype\n    new_values = astype_array_safe(values, dtype, copy=copy, errors=errors)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/dtypes/astype.py\", line 222, in astype_array_safe\n    raise ValueError(invalid_arg)\nValueError: Expected value of kwarg 'errors' to be one of ['raise', 'ignore']. Supplied value is 'coerce'\n",
+    "runtime_ms": 733.648749999702,
+    "output_files": [],
+    "sandbox_image": "sha256:88988a15503bdb96538c3dd62244a79879d5c7848397db18b1267ccfd0a9727a"
+  },
+  "validation": {
+    "stage": "cleaning",
+    "hard_pass": false,
+    "checks": [
+      {
+        "name": "output_exists",
+        "passed": false,
+        "mandatory": true,
+        "detail": "cleaned CSV not found: /Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expB_paths_v3-6376c09bacab9af8/cleaning/output/cleaned.csv",
+        "value": null
+      },
+      {
+        "name": "output_parses",
+        "passed": false,
+        "mandatory": true,
+        "detail": "no output",
+        "value": null
+      },
+      {
+        "name": "required_columns_present",
+        "passed": false,
+        "mandatory": true,
+        "detail": "no output",
+        "value": null
+      },
+      {
+        "name": "schema_constraints",
+        "passed": false,
+        "mandatory": true,
+        "detail": "no output",
+        "value": null
+      },
+      {
+        "name": "no_duplicate_keys",
+        "passed": false,
+        "mandatory": true,
+        "detail": "no output",
+        "value": null
+      },
+      {
+        "name": "row_set_matches_reference",
+        "passed": false,
+        "mandatory": true,
+        "detail": "no output",
+        "value": null
+      },
+      {
+        "name": "values_match_reference",
+        "passed": false,
+        "mandatory": true,
+        "detail": "no output",
+        "value": null
+      }
+    ],
+    "quality": {
+      "cleaning_correctness": 0.0,
+      "data_integrity": 0.0,
+      "schema_compliance": 0.0
+    },
+    "quality_basis": "ground_truth",
+    "validator_version": "1.0"
+  },
+  "conditional_validation": null,
+  "input_artifacts": [
+    "datasets/projects/support_operations/raw.csv",
+    "datasets/projects/support_operations/agents.csv"
+  ],
+  "output_artifacts": [
+    "results/raw/runs/expB_paths_v3-6376c09bacab9af8/cleaning/prompt.txt",
+    "results/raw/runs/expB_paths_v3-6376c09bacab9af8/cleaning/response.txt",
+    "results/raw/runs/expB_paths_v3-6376c09bacab9af8/cleaning/parsed.json",
+    "results/raw/runs/expB_paths_v3-6376c09bacab9af8/cleaning/code.py"
+  ],
+  "input_artifact_hashes": {
+    "datasets/projects/support_operations/raw.csv": "d260e1c2251ade14aa044895797fa2d39647b6d1fe43ba7c79d8c5a48fd287fd",
+    "datasets/projects/support_operations/agents.csv": "51d9c560abc74a09ea32b0c667fc52c8d0f5479fd5a01314fc8f7f2fc0ff4442"
+  },
+  "output_artifact_hashes": {
+    "results/raw/runs/expB_paths_v3-6376c09bacab9af8/cleaning/prompt.txt": "4c80e726ad39dcec71d0f3668b55982f474546dfd54cafee800a7f420e1182ec",
+    "results/raw/runs/expB_paths_v3-6376c09bacab9af8/cleaning/response.txt": "23e73818afaa56383637502c1209389a3cf9169af6c9239a44aa6c7982268e79",
+    "results/raw/runs/expB_paths_v3-6376c09bacab9af8/cleaning/parsed.json": "2baa069794fb64709d98d2d62b602c073dfb6baef19d4bfad388fcc694b9540a",
+    "results/raw/runs/expB_paths_v3-6376c09bacab9af8/cleaning/code.py": "a1a5a72ceedb742c2078e4e3a403d41a56798a5465a2263a2b9e2a6f6af4b62f"
+  },
+  "handoff_in_path": "results/raw/runs/expB_paths_v3-6376c09bacab9af8/cleaning/handoff_in.json",
+  "handoff_size_bytes": 424,
+  "input_tokens": 1826,
+  "output_tokens": 2242,
+  "cost_usd": null,
+  "cost_status": "unavailable",
+  "timings": {
+    "generation_ms": 11918.094624998048,
+    "execution_ms": 733.648749999702,
+    "validation_ms": 0.8715420008229557,
+    "handoff_ms": 0.17920800019055605
+  }
+}

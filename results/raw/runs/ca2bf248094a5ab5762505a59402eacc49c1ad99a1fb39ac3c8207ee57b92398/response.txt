@@ -1,0 +1,10 @@
+```json
+{
+  "fixed_code": "def allocate_stock(stock, requests):\n    remaining = stock.copy()\n    fulfilled = []\n    seen_ids = set()\n    for rid, sku, qty in requests:\n        if rid in seen_ids:\n            continue\n        seen_ids.add(rid)\n        if qty > 0 and remaining.get(sku, 0) >= qty:\n            remaining[sku] -= qty\n            fulfilled.append(rid)\n    return fulfilled, remaining",
+  "bug_locations": [
+    "initialization of remaining",
+    "request processing loop"
+  ],
+  "explanation": "The original code had three defects: 1) It mutated the input `stock` dictionary directly instead of creating a copy. 2) It did not handle duplicate `request_id`s, processing them multiple times. 3) It did not validate that `qty` was positive. The fixes involve: copying the stock dictionary to avoid mutation, tracking seen request IDs with a set to ignore duplicates, and adding a check for positive quantity before allocation."
+}
+```

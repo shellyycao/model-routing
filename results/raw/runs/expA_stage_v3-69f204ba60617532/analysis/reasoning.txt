@@ -1,0 +1,56 @@
+We need to produce JSON with fields python_code (string containing script), expected_artifacts (list of filenames), methods_description (string). The script must read cleaned.csv from INPUT_DIR env var, compute metrics, write findings.json to OUTPUT_DIR. Must output flat JSON with all metric keys as numbers (no NaN). Must handle missing temperature values.
+
+We need to compute:
+
+- total_kwh: sum energy_kwh
+- reading_count: number of rows
+- mean_kwh_per_reading: total_kwh / reading_count
+
+- kwh_residential, kwh_commercial, kwh_industrial: sum per building_type.
+
+- Quarterly totals: need to parse reading_date (date). Use pandas to datetime. Then filter by month.
+
+- Half-year totals: Jan-Jun (months 1-6) and Jul-Dec (7-12). Compute change pct.
+
+- Hot-day commercial load: building_type == 'Commercial' and temperature_c >= 25 (non-missing). Count and mean energy_kwh.
+
+- Distribution summary:
+   - median of energy_kwh (overall)
+   - sample std dev (ddof=1) of energy_kwh
+   - temperature_mean: mean of temperature_c where not missing
+   - temperature_missing_count: count where temperature_c is NaN
+   - commercial_temp_kwh_corr: Pearson correlation between temperature_c and energy_kwh for Commercial rows with non-missing temperature. If less than 2 rows, correlation is NaN; but we must output a finite number. In such case maybe output 0.0? But dataset likely has some. We'll compute using pandas .corr(). If result is NaN, set to 0.0.
+
+- Tariff and meter usage:
+   - kwh_peak: sum energy_kwh where tariff == 'peak'
+   - kwh_off_peak: sum where tariff == 'off-peak'
+   - peak_kwh_share_pct = kwh_peak / total_kwh * 100
+   - unique_meter_count: number of distinct meter_id
+   - highest_use_meter_kwh: max total energy_kwh per meter_id.
+
+All numbers must be finite. Ensure we convert numpy types to Python float via .item().
+
+Write findings.json using json.dump with ensure_ascii=False.
+
+expected_artifacts: ["findings.json"]
+
+methods_description: brief description.
+
+Now craft script.
+
+Potential pitfalls: reading_date column is date string; parse with parse_dates.
+
+Compute quarters: use dt.quarter.
+
+Half-year: dt.month <=6 vs >6.
+
+Hot commercial: temperature_c >=25.
+
+Correlation: use df_commercial = df[(df['building_type']=='Commercial') & df['temperature_c'].notna()] then compute corr = df_commercial['temperature_c'].corr(df_commercial['energy_kwh']). If np.isnan, set 0.0.
+
+All metrics as float; reading_count as int but JSON numbers can be int.
+
+Make sure to cast to Python built-in types.
+
+Now produce final JSON.
+

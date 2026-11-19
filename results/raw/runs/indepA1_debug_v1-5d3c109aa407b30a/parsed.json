@@ -1,0 +1,5 @@
+{
+  "fixed_code": "def binary_search(xs, target):\n    lo, hi = 0, len(xs) - 1\n    while lo <= hi:\n        mid = (lo + hi) // 2\n        if xs[mid] == target:\n            return mid\n        if xs[mid] < target:\n            lo = mid + 1\n        else:\n            hi = mid - 1\n    return -1\n",
+  "bug_location": "binary_search: the while loop condition `lo < hi` on line 3.",
+  "explanation": "The condition `lo < hi` stops the loop before checking the last remaining element when `lo == hi`, causing valid targets at that position to be missed. Changing it to `lo <= hi` ensures the single-element case is also checked."
+}

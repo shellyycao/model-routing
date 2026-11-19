@@ -1,0 +1,81 @@
+We need to produce JSON conforming to schema. Include title, executive_summary, key_findings (array of 7 entries q1..q7), limitations, conclusion.
+
+Each key_finding must have finding_id, statement, evidence_refs, reported_values (include all metric_keys for that question), optional direction, ranking, derived_values.
+
+We must follow ranking requirements:
+
+- q2 ranking_required true, ranking_metric_key_to_label mapping Alpha, Beta, Gamma. Need ranking list of labels from highest to lowest labor cost. Values: labor_cost_alpha 7787.81, labor_cost_beta 10247.36, labor_cost_gamma 9387.73. Highest is Beta, then Gamma, then Alpha. So ranking: ["Beta","Gamma","Alpha"].
+
+- q3 ranking_required true, mapping chat, email, phone. Values: resolution_chat 83.039..., resolution_email 73.017..., resolution_phone 69.254... Highest chat, then email, then phone. ranking: ["chat","email","phone"].
+
+- q4 direction_required true, direction_metric_key email_vs_chat_reopen_change_pct = 119.827586... Positive change indicates email rate higher than chat, so direction "increase"? The metric is (email - chat)/chat*100, positive means email higher. The direction implied is increase relative to chat. So direction "increase". Could also be "increase". Use allowed values: increase, decrease, no_change, not_applicable.
+
+Other findings no ranking/direction.
+
+Now statements: need to write concise statements for business stakeholders, referencing metrics.
+
+Also need derived_values: any numbers we compute beyond verified findings. For q2 we might compute total labor cost across teams? Not required. But we could compute share percentages maybe. Not required but if we include derived values must list them. We can include none if not needed. But we might need derived for ranking? Ranking uses values but not derived. So derived_values can be empty array.
+
+For q4 we might compute difference in percentages? Already have metric email_vs_chat_reopen_change_pct which is the pct change. That's a verified metric, not derived. So no derived needed.
+
+For q5 maybe compute reopened count? Not needed.
+
+Thus derived_values can be empty for each.
+
+Now each key_finding's reported_values must include every metric_key of that question with its verified value.
+
+Let's list per question:
+
+q1 metric_keys: ticket_count, mean_resolution_minutes, total_labor_cost.
+
+q2: labor_cost_alpha, labor_cost_beta, labor_cost_gamma.
+
+q3: resolution_email, resolution_chat, resolution_phone.
+
+q4: reopen_rate_email_pct, reopen_rate_chat_pct, email_vs_chat_reopen_change_pct.
+
+q5: high_cost_low_sat_count, high_cost_low_sat_reopen_pct.
+
+q6: resolution_median, resolution_std, satisfaction_mean, satisfaction_missing_count.
+
+q7: unique_agent_count, top_agent_ticket_count, top_agent_ticket_share_pct.
+
+Now statements: need to be business-friendly.
+
+Examples:
+
+q1: "The dataset contains 347 tickets, with an average resolution time of 75.2 minutes and total labor cost of $27,422.90."
+
+q2: "Team labor costs differ, with Beta incurring the highest cost, followed by Gamma, then Alpha." Also include ranking.
+
+q3: "Resolution speed varies by channel: chat is slowest (83.0 min), email 73.0 min, phone fastest 69.3 min." Actually chat highest mean, so slower. Provide ranking.
+
+q4: "Email tickets are reopened at 17.2% versus 7.8% for chat, representing a 119.8% higher reopening rate for email." Direction increase.
+
+q5: "There are 12 high‑cost, low‑satisfaction tickets, of which 8.33% were reopened."
+
+q6: "The median resolution time is 65 minutes with a standard deviation of 51.9 minutes. Average satisfaction score is 4.15, and 19 tickets lack a satisfaction rating."
+
+q7: "Tickets involve 18 distinct agents; the most active agent handled 26 tickets, representing 7.49% of all tickets."
+
+Now evidence_refs: list metric_keys used in statement. For each, include all metric_keys of that question (since they are used). Could also include subset but must be list. We'll include all metric_keys.
+
+Now direction: only q4 set to "increase". Others null.
+
+Ranking: q2 and q3 as described.
+
+Derived_values: none needed. But we could include derived for q4 maybe compute difference in percentages? Not required. We'll leave empty.
+
+Now produce JSON.
+
+Check schema: each KeyFinding must have required fields: finding_id, statement, evidence_refs. reported_values optional? Actually not required but we should include. direction optional, ranking optional, derived_values optional. We'll include reported_values and derived_values (empty array). Provide direction null for others.
+
+Now ensure numbers rounding: we can round to 2 decimals for readability but must be numbers. The reported_values must be numbers; we can keep as given values maybe rounded to 2 decimals. The schema expects numbers; rounding is fine. Use same values as verified findings but maybe round to 2 decimals. However derived values not needed. Let's keep values with reasonable precision: ticket_count 347 (though it's float 347.0). Use 347.0.
+
+mean_resolution_minutes 75.19 (rounded). total_labor_cost 27422.9 (already). labor_cost_alpha 7787.81, labor_cost_beta 10247.36, labor_cost_gamma 9387.73 (rounded). resolution_email 73.02, resolution_chat 83.04, resolution_phone 69.25. reopen_rate_email_pct 17.24, reopen_rate_chat_pct 7.84, email_vs_chat_reopen_change_pct 119.83. high_cost_low_sat_count 12, high_cost_low_sat_reopen_pct 8.33. resolution_median 65, resolution_std 51.93, satisfaction_mean 4.15, satisfaction_missing_count 19. unique_agent_count 18, top_agent_ticket_count 26, top_agent_ticket_share_pct 7.49.
+
+Now produce JSON.
+
+Check that each reported_values includes all metric_keys for that question with these numbers.
+
+Now produce final answer.

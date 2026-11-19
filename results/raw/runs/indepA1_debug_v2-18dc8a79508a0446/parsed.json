@@ -1,0 +1,10 @@
+{
+  "fixed_code": "from collections import defaultdict, deque\n\ndef allowed(events, limit, window):\n    \"\"\"Return a list of booleans indicating whether each event is allowed.\n\n    An event (user, time) is allowed if the number of *prior allowed* events for the\n    same ``user`` that fall in the half‑open interval ``(time‑window, time]`` is\n    strictly less than ``limit``. Rejected events do not consume capacity.\n    \"\"\"\n    # Separate queues per user to track timestamps of allowed events only.\n    user_queues = defaultdict(deque)\n    out = []\n    for user, t in events:\n        q = user_queues[user]\n        # Remove timestamps that are not in the window: those <= t - window.\n        while q and q[0] <= t - window:\n            q.popleft()\n        if len(q) < limit:\n            out.append(True)\n            q.append(t)  # record this allowed event\n        else:\n            out.append(False)  # rejected, do not record\n    return out\n",
+  "bug_locations": [
+    "Replaced single global deque with per‑user deques (user_queues).",
+    "Adjusted logic to store only timestamps (not (user, time) tuples).",
+    "Added proper window eviction condition for per‑user queues.",
+    "Ensured rejected events do not affect capacity."
+  ],
+  "explanation": "The original implementation used one shared deque for all users, causing events from different users to incorrectly share capacity. It also stored (user, time) pairs, making per‑user eviction impossible. By introducing a defaultdict of deques keyed by user and storing only timestamps, each user's rate‑limit is evaluated independently. The eviction loop now correctly discards timestamps outside the (time‑window, time] interval, and allowed events are recorded while rejected ones are ignored, satisfying the specification."
+}

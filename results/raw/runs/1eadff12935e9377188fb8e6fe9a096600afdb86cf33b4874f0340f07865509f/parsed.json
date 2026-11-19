@@ -1,0 +1,8 @@
+{
+  "fixed_code": "def summarize_logs(lines):\n    counts = {}\n    errors = []\n    for line in lines:\n        parts = line.split('|')\n        if len(parts) < 4:\n            continue\n        ts, level, service = parts[0], parts[1], parts[2]\n        normalized = level.upper()\n        counts.setdefault(service, {})\n        counts[service][normalized] = counts[service].get(normalized, 0) + 1\n        if normalized == 'ERROR':\n            errors.append(ts)\n    return {'counts': counts, 'first_error': min(errors) if errors else None}\n",
+  "bug_locations": [
+    "counts increment line: used level (not normalized) as key for .get(), and called setdefault twice creating two separate dicts",
+    "first_error: used max() instead of min() to find lexicographically earliest ERROR timestamp"
+  ],
+  "explanation": "Two bugs: (1) The count increment used `counts.setdefault(service,{})` twice, which could return different dict objects, and used `level` (un-normalized) in `.get(level, 0)` instead of the normalized key, causing incorrect counts. Fixed by calling setdefault once and using the normalized level consistently. (2) `max(errors)` was used to find the earliest timestamp, but lexicographic minimum is needed, so it should be `min(errors)`."
+}

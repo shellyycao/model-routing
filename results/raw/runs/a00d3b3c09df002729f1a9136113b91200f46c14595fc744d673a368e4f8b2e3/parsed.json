@@ -1,0 +1,9 @@
+{
+  "fixed_code": "def allocate_stock(stock, requests):\n    remaining = stock.copy()\n    fulfilled = []\n    seen_ids = set()\n    for rid, sku, qty in requests:\n        if rid in seen_ids:\n            continue\n        seen_ids.add(rid)\n        if qty > 0 and remaining.get(sku, 0) >= qty:\n            remaining[sku] -= qty\n            fulfilled.append(rid)\n    return fulfilled, remaining",
+  "bug_locations": [
+    "remaining = stock",
+    "for rid, sku, qty in requests:",
+    "if remaining.get(sku, 0) >= qty:"
+  ],
+  "explanation": "The original code had three defects: 1) It mutated the input `stock` dictionary directly by assigning `remaining = stock`. Fixed by using `remaining = stock.copy()`. 2) It did not ignore duplicate request_ids. Fixed by tracking seen IDs in a set and skipping duplicates. 3) It did not check for positive `qty` and did not handle whole requests correctly. Fixed by adding `qty > 0` check and ensuring sufficient stock before allocation."
+}

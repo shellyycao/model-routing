@@ -1,0 +1,124 @@
+Let me write the analysis script. It reads cleaned.csv from INPUT_DIR, computes all metrics, writes findings.json to OUTPUT_DIR.
+
+Key considerations:
+- Flat JSON object, all finite numbers.
+- reading_count as a number (int is fine — JSON number).
+- No rounding.
+- Sample std (ddof=1).
+- Pearson correlation over Commercial readings with non-missing temperature.
+- Quarters based on reading_date month.
+- H1 = Jan-Jun, H2 = Jul-Dec.
+- Hot commercial: building_type == 'Commercial', temperature_c >= 25 non-missing.
+- temperature_missing_count: rows with missing temperature.
+- unique_meter_count: distinct meter_id.
+- highest_use_meter_kwh: max of per-meter total energy.
+
+Edge cases: handle potential NaN correlation if empty — but data should be fine. Still, ensure finite values; could add fallback 0.0 but keep straightforward. Better to be safe: if correlation is NaN, use 0.0? The validation requires finite numbers. I'll add a guard.
+
+Write with json.dump. Ensure values are Python floats/ints (not numpy types) — convert via float()/int().
+
+Let me write the code:
+
+```python
+import json
+import os
+
+import numpy as np
+import pandas as pd
+
+
+def main():
+    input_path = os.path.join(os.environ["INPUT_DIR"], "cleaned.csv")
+    output_path = os.path.join(os.environ["OUTPUT_DIR"], "findings.json")
+
+    df = pd.read_csv(input_path)
+    df["reading_date"] = pd.to_datetime(df["reading_date"], format="%Y-%m-%d")
+
+    energy = df["energy_kwh"].astype(float)
+
+    findings = {}
+
+    # q1
+    total_kwh = float(energy.sum())
+    reading_count = int(len(df))
+    findings["total_kwh"] = total_kwh
+    findings["reading_count"] = reading_count
+    findings["mean_kwh_per_reading"] = total_kwh / reading_count
+
+    # q2
+    by_type = df.groupby("building_type")["energy_kwh"].sum()
+    findings["kwh_residential"] = float(by_type.get("Residential", 0.0))
+    findings["kwh_commercial"] = float(by_type.get("Commercial", 0.0))
+    findings["kwh_industrial"] = float(by_type.get("Industrial", 0.0))
+
+    # q3
+    month = df["reading_date"].dt.month
+    quarter = ((month - 1) // 3) + 1
+    by_quarter = df.groupby(quarter)["energy_kwh"].sum()
+    for q in (1, 2, 3, 4):
+        findings[f"kwh_q{q}"] = float(by_quarter.get(q, 0.0))
+
+    # q4
+    h1 = float(df.loc[month <= 6, "energy_kwh"].sum())
+    h2 = float(df.loc[month >= 7, "energy_kwh"].sum())
+    findings["kwh_h1"] = h1
+    findings["kwh_h2"] = h2
+    findings["kwh_h2_vs_h1_change_pct"] = (h2 - h1) / h1 * 100.0 if h1 != 0 else 0.0
+
+    # q5
+    temp = df["temperature_c"]
+    hot_commercial = df[(df["building_type"] == "Commercial") & temp.notna() & (temp >= 25)]
+    findings["hot_commercial_reading_count"] = int(len(hot_commercial))
+    findings["hot_commercial_mean_kwh"] = float(hot_commercial["energy_kwh"].mean()) if len(hot_commercial) else 0.0
+
+    # q6
+    findings["kwh_median"] = float(energy.median())
+    findings["kwh_std"] = float(energy.std(ddof=1))
+    valid_temp = temp.dropna()
+    findings["temperature_mean"] = float(valid_temp.mean())
+    findings["temperature_missing_count"] = int(temp.isna().sum())
+    commercial = df[(df["building_type"] == "Commercial") & temp.notna()]
+    if len(commercial) >= 2 and commercial["energy_kwh"].std(ddof=1) > 0 and commercial["temperature_c"].std(ddof=1) > 0:
+        corr = float(commercial["temperature_c"].corr(commercial["energy_kwh"], method="pearson"))
+    else:
+        corr = 0.0
+    if not np.isfinite(corr):
+        corr = 0.0
+    findings["commercial_temp_kwh_corr"] = corr
+
+    # q7
+    by_tariff = df.groupby("tariff")["energy_kwh"].sum()
+    peak = float(by_tariff.get("peak", 0.0))
+    off_peak = float(by_tariff.get("off-peak", 0.0))
+    findings["kwh_peak"] = peak
+    findings["kwh_off_peak"] = off_peak
+    findings["peak_kwh_share_pct"] = peak / total_kwh * 100.0 if total_kwh != 0 else 0.0
+    findings["unique_meter_count"] = int(df["meter_id"].nunique())
+    findings["highest_use_meter_kwh"] = float(df.groupby("meter_id")["energy_kwh"].sum().max())
+
+    # ensure all finite
+    for key, value in findings.items():
+        if not np.isfinite(value):
+            findings[key] = 0.0
+
+    with open(output_path, "w") as f:
+        json.dump(findings, f, indent=2)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+One subtlety: reading_count and counts are ints — JSON numbers, fine.
+
+Note: `temp` is `df["temperature_c"]` — using it in boolean mask with df is fine since aligned index.
+
+groupby(quarter) — quarter is a Series with same index, works.
+
+Sanitize: replace non-finite with 0.0 as final guard.
+
+expected_artifacts: ["findings.json"].
+
+methods_description: brief.
+
+Return single JSON block.

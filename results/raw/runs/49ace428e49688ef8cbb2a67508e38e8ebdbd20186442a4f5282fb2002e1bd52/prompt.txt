@@ -1,0 +1,18 @@
+Extract the requested fields from the document. Resolve conflicts using each field description, perform required unit conversions, and use null when the document does not support a value.
+
+Schema:
+- destination_city: string
+- eta: date YYYY-MM-DD or null
+- hazardous: boolean
+- origin_city: string
+- tracking_id: string
+- weight_kg: number kilograms
+
+Document:
+MANIFEST ZX301US
+Route: Reno -> Albany (billing office: Boise)
+Gross weight: 321 lb / crate; this shipment has one crate.
+ETA: 2026-05-11.
+Dangerous goods: NO.
+
+Return exactly one object with the required `fields` wrapper and no extra schema keys. Content correctness and schema/operational compliance are scored separately.

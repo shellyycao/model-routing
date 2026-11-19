@@ -1,0 +1,9 @@
+{
+  "fixed_code": "def invoice_total(lines, discount_pct=0, tax_pct=0):\n    subtotal = sum(row['qty'] * row['unit_price'] for row in lines)\n    return round(subtotal * (1 - discount_pct / 100) * (1 + tax_pct / 100), 2)",
+  "bug_locations": [
+    "subtotal=sum(round(row['qty']*row['unit_price'],2) for row in lines)",
+    "(1-discount_pct//100)",
+    "(1+tax_pct//100)"
+  ],
+  "explanation": "The code contained three defects. First, it prematurely rounded each line item's total to 2 decimal places during summation, whereas the specification requires rounding only the final result. Second, it used floor division (//) for the discount and tax percentages instead of true division (/), causing the percentages to be treated as zero (e.g., 10//100 is 0). The fixes remove the inner rounding and replace floor division with true division."
+}

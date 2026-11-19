@@ -1,0 +1,11 @@
+```json
+{
+  "fixed_code": "from collections import defaultdict, deque\n\ndef allowed(events, limit, window):\n    queues = defaultdict(deque)\n    out = []\n    for user, t in events:\n        q = queues[user]\n        while q and q[0] <= t - window:\n            q.popleft()\n        ok = len(q) < limit\n        out.append(ok)\n        if ok:\n            q.append(t)\n    return out",
+  "bug_locations": [
+    "q=deque()",
+    "while q and q[0][1]<=t-window:q.popleft()",
+    "if ok:q.append((user,t))"
+  ],
+  "explanation": "The original code used a single global deque for all users, but the rate limit is per-user. It also stored (user, time) tuples, which is unnecessary and inefficient. The fix uses a dictionary of deques (one per user) and stores only timestamps."
+}
+```

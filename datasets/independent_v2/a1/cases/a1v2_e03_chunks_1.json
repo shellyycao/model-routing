@@ -1,0 +1,26 @@
+{
+  "bug_locations": [
+    "chunks range stop"
+  ],
+  "buggy": "def chunks(xs, size):\n                 if size <= 0: raise ValueError('size')\n                 return [xs[i:i+size] for i in range(0, len(xs)-size+1, size)]\n",
+  "case_id": "a1v2_e03_chunks_1",
+  "difficulty": "easy",
+  "family": "chunks",
+  "hidden": [
+    "chunks([1,2,3,4,5],2)==[[1,2],[3,4],[5]]",
+    "chunks([],3)==[]",
+    "chunks([1],3)==[[1]]",
+    "_raises(lambda: chunks([1],0), ValueError)",
+    "(lambda x: (chunks(x,2),x)[1]==[1,2,3])([1,2,3])"
+  ],
+  "label_source": "executable reference plus independently checked tests",
+  "reference": "def chunks(xs, size):\n             if size <= 0: raise ValueError('size')\n             return [xs[i:i+size] for i in range(0, len(xs), size)]\n",
+  "spec": "chunks(xs, size) returns consecutive list chunks, including a short final chunk; raise ValueError if size <= 0; do not mutate xs.",
+  "verification": {
+    "buggy_fails": 2,
+    "reference_passes": 5
+  },
+  "visible": [
+    "chunks([1,2,3,4], 2) == [[1,2],[3,4]]"
+  ]
+}

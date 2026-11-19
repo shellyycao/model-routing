@@ -1,0 +1,79 @@
+The task is straightforward: write a self-contained Python script that reads cleaned.csv from INPUT_DIR, computes metrics, writes findings.json to OUTPUT_DIR.
+
+Key considerations:
+- Flat JSON, finite numbers only, no rounding.
+- order_count should be a number — could be int, but JSON numbers fine. Ensure finite.
+- Handle potential division by zero gracefully? revenue_2023 might be nonzero. Still, make sure finite.
+- Use pandas. Parse order_date with pd.to_datetime.
+- Sample std: pandas .std() uses ddof=1 by default.
+- All values as float (order_count and unique_customer_count could be int; that's fine as JSON number). To be safe, cast counts to float? Spec says "single finite number" — int is fine. But maybe float for consistency. I'll cast counts to int or float. I'll use float for all to be safe? Actually int is a valid JSON number. I'll cast counts to int, monetary to float. Either way fine. I'll just use float() for all to avoid numpy types issues — need to convert numpy types to Python native for json serialization. Use float() everywhere.
+
+Write with json.dump. Ensure no NaN/inf — could use a helper to check math.isfinite.
+
+Script:
+
+```python
+import json
+import math
+import os
+
+import pandas as pd
+
+
+def main():
+    input_path = os.path.join(os.environ["INPUT_DIR"], "cleaned.csv")
+    output_path = os.path.join(os.environ["OUTPUT_DIR"], "findings.json")
+
+    df = pd.read_csv(input_path, parse_dates=["order_date"])
+
+    revenue = df["revenue"].astype(float)
+
+    total_revenue = float(revenue.sum())
+    order_count = int(len(df))
+    average_order_value = total_revenue / order_count
+
+    by_region = df.groupby("region")["revenue"].sum()
+    revenue_north = float(by_region.get("North", 0.0))
+    ...
+
+    year = df["order_date"].dt.year
+    rev_2023 = float(revenue[year == 2023].sum())
+    rev_2024 = float(revenue[year == 2024].sum())
+    yoy = (rev_2024 - rev_2023) / rev_2023 * 100
+
+    q = df["order_date"].dt.quarter
+    rev_2024_q1 = float(revenue[(year == 2024) & (q == 1)].sum())
+    ...
+
+    mask = (df["product_category"] == "Electronics") & (df["discount_pct"] >= 20)
+    elec_orders = int(mask.sum())
+    elec_revenue = float(revenue[mask].sum())
+
+    mean = float(revenue.mean())
+    median = float(revenue.median())
+    std = float(revenue.std(ddof=1))
+    min_ = float(revenue.min())
+    max_ = float(revenue.max())
+
+    by_cust = df.groupby("customer_id")["revenue"].sum()
+    unique_customers = int(df["customer_id"].nunique())
+    top_customer_revenue = float(by_cust.max())
+    top_share = top_customer_revenue / total_revenue * 100
+
+    findings = {...}
+
+    for k, v in findings.items():
+        if not math.isfinite(v):
+            raise ValueError(...)
+
+    with open(output_path, "w") as f:
+        json.dump(findings, f, indent=2)
+```
+
+Note: order_count as int is fine for math.isfinite. Fine.
+
+expected_artifacts: ["findings.json"].
+
+methods_description: brief.
+
+Output as single JSON fenced block.

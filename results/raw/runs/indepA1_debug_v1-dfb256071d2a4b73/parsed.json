@@ -1,0 +1,5 @@
+{
+  "fixed_code": "def is_leap(year):\n    return year % 4 == 0 and (year % 100 != 0 or year % 400 == 0)\n",
+  "bug_location": "is_leap function, return statement: missing the exception for centuries divisible by 400.",
+  "explanation": "The original code correctly excludes centuries (year % 100 != 0) but fails to re-include centuries divisible by 400 (e.g., 2000). The fix adds 'or year % 400 == 0' so that years like 2000 are correctly identified as leap years."
+}

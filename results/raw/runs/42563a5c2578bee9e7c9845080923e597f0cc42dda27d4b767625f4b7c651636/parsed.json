@@ -1,0 +1,10 @@
+{
+  "fixed_code": "def rolling_mean(xs, window, min_periods=1):\n    \"\"\"Return one trailing-window mean per input position.\n\n    The window for position i includes xs[i] and up to window - 1 prior\n    values. If fewer than min_periods values are available, return None\n    for that position.\n    \"\"\"\n    if not 1 <= min_periods <= window:\n        raise ValueError(\"min_periods must satisfy 1 <= min_periods <= window\")\n\n    values = list(xs)\n    means = []\n    for i in range(len(values)):\n        start = max(0, i - window + 1)\n        trailing = values[start:i + 1]\n        if len(trailing) >= min_periods:\n            means.append(sum(trailing) / len(trailing))\n        else:\n            means.append(None)\n    return means\n",
+  "bug_locations": [
+    "rolling_mean: missing validation that 1 <= min_periods <= window",
+    "rolling_mean: trailing window slice used xs[max(0, i-window):i], excluding the current element and using an off-by-one start",
+    "rolling_mean: always divided by window instead of the number of available values",
+    "rolling_mean: did not enforce min_periods or emit null for insufficient values"
+  ],
+  "explanation": "The implementation used the wrong trailing slice, so it excluded the current item and could include an extra older item. It also divided by the full window even when fewer values were present, and it ignored min_periods. The fixed function validates min_periods against window, slices xs[max(0, i-window+1):i+1], divides by the observed count, and returns None when the count is below min_periods."
+}

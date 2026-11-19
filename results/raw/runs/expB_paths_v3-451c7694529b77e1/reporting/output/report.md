@@ -1,0 +1,33 @@
+# Customer Churn Analysis Report
+
+The customer base shows a high overall churn of 37.7% with notable variation across plans, contract types, and signup cohorts. Monthly contracts churn more than twice as fast as annual contracts (48.3% vs 21.9%). A segment of 100 customers with frequent support tickets and low satisfaction churns at 71%. Lifetime value is strongly linked to plan tier, with premium customers delivering a 292% higher LTV than basic. These insights highlight opportunities to improve retention through contract incentives, support interventions, and targeted value‑based offers.
+
+## Key findings
+- [q1] The dataset contains 749 customers, with an overall churn rate of 37.7% and an average monthly fee of $42.11.
+  - Reported values: customer_count=749.0, churn_rate_pct=37.6502002670227, avg_monthly_fee=42.106154873164215
+- [q2] Churn varies by plan: Basic customers churn the most (38.9%), followed by Standard (36.7%) and Premium (36.6%).
+  - Reported values: churn_rate_basic_pct=38.87240356083086, churn_rate_standard_pct=36.67953667953668, churn_rate_premium_pct=36.60130718954248
+  - Ranking: Basic, Standard, Premium
+- [q3] Cohort churn rates are highest for the 2024 signup cohort (39.8%) and lowest for 2022 (36.7%).
+  - Reported values: churn_rate_cohort_2021_pct=38.02083333333333, churn_rate_cohort_2022_pct=36.74418604651163, churn_rate_cohort_2023_pct=37.05357142857143, churn_rate_cohort_2024_pct=39.83050847457627
+  - Ranking: 2024, 2021, 2023, 2022
+- [q4] Monthly contracts churn at 48.3%, more than double the 21.9% churn for Annual contracts, representing a 121.1% increase.
+  - Reported values: churn_rate_monthly_pct=48.322147651006716, churn_rate_annual_pct=21.85430463576159, churn_monthly_vs_annual_change_pct=121.11043319097013
+  - Direction: increase
+- [q5] There are 100 at‑risk customers (≥5 support tickets and satisfaction ≤2), and 71% of them have churned.
+  - Reported values: at_risk_customer_count=100.0, at_risk_churn_rate_pct=71.0
+- [q6] Customers have an average tenure of 20.8 months (median 19, std 13.25). The mean satisfaction score is 3.42, with 27 customers missing a score.
+  - Reported values: tenure_mean=20.81041388518024, tenure_median=19.0, tenure_std=13.24739298193327, satisfaction_mean=3.4168975069252077, satisfaction_missing_count=27.0
+- [q7] Mean lifetime value is $463.46 for Basic, $868.83 for Standard, and $1,816.78 for Premium plans. Premium LTV is 292.0% higher than Basic.
+  - Reported values: ltv_basic=463.4573590504451, ltv_standard=868.8301544401545, ltv_premium=1816.7777124183006, premium_vs_basic_ltv_change_pct=292.00536509779596
+  - Direction: increase
+  - Ranking: Premium, Standard, Basic
+
+## Limitations
+- The analysis is based on a single snapshot of customer data; churn behavior may change over time.
+- 27 customers have missing satisfaction scores, which could bias the satisfaction summary.
+- Churn is treated as a binary flag without accounting for timing (e.g., early vs late churn).
+- Support ticket counts and satisfaction scores are self‑reported and may not capture all drivers of churn.
+
+## Conclusion
+Churn is high overall and especially pronounced among monthly contract holders and the recent 2024 cohort. Targeted retention actions—such as offering annual contract incentives, proactive support for high‑ticket, low‑satisfaction customers, and premium‑value messaging for higher‑LTV segments—are recommended to reduce churn and maximize revenue.

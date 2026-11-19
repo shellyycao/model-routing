@@ -1,0 +1,24 @@
+Let me analyze the bugs:
+
+1. **Single shared queue for all users**: The code uses one deque `q` for all users, but it should track events per user separately.
+
+2. **Window boundary condition**: The spec says "fall in (time-window, time]", meaning strictly greater than `time-window`. The current code uses `q[0][1] <= t-window` which correctly removes events at or before `t-window`, keeping only those strictly greater than `t-window`. This part is actually correct.
+
+Let me verify with the visible check:
+- `('u',0)`: queue empty, `len(q)<1` → False! Wait, limit=1, len(q)=0 < 1 → True. Append ('u',0). Queue: [('u',0)]
+- `('u',1)`: window=1, remove events where t<=1-1=0, so ('u',0) is removed. Queue empty. len(q)=0 < 1 → True.
+
+So the visible check passes with the current code... but the main bug is that all users share the same queue. For example, user 'a' and user 'b' would interfere with each other.
+
+The fix: maintain a separate deque per user.
+
+```json
+{
+  "fixed_code": "from collections import deque\ndef allowed(events, limit, window):\n    queues = {}\n    out = []\n    for user, t in events:\n        if user not in queues:\n            queues[user] = deque()\n        q = queues[user]\n        while q and q[0] <= t - window:\n            q.popleft()\n        ok = len(q) < limit\n        out.append(ok)\n        if ok:\n            q.append(t)\n    return out\n",
+  "bug_locations": [
+    "allowed function: single shared deque replaced with per-user deques dictionary",
+    "allowed function: queue stores only timestamps (not (user,t) tuples) since queue is already per-user"
+  ],
+  "explanation": "The original code used a single shared deque `q` for all users, causing events from different users to interfere with each other's rate limiting. The fix maintains a separate deque per user in a dictionary `queues`. Additionally, since each queue is now user-specific, we only need to store timestamps (not user+timestamp tuples), simplifying the comparison. The window boundary check `q[0] <= t - window` correctly implements the open interval (time-window, time] by removing events at or before t-window."
+}
+```

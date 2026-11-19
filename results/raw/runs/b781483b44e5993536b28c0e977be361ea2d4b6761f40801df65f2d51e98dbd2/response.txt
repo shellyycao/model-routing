@@ -1,0 +1,9 @@
+```json
+{
+  "fixed_code": "def invoice_total(lines, discount_pct=0, tax_pct=0):\n    subtotal = sum(row['qty'] * row['unit_price'] for row in lines)\n    after_discount = subtotal * (1 - discount_pct / 100)\n    total = after_discount * (1 + tax_pct / 100)\n    return round(total, 2)\n",
+  "bug_locations": [
+    "invoice_total function body - incorrect formula for applying discount and tax"
+  ],
+  "explanation": "The original code had the wrong order/formula for applying discount and tax. The spec says: (1) sum qty*unit_price to get subtotal, (2) apply discount to get after_discount = subtotal * (1 - discount_pct/100), (3) apply tax to get total = after_discount * (1 + tax_pct/100), (4) round only the final result. The buggy code computed subtotal*(1+tax_pct/100) - subtotal*discount_pct/100, which applies tax to the full subtotal and then subtracts the discount amount from the pre-discount subtotal — both wrong. For the visible check: subtotal=20, after_discount=20*0.9=18, total=18*1.05=18.9, which matches."
+}
+```

@@ -1,0 +1,10 @@
+```json
+{
+  "fixed_code": "def dependency_order(deps):\n    nodes = set(deps)\n    out = []\n    visited = set()\n    while nodes:\n        ready = sorted(n for n in nodes if not set(deps.get(n, [])) & nodes)\n        if not ready:\n            cycle_node = next(n for n in nodes if n not in visited)\n            raise ValueError(f'Cycle detected involving node {cycle_node}')\n        for node in ready:\n            visited.add(node)\n        out += ready\n        nodes -= set(ready)\n    return out\n",
+  "bug_locations": [
+    "dependency_order function",
+    "cycle detection logic"
+  ],
+  "explanation": "The original code lacked proper cycle detection. If no 'ready' nodes were found in a pass, it incorrectly assumed the graph was fully processed. The fixed code introduces a 'visited' set to track nodes that have been processed and raises a ValueError with a specific cycle-involved node if a cycle is detected."
+}
+```

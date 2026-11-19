@@ -1,0 +1,135 @@
+{
+  "contract_version": "1.2",
+  "run_id": "expA_stage_v3-2723f96b76b58824",
+  "experiment_id": "expA_stage_v3",
+  "project_id": "energy_consumption",
+  "stage": "cleaning",
+  "model_alias": "B",
+  "repeat_index": 0,
+  "canonical_inputs": [
+    "datasets/projects/energy_consumption/raw.csv"
+  ],
+  "canonical_input_hashes": {
+    "datasets/projects/energy_consumption/raw.csv": "615e9dd3f351c49e26a813e2a6b47e6c9e2c812b579dae7b15497467a0d01572"
+  },
+  "config_hash": "67f479388ac9d582d34e0983805fc1d6ee4b8a11be593666aff5031b6ee3af4c",
+  "record": {
+    "stage": "cleaning",
+    "model_alias": "B",
+    "model_id": "us.amazon.nova-pro-v1:0",
+    "prompt_version": "v3",
+    "prompt_hash": "54fccecaa4539ea6f9bf17463a0da069f9e72816d3512b9a1510b4481adbcc9d",
+    "invocation_ids": [
+      "013acf6d-56f5-4485-8969-4d9d721eace6"
+    ],
+    "cache_hit": false,
+    "shared_with_run_ids": [],
+    "status": "failed",
+    "structural_ok": false,
+    "failure_type": "execution_error",
+    "failure_detail": "execution runtime_error (exit 1): deprecated. Use DataFrame.map instead.\n  df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)\nTraceback (most recent call last):\n  File \"/sandbox/code/main.py\", line 24, in <module>\n    df['reading_date'] = pd.to_datetime(df['reading_date'], errors='coerce', format=date_formats)\n                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/tools/datetimes.py\", line 1063, in to_datetime\n    cache_array = _maybe_cache(arg, format, cache, convert_listlike)\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/tools/datetimes.py\", line 247, in _maybe_cache\n    cache_dates = convert_listlike(unique_dates, format)\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/tools/datetimes.py\", line 433, in _convert_listlike_datetimes\n    return _array_strptime_with_fallback(arg, name, utc, format, exact, errors)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/tools/datetimes.py\", line 467, in _array_strptime_with_fallback\n    result, tz_out = array_strptime(arg, fmt, exact=exact, errors=errors, utc=utc)\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: Argument 'fmt' has incorrect type (expected str, got list)\n",
+    "parse_ok": true,
+    "execution": {
+      "status": "runtime_error",
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "/sandbox/code/main.py:15: FutureWarning: DataFrame.applymap has been deprecated. Use DataFrame.map instead.\n  df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)\nTraceback (most recent call last):\n  File \"/sandbox/code/main.py\", line 24, in <module>\n    df['reading_date'] = pd.to_datetime(df['reading_date'], errors='coerce', format=date_formats)\n                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/tools/datetimes.py\", line 1063, in to_datetime\n    cache_array = _maybe_cache(arg, format, cache, convert_listlike)\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/tools/datetimes.py\", line 247, in _maybe_cache\n    cache_dates = convert_listlike(unique_dates, format)\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/tools/datetimes.py\", line 433, in _convert_listlike_datetimes\n    return _array_strptime_with_fallback(arg, name, utc, format, exact, errors)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/tools/datetimes.py\", line 467, in _array_strptime_with_fallback\n    result, tz_out = array_strptime(arg, fmt, exact=exact, errors=errors, utc=utc)\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: Argument 'fmt' has incorrect type (expected str, got list)\n",
+      "runtime_ms": 898.3215410007688,
+      "output_files": [],
+      "sandbox_image": "sha256:88988a15503bdb96538c3dd62244a79879d5c7848397db18b1267ccfd0a9727a"
+    },
+    "validation": {
+      "stage": "cleaning",
+      "hard_pass": false,
+      "checks": [
+        {
+          "name": "output_exists",
+          "passed": false,
+          "mandatory": true,
+          "detail": "cleaned CSV not found: /Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expA_stage_v3-2723f96b76b58824/cleaning/output/cleaned.csv",
+          "value": null
+        },
+        {
+          "name": "output_parses",
+          "passed": false,
+          "mandatory": true,
+          "detail": "no output",
+          "value": null
+        },
+        {
+          "name": "required_columns_present",
+          "passed": false,
+          "mandatory": true,
+          "detail": "no output",
+          "value": null
+        },
+        {
+          "name": "schema_constraints",
+          "passed": false,
+          "mandatory": true,
+          "detail": "no output",
+          "value": null
+        },
+        {
+          "name": "no_duplicate_keys",
+          "passed": false,
+          "mandatory": true,
+          "detail": "no output",
+          "value": null
+        },
+        {
+          "name": "row_set_matches_reference",
+          "passed": false,
+          "mandatory": true,
+          "detail": "no output",
+          "value": null
+        },
+        {
+          "name": "values_match_reference",
+          "passed": false,
+          "mandatory": true,
+          "detail": "no output",
+          "value": null
+        }
+      ],
+      "quality": {
+        "cleaning_correctness": 0.0,
+        "data_integrity": 0.0,
+        "schema_compliance": 0.0
+      },
+      "quality_basis": "ground_truth",
+      "validator_version": "1.0"
+    },
+    "conditional_validation": null,
+    "input_artifacts": [
+      "datasets/projects/energy_consumption/raw.csv"
+    ],
+    "output_artifacts": [
+      "results/raw/runs/expA_stage_v3-2723f96b76b58824/cleaning/prompt.txt",
+      "results/raw/runs/expA_stage_v3-2723f96b76b58824/cleaning/response.txt",
+      "results/raw/runs/expA_stage_v3-2723f96b76b58824/cleaning/parsed.json",
+      "results/raw/runs/expA_stage_v3-2723f96b76b58824/cleaning/code.py"
+    ],
+    "input_artifact_hashes": {
+      "datasets/projects/energy_consumption/raw.csv": "615e9dd3f351c49e26a813e2a6b47e6c9e2c812b579dae7b15497467a0d01572"
+    },
+    "output_artifact_hashes": {
+      "results/raw/runs/expA_stage_v3-2723f96b76b58824/cleaning/prompt.txt": "54fccecaa4539ea6f9bf17463a0da069f9e72816d3512b9a1510b4481adbcc9d",
+      "results/raw/runs/expA_stage_v3-2723f96b76b58824/cleaning/response.txt": "2e3d53e59a644f12aaba77a587c51d44eb690474aaa74da5755af08741ff8a09",
+      "results/raw/runs/expA_stage_v3-2723f96b76b58824/cleaning/parsed.json": "134641d306e367e424310b36f7b46dabd8cf82b223be34d243a1712c47000810",
+      "results/raw/runs/expA_stage_v3-2723f96b76b58824/cleaning/code.py": "ed9865407bdc8c9b72d68c126091898485575fcdcce9a7f66742e5a393788b64"
+    },
+    "handoff_in_path": "results/raw/runs/expA_stage_v3-2723f96b76b58824/cleaning/handoff_in.json",
+    "handoff_size_bytes": 612,
+    "input_tokens": 2078,
+    "output_tokens": 1614,
+    "cost_usd": null,
+    "cost_status": "unavailable",
+    "timings": {
+      "generation_ms": 7911.249458000384,
+      "execution_ms": 898.3215410007688,
+      "validation_ms": 1.6538330019102432,
+      "handoff_ms": 0.38837499960209243
+    }
+  }
+}

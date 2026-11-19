@@ -1,0 +1,59 @@
+We need to produce JSON with python_code, expected_artifacts, methods_description. The python script must read cleaned.csv from INPUT_DIR env var, compute metrics, write findings.json to OUTPUT_DIR. Must output flat JSON with all metric keys as numbers (no NaN). Use pandas.
+
+Potential issues: need to ensure we handle empty data? But cleaned rows 520. Compute metrics.
+
+Implementation steps:
+
+- import os, pandas, numpy, json
+- read csv: path = os.path.join(os.environ["INPUT_DIR"], "cleaned.csv")
+- df = pd.read_csv(path, parse_dates=['order_date'])
+- total_revenue = df['revenue'].sum()
+- order_count = len(df)
+- average_order_value = total_revenue / order_count if order_count else 0
+
+Regional revenue: groupby region sum revenue. Ensure missing region produce 0.
+
+- revenue_north = sum where region == 'North', etc.
+
+Quarterly 2024: filter df where order_date year == 2024. Then assign quarter: (month-1)//3 +1. Compute sum per quarter.
+
+- revenue_2024_q1 etc.
+
+Yearly revenue: revenue_2023 = sum where year==2023; revenue_2024 similarly.
+
+- yoy change: if revenue_2023 !=0 else maybe set to np.inf? But we need finite number. If zero, set to 0? We'll compute as (rev2024 - rev2023)/rev2023*100 if rev2023 !=0 else 0.0.
+
+High-discount electronics: filter product_category == 'Electronics' and discount_pct >=20. Compute count and sum revenue.
+
+Order revenue distribution: use df['revenue'] series. Compute mean, median, std (ddof=1), min, max.
+
+Customer concentration: unique_customer_count = df['customer_id'].nunique(). top_customer_revenue = df.groupby('customer_id')['revenue'].sum().max(). top_customer_revenue_share_pct = top_customer_revenue / total_revenue *100 if total_revenue else 0.
+
+Write findings dict with all keys.
+
+Write json to output path.
+
+Make sure to convert numpy types to python float/int via float().
+
+expected_artifacts list: ["findings.json"]
+
+methods_description: brief.
+
+Now produce JSON with code as string. Ensure proper escaping of newlines.
+
+Let's craft python code as a triple-quoted string inside JSON. Use \n for newlines.
+
+Will include import warnings to ignore SettingWithCopy? Not needed.
+
+Edge Cases: Ensure quarter sums default to 0 if no data.
+
+Implementation details:
+
+- Use df['order_date'].dt.year, .dt.month.
+
+- For quarterly: create mask2024 = df['order_date'].dt.year == 2024; then for each quarter compute sum.
+
+- Use .sum() returns float.
+
+Now produce final JSON.
+

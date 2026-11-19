@@ -1,0 +1,9 @@
+```json
+{
+  "fixed_code": "def overlap_minutes(a,b):\n    if a[1] < a[0] or b[1] < b[0]: raise ValueError('interval')\n    return max(0, min(a[1], b[1]) - max(a[0], b[0]))",
+  "bug_locations": [
+    "overlap_minutes"
+  ],
+  "explanation": "The original code had two defects. First, the validation check `a[1]<=a[0]` incorrectly rejected valid intervals where start equals end (e.g., (10,10)), contradicting the specification that only rejects `end < start`. Second, the overlap calculation added `+1`, which is appropriate for closed intervals but incorrect for half-open intervals where the length is simply `end - start`."
+}
+```

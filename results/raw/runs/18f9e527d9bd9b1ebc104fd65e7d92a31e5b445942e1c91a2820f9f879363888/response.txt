@@ -1,0 +1,11 @@
+```json
+{
+  "fixed_code": "from collections import deque\n\n\ndef shortest_path(graph, start, goal):\n    if start == goal:\n        return [start]\n\n    queue = deque([(start, [start])])\n    seen = {start}\n\n    while queue:\n        node, path = queue.popleft()\n        for neighbour in graph.get(node, []):\n            if neighbour in seen:\n                continue\n            new_path = path + [neighbour]\n            if neighbour == goal:\n                return new_path\n            seen.add(neighbour)\n            queue.append((neighbour, new_path))\n\n    return None\n",
+  "bug_locations": [
+    "module imports: added collections.deque",
+    "shortest_path: traversal container and loop",
+    "shortest_path: visited/seen handling"
+  ],
+  "explanation": "The buggy code used a LIFO stack, so it performed DFS and explored neighbours in reverse; it also added nodes to seen only when popped and did not pre-seed start, allowing duplicates and non-shortest paths. The fix uses FIFO BFS, seeds seen with start, scans adjacency lists in the given order, marks neighbours as seen when first generated, and returns the first generated goal path or None after exhaustion."
+}
+```

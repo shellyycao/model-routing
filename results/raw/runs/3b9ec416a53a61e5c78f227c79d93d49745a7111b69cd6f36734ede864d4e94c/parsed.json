@@ -1,0 +1,7 @@
+{
+  "fixed_code": "def overlap_minutes(a, b):\n    if a[1] < a[0] or b[1] < b[0]:\n        raise ValueError(\"Interval end must not be less than start\")\n    overlap = min(a[1], b[1]) - max(a[0], b[0])\n    return max(overlap, 0)",
+  "bug_locations": [
+    "overlap_minutes function body"
+  ],
+  "explanation": "The original function had two defects: 1) It did not validate that interval ends are not less than starts, which the specification requires to be rejected. 2) It returned negative values for non-overlapping intervals instead of zero, violating the specification that touching intervals have zero overlap."
+}

@@ -1,0 +1,116 @@
+Let me carefully construct the report as a single JSON object.
+
+Requirements:
+- One key_finding per question q1–q7.
+- reported_values must include EVERY metric_key of that question with verified value.
+- q2 and q3 require rankings (high to low) using exact labels.
+- q4 requires direction from email_vs_chat_reopen_change_pct: positive 119.83% → "increase" (email reopen rate is higher than chat by ~119.83%).
+- derived_values: declare every number computed from findings in the text.
+- Under 650 words total.
+- Limitations included.
+
+Let me decide which derived values I'll state:
+
+q1: 347 tickets, mean resolution 75.2 minutes, total labor cost $27,422.90. I could state total cost per ticket derived = 27422.9/347 = 79.03. If I state it, must declare as derived. Maybe keep it simple but a per-ticket cost is useful. Let me compute: 27422.9/347 = 79.0288... ≈ 79.03. I could state "≈$79.03 per ticket" as ratio. I'll include it.
+
+Actually, to be safe with rounding, value as stated in report must match the derived value. I'll state "$79.03" and declare value 79.03.
+
+q2: Beta highest at $10,247.36, then Gamma $9,387.73, then Alpha $7,787.81. Ranking: ["Beta", "Gamma", "Alpha"]. I could mention shares, but let's keep simple: maybe mention the spread difference between highest and lowest: 10247.36 - 7787.81 = 2459.55. Declare difference. I'll include that: "Beta's total exceeds Alpha's by $2,459.55". Check: 10247.36 - 7787.81 = 2459.55. Yes.
+
+q3: chat highest 83.04, email 73.02, phone 69.25. Ranking: ["chat", "email", "phone"]. Maybe difference chat vs phone: 83.03921568627452 - 69.25352112676056 = 13.7856945595 ≈ 13.79 minutes. Declare difference with operands [resolution_chat, resolution_phone]. I'll include.
+
+q4: email reopen 17.24%, chat 7.84%, relative change +119.83% → direction "increase". Also difference in percentage points: 17.24 - 7.84 = 9.40. If I state "9.4 percentage points higher", declare difference [reopen_rate_email_pct, reopen_rate_chat_pct] = 9.3982... ≈ 9.4. Let me compute precisely: 17.24137931034483 - 7.8431372549019605 = 9.398242055442869 ≈ 9.4. I'll state 9.4.
+
+q5: 12 tickets, reopen rate 8.33%. No derived needed. Maybe share of total tickets: 12/347 = 3.46%. If stated, declare share [high_cost_low_sat_count, ticket_count] = 3.46. 12/347*100 = 3.4582... ≈ 3.46. I'll include it as context.
+
+q6: median 65, std 51.93, satisfaction mean 4.15, missing 19. Missing share: 19/347 = 5.48%. 19/347*100 = 5.4757... ≈ 5.48. If stated, declare. I'll include.
+
+q7: 18 agents, top agent 26 tickets, 7.49% share. Average tickets per agent: 347/18 = 19.28. If stated, declare ratio [ticket_count, unique_agent_count] = 19.28. 347/18 = 19.2777... ≈ 19.28. I'll include.
+
+Word count: keep under 650. The statements plus summary plus limitations and conclusion. Let me draft concisely.
+
+Rounding: values in reported_values should be the verified values copied — the rule says "include EVERY metric_key of that question with its verified value (copy it)". So reported_values should have exact values. I'll copy full precision values.
+
+Now, "Rounding to a sensible precision is fine; any number you derive must be declared in derived_values." So in statements I can round, but derived values must be declared. Numbers in the text that are directly from findings are fine as-is (rounded). Derived ones declared.
+
+Let me write statements:
+
+q1: "The dataset contains 347 support tickets, with a mean resolution time of 75.2 minutes and total labor cost of $27,422.90 — roughly $79.03 per ticket."
+Derived: ratio total_labor_cost/ticket_count = 79.03.
+
+q2: "Beta generated the highest total labor cost ($10,247.36), followed by Gamma ($9,387.73) and Alpha ($7,787.81); Beta exceeds Alpha by $2,459.55."
+Derived: difference 2459.55, operands [labor_cost_beta, labor_cost_alpha].
+Ranking: ["Beta","Gamma","Alpha"].
+
+q3: "Chat tickets take the longest to resolve on average (83.0 minutes), ahead of email (73.0) and phone (69.3); chat runs about 13.8 minutes slower than phone."
+Derived: difference 13.79, operands [resolution_chat, resolution_phone]. Let me compute: 83.03921568627452 - 69.25352112676056 = 13.78569455951396. Rounded 13.79. State "13.8"? To match value, state 13.79 or value 13.8. I'll state 13.79.
+
+q4: "Email tickets reopen at 17.24% versus 7.84% for chat — 9.4 points higher, a relative increase of 119.83%."
+Direction: increase. Derived: difference 9.4 [reopen_rate_email_pct, reopen_rate_chat_pct].
+
+q5: "12 tickets (3.46% of all tickets) combine high cost (≥$100) with low satisfaction (≤2); their reopen rate is 8.33%."
+Derived: share 3.46 [high_cost_low_sat_count, ticket_count]. Compute: 12/347*100 = 3.458213... ≈ 3.46.
+
+q6: "Resolution time is right-skewed: median 65 minutes versus mean 75.2, with a standard deviation of 51.9 minutes. Mean satisfaction is 4.15; 19 scores (5.48%) are missing."
+Derived: share 5.48 [satisfaction_missing_count, ticket_count]. 19/347*100 = 5.475504... ≈ 5.48. Careful: referencing mean 75.2 in q6 statement is from q1 metrics; that's fine as it's a verified finding, but evidence_refs should list q6 keys. Mentioning mean again is fine—it's a verified number. But maybe avoid confusion; I can say "median (65) below the mean (75.2)". It's okay.
+
+q7: "18 unique agents handled tickets; the busiest handled 26 tickets, or 7.49% of volume, versus an average of 19.3 tickets per agent."
+Derived: ratio 347/18 = 19.28. Hmm, state 19.3 or 19.28. 347/18 = 19.2777..., I'll state 19.28.
+
+Executive summary: concise overview.
+
+Limitations: 
+- ~5.5% of satisfaction scores missing (19 tickets), so satisfaction-based findings may be biased if missingness isn't random.
+- Reopen/cost comparisons are descriptive, not causal; no control for ticket complexity, customer type, or agent tenure.
+- Single export/period; no time dimension to assess trends.
+- "High-cost low-satisfaction" thresholds ($100, ≤2) are arbitrary cutoffs; small segment (12 tickets) limits statistical power.
+- Agent concentration measured only by top-agent share; no full distribution (e.g., Gini) reported.
+
+Conclusion: brief recommendations.
+
+Word count check: Need under 650 for title, summary, statements, limitations, conclusion. My draft should be fine, maybe ~350-420 words.
+
+JSON formatting: reported_values as objects with exact numbers. For q5 count 12.0 → 12.0? Use 12.0 as float or 12? Copy verified value: 12.0. JSON allows 12.0 but it's same as 12. I'll use 12.0 to be faithful. Similarly 347.0, 19.0, 18.0, 26.0. JSON numbers — 347.0 is valid JSON.
+
+Direction field: q4 "increase"; others "not_applicable" or null. The schema allows null or enum. For non-trend findings, "not_applicable" is cleaner. Ranking null for others.
+
+derived_values arrays per finding.
+
+Double-check derived computations:
+- 27422.9/347 = 79.0285... Let me compute precisely: 347 × 79 = 27413. 27422.9 − 27413 = 9.9. 9.9/347 = 0.02853. So 79.0285 ≈ 79.03. ✓
+- 10247.36 − 7787.81 = 2459.55. ✓
+- 83.03921568627452 − 69.25352112676056 = 13.785694559513963 ≈ 13.79. ✓
+- 17.24137931034483 − 7.8431372549019605 = 9.398242055442869 ≈ 9.4. ✓
+- 12/347×100 = 3.4582132564841496 ≈ 3.46. ✓
+- 19/347×100 = 5.475720164609053 ≈ 5.48. Let me verify: 19/347 = 0.054755... ×100 = 5.4755. Compute: 347 × 0.0548 = 19.0156, so slightly less: 0.054757... Actually 19/347: 347×0.0547 = 18.98; remainder 0.019... 19/347 = 0.0547550...? Let me do long division: 19.000000/347. 190/347 = 0, so 1900/347 = 5 (1735), remainder 165 → 0.05...; 1650/347 = 4 (1388), remainder 262 → 0.054; 2620/347 = 7 (2429), remainder 191 → 0.0547; 1910/347 = 5 (1735), remainder 175 → 0.05475; 1750/347 = 5 (1735), remainder 15 → 0.054755; 150/347=0 → 0.0547550; 1500/347 = 4 (1388) rem 112 → 0.05475504... So 5.4755%. Rounds to 5.48. ✓
+- 347/18 = 19.2777... ≈ 19.28. ✓
+
+In q5, I state "3.46%" — declare derived share 3.46.
+
+Also in q4 statement, 119.83% is the verified metric itself (email_vs_chat_reopen_change_pct), so it goes in reported_values, not derived.
+
+In q1, "$79.03 per ticket" derived ratio.
+
+Now ensure statements contain at least one verified numeric value each — yes.
+
+Title: "Support Operations Cost, Speed & Quality Report".
+
+Word count: Let me estimate. Title ~7 words. Summary ~60. Findings ~200. Limitations ~110. Conclusion ~45. Total ~420. Good.
+
+Construct the JSON.
+
+For reported_values, copy exact values:
+q1: ticket_count 347.0, mean_resolution_minutes 75.19308357348703, total_labor_cost 27422.9
+q2: labor_cost_alpha 7787.81, labor_cost_beta 10247.36, labor_cost_gamma 9387.73
+q3: resolution_email 73.01724137931035, resolution_chat 83.03921568627452, resolution_phone 69.25352112676056
+q4: reopen_rate_email_pct 17.24137931034483, reopen_rate_chat_pct 7.8431372549019605, email_vs_chat_reopen_change_pct 119.82758620689657
+q5: high_cost_low_sat_count 12.0, high_cost_low_sat_reopen_pct 8.333333333333332
+q6: resolution_median 65.0, resolution_std 51.92574910613114, satisfaction_mean 4.152439024390244, satisfaction_missing_count 19.0
+q7: unique_agent_count 18.0, top_agent_ticket_count 26.0, top_agent_ticket_share_pct 7.492795389048991
+
+Direction: q4 "increase". Others: "not_applicable".
+
+Ranking for q2: ["Beta", "Gamma", "Alpha"] (10247.36 > 9387.73 > 7787.81 ✓).
+q3: ["chat", "email", "phone"] (83.04 > 73.02 > 69.25 ✓).
+
+Write it out.

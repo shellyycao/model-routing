@@ -1,0 +1,34 @@
+# Routing objective and estimator settings (owned by the XAI Researcher).
+# See docs/methodology.md for the meaning of every field.
+# No weighted composite quality score: quality enters ONLY through hard constraints and
+# the Pareto filter; efficiency enters through the lexicographic preference order.
+
+router_version: "0.1.0"
+
+objective:
+  objective_id: default_v1
+  description: >-
+    Feasible with predicted probability >= 0.5; analysis numerically accurate; report
+    with at most one unsupported claim. Among those, prefer verifiable cost, then
+    end-to-end time, then tokens.
+  min_feasibility_prob: 0.5
+  quality_constraints:
+    - {stage: analysis, metric: numerical_accuracy, op: ">=", threshold: 0.9}
+    - {stage: reporting, metric: unsupported_claim_count, op: "<=", threshold: 1.0}
+  # cost_usd is currently unavailable for all models (prices unverified) -> the router marks
+  # it INACTIVE and skips it; it is never treated as 0.
+  preference_order: [cost_usd, end_to_end_ms, total_tokens]
+  tie_tolerance: 0.05          # relative difference treated as a tie
+
+pareto:
+  # Quality dimensions used by the Pareto filter ("all" = every predicted "<stage>.<metric>").
+  # Feasibility probability and every ACTIVE preference key are always added.
+  quality_keys: all
+
+estimation:
+  # Uncertainty: per-quantity [min, max] over per-training-project means (repeats averaged
+  # within a project first). With 2-4 training projects this is a range, not a confidence interval.
+  uncertainty: project_range
+  # S3 interaction-term shrinkage: I = n / (n + k) * mean_j(residual_j), n = number of training
+  # projects with an observed residual for that path and quantity.
+  interaction_shrinkage_k: 2.0

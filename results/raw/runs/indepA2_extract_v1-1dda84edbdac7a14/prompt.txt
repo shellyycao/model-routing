@@ -1,0 +1,21 @@
+TASK: Information extraction (independent benchmark A2, prompt independent_v1)
+
+Extract the fields defined below from the document. Rules:
+- Use EXACTLY these field names as keys (no extra keys).
+- Use null when the document does not state the value. Do not guess.
+- Follow each field's description; it resolves ambiguous cases.
+- Dates as YYYY-MM-DD, numbers as plain numbers (no currency symbols or thousands separators), booleans as true/false.
+
+FIELDS:
+- duration_minutes: integer: total outage duration in minutes
+- incident_id: string: format INC-####
+- root_cause: string: short root cause phrase; null if still under investigation
+- severity: string: one of SEV1, SEV2, SEV3 as finally assigned (after any re-classification)
+- start_time: string HH:MM (24h): when the outage began
+- system: string: the affected system (not systems merely mentioned as unaffected)
+- users_affected: integer: number of users affected; null if unknown
+
+DOCUMENT:
+"""
+Incident INC-5521: the auth service was unavailable starting at 20:00 UTC; the billing database remained healthy throughout. Service was restored after 40 minutes. Initially filed as SEV2, it was re-classified to SEV1 during the review. Approximately 28,643 users were affected. Root cause is still under investigation.
+"""

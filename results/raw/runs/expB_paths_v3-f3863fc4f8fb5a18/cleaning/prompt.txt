@@ -1,0 +1,103 @@
+STAGE: cleaning
+PROJECT: customer_churn
+PROMPT_VERSION: v3
+
+You are the data-cleaning stage of a three-stage data workflow (cleaning -> analysis -> reporting).
+Write ONE self-contained Python 3 script that cleans the raw data exactly as specified below.
+
+## Original objective
+Clean the raw customer snapshot and analyse churn: the overall churn rate, differences between plans, signup cohorts and contract types, an at-risk segment with many support tickets and low satisfaction, lifetime value by plan, and the distribution of tenure and satisfaction, then report the verified findings to business stakeholders.
+
+## Input/output contract (mandatory)
+- Your script runs in an isolated sandbox with NO network access. Available libraries: the Python
+  standard library, pandas and numpy.
+- Read input files ONLY from the directory given by the environment variable INPUT_DIR, e.g.
+  os.path.join(os.environ["INPUT_DIR"], "<name>"). Available input files: "raw.csv".
+- Write every output file to the directory given by the environment variable OUTPUT_DIR. Write nowhere else.
+- Write the cleaned CSV to os.path.join(os.environ["OUTPUT_DIR"], "cleaned.csv") and set
+  `output_filename` to "cleaned.csv".
+- Also write os.path.join(os.environ["OUTPUT_DIR"], "cleaning_summary.json"): a JSON object with at least
+  "raw_rows" (rows read) and "cleaned_rows" (rows written), plus any per-rule counts you track.
+- The script takes no command-line arguments and must not print large amounts of data.
+
+## Cleaning requirements (apply all of them, in order)
+R1. Read every column of the raw CSV as text. Strip leading and trailing whitespace from every value. Treat the following values as missing (compare case-insensitively, after stripping): empty string, 'NA', 'N/A', 'null', 'None', '-'.
+R2. Remove duplicate records BEFORE applying any other row filter: rows that share the same customer_id are duplicates; keep only the first occurrence in raw-file order and discard the later ones.
+R3. signup_date: parse each value using exactly one of these formats: YYYY-MM-DD; MM/DD/YYYY (month first); DD-Mon-YYYY with an English 3-letter month abbreviation (e.g. 05-Mar-2024); YYYY/MM/DD; 'Month D, YYYY' with the full English month name (e.g. March 5, 2024). Drop rows whose signup_date is missing or cannot be parsed. Write signup_date as YYYY-MM-DD.
+R4. plan: map case-insensitively to one of Basic, Standard, Premium. Also map these variants (case-insensitive): 'Basic Plan' -> Basic; 'Std' and 'Standard Plan' -> Standard; 'Prem' and 'Premium Plan' -> Premium. Drop rows whose plan is missing or maps to none of the three plans.
+R5. contract_type: map case-insensitively: 'Monthly', 'Month-to-month', 'M2M' -> Monthly; 'Annual', 'Yearly', '1 Year' -> Annual. Drop rows whose contract_type is missing or not one of these.
+R6. monthly_fee: remove the substrings '$', 'USD' and ',' and surrounding spaces, then parse as a number. Drop rows whose monthly_fee is missing, not a number, <= 0, or > 500.
+R7. tenure_months: remove a trailing word 'months' or 'month' (case-insensitive) and spaces, then parse as a number. Drop rows whose tenure_months is missing, not a number, not a whole number, < 0, or > 120. Store as an integer.
+R8. support_tickets: a missing value means 0. Otherwise parse as a number; drop rows whose value is not a number, not a whole number, < 0, or > 100. Store as an integer.
+R9. satisfaction_score: parse as a number; if it is missing, not a number, not a whole number, < 1 or > 5, set it to missing (write an empty cell) and KEEP the row. Otherwise store as an integer 1-5.
+R10. churned: map case-insensitively 'Yes', 'Y', 'True', '1', 'Churned' -> 1 and 'No', 'N', 'False', '0', 'Active' -> 0. Drop rows whose churned value is missing or not one of these. Store as integer 0/1.
+R11. Add column lifetime_value = monthly_fee * tenure_months, rounded to 2 decimals.
+R12. Output exactly these columns in this order: customer_id, signup_date, plan, contract_type, monthly_fee, tenure_months, support_tickets, satisfaction_score, churned, lifetime_value. Sort rows by customer_id ascending. Write a CSV with a header row and no index column; numbers are written without currency symbols or thousands separators; a missing satisfaction_score is an empty cell.
+
+## Required schema of the cleaned CSV (columns in this order)
+- customer_id: str; not nullable
+- signup_date: date; not nullable
+- plan: category; not nullable; allowed values: 'Basic', 'Standard', 'Premium'
+- contract_type: category; not nullable; allowed values: 'Monthly', 'Annual'
+- monthly_fee: float; not nullable; min 0.01; max 500
+- tenure_months: int; not nullable; min 0; max 120
+- support_tickets: int; not nullable; min 0; max 100
+- satisfaction_score: int; nullable; min 1; max 5
+- churned: int; not nullable; min 0; max 1
+- lifetime_value: float; not nullable; min 0
+
+## Input files
+### raw.csv (raw data; 841 lines in total)
+First lines:
+```
+customer_id,signup_date,plan,contract_type,monthly_fee,tenure_months,support_tickets,satisfaction_score,churned
+ CUST-0001 ,2021-01-01,Standard,Monthly, 39.99 ,47,8,2,TRUE
+CUST-0002,2021-01-05,Basic,Monthly,$24.99,35,6,3,yes
+ CUST-0003 ,07-Jan-2021,Premium,-,89.99,47 Months,1,5,no
+CUST-0004,2021/01/07, Basic ,MONTHLY, 19.99 ,47 Months,2,4,False
+CUST-0005,2021-01-09,Basic,Monthly,$24.99,47,0,3,False
+CUST-0006,2021-01-18,Basic,Month-to-month,$24.99,47,5,4,0
+CUST-0007,2021-01-19,Basic, Monthly ,USD 19.99,42,0,5.0,Y
+CUST-0008,01/21/2021,basic,ANNUAL,19.99,47,1,5,no
+CUST-0009,01/21/2021,Standard,Monthly, 39.99 ,47,2,3,N
+CUST-0010,2021/01/21, Premium ,1 Year,79.99,47 months,0,5,no
+CUST-0011,22-Jan-2021,Premium, Monthly ,9999.00,17,3,1,TRUE
+CUST-0012,23-Jan-2021,Basic,monthly,19.99,36,9,2.0,Yes
+CUST-0013,2021-01-25,Standard,MONTHLY,39.99,42,2,5,Churned
+CUST-0014,2021-01-28,Premium,Annual,79.99,47 months,0,4,Active
+```
+
+## What to return
+Return the script in `python_code`, the cleaned CSV filename in `output_filename`, and a brief
+explanation of the cleaning steps in `cleaning_logic`.
+
+
+Respond with a single JSON object that conforms to this JSON Schema. Put it in one ```json fenced block and include nothing else outside the block.
+```json
+{
+  "properties": {
+    "python_code": {
+      "description": "Python script. Reads input from INPUT_DIR, writes the cleaned CSV and cleaning_summary.json to OUTPUT_DIR.",
+      "title": "Python Code",
+      "type": "string"
+    },
+    "output_filename": {
+      "description": "Filename of the cleaned CSV written to OUTPUT_DIR.",
+      "title": "Output Filename",
+      "type": "string"
+    },
+    "cleaning_logic": {
+      "description": "Brief explanation of the cleaning steps.",
+      "title": "Cleaning Logic",
+      "type": "string"
+    }
+  },
+  "required": [
+    "python_code",
+    "output_filename",
+    "cleaning_logic"
+  ],
+  "title": "CleaningOutput",
+  "type": "object"
+}
+```

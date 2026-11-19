@@ -1,0 +1,15 @@
+Extract the requested fields from the document. Resolve conflicts using each field description, perform required unit conversions, and use null when the document does not support a value.
+
+Schema:
+- account_id: string
+- cancelled: boolean
+- monthly_total_usd: number after annual-to-monthly conversion
+- plan: string final plan
+- renewal_date: date or null
+- seats: integer
+
+Document:
+ACCOUNT CHANGE LOG
+ACCT-1003: plan changed Basic -> Enterprise Plus (final). Seats 23. Contract total $2203 billed ANNUALLY; report monthly equivalent. Renewal: not scheduled / no date stated. Cancellation ticket C-1003 was withdrawn; account remains active.
+
+Return exactly one object with the required `fields` wrapper and no extra schema keys. Content correctness and schema/operational compliance are scored separately.

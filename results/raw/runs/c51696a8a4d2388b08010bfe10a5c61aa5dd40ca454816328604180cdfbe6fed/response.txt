@@ -1,0 +1,9 @@
+```json
+{
+  "fixed_code": "def invoice_total(lines, discount_pct=0, tax_pct=0):\n    subtotal = sum(row['qty'] * row['unit_price'] for row in lines)\n    discounted = subtotal * (1 - discount_pct / 100)\n    total = discounted * (1 + tax_pct / 100)\n    return round(total, 2)\n",
+  "bug_locations": [
+    "invoice_total: return expression (order of discount and tax operations)"
+  ],
+  "explanation": "The buggy return computed subtotal*(1+tax_pct/100) - subtotal*discount_pct/100, which applies tax to the undiscounted subtotal and subtracts the discount from the undiscounted subtotal. That misses the discount/tax interaction. Per the spec, the discount must be applied first and then tax applied to the discounted amount: subtotal*(1 - discount_pct/100)*(1 + tax_pct/100), with rounding only on the final result. No intermediate rounding is added."
+}
+```

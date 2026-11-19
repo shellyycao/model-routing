@@ -1,0 +1,28 @@
+Let me analyze the specification and the bug.
+
+**Specification**: An event is allowed if fewer than `limit` prior **allowed** events for that user fall in `(time-window, time]`. Rejected events do not consume capacity.
+
+**Bug analysis**:
+
+1. **Window boundary**: The spec says `(time-window, time]` — the interval is open on the left. The current code uses `q[user][0] < t-window` to remove events, which removes events where `timestamp < t-window`, keeping events where `timestamp >= t-window`. But the interval is `(time-window, time]`, meaning we should keep events strictly greater than `t-window`. So we need to remove events where `timestamp <= t-window`, i.e., `q[user][0] <= t-window`.
+
+   Wait, let me re-check with the visible test: `allowed([('u',0),('u',1)],1,1)` should return `[True, True]`.
+   - Event 1: user='u', t=0. Queue empty, ok=True. Append 0. Queue: [0]
+   - Event 2: user='u', t=1. Check: `q[0] < 1-1=0`? `0 < 0` is False. Queue stays [0]. `len=1 < 1` is False → ok=False. But expected True!
+
+   The interval is `(time-window, time]` = `(0, 1]`. t=0 is NOT in `(0,1]`, so it shouldn't count. We need to remove events where `timestamp <= t - window`, i.e., `q[user][0] <= t - window`.
+
+   Fix: change `q[user][0] < t-window` to `q[user][0] <= t-window`.
+
+2. **Only append if allowed**: The spec says rejected events don't consume capacity, so we should only append to the queue if `ok` is True.
+
+```json
+{
+  "fixed_code": "from collections import defaultdict,deque\ndef allowed(events,limit,window):\n    q=defaultdict(deque);out=[]\n    for user,t in events:\n        while q[user] and q[user][0] <= t-window:q[user].popleft()\n        ok=len(q[user])<limit;out.append(ok)\n        if ok:q[user].append(t)\n    return out\n",
+  "bug_locations": [
+    "while q[user] and q[user][0] < t-window: (boundary condition)",
+    "q[user].append(t) (unconditional append of rejected events)"
+  ],
+  "explanation": "Two bugs: (1) The window boundary was wrong — the spec defines the interval as (time-window, time], open on the left, so events at exactly t-window should be excluded. The fix changes `< t-window` to `<= t-window` so timestamps equal to t-window are removed. (2) Rejected events were being appended to the queue, consuming capacity. The spec says rejected events do not consume capacity, so the append is now conditional on `ok` being True."
+}
+```

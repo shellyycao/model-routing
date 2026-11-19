@@ -1,0 +1,23 @@
+You are debugging a Python module. The specification is authoritative.
+
+Specification:
+shortest_path(graph, start, goal) returns a shortest node list in an unweighted directed graph, or null if unreachable. Neighbours are explored in listed order.
+
+Buggy module:
+```python
+def shortest_path(graph,start,goal):
+                 stack=[(start,[start])]; seen=set()
+                 while stack:
+                     node,path=stack.pop(); seen.add(node)
+                     if node==goal:return path
+                     stack += [(n,path+[n]) for n in graph.get(node,[]) if n not in seen]
+                 return None
+
+```
+
+Visible checks:
+```python
+assert shortest_path({'a':['b'],'b':[]}, 'a', 'b') == ['a','b']
+```
+
+Return the complete corrected module. There may be multiple interacting defects. Do not hard-code the visible examples.

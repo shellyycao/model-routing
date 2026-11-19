@@ -1,0 +1,10 @@
+```json
+{
+  "fixed_code": "def rolling_mean(xs, window, min_periods=1):\n    if window <= 0:\n        raise ValueError('window')\n    if min_periods < 1:\n        raise ValueError('min_periods')\n    if min_periods > window:\n        raise ValueError('min_periods')\n    result = []\n    for i in range(len(xs)):\n        window_vals = xs[max(0, i - window + 1):i + 1]\n        if len(window_vals) < min_periods:\n            result.append(None)\n        else:\n            result.append(sum(window_vals) / len(window_vals))\n    return result\n",
+  "bug_locations": [
+    "rolling_mean: missing validation of min_periods (spec requires 1 <= min_periods <= window)",
+    "rolling_mean: return expression ignored min_periods; positions whose trailing window contains fewer than min_periods values must produce null (None) instead of a mean"
+  ],
+  "explanation": "The original function accepted min_periods but never used it. Two defects resulted: (1) no validation that 1 <= min_periods <= window, so invalid values were silently accepted; (2) every position always received a mean computed over however many values happened to be in the trailing window, even when fewer than min_periods values were present. The fix adds ValueError checks for min_periods < 1 and min_periods > window (keeping the existing window <= 0 check), and emits None for any position whose trailing window xs[max(0, i-window+1):i+1] contains fewer than min_periods elements, otherwise the mean. With the default min_periods=1 the visible check still passes since every position has at least one value."
+}
+```

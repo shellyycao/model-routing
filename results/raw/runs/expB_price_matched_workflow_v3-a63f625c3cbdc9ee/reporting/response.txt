@@ -1,0 +1,121 @@
+```json
+{
+  "title": "Support Operations Report: Cost, Speed, Reopening and Satisfaction",
+  "executive_summary": "Analysis of 347 cleaned support tickets joined to the agent roster shows total labor cost of $27,422.90 and a mean resolution time of 75.2 minutes. Team Beta carries the highest labor cost, chat is the slowest channel, and email tickets reopen at 17.24% — a 119.83% relative increase over chat's 7.84%. Only 12 tickets combine high cost with low satisfaction, and workload is spread across 18 agents with the busiest handling just 7.49% of volume.",
+  "key_findings": [
+    {
+      "finding_id": "q1",
+      "statement": "The export contains 347 tickets with a mean resolution time of 75.2 minutes and a total labor cost of $27,422.90, equivalent to roughly $79.03 per ticket.",
+      "evidence_refs": ["ticket_count", "mean_resolution_minutes", "total_labor_cost"],
+      "reported_values": {
+        "ticket_count": 347.0,
+        "mean_resolution_minutes": 75.19308357348703,
+        "total_labor_cost": 27422.9
+      },
+      "direction": "not_applicable",
+      "ranking": null,
+      "derived_values": [
+        {"kind": "ratio", "operands": ["total_labor_cost", "ticket_count"], "value": 79.03}
+      ]
+    },
+    {
+      "finding_id": "q2",
+      "statement": "Team Beta generated the highest total labor cost at $10,247.36, followed by Gamma at $9,387.73 and Alpha at $7,787.81; Beta's total exceeds Alpha's by $2,459.55.",
+      "evidence_refs": ["labor_cost_alpha", "labor_cost_beta", "labor_cost_gamma"],
+      "reported_values": {
+        "labor_cost_alpha": 7787.81,
+        "labor_cost_beta": 10247.36,
+        "labor_cost_gamma": 9387.73
+      },
+      "direction": "not_applicable",
+      "ranking": ["Beta", "Gamma", "Alpha"],
+      "derived_values": [
+        {"kind": "difference", "operands": ["labor_cost_beta", "labor_cost_alpha"], "value": 2459.55}
+      ]
+    },
+    {
+      "finding_id": "q3",
+      "statement": "Chat is the slowest channel with a mean resolution time of 83.0 minutes, ahead of email (73.0 minutes) and phone (69.3 minutes); chat takes about 13.79 minutes longer than phone on average.",
+      "evidence_refs": ["resolution_email", "resolution_chat", "resolution_phone"],
+      "reported_values": {
+        "resolution_email": 73.01724137931035,
+        "resolution_chat": 83.03921568627452,
+        "resolution_phone": 69.25352112676056
+      },
+      "direction": "not_applicable",
+      "ranking": ["chat", "email", "phone"],
+      "derived_values": [
+        {"kind": "difference", "operands": ["resolution_chat", "resolution_phone"], "value": 13.79}
+      ]
+    },
+    {
+      "finding_id": "q4",
+      "statement": "Email tickets reopen at 17.24% versus 7.84% for chat — 9.4 percentage points higher, a relative increase of 119.83% for email over chat.",
+      "evidence_refs": ["reopen_rate_email_pct", "reopen_rate_chat_pct", "email_vs_chat_reopen_change_pct"],
+      "reported_values": {
+        "reopen_rate_email_pct": 17.24137931034483,
+        "reopen_rate_chat_pct": 7.8431372549019605,
+        "email_vs_chat_reopen_change_pct": 119.82758620689657
+      },
+      "direction": "increase",
+      "ranking": null,
+      "derived_values": [
+        {"kind": "difference", "operands": ["reopen_rate_email_pct", "reopen_rate_chat_pct"], "value": 9.4}
+      ]
+    },
+    {
+      "finding_id": "q5",
+      "statement": "12 tickets (3.46% of all tickets) combine high labor cost (>= $100) with a low satisfaction score (<= 2); this segment's reopen rate is 8.33%.",
+      "evidence_refs": ["high_cost_low_sat_count", "high_cost_low_sat_reopen_pct"],
+      "reported_values": {
+        "high_cost_low_sat_count": 12.0,
+        "high_cost_low_sat_reopen_pct": 8.333333333333332
+      },
+      "direction": "not_applicable",
+      "ranking": null,
+      "derived_values": [
+        {"kind": "share", "operands": ["high_cost_low_sat_count", "ticket_count"], "value": 3.46}
+      ]
+    },
+    {
+      "finding_id": "q6",
+      "statement": "Resolution time is right-skewed: the median is 65 minutes, below the 75.2-minute mean, with a standard deviation of 51.9 minutes. Mean satisfaction is 4.15, and 19 tickets (5.48%) are missing a satisfaction score.",
+      "evidence_refs": ["resolution_median", "resolution_std", "satisfaction_mean", "satisfaction_missing_count"],
+      "reported_values": {
+        "resolution_median": 65.0,
+        "resolution_std": 51.92574910613114,
+        "satisfaction_mean": 4.152439024390244,
+        "satisfaction_missing_count": 19.0
+      },
+      "direction": "not_applicable",
+      "ranking": null,
+      "derived_values": [
+        {"kind": "share", "operands": ["satisfaction_missing_count", "ticket_count"], "value": 5.48}
+      ]
+    },
+    {
+      "finding_id": "q7",
+      "statement": "18 unique agents handled the tickets. The busiest agent handled 26 tickets, a 7.49% share of total volume, compared with an average of about 19.28 tickets per agent, indicating no extreme concentration.",
+      "evidence_refs": ["unique_agent_count", "top_agent_ticket_count", "top_agent_ticket_share_pct"],
+      "reported_values": {
+        "unique_agent_count": 18.0,
+        "top_agent_ticket_count": 26.0,
+        "top_agent_ticket_share_pct": 7.492795389048991
+      },
+      "direction": "not_applicable",
+      "ranking": null,
+      "derived_values": [
+        {"kind": "ratio", "operands": ["ticket_count", "unique_agent_count"], "value": 19.28}
+      ]
+    }
+  ],
+  "limitations": [
+    "19 tickets (about 5.5%) lack satisfaction scores; if missingness is not random, satisfaction-based findings may be biased.",
+    "All comparisons are descriptive, not causal: ticket complexity, priority, customer type and agent tenure were not controlled for.",
+    "The export covers a single period with no time dimension, so trends over time cannot be assessed.",
+    "The high-cost/low-satisfaction thresholds ($100, <=2) are arbitrary cutoffs, and the resulting segment of 12 tickets is too small for strong statistical inference.",
+    "Agent concentration is summarized only by the top agent's share; a full workload distribution (e.g., Gini coefficient) was not computed."
+  ],
+  "conclusion": "Support operations are broadly healthy: satisfaction averages 4.15 and workload is evenly spread across 18 agents. Priorities are (1) investigating why email tickets reopen at 17.24% — more than double chat's rate — and (2) reviewing chat handling, the slowest channel at 83.0 minutes on average. The 12 high-cost, low-satisfaction tickets warrant individual follow-up, and satisfaction capture should be improved to close the 5.5% data gap."
+}
+```

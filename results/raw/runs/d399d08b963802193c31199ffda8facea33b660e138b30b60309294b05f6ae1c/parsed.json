@@ -1,0 +1,9 @@
+{
+  "fixed_code": "import heapq\n\n\ndef dependency_order(deps):\n    deps = {node: list(dependencies) for node, dependencies in deps.items()}\n\n    nodes = set(deps)\n    for dependencies in deps.values():\n        nodes.update(dependencies)\n\n    incoming = {node: set(deps.get(node, ())) for node in nodes}\n    dependents = {node: set() for node in nodes}\n    for node, dependencies in deps.items():\n        for dependency in dependencies:\n            dependents[dependency].add(node)\n\n    ready = [node for node in nodes if not incoming[node]]\n    heapq.heapify(ready)\n    out = []\n\n    while ready:\n        node = heapq.heappop(ready)\n        out.append(node)\n        for dependent in dependents[node]:\n            incoming[dependent].discard(node)\n            if not incoming[dependent]:\n                heapq.heappush(ready, dependent)\n\n    if len(out) != len(nodes):\n        remaining = sorted(node for node in nodes if incoming[node])\n        raise ValueError('cycle detected involving: ' + ', '.join(map(str, remaining)))\n\n    return out\n",
+  "bug_locations": [
+    "dependency_order: node discovery and incoming-edge initialization",
+    "dependency_order: dependent edge tracking and readiness propagation",
+    "dependency_order: post-loop cycle detection"
+  ],
+  "explanation": "The original graph only contained keys, so referenced-only nodes were omitted and dependencies on them were never satisfied correctly. It also returned a partial order instead of raising when a cycle left nodes unprocessed. The fix materializes dependencies, includes every referenced node, uses explicit dependent lists for Kahn propagation with a min-heap for alphabetical choice, and raises ValueError unless every node was emitted."
+}

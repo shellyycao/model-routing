@@ -1,0 +1,9 @@
+{
+  "fixed_code": "def allocate_stock(stock, requests):\n    remaining = dict(stock)\n    seen = set()\n    fulfilled = []\n    for rid, sku, qty in requests:\n        if rid in seen:\n            continue\n        seen.add(rid)\n        if qty > 0 and remaining.get(sku, 0) >= qty:\n            remaining[sku] -= qty\n            fulfilled.append(rid)\n    return fulfilled, remaining\n",
+  "bug_locations": [
+    "allocate_stock: sufficiency test used `remaining.get(sku, 0) > qty`; changed to `>=` so a request whose qty exactly equals available stock is fulfilled (whole request, sufficient stock).",
+    "allocate_stock: missing positive-quantity guard; added `qty > 0` so zero or negative qty requests are never fulfilled (and cannot increase stock via subtracting a negative).",
+    "allocate_stock: `seen.add(rid)` was only executed on successful fulfillment; moved to run on first encounter of a request id (before the fulfillment decision) so duplicate request_ids are ignored even when the first occurrence is rejected."
+  ],
+  "explanation": "Three interacting defects: (1) the strict `>` comparison rejected requests where stock exactly equals qty, failing the visible check; using `>=` matches 'sufficient stock'. (2) There was no `qty > 0` check, so non-positive requests could be 'fulfilled' (negative qty would even add stock). (3) A request id was added to `seen` only when fulfilled, so a later duplicate id could be retried and fulfilled after the first one failed; the fix marks an id seen on first encounter regardless of outcome. `remaining = dict(stock)` already avoids mutating the input for this flat sku->int mapping."
+}

@@ -1,0 +1,65 @@
+We need to produce JSON with fields: title, executive_summary, key_findings (array of objects per q1..q7), limitations, conclusion.
+
+Each key_finding must have finding_id, statement, evidence_refs, reported_values (include every metric_key of that question), direction (if required else null), ranking (if required else null), derived_values (list any derived numbers). Must follow ranking requirements: q2 ranking required: order highest to lowest among residential, commercial, industrial based on kwh values. Values: residential 15970.65, commercial 196367.15, industrial 995362.16. Highest is industrial, then commercial, then residential. Use labels from ranking_metric_key_to_label: "Industrial", "Commercial", "Residential". Provide ranking array accordingly.
+
+q3 ranking required: quarters. Values: Q1 319677.67, Q2 270277.36, Q3 264863.12, Q4 352881.81. Highest Q4, then Q1, then Q2, then Q3. Use labels: "Q4", "Q1", "Q2", "Q3".
+
+q4 direction required: metric kwh_h2_vs_h1_change_pct = 4.710512 positive => increase. So direction "increase". Provide direction field.
+
+q7 ranking required: peak vs off-peak. Values: peak 599624.07, off-peak 608075.89. Highest off-peak, then peak. Labels: "off-peak", "peak". Provide ranking array accordingly.
+
+Other findings: direction null, ranking null.
+
+Need to include reported_values for each metric_key of that question. Let's list metric_keys per question:
+
+q1: total_kwh, reading_count, mean_kwh_per_reading.
+
+q2: kwh_residential, kwh_commercial, kwh_industrial.
+
+q3: kwh_q1, kwh_q2, kwh_q3, kwh_q4.
+
+q4: kwh_h1, kwh_h2, kwh_h2_vs_h1_change_pct.
+
+q5: hot_commercial_reading_count, hot_commercial_mean_kwh.
+
+q6: kwh_median, kwh_std, temperature_mean, temperature_missing_count, commercial_temp_kwh_corr.
+
+q7: kwh_peak, kwh_off_peak, peak_kwh_share_pct, unique_meter_count, highest_use_meter_kwh.
+
+All values are given.
+
+Derived values: we may need to compute any numbers not directly given. For q4 we already have change pct; direction derived but not needed as derived value. Could include derived value for share maybe? Already have peak_kwh_share_pct computed. Not needed.
+
+But we might include derived value for total_kwh maybe? Not needed.
+
+We can include derived values for ranking? Not required.
+
+But we must include derived_values array even if empty; it's optional? In schema, derived_values is optional (not required). But we can include empty array.
+
+Now statements: need to be concise for business stakeholders.
+
+Let's craft statements:
+
+q1: "The dataset contains 1,428 readings with a total electricity consumption of 1,207,700 kWh, averaging 846 kWh per reading."
+
+Include numbers rounded.
+
+q2: "Industrial sites dominate consumption, using about 995,362 kWh, which is roughly five times the commercial usage (196,367 kWh) and over 60 times residential (15,971 kWh)." Provide ranking.
+
+q3: "Quarterly consumption peaked in Q4 with 352,882 kWh, followed by Q1 (319,678 kWh), Q2 (270,277 kWh) and Q3 (264,863 kWh)." Provide ranking.
+
+q4: "Second‑half consumption (July‑Dec) was 4.7 % higher than the first half, indicating a modest increase." Direction increase.
+
+q5: "On hot days (≥ 25 °C) commercial meters recorded 19 readings with an average of 415 kWh per reading." Provide numbers.
+
+q6: "Across all readings the median consumption is 406.8 kWh with a standard deviation of 913.4 kWh. The average temperature is 11.6 °C, with 62 readings missing temperature data. Among commercial sites, temperature and consumption are negatively correlated (‑0.64)." No ranking.
+
+q7: "Peak‑time usage accounts for 49.7 % of total consumption (599,624 kWh) while off‑peak accounts for 50.3 % (608,076 kWh). The dataset includes 12 distinct meters, the highest‑use meter consuming 252,241 kWh." Provide ranking off-peak > peak.
+
+Now need to include evidence_refs list metric_keys used in statement. For each, list all metric_keys of that question (or at least those used). We'll include all metric_keys for that question.
+
+Now produce JSON.
+
+Word count under 600 words; fine.
+
+Now produce final JSON block.

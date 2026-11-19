@@ -1,0 +1,21 @@
+TASK: Information extraction (independent benchmark A2, prompt independent_v1)
+
+Extract the fields defined below from the document. Rules:
+- Use EXACTLY these field names as keys (no extra keys).
+- Use null when the document does not state the value. Do not guess.
+- Follow each field's description; it resolves ambiguous cases.
+- Dates as YYYY-MM-DD, numbers as plain numbers (no currency symbols or thousands separators), booleans as true/false.
+
+FIELDS:
+- available_from: date YYYY-MM-DD
+- bedrooms: integer
+- city: string
+- deposit_usd: number; null if not stated
+- listing_id: string: format RL-####
+- monthly_rent_usd: number: rent per month in USD (convert if given per week as 52/12 x weekly)
+- pets_allowed: boolean; null if not stated
+
+DOCUMENT:
+"""
+Listing RL-4219: a 4-bedroom flat in Austin, $520 per week (a similar unit next door rents for $600 per week). Available from January 26, 2026. A deposit of $1,000 is required.
+"""

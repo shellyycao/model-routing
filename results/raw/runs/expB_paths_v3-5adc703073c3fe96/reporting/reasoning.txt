@@ -1,0 +1,65 @@
+We need to produce JSON with fields title, executive_summary, key_findings (array of objects per q1..q7), limitations, conclusion.
+
+Each key_finding must include finding_id, statement, evidence_refs, reported_values (include all metric_keys for that question), optional direction, ranking, derived_values.
+
+We must follow ranking requirements: q2 ranking required true, ranking_metric_key_to_label mapping: revenue_east: East, revenue_north: North, revenue_south: South, revenue_west: West. Need ranking from highest to lowest value.
+
+Values: revenue_north 124845.75, revenue_south 90534.49, revenue_east 130516.69, revenue_west 99428.16.
+
+Order highest: East 130,516.69, North 124,845.75, West 99,428.16, South 90,534.49.
+
+So ranking array should be ["East","North","West","South"].
+
+q3 ranking required true, mapping: revenue_2024_q1 Q1, q2 Q2, q3 Q3, q4 Q4. Values: Q1 36108.31, Q2 56616.79, Q3 71674.99, Q4 68948.71. Highest to lowest: Q3 (71,674.99), Q4 (68,948.71), Q2 (56,616.79), Q1 (36,108.31). So ranking ["Q3","Q4","Q2","Q1"].
+
+q4 direction required true, direction_metric_key revenue_yoy_change_pct. Value 10.0825% positive => direction "increase". No ranking.
+
+Other findings no ranking/direction.
+
+Now statements: need to include numeric values, maybe derived values like yoy change already given, but we can also compute share of top customer (already given as share pct). That's a metric already: top_customer_revenue_share_pct. That's a derived metric but already computed. We can still include derived values if we compute something else, but not required.
+
+We must include reported_values: copy each metric_key with its value.
+
+Also need evidence_refs: list metric_keys used in statement. Could include all metric_keys for that question.
+
+Now produce statements concise.
+
+Word limit 600 words overall.
+
+Let's craft.
+
+Key findings:
+
+q1: statement: "In 2023‑2024 the business generated total revenue of $445,325.09 across 520 orders, yielding an average order value of $856.39." evidence_refs: total_revenue, order_count, average_order_value. reported_values include those three.
+
+q2: statement: "Revenue by region shows East leading, followed by North, West, and South." evidence_refs: revenue_north, revenue_south, revenue_east, revenue_west. reported_values include all four. ranking as above. direction null.
+
+q3: statement: "Quarterly revenue in 2024 increased through the year, with Q3 highest, then Q4, Q2, and Q1." evidence_refs: revenue_2024_q1...q4. reported_values include all four. ranking as above.
+
+q4: statement: "Total revenue grew from $211,976.29 in 2023 to $233,348.80 in 2024, a year‑over‑year increase of 10.08%." evidence_refs: revenue_2023, revenue_2024, revenue_yoy_change_pct. reported_values include all three. direction "increase". No ranking. derived_values maybe none because yoy already given; but we could include derived value for difference: revenue_2024 - revenue_2023 = 21,372.51. Provide derived value with kind "difference". Let's include.
+
+q5: statement: "There were 22 high‑discount (≥20%) Electronics orders contributing $50,035.33 in revenue." evidence_refs: electronics_high_discount_orders, electronics_high_discount_revenue. reported_values include both.
+
+q6: statement: "Order revenue distribution: mean $856.39, median $313.28, standard deviation $1,295.74, ranging from $5.27 to $7,844.02." evidence_refs: order_revenue_mean, median, std, min, max. reported_values include all.
+
+q7: statement: "The dataset contains 222 distinct customers; the top customer generated $27,793.13, representing 6.24% of total revenue." evidence_refs: unique_customer_count, top_customer_revenue, top_customer_revenue_share_pct. reported_values include all three. Could also include derived value for share but already given.
+
+Now limitations: list bullet points.
+
+Conclusion: summarize.
+
+Now need to ensure numeric formatting: values as numbers (float). Use rounding to two decimals maybe but keep as numbers. The JSON values must be numbers, not strings.
+
+Derived values: for q4 we will include difference.
+
+Define derived_values array with object: kind "difference", operands ["revenue_2024","revenue_2023"], value 21372.51 (rounded). Compute: 233348.80000000002 - 211976.28999999998 = 21372.51000000004 approx. We'll round to 21372.51.
+
+Now produce JSON.
+
+Check each key_finding includes required fields: finding_id, statement, evidence_refs, reported_values. direction optional; ranking optional; derived_values optional.
+
+Add direction for q4.
+
+Add ranking for q2 and q3.
+
+Now produce final JSON inside ```json block.

@@ -1,0 +1,8 @@
+{
+  "fixed_code": "def allocate_stock(stock, requests):\n    remaining = dict(stock)\n    seen = set()\n    fulfilled = []\n    for rid, sku, qty in requests:\n        if rid in seen:\n            continue\n        if qty > 0 and remaining.get(sku, 0) >= qty:\n            remaining[sku] -= qty\n            fulfilled.append(rid)\n            seen.add(rid)\n    return fulfilled, remaining",
+  "bug_locations": [
+    "Line 3: Added check for positive qty.",
+    "Line 4: Changed condition to ensure qty does not exceed remaining stock."
+  ],
+  "explanation": "The original code did not correctly handle requests with non-positive quantities and did not ensure that the requested quantity did not exceed the available stock. The fixes include adding a check to ensure the quantity is positive and modifying the condition to ensure the requested quantity does not exceed the available stock."
+}

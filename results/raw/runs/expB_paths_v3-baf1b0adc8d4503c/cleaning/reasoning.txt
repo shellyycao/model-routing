@@ -1,0 +1,131 @@
+We need to produce JSON with fields python_code (script), output_filename "cleaned.csv", cleaning_logic description.
+
+The script must implement all cleaning steps.
+
+Let's design script.
+
+Steps:
+
+- import os, pandas as pd, numpy as np, json, re, csv.
+
+- Get input_dir = os.getenv('INPUT_DIR'), output_dir = os.getenv('OUTPUT_DIR').
+
+- Define helper to treat missing values: we can read csv with dtype=str, keep as strings, then strip whitespace and replace missing tokens.
+
+R1: read both as text, strip whitespace, treat empty, NA, N/A, null, None, - as missing.
+
+We'll read using pd.read_csv with dtype=str, keep default na_values? We'll manually replace after reading.
+
+Implementation:
+
+def clean_missing(df):
+    df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)
+    missing_vals = {'', 'NA', 'N/A', 'null', 'None', '-'}
+    df = df.replace(missing_vals, np.nan)
+    return df
+
+- R2: tickets duplicate ticket_id rows, keep first. Use drop_duplicates(subset='ticket_id', keep='first').
+
+- R3: agents: normalize agent_id to upper case, then drop duplicates.
+
+- R4: roster mapping:
+
+team mapping: case-insensitive mapping: if team string contains 'alpha' -> 'Alpha', 'beta' -> 'Beta', 'gamma' -> 'Gamma'. Also handle 'Team Alpha' etc. We'll lower, strip 'team '.
+
+region mapping: East/E, West/W case-insensitive.
+
+hourly_cost: remove $ , USD, commas, spaces. Then parse float. Exclude rows where cost invalid or <=0.
+
+Also exclude rows with invalid team or region after mapping.
+
+Implementation: define functions.
+
+- After cleaning agents, keep only rows where all required fields not null and cost>0.
+
+- R5: tickets: normalize agent_id to upper case. Join with agents on agent_id (inner). Drop tickets without match.
+
+- R6: channel mapping: case-insensitive mapping dict.
+
+- R7: resolution_minutes: remove trailing 'min' or 'minutes' (case-insensitive). Extract integer. Must be 1-480 inclusive. Drop invalid rows.
+
+- R8: satisfaction_score: parse int 1-5. If invalid or missing, set NaN (empty). Keep row.
+
+- R9: reopened mapping: map Yes/Y/True/1 to 1, No/N/False/0 to 0. Case-insensitive. Drop rows where missing or invalid.
+
+- R10: labor_cost = resolution_minutes / 60 * hourly_cost, round 2.
+
+- R11: output columns order, sort by ticket_id.
+
+Also produce cleaning_summary.json with raw_rows (tickets rows read), cleaned_rows (rows written), plus counts per rule maybe.
+
+We'll track counts: duplicates_removed_tickets, duplicates_removed_agents, agents_excluded_invalid, tickets_dropped_no_agent, tickets_dropped_invalid_channel, tickets_dropped_invalid_resolution, tickets_dropped_invalid_reopened.
+
+Implementation details:
+
+Read tickets raw rows count = len(tickets_df) before any cleaning.
+
+After each step we can compute counts.
+
+Finally write cleaned.csv with index=False.
+
+Write summary JSON.
+
+Edge Cases: Ensure ticket_id as string, keep leading zeros.
+
+Parsing resolution_minutes: use regex r'(\d+)' after removing letters.
+
+Parsing satisfaction_score: try int conversion.
+
+Parsing reopened: lower string, map.
+
+Now produce script as a string.
+
+Let's craft code.
+
+Will use pandas.
+
+Implementation details:
+
+def parse_hourly_cost(val):
+    if pd.isna(val):
+        return np.nan
+    s = str(val).replace('$','').replace('USD','').replace(',','').strip()
+    try:
+        return float(s)
+    except:
+        return np.nan
+
+Team mapping:
+
+def map_team(val):
+    if pd.isna(val):
+        return np.nan
+    low = val.lower()
+    if 'alpha' in low:
+        return 'Alpha'
+    if 'beta' in low:
+        return 'Beta'
+    if 'gamma' in low:
+        return 'Gamma'
+    return np.nan
+
+Region mapping:
+
+def map_region(val):
+    if pd.isna(val):
+        return np.nan
+    low = val.lower()
+    if low in ('east','e'):
+        return 'East'
+    if low in ('west','w'):
+        return 'West'
+    return np.nan
+
+Channel mapping dict.
+
+Now produce script.
+
+Make sure to set dtype for reading as str to preserve leading zeros.
+
+Now produce JSON.
+

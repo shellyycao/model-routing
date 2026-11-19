@@ -1,0 +1,7 @@
+```json
+{
+  "fixed_code": "def rank_key(item):\n    word, count = item\n    # Use negative count so that sorting ascending puts highest counts first,\n    # while word remains natural (ascending) for tie‑breaks.\n    return (-count, word)\n\ndef top_k(counts, k):\n    # Sort using the corrected key and take the first k items (or all if k exceeds length).\n    return sorted(counts.items(), key=rank_key)[:max(k, 0)]\n",
+  "bug_location": "rank_key function: returned (count, word) and top_k used reverse=True, causing wrong ordering for ties and overall direction.",
+  "explanation": "The original key sorted by count ascending and, with reverse=True, reversed both count and word order, making words sort descending on ties. Changing the key to (-count, word) and removing reverse=True sorts by count descending while keeping word ascending."
+}
+```

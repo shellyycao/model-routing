@@ -1,0 +1,177 @@
+Let me carefully work through the requirements.
+
+I need to produce a JSON report with:
+- title
+- executive_summary
+- key_findings: one entry for each q1-q7
+- limitations
+- conclusion
+
+For each key finding:
+- finding_id = question id
+- statement with at least one verified numeric value
+- evidence_refs = metric_keys relied on
+- reported_values = EVERY metric_key of that question with verified value
+- direction: required for q4 (direction_required: true, metric email_vs_chat_reopen_change_pct). Value is +119.83%, so direction = "increase" (email reopen rate is higher than chat).
+- ranking: required for q2 and q3, ordered highest to lowest using display labels exactly.
+
+Rankings:
+q2: labor_cost_beta = 10247.32 (Beta), labor_cost_gamma = 9387.74 (Gamma), labor_cost_alpha = 7787.78 (Alpha). Ranking: ["Beta", "Gamma", "Alpha"].
+
+q3: resolution_chat = 83.04 (chat), resolution_email = 73.02 (email), resolution_phone = 69.25 (phone). Ranking highest to lowest: ["chat", "email", "phone"].
+
+Derived values: any number I compute from findings must be declared. Let me think about what derived values I might include:
+
+- q2: differences between teams, e.g., Beta - Alpha = 2459.54. Or shares of total: Beta share = 10247.32/27422.84*100 ≈ 37.37%. If I state these in text, declare them.
+- q3: difference chat - phone = 13.79 minutes. Or chat vs email difference = 10.02.
+- q4: email_vs_chat_reopen_change_pct is a verified metric itself (119.83), so not derived. But the difference 17.24 - 7.84 = 9.40 percentage points would be derived if stated.
+- q5: share of high_cost_low_sat_count / ticket_count = 12/347*100 ≈ 3.46%. If stated, declare as share.
+- q7: top_agent_ticket_share_pct is verified (7.49), not derived. But average tickets per agent = 347/18 ≈ 19.28 would be derived if stated.
+
+Let me decide what to include and make sure all derived numbers are declared.
+
+Word limit: whole report under 650 words. JSON statements count? "Keep the whole report (title, summary, statements, limitations, conclusion) under 650 words." I'll keep statements concise.
+
+Let me draft findings:
+
+q1: "The dataset contains 347 support tickets, with a mean resolution time of 75.2 minutes and a total labor cost of $27,422.84."
+reported_values: ticket_count 347.0, mean_resolution_minutes 75.193084, total_labor_cost 27422.84.
+No derived values needed if I just round. Rounding is fine ("Rounding to a sensible precision is fine").
+
+q2: "Team Beta carries the highest total labor cost at $10,247.32, followed by Gamma at $9,387.74 and Alpha at $7,787.78; Beta accounts for roughly 37.4% of total labor cost."
+Derived: share beta = 10247.32/27422.84*100 = let me compute: 10247.32/27422.84 = 0.373677... *100 = 37.3677 → 37.4 (or 37.37). I'll state 37.4 and declare value 37.4? The value should be "as stated in the report". I'll compute precisely: 10247.32 / 27422.84 = 0.373676... Let me compute: 27422.84 * 0.3737 = 10247.9... slightly over. 27422.84 * 0.37368 = 10247.37... close. So ≈ 37.37%. I'll state 37.4% with derived value 37.4? To be safe, state "about 37.4%" and declare value 37.4. Actually value should be the number as stated. I'll state 37.4 and declare 37.4.
+
+Actually, to reduce risk, maybe avoid extra derived numbers. But a difference or share adds value. The rules require declaring every derived number. I can include a few and declare them.
+
+Let me plan derived values:
+
+q2: share of Beta: 37.4 (share, operands [labor_cost_beta, total_labor_cost]). Maybe also gap Beta-Alpha = 2459.54 (difference). Let me compute: 10247.32 - 7787.78 = 2459.54. I could state "Beta exceeds Alpha by $2,459.54". Declare difference.
+
+q3: difference chat - phone = 83.039216 - 69.253521 = 13.785695 → 13.79. State "chat is about 13.8 minutes slower than phone". Declare difference with operands [resolution_chat, resolution_phone]. Note order: difference = a-b, so a=resolution_chat, b=resolution_phone → 13.79.
+
+q4: direction increase. Statement: "Email tickets reopen at 17.24% versus 7.84% for chat — a 119.83% higher rate (about 9.4 percentage points more)." Derived: difference email - chat = 17.241379 - 7.843137 = 9.398242 → 9.4. Declare difference with operands [reopen_rate_email_pct, reopen_rate_chat_pct]. The pct_change 119.83 is verified, not derived.
+
+q5: "12 tickets (3.5% of all tickets) cost ≥$100 with satisfaction ≤2; their reopen rate is 8.33%." Derived: share 12/347*100 = 3.4582 → 3.5. Declare share [high_cost_low_sat_count, ticket_count].
+
+q6: "Median resolution time is 65 minutes (std 51.9); mean satisfaction is 4.15, with 19 tickets missing satisfaction scores." No derived values. Maybe note mean > median indicating right skew — that's qualitative, fine. No numbers derived.
+
+q7: "18 distinct agents handled tickets; the busiest agent closed 26 tickets, 7.49% of all volume — about 1.35× the 19.3-ticket average per agent." Derived: ratio 347/18 = 19.277... → 19.3 (ratio, operands [ticket_count, unique_agent_count]); ratio 26/19.28 = 1.348... Actually top_agent_ticket_share_pct is verified. If I state average 19.3, declare ratio value 19.3. If I state 1.35×, that's ratio 26/19.277 = 1.3487 → 1.35, operands [top_agent_ticket_count, ...]? The operands must be metric_keys. The average isn't a metric_key. I could compute share-based: 7.492795 / (100/18) = ... messy. Simpler: just state average 19.3 as ratio of ticket_count to unique_agent_count, and skip the 1.35×. Or state "the top agent's 26 tickets are 7.49% of 347" — verified numbers only. Keep it simple: derived ratio 19.3 with operands [ticket_count, unique_agent_count], kind ratio (a/b).
+
+Word count: aim ~400-500 words total in text fields.
+
+Executive summary: "Analysis of 347 support tickets shows total labor cost of $27,422.84 and mean resolution time of 75.2 minutes. Team Beta is the largest cost center ($10,247.32), phone is the fastest channel (69.3 minutes), and chat the slowest (83.0). Email reopen rates (17.24%) are more than double chat's (7.84%). A small segment of 12 high-cost, low-satisfaction tickets exists, and workload is well distributed: the busiest of 18 agents handles only 7.49% of tickets."
+
+Numbers in exec summary: they're all verified values (rounded). Rounding fine. "More than double" — 17.24/7.84 = 2.2. That's a derived claim. Hmm, 119.83% higher is verified metric. "More than double" is qualitative based on verified; safer to say "~120% higher" which is the verified metric rounded. Use "119.8% higher" or "about 120% higher". I'll say "roughly 120% higher (email_vs_chat_reopen_change_pct = 119.83)". That's rounding of verified, fine.
+
+Limitations:
+- 19 tickets lack satisfaction scores, so satisfaction-based findings exclude them; if missingness is non-random, satisfaction_mean may be biased.
+- The high-cost low-satisfaction segment is small (12 tickets), so its reopen rate (8.33%) is based on a small sample and unstable.
+- Data covers a single export/period; no time-based trends or seasonality can be assessed.
+- Labor cost concentration by team may reflect ticket volume differences rather than efficiency; no per-ticket normalization provided. Hmm, careful: I don't have team ticket counts. I can say team labor cost totals aren't normalized by ticket volume in the provided metrics.
+- Satisfaction missing count is verified. Fine.
+
+Conclusion: "Operations are broadly healthy... focus on email reopen drivers, investigate chat resolution times, monitor the high-cost low-satisfaction segment."
+
+Now derived_values per finding must only include numbers stated in that finding's statement. Exec summary numbers: are derived values in the summary required to be declared? The rules say "any number you derive must be declared in derived_values" and DerivedValue description: "A number stated in the report that is computed from verified findings." The derived_values field is per KeyFinding. To be safe, avoid derived numbers in the exec summary — use only verified/rounded values. "Roughly 120% higher" is rounding of 119.83 — acceptable as rounding? "Rounding to a sensible precision is fine" — I'll treat it as rounding. To be safer, state "119.8%".
+
+In exec summary, "more than double" — avoid. Use verified numbers only.
+
+Let me finalize each finding:
+
+q1 statement: "Across 347 tickets, mean resolution time was 75.2 minutes and total labor cost reached $27,422.84."
+evidence_refs: ["ticket_count", "mean_resolution_minutes", "total_labor_cost"]
+reported_values: {ticket_count: 347.0, mean_resolution_minutes: 75.193084, total_labor_cost: 27422.84}
+direction: not_applicable (or null; schema allows null default; direction_required false → set "not_applicable"? The enum includes not_applicable. I'll set "not_applicable" for non-direction findings, or null. Safer: null? The contract says direction required only for q4. I'll set null for others and "increase" for q4. Actually including "not_applicable" is also valid. I'll use null to indicate not required... but explicit "not_applicable" might be cleaner. The schema default is null. I'll set "not_applicable" for q1,q2,q3,q5,q6,q7 and "increase" for q4. Both valid. Hmm, some graders may check direction only when required. Either is fine. I'll use null for non-required to avoid confusion? "not_applicable" is an enum value meant exactly for this. I'll use "not_applicable".
+
+ranking: null where not required.
+
+derived_values: [] for q1, q6.
+
+q2 statement: "Total labor cost is highest for Team Beta ($10,247.32), then Gamma ($9,387.74), then Alpha ($7,787.78); Beta exceeds Alpha by $2,459.54 and represents about 37.4% of total labor cost."
+derived: 
+- {kind: "difference", operands: ["labor_cost_beta", "labor_cost_alpha"], value: 2459.54}
+- {kind: "share", operands: ["labor_cost_beta", "total_labor_cost"], value: 37.4}
+Let me compute share precisely: 10247.32/27422.84 = ?
+27422.84 × 0.3737 = 10247.9 → slightly high. 27422.84 × 0.3736 = 10245.18. So 0.37368 gives ~10247.37. So 37.37%. State 37.4% or 37.37%. I'll state "about 37.4%" and value 37.4.
+ranking: ["Beta", "Gamma", "Alpha"]
+
+q3 statement: "Phone is the fastest channel at a mean of 69.3 minutes, followed by email (73.0) and chat (83.0); chat takes about 13.8 minutes longer than phone on average."
+derived: {kind: "difference", operands: ["resolution_chat", "resolution_phone"], value: 13.8} — precise: 83.039216 - 69.253521 = 13.785695 → 13.79. State "13.8" with value 13.8, or state 13.79. I'll state 13.8 and value 13.8. Hmm, consistency: value should be "the number as stated in the report" → 13.8.
+ranking: ["chat", "email", "phone"]
+
+q4 statement: "Email's reopen rate (17.24%) is 119.8% higher than chat's (7.84%) — roughly 9.4 percentage points more — indicating a clear increase in reopening for email relative to chat."
+direction: "increase"
+derived: {kind: "difference", operands: ["reopen_rate_email_pct", "reopen_rate_chat_pct"], value: 9.4} — precise 9.398242.
+
+q5 statement: "12 tickets — 3.5% of all tickets — combine labor cost ≥ $100 with satisfaction ≤ 2; their reopen rate is 8.33%, below the email-channel rate."
+Careful: "below the email-channel rate" — comparing 8.33 to 17.24, fine qualitatively. Maybe skip to avoid implying derived. It's qualitative comparison of two verified numbers; fine.
+derived: {kind: "share", operands: ["high_cost_low_sat_count", "ticket_count"], value: 3.5} — precise 3.4582.
+Actually state 3.5% → value 3.5.
+
+q6 statement: "Resolution time is right-skewed: the median (65 minutes) sits below the mean, with a sample standard deviation of 51.9 minutes. Mean satisfaction is 4.15 (19 tickets missing a score)."
+Wait — mean 75.2 referenced from q1; I can say "below the q1 mean of 75.2". Using verified numbers fine. Or just state median 65 and std 51.9. "Right-skewed" claim: median 65 < mean 75.19 supports. I'll say "The median resolution time (65 minutes) is below the overall mean (75.2), consistent with right skew (std 51.9). Mean satisfaction is 4.15, with 19 tickets missing scores."
+No derived values.
+
+q7 statement: "18 distinct agents handled the workload; the busiest single agent closed 26 tickets, or 7.49% of all volume — versus an average of 19.3 tickets per agent — indicating no heavy concentration."
+derived: {kind: "ratio", operands: ["ticket_count", "unique_agent_count"], value: 19.3} — precise 19.2778.
+
+Word count check. Let me count roughly.
+
+Title: "Support Operations Analysis: Cost, Speed, Reopening, Satisfaction and Agent Concentration" (~11 words)
+
+Exec summary (~75 words):
+"Across 347 support tickets, total labor cost was $27,422.84 and mean resolution time 75.2 minutes. Team Beta is the largest cost center at $10,247.32, phone is the fastest channel (69.3 minutes) and chat the slowest (83.0). Email's reopen rate of 17.24% is 119.8% higher than chat's 7.84%. Only 12 tickets are both high-cost and low-satisfaction, and workload is well spread across 18 agents, with the top agent handling 7.49% of tickets."
+
+That's ~78 words. All numbers verified or rounded. "119.8% higher" is rounding of 119.827586. OK.
+
+Findings statements ~30 words each ×7 = 210.
+Limitations 4 × ~25 = 100.
+Conclusion ~60.
+Total ≈ 460. Under 650. Good.
+
+Reported values: copy verified values exactly.
+
+Limitations list:
+1. "Satisfaction scores are missing for 19 tickets; satisfaction_mean (4.15) and q5's segment exclude them, so results could be biased if missingness is not random."
+2. "The high-cost, low-satisfaction segment contains only 12 tickets, so its 8.33% reopen rate is based on a very small sample and should not be over-interpreted."
+3. "The data is a single export with no time dimension, so trends, seasonality, and the effect of any interventions cannot be assessed."
+4. "Team labor-cost totals are not normalized by ticket volume or ticket mix, so team rankings reflect total spend rather than per-ticket efficiency."
+
+Conclusion: "Support operations appear healthy overall: costs are moderate, resolution times cluster near 65–75 minutes, satisfaction averages 4.15, and no single agent dominates workload. Priority actions are to investigate why email tickets reopen at 17.24% (about 120% above chat), review chat workflows that drive the slowest mean resolution (83.0 minutes), and monitor the small high-cost, low-satisfaction segment before it grows."
+
+Hmm "about 120% above chat" — derived-ish from verified 119.83; it's rounding of verified metric. Fine.
+
+Word count still fine.
+
+Now JSON. Ensure reported_values for every metric_key of each question:
+q1: ticket_count, mean_resolution_minutes, total_labor_cost ✓
+q2: labor_cost_alpha, labor_cost_beta, labor_cost_gamma ✓
+q3: resolution_email, resolution_chat, resolution_phone ✓
+q4: reopen_rate_email_pct, reopen_rate_chat_pct, email_vs_chat_reopen_change_pct ✓
+q5: high_cost_low_sat_count, high_cost_low_sat_reopen_pct ✓
+q6: resolution_median, resolution_std, satisfaction_mean, satisfaction_missing_count ✓
+q7: unique_agent_count, top_agent_ticket_count, top_agent_ticket_share_pct ✓
+
+Evidence refs = same lists.
+
+Double-check derived value precision choices:
+- q2 difference: 10247.32 - 7787.78 = 2459.54 exactly. State $2,459.54, value 2459.54. ✓
+- q2 share: 10247.32/27422.84*100. Compute: 27422.84 * 0.374 = 10256.14 — a bit high. 0.3737 → 10248.9? Let me recompute carefully: 27422.84 × 0.3737 = 27422.84 × 0.37 = 10146.45; 27422.84 × 0.0037 = 101.46; total 10247.91. That's slightly above 10247.32, so ratio ≈ 0.37368. → 37.368%. State "37.4%" value 37.4. ✓
+- q3 difference: 13.785695 → state 13.8, value 13.8. ✓
+- q4 difference: 9.398242 → state 9.4, value 9.4. ✓
+- q5 share: 12/347*100 = 3.4582 → state 3.5, value 3.5. ✓
+- q7 ratio: 347/18 = 19.2778 → state 19.3, value 19.3. ✓
+
+Ranking labels exactly: "Alpha","Beta","Gamma" and "chat","email","phone". ✓
+
+Direction q4: "increase". ✓ Others: "not_applicable".
+
+Output single JSON in fenced block, nothing else.
+
+One more consideration: q4 statement direction wording "indicating a clear increase in reopening for email relative to chat" — matches direction increase (email vs chat change positive). Good.
+
+Also make sure q6 statement includes all needed numbers — yes.
+
+Rounding in statements: 75.2 (75.193084), 69.3 (69.253521), 73.0 (73.017241), 83.0 (83.039216), 4.15 (4.152439), 51.9 (51.925749), 17.24 (17.241379), 7.84 (7.843137), 119.8 (119.827586), 8.33 (8.333333), 7.49 (7.492795). All sensible.
+
+Final JSON assembly.

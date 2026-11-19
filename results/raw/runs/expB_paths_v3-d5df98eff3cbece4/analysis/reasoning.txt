@@ -1,0 +1,166 @@
+We need to produce JSON with fields python_code (string containing script), expected_artifacts (list of filenames), methods_description (string). The script must read cleaned.csv from INPUT_DIR env var, compute metrics, write findings.json to OUTPUT_DIR. Must ensure flat JSON with numeric values only (no NaN). Need to handle missing temperature values: they are NaN in pandas; we need to count missing, compute mean over non-missing.
+
+Also compute Pearson correlation for commercial readings with non-missing temperature. If less than 2 data points, correlation would be NaN; but we must output a finite number. In such case maybe output 0.0? But spec says "single finite number". So we need to handle case where correlation cannot be computed (e.g., less than 2). We'll set correlation to 0.0.
+
+Similarly for hot commercial mean kwh: if count zero, mean should be 0.0.
+
+All metrics must be numeric (float or int). Use pandas functions.
+
+Compute totals per building_type: groupby.
+
+Quarterly: need to filter dates in 2024. All dates are 2024. Use pandas dt.quarter.
+
+Half-year: months 1-6, 7-12.
+
+Hot day commercial: temperature_c >= 25 and not missing.
+
+Distribution summary: median, std (sample). Use pandas .median(), .std(ddof=1). Temperature mean over non-missing.
+
+Missing temperature count: isna.
+
+Correlation: for commercial rows with non-missing temperature, compute np.corrcoef or pandas .corr(). Use .corr().
+
+Tariff usage: groupby tariff.
+
+Unique meter count: df['meter_id'].nunique().
+
+Highest use meter: groupby meter_id sum energy, then max.
+
+All metrics: ensure they are Python native numbers (int or float). Use .item() to convert numpy scalar.
+
+Write findings.json with json.dump.
+
+Also need to list expected_artifacts: ["findings.json"].
+
+Now craft script.
+
+Edge Cases: reading_count is integer. total_kwh sum may be float.
+
+Mean kwh per reading = total_kwh / reading_count.
+
+kwh_h2_vs_h1_change_pct = (kwh_h2 - kwh_h1) / kwh_h1 * 100. If kwh_h1 zero (unlikely), set to 0.0.
+
+peak_kwh_share_pct = kwh_peak / total_kwh * 100.
+
+All rounding: no rounding.
+
+Now produce JSON.
+
+Let's write script:
+
+```
+import os, json, pandas as pd, numpy as np
+
+def main():
+    input_path = os.path.join(os.environ["INPUT_DIR"], "cleaned.csv")
+    df = pd.read_csv(input_path, parse_dates=["reading_date"])
+    # total
+    total_kwh = df["energy_kwh"].sum()
+    reading_count = len(df)
+    mean_kwh_per_reading = total_kwh / reading_count if reading_count else 0.0
+
+    # building type totals
+    building_totals = df.groupby("building_type")["energy_kwh"].sum()
+    kwh_residential = building_totals.get("Residential", 0.0)
+    kwh_commercial = building_totals.get("Commercial", 0.0)
+    kwh_industrial = building_totals.get("Industrial", 0.0)
+
+    # quarterly
+    df["quarter"] = df["reading_date"].dt.quarter
+    quarterly_totals = df.groupby("quarter")["energy_kwh"].sum()
+    kwh_q1 = quarterly_totals.get(1, 0.0)
+    kwh_q2 = quarterly_totals.get(2, 0.0)
+    kwh_q3 = quarterly_totals.get(3, 0.0)
+    kwh_q4 = quarterly_totals.get(4, 0.0)
+
+    # half-year
+    df["month"] = df["reading_date"].dt.month
+    h1 = df[df["month"] <= 6]["energy_kwh"].sum()
+    h2 = df[df["month"] >= 7]["energy_kwh"].sum()
+    kwh_h1 = h1
+    kwh_h2 = h2
+    if kwh_h1 != 0:
+        kwh_h2_vs_h1_change_pct = (kwh_h2 - kwh_h1) / kwh_h1 * 100
+    else:
+        kwh_h2_vs_h1_change_pct = 0.0
+
+    # hot commercial
+    hot_commercial = df[
+        (df["building_type"] == "Commercial") &
+        (df["temperature_c"].notna()) &
+        (df["temperature_c"] >= 25)
+    ]
+    hot_commercial_reading_count = len(hot_commercial)
+    hot_commercial_mean_kwh = hot_commercial["energy_kwh"].mean() if hot_commercial_reading_count else 0.0
+
+    # distribution summary
+    kwh_median = df["energy_kwh"].median()
+    kwh_std = df["energy_kwh"].std(ddof=1)
+    temperature_missing_count = df["temperature_c"].isna().sum()
+    temperature_mean = df["temperature_c"].mean(skipna=True)
+    # correlation commercial
+    commercial_temp = df[
+        (df["building_type"] == "Commercial") &
+        (df["temperature_c"].notna())
+    ]
+    if len(commercial_temp) >= 2:
+        commercial_temp_kwh_corr = commercial_temp["temperature_c"].corr(commercial_temp["energy_kwh"])
+        if pd.isna(commercial_temp_kwh_corr):
+            commercial_temp_kwh_corr = 0.0
+    else:
+        commercial_temp_kwh_corr = 0.0
+
+    # tariff and meter usage
+    tariff_totals = df.groupby("tariff")["energy_kwh"].sum()
+    kwh_peak = tariff_totals.get("peak", 0.0)
+    kwh_off_peak = tariff_totals.get("off-peak", 0.0)
+    peak_kwh_share_pct = (kwh_peak / total_kwh * 100) if total_kwh else 0.0
+    unique_meter_count = df["meter_id"].nunique()
+    meter_totals = df.groupby("meter_id")["energy_kwh"].sum()
+    highest_use_meter_kwh = meter_totals.max() if not meter_totals.empty else 0.0
+
+    findings = {
+        "total_kwh": float(total_kwh),
+        "reading_count": int(reading_count),
+        "mean_kwh_per_reading": float(mean_kwh_per_reading),
+        "kwh_residential": float(kwh_residential),
+        "kwh_commercial": float(kwh_commercial),
+        "kwh_industrial": float(kwh_industrial),
+        "kwh_q1": float(kwh_q1),
+        "kwh_q2": float(kwh_q2),
+        "kwh_q3": float(kwh_q3),
+        "kwh_q4": float(kwh_q4),
+        "kwh_h1": float(kwh_h1),
+        "kwh_h2": float(kwh_h2),
+        "kwh_h2_vs_h1_change_pct": float(kwh_h2_vs_h1_change_pct),
+        "hot_commercial_reading_count": int(hot_commercial_reading_count),
+        "hot_commercial_mean_kwh": float(hot_commercial_mean_kwh),
+        "kwh_median": float(kwh_median),
+        "kwh_std": float(kwh_std),
+        "temperature_mean": float(temperature_mean) if not pd.isna(temperature_mean) else 0.0,
+        "temperature_missing_count": int(temperature_missing_count),
+        "commercial_temp_kwh_corr": float(commercial_temp_kwh_corr),
+        "kwh_peak": float(kwh_peak),
+        "kwh_off_peak": float(kwh_off_peak),
+        "peak_kwh_share_pct": float(peak_kwh_share_pct),
+        "unique_meter_count": int(unique_meter_count),
+        "highest_use_meter_kwh": float(highest_use_meter_kwh)
+    }
+
+    output_path = os.path.join(os.environ["OUTPUT_DIR"], "findings.json")
+    with open(output_path, "w") as f:
+        json.dump(findings, f, ensure_ascii=False)
+
+if __name__ == "__main__":
+    main()
+```
+
+Make sure to import warnings maybe.
+
+Now produce JSON output.
+
+expected_artifacts: ["findings.json"].
+
+methods_description: brief description.
+
+Now craft final JSON block.

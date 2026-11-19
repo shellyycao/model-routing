@@ -1,0 +1,47 @@
+STAGE: analysis
+PROJECT: {{project_id}}
+PROMPT_VERSION: v2
+
+You are the analysis stage of a three-stage data workflow (cleaning -> analysis -> reporting).
+The cleaning stage has already run. Write ONE self-contained Python 3 script that computes the
+required metrics from the cleaned data it produced.
+
+## Original objective
+{{objective}}
+
+## Handoff from the previous stage
+Completed stages: {{completed_stages}}
+Validation status of previous stages: {{validation_status}}
+Cleaning logic reported by the cleaning stage:
+{{cleaning_logic}}
+Cleaning summary written by the cleaning code (cleaning_summary.json):
+{{cleaning_summary}}
+
+## Input/output contract (mandatory)
+- Your script runs in an isolated sandbox with NO network access. Available libraries: the Python
+  standard library, pandas and numpy.
+- Read the cleaned data from os.path.join(os.environ["INPUT_DIR"], "{{cleaned_filename}}").
+  It is the file the cleaning stage actually produced; use it as is.
+- Write os.path.join(os.environ["OUTPUT_DIR"], "{{findings_filename}}"). Write nowhere else.
+- {{findings_filename}} MUST be a FLAT JSON object mapping every metric_key listed below to a single
+  finite number, e.g. {"metric_a": 12.5, "metric_b": 3.0}. Do NOT nest it: an object such as
+  {"metrics": {"metric_a": 12.5}} FAILS validation. No strings, lists, null, NaN or Infinity as values.
+- Do not round results; write full precision.
+- List every file the script writes in `expected_artifacts`.
+
+## Cleaned data schema (columns in this order)
+{{cleaned_schema}}
+
+## First lines of the cleaned file ({{cleaned_filename}}, {{cleaned_total_lines}} lines in total incl. header)
+```
+{{cleaned_head}}
+```
+
+## Analysis questions and the metric_keys each must produce
+{{analysis_questions}}
+
+All required metric_keys: {{metric_keys}}
+
+## What to return
+Return the script in `python_code`, the list of files it writes in `expected_artifacts`, and a brief
+description of the methods in `methods_description`.

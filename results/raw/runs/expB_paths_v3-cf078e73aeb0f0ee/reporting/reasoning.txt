@@ -1,0 +1,98 @@
+We need to produce JSON matching schema. Include title, executive_summary, key_findings (array of 7 entries), limitations, conclusion.
+
+We must follow structured claim requirements: For q2 ranking required true, need ranking high-to-low based on labor_cost values. Provide ranking list of labels: highest cost team first. Values: labor_cost_alpha 7787.81, beta 10247.36, gamma 9387.73. Highest is Beta, then Gamma, then Alpha. Use labels from ranking_metric_key_to_label mapping: "Alpha","Beta","Gamma". So ranking = ["Beta","Gamma","Alpha"].
+
+q3 ranking required true: resolution times by channel. Values: email 73.017, chat 83.039, phone 69.254. Highest mean resolution time is chat (slowest), then email, then phone. Ranking labels: "chat","email","phone". Provide ranking accordingly.
+
+q4 direction required true: metric key email_vs_chat_reopen_change_pct = 119.827586... Positive indicates increase (email rate higher than chat). Direction should be "increase". Provide direction field.
+
+Other findings no ranking/direction.
+
+Each key_finding must include statement, evidence_refs (list of metric_keys used), reported_values (include all metric_keys of that question with verified values). Also derived_values if any derived numbers used in statement beyond raw metrics. For q2 and q3 we may not need derived values; ranking derived from raw values but ranking is not a numeric derived value, not required to list. For q4 direction derived? The direction is based on sign of metric, not a derived numeric. No derived values needed.
+
+But we might include derived values for any computed percentages etc. For q5 we have count and reopen pct already given. No derived.
+
+q6 includes median, std, satisfaction mean, missing count. No derived.
+
+q7 includes unique_agent_count, top_agent_ticket_count, top_agent_ticket_share_pct (already computed). No derived.
+
+Thus derived_values array can be empty for each.
+
+Make statements concise for business stakeholders.
+
+Need to round numbers sensibly. Use maybe 2 decimal places for monetary, minutes, percentages. Provide values as in reported_values exactly as verified (maybe keep full precision). The schema expects numbers; we can round but must be consistent with evidence. It's okay to round but must be declared as reported values. Use maybe 2 decimals.
+
+Let's list each metric:
+
+ticket_count: 347.0 (maybe integer 347). mean_resolution_minutes: 75.19. total_labor_cost: 27422.9.
+
+labor_cost_alpha: 7787.81, beta 10247.36, gamma 9387.73.
+
+resolution_email: 73.02, chat 83.04, phone 69.25.
+
+reopen_rate_email_pct: 17.24, chat 7.84, email_vs_chat_reopen_change_pct: 119.83.
+
+high_cost_low_sat_count: 12.0, high_cost_low_sat_reopen_pct: 8.33.
+
+resolution_median: 65.0, resolution_std: 51.93, satisfaction_mean: 4.15, satisfaction_missing_count: 19.0.
+
+unique_agent_count: 18.0, top_agent_ticket_count: 26.0, top_agent_ticket_share_pct: 7.49.
+
+Now construct statements.
+
+q1 statement: "The dataset contains 347 tickets with an average resolution time of 75.2 minutes and total labor cost of $27,422.90."
+
+q2 statement: "Team labor costs differ, with Beta incurring the highest cost, followed by Gamma, then Alpha." Could also mention amounts.
+
+q3 statement: "Average resolution time varies by channel: chat is slowest (83.0 min), email next (73.0 min), and phone fastest (69.3 min)."
+
+q4 statement: "The email channel’s reopen rate is 119.8% higher than chat, indicating a substantial increase." Direction increase.
+
+q5 statement: "There are 12 high‑cost, low‑satisfaction tickets, of which 8.33% were reopened."
+
+q6 statement: "Resolution times have a median of 65 min and a standard deviation of 51.93 min; average satisfaction score is 4.15, with 19 tickets missing a score."
+
+q7 statement: "Eighteen agents handled tickets; the top agent resolved 26 tickets, representing 7.49% of all tickets."
+
+Now build each key_finding.
+
+For each, evidence_refs list metric_keys used.
+
+q1 evidence_refs: ["ticket_count","mean_resolution_minutes","total_labor_cost"].
+
+reported_values: include those three with values.
+
+q2 evidence_refs: ["labor_cost_alpha","labor_cost_beta","labor_cost_gamma"].
+
+reported_values: include all three.
+
+ranking: ["Beta","Gamma","Alpha"].
+
+q3 evidence_refs: ["resolution_email","resolution_chat","resolution_phone"].
+
+ranking: ["chat","email","phone"].
+
+q4 evidence_refs: ["email_vs_chat_reopen_change_pct"].
+
+direction: "increase". No ranking.
+
+q5 evidence_refs: ["high_cost_low_sat_count","high_cost_low_sat_reopen_pct"].
+
+q6 evidence_refs: ["resolution_median","resolution_std","satisfaction_mean","satisfaction_missing_count"].
+
+q7 evidence_refs: ["unique_agent_count","top_agent_ticket_count","top_agent_ticket_share_pct"].
+
+All derived_values empty arrays.
+
+Now produce JSON with title, executive_summary, limitations, conclusion.
+
+Executive summary: summarize key points.
+
+Limitations: mention data only from one period, missing satisfaction scores, cost threshold arbitrary, etc.
+
+Conclusion: recommend actions.
+
+Word count under 650 words; JSON only, no extra text.
+
+Let's craft.
+

@@ -1,0 +1,35 @@
+We need to produce JSON with fields python_code (string containing script), expected_artifacts (list of filenames), methods_description (string). The script must read cleaned.csv from INPUT_DIR env var, compute metrics, write findings.json to OUTPUT_DIR. Must be self-contained, using pandas/numpy.
+
+We need to compute all metrics precisely, no rounding, ensure finite numbers (no NaN). Edge cases: if revenue_2023 is zero, yoy change would be inf; but dataset likely has revenue. Still we can handle division by zero: set yoy change to None? But must be finite number. Could set to 0 if denominator zero. We'll compute as (rev2024 - rev2023) / rev2023 * 100 if rev2023 !=0 else 0.0.
+
+Compute order_count = len(df). total_revenue = df['revenue'].sum(). average_order_value = total_revenue / order_count.
+
+Regional revenue: filter by region.
+
+Quarterly 2024: filter year==2024, then quarter based on month.
+
+Yearly revenue: filter year 2023 and 2024.
+
+High-discount electronics: filter product_category == 'Electronics' and discount_pct >=20.
+
+Order revenue distribution: mean, median, std (sample), min, max.
+
+Customer concentration: unique_customer_count = df['customer_id'].nunique(). top_customer_revenue = df.groupby('customer_id')['revenue'].sum().max(). top_customer_revenue_share_pct = top_customer_revenue / total_revenue * 100.
+
+Write findings.json as flat dict with all metric keys.
+
+Make sure to import os, pandas, numpy, json.
+
+Write to output path: os.path.join(os.environ["OUTPUT_DIR"], "findings.json").
+
+expected_artifacts list: ["findings.json"].
+
+methods_description: brief description.
+
+Now produce JSON.
+
+Need to ensure script uses .astype('datetime64[ns]') for order_date.
+
+Compute quarter: use pandas .dt.quarter.
+
+Now produce final answer.

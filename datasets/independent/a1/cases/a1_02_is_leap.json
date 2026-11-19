@@ -1,0 +1,27 @@
+{
+  "buggy": "def is_leap(year):\n    return year % 4 == 0 and year % 100 != 0\n",
+  "case_id": "a1_02_is_leap",
+  "difficulty": "easy",
+  "func": "is_leap",
+  "hidden": [
+    "is_leap(2024) is True",
+    "is_leap(2023) is False",
+    "is_leap(1900) is False",
+    "is_leap(2000) is True",
+    "is_leap(2400) is True",
+    "is_leap(2100) is False",
+    "is_leap(4) is True",
+    "is_leap(1) is False"
+  ],
+  "operator": "missing_condition",
+  "reference": "def is_leap(year):\n    return year % 4 == 0 and (year % 100 != 0 or year % 400 == 0)\n",
+  "spec": "is_leap(year) returns True for Gregorian leap years: divisible by 4, except centuries, except centuries divisible by 400.",
+  "verification": {
+    "buggy_fails": 2,
+    "reference_passes": 8
+  },
+  "visible": [
+    "is_leap(2024) is True",
+    "is_leap(1900) is False"
+  ]
+}

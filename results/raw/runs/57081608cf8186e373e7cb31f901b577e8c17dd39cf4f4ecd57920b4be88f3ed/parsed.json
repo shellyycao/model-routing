@@ -1,0 +1,7 @@
+{
+  "fixed_code": "def dedupe(xs):\n    out = []\n    for item in xs:\n        if item not in out:\n            out.append(item)\n    return out\n",
+  "bug_locations": [
+    "dedupe: the iteration loop (`for item in reversed(xs)`) — iterating in reverse kept the last occurrence of each value and produced reversed output instead of first-occurrence order"
+  ],
+  "explanation": "The function iterated over reversed(xs), so it retained the last occurrence of each duplicate and emitted results in reverse order (e.g. dedupe([1,2,1,2]) returned [2,1] instead of [1,2]); the visible check [1,2,1] passed only by coincidence because the first and last occurrences coincide after reversal. The fix iterates over xs in its original order, appending each item only if it is not already in out, which preserves first-occurrence order. Membership is tested against a plain list with `in`, which uses equality rather than hashing, so unhashable values (e.g. lists, dicts) remain supported."
+}

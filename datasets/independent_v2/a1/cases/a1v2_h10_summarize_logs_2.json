@@ -1,0 +1,26 @@
+{
+  "bug_locations": [
+    "summarize_logs level-key consistency",
+    "summarize_logs earliest error"
+  ],
+  "buggy": "def summarize_logs(lines):\n                 counts={};errors=[]\n                 for line in lines:\n                     parts=line.split('|')\n                     if len(parts)<4:continue\n                     ts,level,service=parts[:3]\n                     counts.setdefault(service,{})[level.upper()]=counts.setdefault(service,{}).get(level,0)+1\n                     if level.upper()=='ERROR':errors.append(ts)\n                 return {'counts':counts,'first_error':max(errors) if errors else None}\n",
+  "case_id": "a1v2_h10_summarize_logs_2",
+  "difficulty": "hard",
+  "family": "summarize_logs",
+  "hidden": [
+    "summarize_logs(['2026-01-02|error|api|x','2026-01-01|ERROR|api|y'])=={'counts':{'api':{'ERROR':2}},'first_error':'2026-01-01'}",
+    "summarize_logs(['bad'])=={'counts':{},'first_error':None}",
+    "summarize_logs(['1|INFO|api|a|b'])=={'counts':{'api':{'INFO':1}},'first_error':None}",
+    "summarize_logs([])=={'counts':{},'first_error':None}"
+  ],
+  "label_source": "executable reference plus independently checked tests",
+  "reference": "def summarize_logs(lines):\n             counts={}; first_error=None\n             for line in lines:\n                 parts=line.split('|',3)\n                 if len(parts)!=4:continue\n                 ts,level,service,_=parts;level=level.strip().upper();service=service.strip()\n                 if not ts.strip() or not level or not service:continue\n                 counts.setdefault(service,{});counts[service][level]=counts[service].get(level,0)+1\n                 if level=='ERROR' and (first_error is None or ts.strip()<first_error):first_error=ts.strip()\n             return {'counts':counts,'first_error':first_error}\n",
+  "spec": "summarize_logs(lines) parses 'timestamp|LEVEL|service|message'. Skip malformed lines, normalize level uppercase, and return counts by service and level plus the lexicographically earliest ERROR timestamp (or null).",
+  "verification": {
+    "buggy_fails": 1,
+    "reference_passes": 4
+  },
+  "visible": [
+    "summarize_logs(['2026-01-01|INFO|api|ok'])['counts'] == {'api':{'INFO':1}}"
+  ]
+}

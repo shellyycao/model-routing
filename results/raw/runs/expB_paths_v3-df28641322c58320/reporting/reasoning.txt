@@ -1,0 +1,113 @@
+We need to produce JSON report with fields title, executive_summary, key_findings (array of objects per q1..q7), limitations, conclusion.
+
+We must include for each finding: finding_id, statement, evidence_refs, reported_values (all metric_keys for that question), direction (if required), ranking (if required), derived_values (any computed numbers). Use verified findings only.
+
+We have verified values.
+
+Now compute any derived values needed: For q2 ranking required: need ranking of labor_cost_alpha, labor_cost_beta, labor_cost_gamma from highest to lowest. Values: alpha 4604.91, beta 6928.72, gamma 5911.44. Highest is beta, then gamma, then alpha. So ranking list: ["Beta", "Gamma", "Alpha"] using labels from ranking_metric_key_to_label.
+
+For q3 ranking required: resolution_chat 82.2329, resolution_email 71.7238, resolution_phone 74.0714. Highest chat, then phone, then email. Labels: "chat","phone","email". So ranking: ["chat","phone","email"].
+
+For q4 direction required: metric email_vs_chat_reopen_change_pct = 122.476... Positive indicates increase (email rate higher than chat). Direction: "increase". (If positive change indicates increase). So direction = "increase". No ranking.
+
+Any derived values? Possibly we could compute share of top agent tickets: already given as top_agent_ticket_share_pct = 7.2727% (derived from top_agent_ticket_count / ticket_count *100). But it's already provided as metric, so not derived. However we might compute difference between labor costs for teams? Not required. But we could include derived values for ranking? Not needed.
+
+But we must include derived_values array even if empty.
+
+Now each key_finding must include reported_values with all metric_keys for that question.
+
+List metric_keys per question:
+
+q1: ticket_count, mean_resolution_minutes, total_labor_cost.
+
+q2: labor_cost_alpha, labor_cost_beta, labor_cost_gamma.
+
+q3: resolution_email, resolution_chat, resolution_phone.
+
+q4: reopen_rate_email_pct, reopen_rate_chat_pct, email_vs_chat_reopen_change_pct.
+
+q5: high_cost_low_sat_count, high_cost_low_sat_reopen_pct.
+
+q6: resolution_median, resolution_std, satisfaction_mean, satisfaction_missing_count.
+
+q7: unique_agent_count, top_agent_ticket_count, top_agent_ticket_share_pct.
+
+Now statements: need to be concise, business-friendly.
+
+Let's craft statements:
+
+q1: "The dataset contains 220 tickets with an average resolution time of 75.7 minutes and total labor cost of $17,445."
+
+q2: "Team labor costs differ, with Beta incurring the highest cost, followed by Gamma, then Alpha." Also include ranking maybe not required but ranking required. Provide ranking in field, not statement. Statement can mention ranking.
+
+q3: "Resolution speed varies by channel: chat is slowest, phone moderate, email fastest." Provide ranking.
+
+q4: "Email tickets have a 122.5% higher reopening rate than chat tickets, indicating a substantial increase." Direction increase.
+
+q5: "There are 9 high‑cost tickets with low satisfaction; 11.1% of these were reopened."
+
+q6: "The median resolution time is 65 minutes with a standard deviation of 51.3 minutes; average satisfaction is 4.14, and 14 tickets lack a satisfaction score."
+
+q7: "Eighteen agents handled tickets; the most active agent resolved 16 tickets, representing 7.27% of all tickets."
+
+Now evidence_refs: list metric_keys used in statement. For each, include all metric_keys of that question (since they are used). Provide array.
+
+Now derived_values: none needed unless we compute something not directly provided. For q4 we might compute the percent change already given; it's metric. So no derived.
+
+But maybe we need to compute ranking values? Not needed.
+
+Thus derived_values empty arrays.
+
+Now produce JSON.
+
+Make sure numbers rounded sensibly: we can round to 2 decimals for readability but must match reported_values values exactly as numbers (they can be rounded). The schema expects numbers; we can provide rounded values. But must be "verified numeric value". Rounding is allowed as "sensible precision". So we can round to 2 decimals.
+
+Let's list values:
+
+ticket_count: 220.0 (maybe integer but keep 220)
+
+mean_resolution_minutes: 75.6590909090909 -> round 75.66
+
+total_labor_cost: 17445.07 (already 2 decimals)
+
+labor_cost_alpha: 4604.91
+
+labor_cost_beta: 6928.720000000001 -> round 6928.72
+
+labor_cost_gamma: 5911.44 (rounded)
+
+resolution_email: 71.72380952380952 -> 71.72
+
+resolution_chat: 82.23287671232876 -> 82.23
+
+resolution_phone: 74.07142857142857 -> 74.07
+
+reopen_rate_email_pct: 15.238095238095239 -> 15.24
+
+reopen_rate_chat_pct: 6.8493150684931505 -> 6.85
+
+email_vs_chat_reopen_change_pct: 122.47619047619051 -> 122.48
+
+high_cost_low_sat_count: 9.0 -> 9
+
+high_cost_low_sat_reopen_pct: 11.11111111111111 -> 11.11
+
+resolution_median: 65.0 -> 65
+
+resolution_std: 51.302729053162466 -> 51.30
+
+satisfaction_mean: 4.140776699029126 -> 4.14
+
+satisfaction_missing_count: 14.0 -> 14
+
+unique_agent_count: 18.0 -> 18
+
+top_agent_ticket_count: 16.0 -> 16
+
+top_agent_ticket_share_pct: 7.2727272727272725 -> 7.27
+
+Now produce JSON.
+
+Check each key_finding includes reported_values with these rounded numbers.
+
+Now produce final JSON block.

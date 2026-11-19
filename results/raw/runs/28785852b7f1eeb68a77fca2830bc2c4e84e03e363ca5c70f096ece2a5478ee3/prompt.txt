@@ -1,0 +1,18 @@
+You are debugging a Python module. The specification is authoritative.
+
+Specification:
+rolling_mean(xs, window, min_periods=1) returns one mean per input position using the trailing window and requiring at least min_periods values; otherwise null. Validate 1 <= min_periods <= window.
+
+Buggy module:
+```python
+def rolling_mean(xs,window,min_periods=1):
+                 return [sum(xs[max(0,i-window):i])/window for i in range(len(xs))]
+
+```
+
+Visible checks:
+```python
+assert rolling_mean([1,2,3], 2) == [1,1.5,2.5]
+```
+
+Return the complete corrected module. There may be multiple interacting defects. Do not hard-code the visible examples.

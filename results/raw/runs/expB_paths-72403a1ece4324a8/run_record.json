@@ -1,0 +1,397 @@
+{
+  "contract_version": "1.2",
+  "run_id": "expB_paths-72403a1ece4324a8",
+  "experiment_id": "expB_paths",
+  "project_id": "retail_sales",
+  "path_id": "A-A",
+  "models": [
+    "A",
+    "A"
+  ],
+  "repeat_index": 0,
+  "config_hash": "a269f988b9ccb012ff97b99f9b4c105b50a3293a71bd5c644dded63219e888f1",
+  "failure_policy": "continue_with_actual_artifact",
+  "started_at": "2026-11-18T02:26:56.226723+00:00",
+  "finished_at": "2026-11-18T02:27:33.972777+00:00",
+  "stages": [
+    {
+      "stage": "cleaning",
+      "model_alias": "A",
+      "model_id": "us.anthropic.claude-sonnet-4-6",
+      "prompt_version": "v2",
+      "prompt_hash": "db9085b5641fae0b1962e16963671aa36c598358db09e4a841d5a054b0253296",
+      "invocation_ids": [
+        "5cc318b8-4b1f-4a1f-9a90-e0d9d1b68735"
+      ],
+      "cache_hit": false,
+      "shared_with_run_ids": [],
+      "status": "passed",
+      "structural_ok": true,
+      "failure_type": null,
+      "failure_detail": null,
+      "parse_ok": true,
+      "execution": {
+        "status": "success",
+        "exit_code": 0,
+        "stdout": "Cleaning complete: 636 raw rows -> 520 cleaned rows.\n",
+        "stderr": "/sandbox/code/main.py:18: FutureWarning: DataFrame.applymap has been deprecated. Use DataFrame.map instead.\n  raw_df = raw_df.applymap(lambda x: x.strip() if isinstance(x, str) else x)\n/sandbox/code/main.py:27: FutureWarning: DataFrame.applymap has been deprecated. Use DataFrame.map instead.\n  raw_df = raw_df.applymap(to_missing)\n",
+        "runtime_ms": 821.2475410000479,
+        "output_files": [
+          "/Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expB_paths-72403a1ece4324a8/cleaning/output/cleaned.csv",
+          "/Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expB_paths-72403a1ece4324a8/cleaning/output/cleaning_summary.json"
+        ],
+        "sandbox_image": "sha256:d8af82a587873badf2aa309699d72086b56c5e8a1f525d13ccba0b69c329b8c9"
+      },
+      "validation": {
+        "stage": "cleaning",
+        "hard_pass": true,
+        "checks": [
+          {
+            "name": "output_exists",
+            "passed": true,
+            "mandatory": true,
+            "detail": "/Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expB_paths-72403a1ece4324a8/cleaning/output/cleaned.csv",
+            "value": null
+          },
+          {
+            "name": "output_parses",
+            "passed": true,
+            "mandatory": true,
+            "detail": "520 rows, 9 columns",
+            "value": null
+          },
+          {
+            "name": "required_columns_present",
+            "passed": true,
+            "mandatory": true,
+            "detail": "all present",
+            "value": null
+          },
+          {
+            "name": "schema_constraints",
+            "passed": true,
+            "mandatory": true,
+            "detail": "all constraints satisfied",
+            "value": 1.0
+          },
+          {
+            "name": "no_extra_columns",
+            "passed": true,
+            "mandatory": false,
+            "detail": "",
+            "value": null
+          },
+          {
+            "name": "no_duplicate_keys",
+            "passed": true,
+            "mandatory": true,
+            "detail": "",
+            "value": 0.0
+          },
+          {
+            "name": "row_set_matches_reference",
+            "passed": true,
+            "mandatory": true,
+            "detail": "0 reference rows missing (e.g. []); 0 unexpected rows (e.g. []); output rows=520, reference rows=520",
+            "value": null
+          },
+          {
+            "name": "values_match_reference",
+            "passed": true,
+            "mandatory": true,
+            "detail": "4680/4680 cells match (abs_tol=0.011, rel_tol=1e-06)",
+            "value": 1.0
+          }
+        ],
+        "quality": {
+          "cleaning_correctness": 1.0,
+          "data_integrity": 1.0,
+          "schema_compliance": 1.0
+        },
+        "quality_basis": "ground_truth",
+        "validator_version": "1.0"
+      },
+      "conditional_validation": null,
+      "input_artifacts": [
+        "datasets/projects/retail_sales/raw.csv"
+      ],
+      "output_artifacts": [
+        "results/raw/runs/expB_paths-72403a1ece4324a8/cleaning/prompt.txt",
+        "results/raw/runs/expB_paths-72403a1ece4324a8/cleaning/response.txt",
+        "results/raw/runs/expB_paths-72403a1ece4324a8/cleaning/parsed.json",
+        "results/raw/runs/expB_paths-72403a1ece4324a8/cleaning/code.py",
+        "results/raw/runs/expB_paths-72403a1ece4324a8/cleaning/output/cleaned.csv",
+        "results/raw/runs/expB_paths-72403a1ece4324a8/cleaning/output/cleaning_summary.json"
+      ],
+      "input_artifact_hashes": {
+        "datasets/projects/retail_sales/raw.csv": "a1c513b0966bc95bb7cf521bc8920d7a70ccac71ff98d1564a6d84e013f33a5c"
+      },
+      "output_artifact_hashes": {
+        "results/raw/runs/expB_paths-72403a1ece4324a8/cleaning/prompt.txt": "db9085b5641fae0b1962e16963671aa36c598358db09e4a841d5a054b0253296",
+        "results/raw/runs/expB_paths-72403a1ece4324a8/cleaning/response.txt": "c7306882b27ffac3c76ec92ad8958473d08ad7c9473c932c8405d7eac5d325dd",
+        "results/raw/runs/expB_paths-72403a1ece4324a8/cleaning/parsed.json": "50d6e33959922f3cde728893d0d91125b39c5a95d33f07a1f95ce690721b8bad",
+        "results/raw/runs/expB_paths-72403a1ece4324a8/cleaning/code.py": "a4d8bca25693fa1c747d7c7e0e87ae7ae8c17b098d934034a649d8d4df88b13d",
+        "results/raw/runs/expB_paths-72403a1ece4324a8/cleaning/output/cleaned.csv": "f0a6cc19ff470e786eda7a9e5fd148d55fc370f08e4cb656256f0aa9922cfca6",
+        "results/raw/runs/expB_paths-72403a1ece4324a8/cleaning/output/cleaning_summary.json": "3e30a66006a341fef6b5ef8dc68062cb3a932717348a89c2cf4057539322a145"
+      },
+      "handoff_in_path": "results/raw/runs/expB_paths-72403a1ece4324a8/cleaning/handoff_in.json",
+      "handoff_size_bytes": 573,
+      "input_tokens": 2060,
+      "output_tokens": 2777,
+      "cost_usd": null,
+      "cost_status": "unavailable",
+      "timings": {
+        "generation_ms": 17097.551416998613,
+        "execution_ms": 821.2475410000479,
+        "validation_ms": 18.44770799834805,
+        "handoff_ms": 0.45649999992747325
+      }
+    },
+    {
+      "stage": "analysis",
+      "model_alias": "A",
+      "model_id": "us.anthropic.claude-sonnet-4-6",
+      "prompt_version": "v2",
+      "prompt_hash": "8e3d4b64c07e539853793420f018941d7fc473cbf907cbfc81aecbb7d9b7f074",
+      "invocation_ids": [
+        "646e3252-4d2d-4ab2-bda9-182a9e475698"
+      ],
+      "cache_hit": false,
+      "shared_with_run_ids": [],
+      "status": "passed",
+      "structural_ok": true,
+      "failure_type": null,
+      "failure_detail": null,
+      "parse_ok": true,
+      "execution": {
+        "status": "success",
+        "exit_code": 0,
+        "stdout": "findings.json written successfully.\n{\n  \"total_revenue\": 445325.08999999997,\n  \"order_count\": 520.0,\n  \"average_order_value\": 856.3944038461538,\n  \"revenue_north\": 124845.75,\n  \"revenue_south\": 90534.49,\n  \"revenue_east\": 130516.69,\n  \"revenue_west\": 99428.16,\n  \"revenue_2024_q1\": 36108.31,\n  \"revenue_2024_q2\": 56616.79,\n  \"revenue_2024_q3\": 71674.99,\n  \"revenue_2024_q4\": 68948.71,\n  \"revenue_2023\": 211976.28999999998,\n  \"revenue_2024\": 233348.80000000002,\n  \"revenue_yoy_change_pct\": 10.082500264534321,\n  \"electronics_high_discount_orders\": 22.0,\n  \"electronics_high_discount_revenue\": 50035.33,\n  \"order_revenue_mean\": 856.3944038461538,\n  \"order_revenue_median\": 313.275,\n  \"order_revenue_std\": 1295.7423896952698,\n  \"order_revenue_min\": 5.27,\n  \"order_revenue_max\": 7844.02,\n  \"unique_customer_count\": 222.0,\n  \"top_customer_revenue\": 27793.13,\n  \"top_customer_revenue_share_pct\": 6.241087830914715\n}\n",
+        "stderr": "",
+        "runtime_ms": 873.5272499998246,
+        "output_files": [
+          "/Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expB_paths-72403a1ece4324a8/analysis/output/findings.json"
+        ],
+        "sandbox_image": "sha256:d8af82a587873badf2aa309699d72086b56c5e8a1f525d13ccba0b69c329b8c9"
+      },
+      "validation": {
+        "stage": "analysis",
+        "hard_pass": true,
+        "checks": [
+          {
+            "name": "findings_exists",
+            "passed": true,
+            "mandatory": true,
+            "detail": "",
+            "value": null
+          },
+          {
+            "name": "findings_parses",
+            "passed": true,
+            "mandatory": true,
+            "detail": "",
+            "value": null
+          },
+          {
+            "name": "required_keys_present",
+            "passed": true,
+            "mandatory": true,
+            "detail": "all 24 present",
+            "value": null
+          },
+          {
+            "name": "values_numeric",
+            "passed": true,
+            "mandatory": true,
+            "detail": "",
+            "value": null
+          },
+          {
+            "name": "values_within_tolerance",
+            "passed": true,
+            "mandatory": true,
+            "detail": "24/24 correct",
+            "value": 1.0
+          },
+          {
+            "name": "reproducible_across_executions",
+            "passed": true,
+            "mandatory": false,
+            "detail": "24/24 keys agree",
+            "value": 1.0
+          }
+        ],
+        "quality": {
+          "numerical_accuracy": 1.0,
+          "calculation_coverage": 1.0,
+          "reproducibility": 1.0
+        },
+        "quality_basis": "ground_truth",
+        "validator_version": "1.0"
+      },
+      "conditional_validation": {
+        "stage": "analysis",
+        "hard_pass": true,
+        "checks": [
+          {
+            "name": "findings_exists",
+            "passed": true,
+            "mandatory": true,
+            "detail": "",
+            "value": null
+          },
+          {
+            "name": "findings_parses",
+            "passed": true,
+            "mandatory": true,
+            "detail": "",
+            "value": null
+          },
+          {
+            "name": "required_keys_present",
+            "passed": true,
+            "mandatory": true,
+            "detail": "all 24 present",
+            "value": null
+          },
+          {
+            "name": "values_numeric",
+            "passed": true,
+            "mandatory": true,
+            "detail": "",
+            "value": null
+          },
+          {
+            "name": "values_within_tolerance",
+            "passed": true,
+            "mandatory": true,
+            "detail": "24/24 correct",
+            "value": 1.0
+          },
+          {
+            "name": "reproducible_across_executions",
+            "passed": true,
+            "mandatory": false,
+            "detail": "24/24 keys agree",
+            "value": 1.0
+          }
+        ],
+        "quality": {
+          "numerical_accuracy": 1.0,
+          "calculation_coverage": 1.0,
+          "reproducibility": 1.0
+        },
+        "quality_basis": "conditional_reference",
+        "validator_version": "1.0"
+      },
+      "input_artifacts": [
+        "results/raw/runs/expB_paths-72403a1ece4324a8/cleaning/output/cleaned.csv"
+      ],
+      "output_artifacts": [
+        "results/raw/runs/expB_paths-72403a1ece4324a8/analysis/prompt.txt",
+        "results/raw/runs/expB_paths-72403a1ece4324a8/analysis/response.txt",
+        "results/raw/runs/expB_paths-72403a1ece4324a8/analysis/parsed.json",
+        "results/raw/runs/expB_paths-72403a1ece4324a8/analysis/code.py",
+        "results/raw/runs/expB_paths-72403a1ece4324a8/analysis/output/findings.json"
+      ],
+      "input_artifact_hashes": {
+        "results/raw/runs/expB_paths-72403a1ece4324a8/cleaning/output/cleaned.csv": "f0a6cc19ff470e786eda7a9e5fd148d55fc370f08e4cb656256f0aa9922cfca6"
+      },
+      "output_artifact_hashes": {
+        "results/raw/runs/expB_paths-72403a1ece4324a8/analysis/prompt.txt": "8e3d4b64c07e539853793420f018941d7fc473cbf907cbfc81aecbb7d9b7f074",
+        "results/raw/runs/expB_paths-72403a1ece4324a8/analysis/response.txt": "6bafbc10662a4d736b17805139b8fd0aa2f17cd978bbf9636c886a7cfe4fa432",
+        "results/raw/runs/expB_paths-72403a1ece4324a8/analysis/parsed.json": "94e1f477723126d2fb5626b7070ca11d5b213d9a975103cf764354011c5b75ee",
+        "results/raw/runs/expB_paths-72403a1ece4324a8/analysis/code.py": "e4af8ef93284f94df8557df754e33db89338052c5a9a0b86290fa481c909e793",
+        "results/raw/runs/expB_paths-72403a1ece4324a8/analysis/output/findings.json": "a7809bd3d6ab203a2faf3e7b77fe8188bc02850d3735db74625f1a02234986ad"
+      },
+      "handoff_in_path": "results/raw/runs/expB_paths-72403a1ece4324a8/analysis/handoff_in.json",
+      "handoff_size_bytes": 14521,
+      "input_tokens": 2735,
+      "output_tokens": 1923,
+      "cost_usd": null,
+      "cost_status": "unavailable",
+      "timings": {
+        "generation_ms": 14707.938875000764,
+        "execution_ms": 873.5272499998246,
+        "validation_ms": 27.612166000835714,
+        "handoff_ms": 1.4284580011008075
+      }
+    }
+  ],
+  "feasibility": {
+    "outcome": "feasible",
+    "stage_status": {
+      "cleaning": "passed",
+      "analysis": "passed"
+    },
+    "first_failure_stage": null,
+    "failure_type": null
+  },
+  "quality": {
+    "cleaning": {
+      "cleaning_correctness": 1.0,
+      "data_integrity": 1.0,
+      "schema_compliance": 1.0
+    },
+    "analysis": {
+      "numerical_accuracy": 1.0,
+      "calculation_coverage": 1.0,
+      "reproducibility": 1.0
+    }
+  },
+  "conditional_quality": {
+    "analysis": {
+      "numerical_accuracy": 1.0,
+      "calculation_coverage": 1.0,
+      "reproducibility": 1.0
+    }
+  },
+  "efficiency": {
+    "total_api_latency_ms": 31805.490291999376,
+    "total_execution_ms": 1694.7747909998725,
+    "total_validation_ms": 46.059873999183765,
+    "total_handoff_ms": 1.8849580010282807,
+    "end_to_end_ms": 37745.854957998745,
+    "input_tokens": 4795,
+    "output_tokens": 4700,
+    "cost_usd": null,
+    "cost_status": "unavailable",
+    "n_calls": 2,
+    "n_cache_hits": 0,
+    "n_switches": 0,
+    "handoff_bytes_total": 15094
+  },
+  "propagation": {
+    "downstream_executable": {
+      "cleaning": true,
+      "analysis": true
+    },
+    "upstream_error_severity": {
+      "analysis": {
+        "cleaning_correctness": 0.0,
+        "data_integrity": 0.0,
+        "schema_compliance": 0.0
+      }
+    },
+    "end_to_end_accuracy": {
+      "numerical_accuracy": 1.0,
+      "calculation_coverage": 1.0,
+      "reproducibility": 1.0
+    },
+    "propagation_impact": {
+      "analysis": {
+        "calculation_coverage": 0.0,
+        "numerical_accuracy": 0.0,
+        "reproducibility": 0.0
+      }
+    },
+    "blocked_stages": []
+  },
+  "final_artifacts": [
+    "results/raw/runs/expB_paths-72403a1ece4324a8/analysis/prompt.txt",
+    "results/raw/runs/expB_paths-72403a1ece4324a8/analysis/response.txt",
+    "results/raw/runs/expB_paths-72403a1ece4324a8/analysis/parsed.json",
+    "results/raw/runs/expB_paths-72403a1ece4324a8/analysis/code.py",
+    "results/raw/runs/expB_paths-72403a1ece4324a8/analysis/output/findings.json"
+  ]
+}

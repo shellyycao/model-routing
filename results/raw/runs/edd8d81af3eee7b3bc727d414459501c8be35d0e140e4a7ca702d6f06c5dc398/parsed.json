@@ -1,0 +1,7 @@
+{
+  "fixed_code": "def dedupe(xs):\n    seen = []\n    result = []\n    for x in xs:\n        if x not in seen:\n            seen.append(x)\n            result.append(x)\n    return result",
+  "bug_locations": [
+    "def dedupe(xs):\n                 return sorted(set(xs))"
+  ],
+  "explanation": "The original implementation used `sorted(set(xs))`, which fails to preserve first-occurrence order (it sorts the elements) and does not support unhashable values (like lists or dicts) because sets require hashable elements. The fix uses a list to track seen items and builds the result list in order, preserving first-occurrence order and supporting unhashable values."
+}

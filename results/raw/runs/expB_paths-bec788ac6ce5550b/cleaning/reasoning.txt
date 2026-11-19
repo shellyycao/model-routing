@@ -1,0 +1,304 @@
+We need to produce JSON with fields python_code (script), output_filename "cleaned.csv", cleaning_logic description.
+
+We must write script that follows cleaning steps exactly.
+
+Key points:
+
+- Read raw.csv as text, all columns as strings, strip whitespace, treat missing values: empty string, 'NA', 'N/A', 'null', 'None', '-'. case-insensitive after stripping.
+
+Implementation: use pandas read_csv with dtype=str, keep default, then apply strip to all cells, replace missing values with np.nan.
+
+- Remove duplicate order_id rows before any other filter: keep first occurrence.
+
+- Parse order_date with given formats. Use datetime.strptime attempts. Drop rows where missing or cannot parse. Output as YYYY-MM-DD.
+
+- region mapping: case-insensitive mapping: N->North etc. Accept full names case-insensitively. Drop rows missing or not in set.
+
+- product_category mapping: map case-insensitively with variants. Drop rows missing or not mapped.
+
+- unit_price: remove '$', 'USD', ',' and surrounding spaces. Then parse float. Drop rows missing, not number, <=0, >5000.
+
+- quantity: parse as number, allow float but must be whole number integer, between 1 and 50 inclusive. Store as int.
+
+- discount_pct: remove trailing '%', parse number. Missing => 0. Drop rows where not number or <0 >100.
+
+- customer_id: uppercase, missing => 'UNKNOWN'.
+
+- revenue compute.
+
+- Output columns order, sort by order_id ascending (string sort). Write CSV.
+
+- Also write cleaning_summary.json with raw_rows, cleaned_rows, and per-rule counts maybe.
+
+We need to track counts: raw_rows = total rows read (including header? Usually rows read = number of data rows). We'll count df.shape[0] after reading (excluding header). cleaned_rows = final df shape.
+
+Also per rule counts: duplicates_removed, rows_dropped_order_date, region_invalid, product_category_invalid, unit_price_invalid, quantity_invalid, discount_invalid.
+
+Implement.
+
+Edge Cases: missing values detection after stripping: we can define a set of missing strings lowercased.
+
+When reading, we need to ensure we treat all values as strings; pandas read_csv with dtype=str and keep_default_na=False to avoid default NA detection.
+
+Implementation steps:
+
+```
+import os, json, pandas as pd, numpy as np, datetime, re, sys
+input_path = os.path.join(os.environ['INPUT_DIR'], 'raw.csv')
+df = pd.read_csv(input_path, dtype=str, keep_default_na=False)
+raw_rows = df.shape[0]
+# strip whitespace
+df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)
+# treat missing
+missing_vals = {'', 'na', 'n/a', 'null', 'none', '-'}
+df = df.replace(to_replace=missing_vals, value=np.nan, regex=False)
+```
+
+But need case-insensitive after stripping. Since we stripped, we can lower and compare.
+
+Better: define function to normalize missing.
+
+```
+def normalize_missing(val):
+    if isinstance(val, str):
+        v = val.strip()
+        if v.lower() in missing_vals:
+            return np.nan
+        return v
+    return val
+df = df.applymap(normalize_missing)
+```
+
+Now duplicate removal:
+
+```
+dup_mask = df.duplicated(subset=['order_id'])
+duplicates_removed = dup_mask.sum()
+df = df[~dup_mask]
+```
+
+Now parse order_date:
+
+Define function parse_date(s): try each format.
+
+Formats list:
+
+'%Y-%m-%d'
+'%m/%d/%Y'
+'%d-%b-%Y' (need month abbreviation)
+'%Y/%m/%d'
+'%B %d, %Y' (full month name)
+
+Note: For %d-%b-%Y, month abbreviation case-insensitive; strptime handles case-insensitively? It expects proper case but we can .title() maybe.
+
+We'll attempt each format; if success, return date string formatted as %Y-%m-%d else None.
+
+```
+def try_parse(date_str):
+    if pd.isna(date_str):
+        return None
+    for fmt in formats:
+        try:
+            dt = datetime.datetime.strptime(date_str, fmt)
+            return dt.strftime('%Y-%m-%d')
+        except Exception:
+            continue
+    return None
+df['order_date_parsed'] = df['order_date'].apply(try_parse)
+order_date_invalid = df['order_date_parsed'].isna().sum()
+df = df.dropna(subset=['order_date_parsed'])
+df = df.drop(columns=['order_date'])
+df = df.rename(columns={'order_date_parsed':'order_date'})
+```
+
+Now region mapping:
+
+Define mapping dict: {'n':'North','north':'North','s':'South','south':'South','e':'East','east':'East','w':'West','west':'West'}
+
+Apply lower.
+
+```
+def map_region(val):
+    if pd.isna(val):
+        return np.nan
+    v = val.strip().lower()
+    return region_map.get(v)
+df['region_mapped'] = df['region'].apply(map_region)
+region_invalid = df['region_mapped'].isna().sum()
+df = df.dropna(subset=['region_mapped'])
+df = df.drop(columns=['region'])
+df = df.rename(columns={'region_mapped':'region'})
+```
+
+Now product_category mapping:
+
+Define mapping dict with lower keys.
+
+```
+cat_map = {
+    'electronics':'Electronics',
+    'electronic':'Electronics',
+    'clothing':'Clothing',
+    'apparel':'Clothing',
+    'home & garden':'Home & Garden',
+    'home and garden':'Home & Garden',
+    'home&garden':'Home & Garden',
+    'sports':'Sports',
+    'sport':'Sports',
+    'books':'Books',
+    'book':'Books'
+}
+def map_category(val):
+    if pd.isna(val):
+        return np.nan
+    v = val.strip().lower()
+    return cat_map.get(v)
+df['product_category_mapped'] = df['product_category'].apply(map_category)
+product_invalid = df['product_category_mapped'].isna().sum()
+df = df.dropna(subset=['product_category_mapped'])
+df = df.drop(columns=['product_category'])
+df = df.rename(columns={'product_category_mapped':'product_category'})
+```
+
+Now unit_price cleaning:
+
+Remove '$', 'USD', ',' and surrounding spaces.
+
+```
+def clean_price(val):
+    if pd.isna(val):
+        return np.nan
+    s = str(val)
+    s = s.replace('$','').replace('USD','').replace(',','')
+    s = s.strip()
+    try:
+        f = float(s)
+        return f
+    except:
+        return np.nan
+df['unit_price_clean'] = df['unit_price'].apply(clean_price)
+unit_price_invalid = df['unit_price_clean'].isna().sum()
+df = df[(df['unit_price_clean']>0) & (df['unit_price_clean']<=5000)]
+unit_price_invalid += df.shape[0] - df['unit_price_clean'].notna().sum() # but we already filtered; better compute after filter.
+```
+
+Simpler: compute mask.
+
+```
+price_mask = df['unit_price_clean'].notna() & (df['unit_price_clean']>0) & (df['unit_price_clean']<=5000)
+unit_price_invalid = (~price_mask).sum()
+df = df[price_mask]
+```
+
+Now quantity:
+
+Parse as float then check integer.
+
+```
+def parse_quantity(val):
+    if pd.isna(val):
+        return np.nan
+    try:
+        f = float(val)
+        return f
+    except:
+        return np.nan
+df['quantity_num'] = df['quantity'].apply(parse_quantity)
+qty_mask = df['quantity_num'].notna() & (df['quantity_num']%1==0) & (df['quantity_num']>=1) & (df['quantity_num']<=50)
+quantity_invalid = (~qty_mask).sum()
+df = df[qty_mask]
+df['quantity'] = df['quantity_num'].astype(int)
+df = df.drop(columns=['quantity_num'])
+```
+
+Now discount_pct:
+
+Missing => 0.
+
+```
+def parse_discount(val):
+    if pd.isna(val):
+        return 0.0
+    s = str(val).strip()
+    if s.endswith('%'):
+        s = s[:-1]
+    s = s.strip()
+    try:
+        f = float(s)
+        return f
+    except:
+        return np.nan
+df['discount_pct_num'] = df['discount_pct'].apply(parse_discount)
+discount_invalid = df['discount_pct_num'].isna().sum()
+df = df[(df['discount_pct_num']>=0) & (df['discount_pct_num']<=100)]
+discount_invalid += (~df['discount_pct_num'].between(0,100)).sum()
+df = df[df['discount_pct_num'].between(0,100)]
+df['discount_pct'] = df['discount_pct_num']
+df = df.drop(columns=['discount_pct_num'])
+```
+
+But need to count rows dropped due to discount invalid. We'll compute mask.
+
+```
+discount_mask = df['discount_pct_num'].notna() & (df['discount_pct_num']>=0) & (df['discount_pct_num']<=100)
+discount_invalid = (~discount_mask).sum()
+df = df[discount_mask]
+df['discount_pct'] = df['discount_pct_num']
+df = df.drop(columns=['discount_pct_num'])
+```
+
+Now customer_id:
+
+```
+df['customer_id'] = df['customer_id'].fillna('UNKNOWN')
+df['customer_id'] = df['customer_id'].astype(str).str.upper()
+```
+
+Now revenue:
+
+```
+df['revenue'] = (df['quantity'] * df['unit_price_clean'] * (1 - df['discount_pct']/100)).round(2)
+```
+
+Now rename unit_price column to unit_price (cleaned). We have unit_price_clean column.
+
+```
+df = df.rename(columns={'unit_price_clean':'unit_price'})
+```
+
+Select columns order:
+
+order = ['order_id','order_date','customer_id','region','product_category','quantity','unit_price','discount_pct','revenue']
+
+df = df[order]
+
+Sort by order_id ascending (string). Use df.sort_values('order_id', inplace=True)
+
+Write CSV:
+
+output_path = os.path.join(os.environ['OUTPUT_DIR'], 'cleaned.csv')
+df.to_csv(output_path, index=False)
+
+Now cleaning_summary.json:
+
+Create dict with raw_rows, cleaned_rows, duplicates_removed, order_date_invalid, region_invalid, product_category_invalid, unit_price_invalid, quantity_invalid, discount_invalid.
+
+Write to json file.
+
+Now script must be self-contained, no prints.
+
+Edge Cases: need to ensure we treat missing values after initial strip; we used normalize_missing earlier.
+
+But after we replace missing with np.nan, later we may have NaNs.
+
+Implementation details: In step for discount_pct missing we set to 0.0; but we need to treat missing after missing detection earlier (NaN). So parse_discount will treat NaN as 0.
+
+Now final.
+
+Make sure we import datetime.
+
+Now produce JSON with fields.
+
+Let's craft cleaning_logic description summarizing steps.
+
+Now produce final answer.

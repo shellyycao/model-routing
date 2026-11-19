@@ -1,0 +1,104 @@
+We need to produce JSON with fields python_code (string containing script), output_filename = "cleaned.csv", cleaning_logic brief explanation.
+
+The script must read raw.csv from INPUT_DIR, apply cleaning steps in order, write cleaned.csv and cleaning_summary.json to OUTPUT_DIR.
+
+We need to implement all rules.
+
+Implementation details:
+
+- Read raw.csv with pandas read_csv, but we need to read all columns as text, strip whitespace, treat missing values as per list. We'll read with dtype=str, keep as strings, then apply strip and replace missing values with NaN.
+
+- R1: after stripping, treat empty string, 'NA', 'N/A', 'null', 'None', '-' (case-insensitive) as missing. We'll convert to np.nan.
+
+- R2: Remove duplicate order_id, keep first occurrence. Use drop_duplicates(subset='order_id', keep='first').
+
+- R3: Parse order_date with multiple formats. We'll define a function that tries each format using datetime.strptime. Also need to handle 'Month D, YYYY' format with full month name. We'll also need to handle missing (NaN) rows drop.
+
+- R4: region mapping: case-insensitive mapping of N,S,E,W to full names, also full names. We'll map after stripping. If missing or not in allowed, drop.
+
+- R5: product_category mapping: define dict of lowercased variants to canonical. Use case-insensitive.
+
+- R6: unit_price cleaning: remove '$', 'USD', ',' and surrounding spaces. Then parse float. Drop if missing, not number, <=0, >5000.
+
+- R7: quantity: parse as float, ensure whole number, integer between 1 and 50 inclusive. Store as int.
+
+- R8: discount_pct: remove trailing '%', parse float. Missing => 0. Drop if not number or out of range.
+
+- R9: customer_id: uppercase, missing => 'UNKNOWN'.
+
+- R10: revenue compute.
+
+- R11: output columns order, sort by order_id ascending (string sort). Write CSV.
+
+- cleaning_summary.json: include raw_rows, cleaned_rows, and counts per rule maybe.
+
+We'll track counts: duplicates_removed, rows_dropped_due_to_date, region, product_category, unit_price, quantity, discount_pct.
+
+Implementation steps:
+
+- Use os.getenv('INPUT_DIR'), 'OUTPUT_DIR'.
+
+- Read raw.csv using pandas read_csv with dtype=str, keep default.
+
+- raw_rows = len(df)
+
+- Apply strip: df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)
+
+- Replace missing values: define missing_set = {'', 'na', 'n/a', 'null', 'none', '-'}; for each cell, if lower in set => np.nan.
+
+Simplify: use df.replace(to_replace=regex pattern?). We'll just apply function.
+
+- After missing handling, we can proceed.
+
+- Duplicate removal: before other filters. Use df_before_dup = df; duplicates_removed = df_before_dup['order_id'].duplicated().sum(); df = df.drop_duplicates(subset='order_id', keep='first').
+
+- Then apply each rule sequentially, each time filter rows and count drops.
+
+Implement functions for each rule returning mask.
+
+Edge Cases: order_date parsing: we need to handle missing (NaN) and unparsable.
+
+Define list of formats:
+
+'%Y-%m-%d', '%m/%d/%Y', '%d-%b-%Y', '%Y/%m/%d', '%B %d, %Y'
+
+Note: %b expects locale abbreviation like 'Mar', case-insensitive? We'll use strptime after title case maybe.
+
+We'll try each format; if fails, continue.
+
+Implementation: def parse_date(s): for fmt in formats: try: dt = datetime.strptime(s, fmt); return dt.strftime('%Y-%m-%d'); except: pass; return None
+
+Apply to column, drop rows where result is None.
+
+- Region mapping: mapping dict = {'n':'North','north':'North','s':'South','south':'South','e':'East','east':'East','w':'West','west':'West'}
+
+- Product category mapping: define mapping dict with lowercased keys.
+
+Mapping: 'electronics','electronic' -> 'Electronics'; 'clothing','apparel' -> 'Clothing'; 'home & garden','home and garden','home&garden','home & garden' -> 'Home & Garden'; 'sports','sport' -> 'Sports'; 'books','book' -> 'Books'.
+
+- unit_price cleaning: remove characters: replace regex r'[\$,]' and 'USD' case-insensitive. Use str.replace.
+
+Implementation: s = re.sub(r'[\$,]', '', s, flags=re.IGNORECASE); s = re.sub(r'(?i)usd', '', s); s = s.strip(); then parse float.
+
+- quantity: parse float, check is integer (abs(val - round(val)) < 1e-9). Then int.
+
+- discount_pct: if NaN => 0. else remove trailing '%', strip, parse float.
+
+- revenue: compute.
+
+- Ensure types: unit_price float, quantity int, discount_pct float, revenue float.
+
+- Write cleaned.csv with df.to_csv(..., index=False).
+
+- Write summary JSON.
+
+Now produce final JSON with script string.
+
+Need to ensure script is self-contained, imports needed modules.
+
+We'll embed summary counts.
+
+Now craft cleaning_logic explanation.
+
+Now produce final answer.
+

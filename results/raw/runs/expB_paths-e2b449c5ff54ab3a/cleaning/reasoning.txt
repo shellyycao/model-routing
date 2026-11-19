@@ -1,0 +1,129 @@
+We need to produce JSON with fields python_code (script), output_filename ("cleaned.csv"), cleaning_logic (brief explanation). The script must implement all cleaning steps, produce cleaned.csv and cleaning_summary.json with raw_rows, cleaned_rows, and per-rule counts.
+
+We need to read raw.csv as text, treat all columns as strings, strip whitespace, treat missing values as per list.
+
+Implementation plan:
+
+- import os, pandas as pd, numpy as np, json, datetime.
+
+- input_path = os.path.join(os.environ["INPUT_DIR"], "raw.csv")
+- output_path = os.path.join(os.environ["OUTPUT_DIR"], "cleaned.csv")
+- summary_path = os.path.join(os.environ["OUTPUT_DIR"], "cleaning_summary.json")
+
+- Read raw CSV using pandas read_csv with dtype=str, keep default. Use na_filter=False to keep as strings.
+
+- raw_rows = len(df)
+
+- Apply R1: strip whitespace for all cells, convert missing values: define missing_set = {'', 'na', 'n/a', 'null', 'none', '-'} after stripping lower.
+
+We can apply df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x). Then replace missing values with np.nan where lower stripped in missing_set.
+
+- R2: duplicate order_id: keep first. Count duplicates removed.
+
+- R3: parse order_date. We'll define a function try_parse(date_str) that attempts each format using datetime.strptime. Need to handle after missing removal. If parsing fails, return None. Keep rows where parsed not None. Count dropped.
+
+- R4: region mapping. Define mapping dict for case-insensitive: {'n':'North','north':'North','s':'South','south':'South','e':'East','east':'East','w':'West','west':'West'}. After stripping and lower. If not in mapping, drop.
+
+- R5: product_category mapping. Define mapping dict with lower keys: 'electronics','electronic' -> 'Electronics', 'clothing','apparel' -> 'Clothing', 'home & garden','home and garden','home&garden','home and garden' etc -> 'Home & Garden', 'sports','sport' -> 'Sports', 'books','book' -> 'Books'. Use lower and replace '&' with 'and' maybe. Simpler: lower string, replace '&' with 'and', remove spaces? We'll just map known variants.
+
+- R6: unit_price cleaning: remove '$','USD',',', strip spaces. Then if empty after cleaning treat as missing. Parse float. Drop if missing, not number, <=0, >5000.
+
+- R7: quantity: parse float, check integer (value.is_integer()), >=1 <=50. Store int.
+
+- R8: discount_pct: if missing (np.nan) set 0. Else remove trailing '%', strip, parse float. Drop if not number or out of range.
+
+- R9: customer_id: if missing (np.nan) set 'UNKNOWN', else upper.
+
+- R10: revenue = quantity * unit_price * (1 - discount_pct/100). Round to 2 decimals.
+
+- R11: select columns order, sort by order_id ascending (string sort). Write CSV with header, index=False.
+
+- Build summary dict: raw_rows, cleaned_rows, duplicates_removed, rows_dropped_{rule} counts.
+
+We need to track counts: duplicates_removed, date_invalid, region_invalid, category_invalid, unit_price_invalid, quantity_invalid, discount_invalid.
+
+Implementation details:
+
+- After each filter, we can compute number dropped = before - after.
+
+- For discount_pct missing we set to 0, not drop.
+
+- For customer_id missing we set to 'UNKNOWN'.
+
+- Ensure revenue min 0 (should be). Use round.
+
+- Write summary JSON.
+
+Edge Cases: order_id may have whitespace; we stripped earlier.
+
+Now produce script as a string.
+
+Let's craft code.
+
+We'll use pandas for convenience but many steps row-wise.
+
+Implementation steps:
+
+```
+import os, pandas as pd, numpy as np, json, datetime, re
+
+def is_missing(val):
+    if pd.isna(val):
+        return True
+    if isinstance(val, str):
+        return val.strip().lower() in {'', 'na', 'n/a', 'null', 'none', '-'}
+    return False
+```
+
+But after initial strip we replace missing with np.nan.
+
+Processing:
+
+df = pd.read_csv(..., dtype=str, keep_default_na=False) # keep strings.
+
+Strip whitespace: df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)
+
+Replace missing: for col in df.columns: df[col] = df[col].where(~df[col].astype(str).str.lower().isin(missing_set), np.nan)
+
+Now duplicates: dup_mask = df.duplicated(subset='order_id', keep='first'); duplicates_removed = dup_mask.sum(); df = df[~dup_mask]
+
+Now order_date parsing: define function parse_date(s): try each format.
+
+We'll use datetime.datetime.strptime.
+
+Formats list: "%Y-%m-%d", "%m/%d/%Y", "%d-%b-%Y", "%Y/%m/%d", "%B %d, %Y". For %d-%b-%Y month abbreviation case-insensitive; need locale English; strptime handles.
+
+Apply: df['order_date_parsed'] = df['order_date'].apply(lambda x: parse_date(x) if pd.notna(x) else None)
+
+Drop rows where parsed is None.
+
+Then format to iso: df['order_date'] = df['order_date_parsed'].dt.strftime('%Y-%m-%d'); drop helper column.
+
+Region mapping: map dict; apply lower; if not in dict drop.
+
+Product category mapping: similar.
+
+Unit price cleaning: function clean_price(s): if pd.isna(s): return np.nan; else remove $ USD , using regex: re.sub(r'[\$,]', '', s); also remove 'USD' case-insensitively; then strip; if empty return np.nan; try float.
+
+Quantity: similar.
+
+Discount: if missing set 0; else remove %; parse float.
+
+Customer_id: if missing set 'UNKNOWN', else upper.
+
+Revenue compute.
+
+Select columns.
+
+Write.
+
+Now produce JSON.
+
+Let's craft script as a triple-quoted string inside JSON.
+
+Make sure script sets output_filename variable? Not required but we need to return output_filename separately.
+
+The script should not print large data.
+
+Now produce final JSON.
+

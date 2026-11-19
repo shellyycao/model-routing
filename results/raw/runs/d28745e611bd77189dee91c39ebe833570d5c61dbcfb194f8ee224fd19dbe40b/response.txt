@@ -1,0 +1,12 @@
+```json
+{
+  "fixed_code": "def paginate(items, size, cursor=None):\n    if size <= 0:\n        raise ValueError('size')\n    try:\n        start = 0 if cursor is None else int(cursor)\n        if start < 0:\n            raise ValueError('cursor')\n    except (ValueError, TypeError):\n        raise ValueError('cursor')\n    end = min(start + size, len(items))\n    next_cursor = str(end) if end < len(items) else None\n    return list(items[start:end]), next_cursor",
+  "bug_locations": [
+    "size check condition",
+    "start index calculation",
+    "cursor validation",
+    "next_cursor calculation"
+  ],
+  "explanation": "The original code had multiple defects: 1) It checked `size < 0` instead of `size <= 0` per spec. 2) It calculated `start` as 1 or `int(cursor)+1`, causing off-by-one errors (spec requires zero-based indexing). 3) It lacked validation for negative cursor values. 4) The `next_cursor` logic was correct but is now more explicit. The fixes include proper size validation, correct zero-based start calculation, comprehensive cursor validation (including type checking), and maintaining correct pagination logic."
+}
+```

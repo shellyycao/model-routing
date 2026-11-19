@@ -1,0 +1,5 @@
+{
+  "fixed_code": "def merge_intervals(intervals):\n    out = []\n    for s, e in sorted([list(iv) for iv in intervals]):\n        if out and s <= out[-1][1]:\n            out[-1][1] = max(out[-1][1], e)\n        else:\n            out.append([s, e])\n    return out\n",
+  "bug_location": "merge_intervals: the condition `s < out[-1][1]` on the overlap check line",
+  "explanation": "There are two bugs: (1) the intervals are not sorted before processing, so overlapping intervals given out of order won't be merged correctly; (2) the condition `s < out[-1][1]` should be `s <= out[-1][1]` to handle touching intervals (where next.start == current.end). The fix adds `sorted(...)` and changes `<` to `<=`."
+}

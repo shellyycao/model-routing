@@ -1,0 +1,9 @@
+```json
+{
+  "fixed_code": "from collections import deque\ndef shortest_path(graph,start,goal):\n    q=deque([(start,[start])]); seen=set([start])\n    while q:\n        node,path=q.popleft()\n        if node==goal:return path\n        for nxt in graph.get(node,[]):\n            if nxt not in seen:q.append((nxt,path+[nxt])); seen.add(nxt)\n    return None\n",
+  "bug_locations": [
+    "shortest_path: initialization of q and seen"
+  ],
+  "explanation": "Two bugs: (1) The path stored with the start node was empty `[]`, but the spec requires the returned path to include the start node itself (e.g., `['a','b']`). Fixed by initializing the path as `[start]`. (2) The start node was never added to `seen`, so it could be re-visited via a cycle. Fixed by initializing `seen` with `{start}`."
+}
+```

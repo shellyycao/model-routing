@@ -1,0 +1,10 @@
+```json
+{
+  "fixed_code": "def rotate(xs, k):\n    if not xs:\n        return []\n    k %= len(xs)\n    return list(xs[-k:] + xs[:-k]) if k else list(xs)\n",
+  "bug_locations": [
+    "rotate function: missing empty list check causing ZeroDivisionError",
+    "rotate function: when k=0 after modulo, xs[:-0] returns empty list instead of full list"
+  ],
+  "explanation": "Two bugs: 1) When xs is empty, len(xs) is 0, causing a ZeroDivisionError on k %= len(xs). Fix: return [] early if xs is empty. 2) When k becomes 0 after the modulo (either k was 0 or k was a multiple of len(xs)), xs[:-0] is xs[:0] which is an empty list, so the result would be wrong. Fix: return list(xs) when k is 0 after modulo."
+}
+```

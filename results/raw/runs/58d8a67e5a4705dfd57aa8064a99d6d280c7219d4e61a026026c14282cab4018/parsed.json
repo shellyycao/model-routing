@@ -1,0 +1,8 @@
+{
+  "fixed_code": "from collections import deque\n\ndef shortest_path(graph, start, goal):\n    queue = deque([(start, [start])])\n    seen = {start}\n    while queue:\n        node, path = queue.popleft()\n        if node == goal:\n            return path\n        for neighbour in graph.get(node, []):\n            if neighbour not in seen:\n                seen.add(neighbour)\n                queue.append((neighbour, path + [neighbour]))\n    return None\n",
+  "bug_locations": [
+    "shortest_path: frontier container and pop order",
+    "shortest_path: seen-set initialization and neighbour enqueue filtering"
+  ],
+  "explanation": "The buggy code used a LIFO stack with pop(), which performs DFS and visits the last listed neighbour first, so it can return a non-shortest path and violates the required neighbour order. It also only marked nodes seen when popped and did not seed the start node, allowing duplicate frontier entries. The fix uses BFS with a FIFO deque, seeds seen with start, enqueues neighbours in listed order, marks them seen at enqueue time, returns the goal path when dequeued, and returns None if the frontier empties."
+}

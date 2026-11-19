@@ -1,0 +1,5 @@
+{
+  "fixed_code": "def merge_intervals(intervals):\n    # Work on a sorted copy so the original list is not modified\n    sorted_intervals = sorted((list(iv) for iv in intervals), key=lambda x: x[0])\n    out = []\n    for s, e in sorted_intervals:\n        # Merge when intervals overlap or touch (s <= previous end)\n        if out and s <= out[-1][1]:\n            out[-1][1] = max(out[-1][1], e)\n        else:\n            out.append([s, e])\n    return out",
+  "bug_location": "merge_intervals: loop processes unsorted intervals and uses `s < out[-1][1]` which misses touching intervals.",
+  "explanation": "The original code never sorted the input, so overlapping intervals could be missed, and it used a strict `<` comparison, failing to merge intervals that only touch. Sorting the intervals and changing the condition to `s <= out[-1][1]` fixes both issues while keeping the input unchanged."
+}

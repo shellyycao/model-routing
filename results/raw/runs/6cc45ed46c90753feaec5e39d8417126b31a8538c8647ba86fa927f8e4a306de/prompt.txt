@@ -1,0 +1,25 @@
+You are debugging a Python module. The specification is authoritative.
+
+Specification:
+dependency_order(deps) returns a deterministic topological order over every key and referenced node, choosing alphabetically among available nodes; raise ValueError on a cycle.
+
+Buggy module:
+```python
+import heapq
+def dependency_order(deps):
+    nodes=set(deps);incoming={n:set(deps.get(n,[])) for n in nodes};ready=[n for n in nodes if not incoming[n]];heapq.heapify(ready);out=[]
+    while ready:
+        n=heapq.heappop(ready);out.append(n)
+        for m in nodes:
+            if n in incoming[m]:incoming[m].remove(n)
+            if not incoming[m] and m not in out and m not in ready:heapq.heappush(ready,m)
+    return out
+
+```
+
+Visible checks:
+```python
+assert dependency_order({'b':['a'],'a':[]}) == ['a','b']
+```
+
+Return the complete corrected module. There may be multiple interacting defects. Do not hard-code the visible examples.

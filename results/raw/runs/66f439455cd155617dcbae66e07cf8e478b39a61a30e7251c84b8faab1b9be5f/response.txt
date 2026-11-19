@@ -1,0 +1,10 @@
+```json
+{
+  "fixed_code": "def sessionize(events, gap):\n    out = {}\n    for user, t in sorted(events):\n        sessions = out.setdefault(user, [])\n        if not sessions or t - sessions[-1][-1] > gap:\n            sessions.append([t])\n        else:\n            sessions[-1].append(t)\n    return out\n",
+  "bug_locations": [
+    "for loop in sessionize: iterated over raw 'events' instead of a sorted copy ('sorted(events)')",
+    "session-boundary condition in sessionize: used '>= gap' instead of '> gap'"
+  ],
+  "explanation": "Two defects interacted. (1) The events were never sorted, so out-of-order input produced incorrect session groupings; iterating over sorted(events) orders by (user, timestamp) and also avoids mutating the caller's list. (2) The boundary test used '>= gap', which starts a new session when the gap equals 'gap', but the spec requires a new session only when the gap is strictly greater than 'gap'; this is why the visible check [('u',1),('u',3)] with gap 2 must yield [[1,3]]. The condition is corrected to 't - sessions[-1][-1] > gap'."
+}
+```

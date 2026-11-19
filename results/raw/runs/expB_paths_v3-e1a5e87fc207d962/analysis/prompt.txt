@@ -1,0 +1,122 @@
+STAGE: analysis
+PROJECT: retail_sales
+PROMPT_VERSION: v3
+
+You are the analysis stage of a three-stage data workflow (cleaning -> analysis -> reporting).
+The cleaning stage has already run. Write ONE self-contained Python 3 script that computes the
+required metrics from the cleaned data it produced.
+
+## Original objective
+Clean the raw retail order export and analyse 2023-2024 sales performance: overall revenue, regional differences, the 2024 quarterly trend, year-over-year growth, high-discount electronics orders, customer concentration and the distribution of order revenue, then report the verified findings to business stakeholders.
+
+## Handoff from the previous stage
+Completed stages: cleaning
+Validation status of previous stages: {"cleaning": "passed"}
+Cleaning logic reported by the cleaning stage:
+R1: All columns read as text; every cell is stripped of surrounding whitespace; empty string, 'NA', 'N/A', 'null', 'None', and '-' (case-insensitive) are replaced with NaN.
+R2: Duplicate order_ids are removed, keeping only the first occurrence in file order.
+R3: order_date is tried against five explicit formats (YYYY-MM-DD, MM/DD/YYYY, DD-Mon-YYYY, YYYY/MM/DD, 'Month D, YYYY'); rows with missing or unparseable dates are dropped; surviving dates are written as YYYY-MM-DD.
+R4: region values are mapped case-insensitively (including single-letter abbreviations N/S/E/W) to North/South/East/West; unrecognised or missing values cause the row to be dropped.
+R5: product_category values are mapped case-insensitively to one of five canonical names (Electronics, Clothing, Home & Garden, Sports, Books), including variant spellings such as 'Electronic', 'Apparel', 'Home and Garden', 'Sport', 'Book'; unrecognised or missing values cause the row to be dropped.
+R6: unit_price has '$', 'USD', and ',' removed before parsing as float; rows with missing, non-numeric, <=0, or >5000 values are dropped.
+R7: quantity is parsed as float (allowing '3.0'), checked to be a whole number in [1, 50], then stored as int; non-conforming rows are dropped.
+R8: discount_pct has a trailing '%' stripped before parsing as float; missing values default to 0.0; rows with non-numeric or out-of-range [0, 100] values are dropped.
+R9: customer_id is uppercased; missing values are replaced with 'UNKNOWN' (row kept).
+R10: revenue = quantity * unit_price * (1 - discount_pct/100), rounded to 2 decimal places.
+R11: Output contains exactly the nine required columns in the specified order, sorted ascending by order_id, written as a header CSV with no index.
+Cleaning summary written by the cleaning code (cleaning_summary.json):
+{"raw_rows": 636, "cleaned_rows": 520, "duplicates_removed": 36, "dropped_bad_order_date": 14, "dropped_bad_region": 18, "dropped_bad_product_category": 6, "dropped_bad_unit_price": 20, "dropped_bad_quantity": 17, "dropped_bad_discount_pct": 5}
+
+## Input/output contract (mandatory)
+- Your script runs in an isolated sandbox with NO network access. Available libraries: the Python
+  standard library, pandas and numpy.
+- Read the cleaned data from os.path.join(os.environ["INPUT_DIR"], "cleaned.csv").
+  It is the file the cleaning stage actually produced; use it as is.
+- Write os.path.join(os.environ["OUTPUT_DIR"], "findings.json"). Write nowhere else.
+- findings.json MUST be a FLAT JSON object mapping every metric_key listed below to a single
+  finite number, e.g. {"metric_a": 12.5, "metric_b": 3.0}. Do NOT nest it: an object such as
+  {"metrics": {"metric_a": 12.5}} FAILS validation. No strings, lists, null, NaN or Infinity as values.
+- Do not round results; write full precision.
+- List every file the script writes in `expected_artifacts`.
+
+## Cleaned data schema (columns in this order)
+- order_id: str; not nullable
+- order_date: date; not nullable
+- customer_id: str; not nullable
+- region: category; not nullable; allowed values: 'North', 'South', 'East', 'West'
+- product_category: category; not nullable; allowed values: 'Electronics', 'Clothing', 'Home & Garden', 'Sports', 'Books'
+- quantity: int; not nullable; min 1; max 50
+- unit_price: float; not nullable; min 0.01; max 5000
+- discount_pct: float; not nullable; min 0; max 100
+- revenue: float; not nullable; min 0
+
+## First lines of the cleaned file (cleaned.csv, 521 lines in total incl. header)
+```
+order_id,order_date,customer_id,region,product_category,quantity,unit_price,discount_pct,revenue
+R100001,2023-01-04,C0012,North,Clothing,8,97.72,30.0,547.23
+R100002,2023-01-05,C0054,North,Home & Garden,5,319.16,10.0,1436.22
+R100003,2023-01-08,C0113,East,Clothing,9,45.33,0.0,407.97
+R100004,2023-01-09,UNKNOWN,East,Books,2,31.39,15.0,53.36
+R100005,2023-01-11,C0097,North,Clothing,3,39.08,10.0,105.52
+R100008,2023-01-14,C0241,East,Home & Garden,1,354.95,15.0,301.71
+R100010,2023-01-24,C0182,West,Home & Garden,1,16.87,10.0,15.18
+R100011,2023-01-26,C0116,West,Sports,5,308.14,10.0,1386.63
+R100012,2023-01-26,C0014,West,Clothing,4,52.61,0.0,210.44
+R100013,2023-01-27,C0190,South,Clothing,2,120.2,0.0,240.4
+R100015,2023-01-30,C0217,South,Sports,3,158.21,20.0,379.7
+```
+
+## Analysis questions and the metric_keys each must produce
+- q1: Overall performance (aggregation): total revenue (sum of revenue) -> total_revenue; number of orders (rows in the cleaned data) -> order_count; average order value = total_revenue / order_count -> average_order_value.
+  metric_keys: total_revenue, order_count, average_order_value
+- q2: Regional comparison (group comparison): total revenue per region -> revenue_north, revenue_south, revenue_east, revenue_west.
+  metric_keys: revenue_north, revenue_south, revenue_east, revenue_west
+- q3: Quarterly trend in 2024 (trend): total revenue of orders dated in each calendar quarter of 2024 (Q1 = Jan-Mar, Q2 = Apr-Jun, Q3 = Jul-Sep, Q4 = Oct-Dec) -> revenue_2024_q1, revenue_2024_q2, revenue_2024_q3, revenue_2024_q4.
+  metric_keys: revenue_2024_q1, revenue_2024_q2, revenue_2024_q3, revenue_2024_q4
+- q4: Year-over-year change (percentage change): total revenue of orders dated in 2023 -> revenue_2023; in 2024 -> revenue_2024; percentage change = (revenue_2024 - revenue_2023) / revenue_2023 * 100 -> revenue_yoy_change_pct, expressed as a percentage.
+  metric_keys: revenue_2023, revenue_2024, revenue_yoy_change_pct
+- q5: High-discount electronics (conditional filtering): among orders with product_category 'Electronics' and discount_pct >= 20: number of orders -> electronics_high_discount_orders; their total revenue -> electronics_high_discount_revenue.
+  metric_keys: electronics_high_discount_orders, electronics_high_discount_revenue
+- q6: Order revenue distribution (statistical summary) over all orders: mean -> order_revenue_mean; median -> order_revenue_median; sample standard deviation (denominator n - 1) -> order_revenue_std; minimum -> order_revenue_min; maximum -> order_revenue_max.
+  metric_keys: order_revenue_mean, order_revenue_median, order_revenue_std, order_revenue_min, order_revenue_max
+- q7: Customer concentration (derived step): number of distinct customer_id values -> unique_customer_count; revenue of the highest-revenue customer -> top_customer_revenue; top_customer_revenue / total revenue * 100 -> top_customer_revenue_share_pct.
+  metric_keys: unique_customer_count, top_customer_revenue, top_customer_revenue_share_pct
+
+All required metric_keys: total_revenue, order_count, average_order_value, revenue_north, revenue_south, revenue_east, revenue_west, revenue_2024_q1, revenue_2024_q2, revenue_2024_q3, revenue_2024_q4, revenue_2023, revenue_2024, revenue_yoy_change_pct, electronics_high_discount_orders, electronics_high_discount_revenue, order_revenue_mean, order_revenue_median, order_revenue_std, order_revenue_min, order_revenue_max, unique_customer_count, top_customer_revenue, top_customer_revenue_share_pct
+
+## What to return
+Return the script in `python_code`, the list of files it writes in `expected_artifacts`, and a brief
+description of the methods in `methods_description`.
+
+
+Respond with a single JSON object that conforms to this JSON Schema. Put it in one ```json fenced block and include nothing else outside the block.
+```json
+{
+  "properties": {
+    "python_code": {
+      "description": "Python script. Reads the cleaned CSV from INPUT_DIR, writes findings.json to OUTPUT_DIR.",
+      "title": "Python Code",
+      "type": "string"
+    },
+    "expected_artifacts": {
+      "description": "Filenames the script writes to OUTPUT_DIR.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Expected Artifacts",
+      "type": "array"
+    },
+    "methods_description": {
+      "title": "Methods Description",
+      "type": "string"
+    }
+  },
+  "required": [
+    "python_code",
+    "expected_artifacts",
+    "methods_description"
+  ],
+  "title": "AnalysisOutput",
+  "type": "object"
+}
+```

@@ -1,0 +1,147 @@
+We need to produce JSON with fields: title, executive_summary, key_findings (array of objects per q1..q7), limitations, conclusion.
+
+Each key_finding must include finding_id, statement, evidence_refs, reported_values (include every metric_key of that question), optional direction, ranking, derived_values.
+
+We must follow ranking requirements: q2 ranking required true, with labels mapping metric keys to plan names. Need ranking list from highest to lowest churn rate among plans. We have churn_rate_basic_pct 38.8724, churn_rate_standard_pct 36.6795, churn_rate_premium_pct 36.6013. Highest is Basic, then Standard, then Premium. So ranking = ["Basic","Standard","Premium"].
+
+q3 ranking required true, labels are years. Need ranking from highest churn rate to lowest among cohorts. Values: 2021 38.0208, 2022 36.7442, 2023 37.0536, 2024 39.8305. Highest is 2024 (39.83), then 2021 (38.02), then 2023 (37.05), then 2022 (36.74). So ranking = ["2024","2021","2023","2022"].
+
+q4 direction required true, direction_metric_key churn_monthly_vs_annual_change_pct = 121.11 positive, so direction = "increase". (Interpretation: churn higher for monthly vs annual). Provide direction.
+
+q7 direction required true, metric premium_vs_basic_ltv_change_pct = 292.005 positive, direction = "increase". Also ranking required true for ltv values across plans. Need ranking from highest LTV to lowest: premium 1816.78, standard 868.83, basic 463.46. So ranking = ["Premium","Standard","Basic"].
+
+Other questions no direction/ranking.
+
+Now each key_finding must include reported_values for every metric_key of that question. Provide the verified values as given.
+
+Also derived_values: any numbers we compute in text beyond the verified ones. We may compute differences or percentages, but we can also just state the numbers directly. The statement may include derived numbers like "Monthly churn is 48.3%, which is 121% higher than annual churn". That uses derived value: pct_change? Actually we have churn_monthly_vs_annual_change_pct already computed, but we could also compute difference: churn_rate_monthly_pct - churn_rate_annual_pct = 48.322147651006716 - 21.85430463576159 = 26.467843015245126. That's a derived value (difference). We need to include derived_values array with kind "difference", operands ["churn_rate_monthly_pct","churn_rate_annual_pct"], value 26.4678.
+
+Similarly for premium vs basic LTV change we have metric premium_vs_basic_ltv_change_pct = 292.005..., but we could also compute difference: ltv_premium - ltv_basic = 1816.7777124183006 - 463.4573590504451 = 1353.3203533678555. Provide derived value.
+
+Also maybe compute overall churn rate as percent (already given). No derived needed.
+
+For at-risk segment we could compute churn rate 71% (already metric). No derived.
+
+For tenure summary maybe compute range? Not needed.
+
+We must ensure each key_finding includes derived_values array (can be empty if none). Provide derived values where we used.
+
+Now craft statements.
+
+Need to keep total under 600 words.
+
+Let's draft each statement:
+
+q1: "The dataset contains 749 customers. Overall churn rate is 37.7%, and the average monthly fee is $42.11." Use rounding.
+
+q2: "Churn rates differ by plan: Basic 38.9%, Standard 36.7%, Premium 36.6%." Provide ranking.
+
+q3: "Churn by signup cohort shows the highest rate for 2024 cohort (39.8%) and lowest for 2022 (36.7%)." Provide ranking.
+
+q4: "Monthly contracts churn at 48.3% versus 21.9% for annual contracts, a 121% increase." Provide direction increase, derived difference.
+
+q5: "The at‑risk segment (≥5 support tickets and satisfaction ≤2) includes 100 customers, with a churn rate of 71%." No derived.
+
+q6: "Average tenure is 20.8 months (median 19, std 13.25). Average satisfaction score among respondents is 3.42, with 27 customers missing a score." No derived.
+
+q7: "Lifetime value averages: Basic $463.46, Standard $868.83, Premium $1,816.78. Premium LTV is 292% higher than Basic, representing a $1,353.32 difference." Provide direction increase, ranking, derived values.
+
+Now construct each key_finding object.
+
+Need evidence_refs list metric_keys used. For each, include all metric_keys of that question.
+
+q1 metric_keys: customer_count, churn_rate_pct, avg_monthly_fee.
+
+q2 metric_keys: churn_rate_basic_pct, churn_rate_standard_pct, churn_rate_premium_pct.
+
+q3 metric_keys: churn_rate_cohort_2021_pct, churn_rate_cohort_2022_pct, churn_rate_cohort_2023_pct, churn_rate_cohort_2024_pct.
+
+q4 metric_keys: churn_rate_monthly_pct, churn_rate_annual_pct, churn_monthly_vs_annual_change_pct.
+
+q5 metric_keys: at_risk_customer_count, at_risk_churn_rate_pct.
+
+q6 metric_keys: tenure_mean, tenure_median, tenure_std, satisfaction_mean, satisfaction_missing_count.
+
+q7 metric_keys: ltv_basic, ltv_standard, ltv_premium, premium_vs_basic_ltv_change_pct.
+
+Now derived_values:
+
+q4: difference churn_rate_monthly_pct - churn_rate_annual_pct = 26.467843015245126. kind "difference", operands as above, value maybe rounded to 26.47.
+
+q7: difference ltv_premium - ltv_basic = 1353.3203533678555. kind "difference", operands ["ltv_premium","ltv_basic"], value 1353.32.
+
+Also maybe compute ratio? Not needed.
+
+Now direction fields:
+
+q4 direction "increase". q7 direction "increase". Others null.
+
+Ranking fields:
+
+q2 ranking ["Basic","Standard","Premium"].
+
+q3 ranking ["2024","2021","2023","2022"].
+
+q7 ranking ["Premium","Standard","Basic"].
+
+Now produce JSON.
+
+Make sure each key_finding includes reported_values with all metric_keys and their values (rounded maybe but keep as numbers). Use the verified values as given (maybe round to 2 decimals for readability but still numeric). The schema expects numbers; rounding is okay.
+
+Let's list values:
+
+customer_count: 749.0
+
+churn_rate_pct: 37.6502002670227
+
+avg_monthly_fee: 42.106154873164215
+
+churn_rate_basic_pct: 38.87240356083086
+
+churn_rate_standard_pct: 36.67953667953668
+
+churn_rate_premium_pct: 36.60130718954248
+
+cohort values:
+
+2021: 38.02083333333333
+
+2022: 36.74418604651163
+
+2023: 37.05357142857143
+
+2024: 39.83050847457627
+
+monthly: 48.322147651006716
+
+annual: 21.85430463576159
+
+monthly_vs_annual_change_pct: 121.11043319097013
+
+at_risk_customer_count: 100.0
+
+at_risk_churn_rate_pct: 71.0
+
+tenure_mean: 20.81041388518024
+
+tenure_median: 19.0
+
+tenure_std: 13.24739298193327
+
+satisfaction_mean: 3.4168975069252077
+
+satisfaction_missing_count: 27.0
+
+ltv_basic: 463.4573590504451
+
+ltv_standard: 868.8301544401546
+
+ltv_premium: 1816.7777124183006
+
+premium_vs_basic_ltv_change_pct: 292.00536509779596
+
+Now produce JSON.
+
+Word count: keep under 600 words. The statements are short.
+
+Now craft final JSON.

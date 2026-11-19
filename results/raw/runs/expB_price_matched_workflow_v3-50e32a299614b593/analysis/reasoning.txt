@@ -1,0 +1,100 @@
+I need to write a Python script that reads cleaned.csv from INPUT_DIR, computes metrics, and writes findings.json to OUTPUT_DIR as a flat JSON object.
+
+Metrics:
+- ticket_count: number of tickets
+- mean_resolution_minutes: mean of resolution_minutes
+- total_labor_cost: sum of labor_cost
+- labor_cost_alpha/beta/gamma: total labor cost per team
+- resolution_email/chat/phone: mean resolution_minutes by channel
+- reopen_rate_email_pct, reopen_rate_chat_pct: reopened percentage (mean of reopened * 100) for email and chat
+- email_vs_chat_reopen_change_pct: (email rate - chat rate) / chat rate * 100 — careful if chat rate is 0. Should handle division by zero; but likely not zero. I'll add a guard that results in 0.0 if denominator zero? But must be finite. I'll guard with np.isfinite fallback, though realistically nonzero.
+- high_cost_low_sat_count: count of tickets with labor_cost >= 100 and non-missing satisfaction <= 2
+- high_cost_low_sat_reopen_pct: reopened percentage in that segment; guard if count is 0 -> 0.0
+- resolution_median: median
+- resolution_std: sample std (ddof=1)
+- satisfaction_mean: mean of non-missing satisfaction_score
+- satisfaction_missing_count: count of missing
+- unique_agent_count: distinct agent count
+- top_agent_ticket_count: max tickets per agent
+- top_agent_ticket_share_pct: top/total*100
+
+Ensure all values are finite floats/ints. Convert numpy types to Python native via float()/int(). Write JSON.
+
+Handle chat reopen rate zero: if chat_pct == 0, set change to 0.0 (or maybe float('nan') not allowed). I'll set to 0.0 in that edge case but it's unlikely.
+
+Script:
+
+```python
+import os
+import json
+import pandas as pd
+import numpy as np
+
+input_path = os.path.join(os.environ["INPUT_DIR"], "cleaned.csv")
+output_path = os.path.join(os.environ["OUTPUT_DIR"], "findings.json")
+
+df = pd.read_csv(input_path)
+
+findings = {}
+
+findings["ticket_count"] = int(len(df))
+findings["mean_resolution_minutes"] = float(df["resolution_minutes"].mean())
+findings["total_labor_cost"] = float(df["labor_cost"].sum())
+
+team_cost = df.groupby("team", observed=True)["labor_cost"].sum()
+for team, key in [("Alpha", "labor_cost_alpha"), ("Beta", "labor_cost_beta"), ("Gamma", "labor_cost_gamma")]:
+    findings[key] = float(team_cost.get(team, 0.0))
+
+channel_res = df.groupby("channel", observed=True)["resolution_minutes"].mean()
+for ch, key in [("email", "resolution_email"), ("chat", "resolution_chat"), ("phone", "resolution_phone")]:
+    findings[key] = float(channel_res.get(ch, 0.0))
+
+reopen_by_channel = df.groupby("channel", observed=True)["reopened"].mean() * 100
+email_rate = float(reopen_by_channel.get("email", 0.0))
+chat_rate = float(reopen_by_channel.get("chat", 0.0))
+findings["reopen_rate_email_pct"] = email_rate
+findings["reopen_rate_chat_pct"] = chat_rate
+if chat_rate != 0:
+    findings["email_vs_chat_reopen_change_pct"] = float((email_rate - chat_rate) / chat_rate * 100)
+else:
+    findings["email_vs_chat_reopen_change_pct"] = 0.0
+
+seg = df[(df["labor_cost"] >= 100) & (df["satisfaction_score"].notna()) & (df["satisfaction_score"] <= 2)]
+findings["high_cost_low_sat_count"] = int(len(seg))
+if len(seg) > 0:
+    findings["high_cost_low_sat_reopen_pct"] = float(seg["reopened"].mean() * 100)
+else:
+    findings["high_cost_low_sat_reopen_pct"] = 0.0
+
+findings["resolution_median"] = float(df["resolution_minutes"].median())
+findings["resolution_std"] = float(df["resolution_minutes"].std(ddof=1))
+findings["satisfaction_mean"] = float(df["satisfaction_score"].mean())
+findings["satisfaction_missing_count"] = int(df["satisfaction_score"].isna().sum())
+
+findings["unique_agent_count"] = int(df["agent_id"].nunique())
+top_count = int(df["agent_id"].value_counts().max())
+findings["top_agent_ticket_count"] = top_count
+findings["top_agent_ticket_share_pct"] = float(top_count / len(df) * 100)
+
+# safety: ensure finite
+for k, v in findings.items():
+    if not np.isfinite(v):
+        findings[k] = 0.0
+
+with open(output_path, "w") as f:
+    json.dump(findings, f, indent=2)
+```
+
+One nuance: satisfaction_score might be read as float due to NaN (pandas nullable Int64 if using dtype). read_csv will make it float64 with NaN — fine. Comparison <= 2 with NaN gives False but we also filter notna first.
+
+Note groupby with observed parameter for categorical; since pandas may warn. Using observed=True is fine. Actually default in newer pandas is observed=True. Fine.
+
+Also `.get` on Series with category index works.
+
+The percentage change metric uses the rates in percent; (email_rate - chat_rate)/chat_rate*100 is same whether rates are fractions or percents. Good.
+
+expected_artifacts: ["findings.json"].
+
+methods_description: brief description.
+
+Format response as a single JSON object in a fenced json block.

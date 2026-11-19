@@ -1,0 +1,239 @@
+{
+  "analysis_questions": [
+    {
+      "abs_tolerance": 0.011,
+      "direction_key": null,
+      "metric_keys": [
+        "customer_count",
+        "churn_rate_pct",
+        "avg_monthly_fee"
+      ],
+      "question": "Overall (aggregation): number of customers (rows) -> customer_count; percentage of customers with churned = 1 -> churn_rate_pct, expressed as a percentage; mean monthly_fee -> avg_monthly_fee.",
+      "question_id": "q1",
+      "ranking_labels": null,
+      "rel_tolerance": 0.0001
+    },
+    {
+      "abs_tolerance": 0.011,
+      "direction_key": null,
+      "metric_keys": [
+        "churn_rate_basic_pct",
+        "churn_rate_standard_pct",
+        "churn_rate_premium_pct"
+      ],
+      "question": "Churn by plan (group comparison): churn rate in percent among customers of each plan -> churn_rate_basic_pct, churn_rate_standard_pct, churn_rate_premium_pct.",
+      "question_id": "q2",
+      "ranking_labels": {
+        "churn_rate_basic_pct": "Basic",
+        "churn_rate_premium_pct": "Premium",
+        "churn_rate_standard_pct": "Standard"
+      },
+      "rel_tolerance": 0.0001
+    },
+    {
+      "abs_tolerance": 0.011,
+      "direction_key": null,
+      "metric_keys": [
+        "churn_rate_cohort_2021_pct",
+        "churn_rate_cohort_2022_pct",
+        "churn_rate_cohort_2023_pct",
+        "churn_rate_cohort_2024_pct"
+      ],
+      "question": "Churn by signup cohort (trend): churn rate in percent among customers whose signup_date falls in each calendar year -> churn_rate_cohort_2021_pct, churn_rate_cohort_2022_pct, churn_rate_cohort_2023_pct, churn_rate_cohort_2024_pct.",
+      "question_id": "q3",
+      "ranking_labels": {
+        "churn_rate_cohort_2021_pct": "2021",
+        "churn_rate_cohort_2022_pct": "2022",
+        "churn_rate_cohort_2023_pct": "2023",
+        "churn_rate_cohort_2024_pct": "2024"
+      },
+      "rel_tolerance": 0.0001
+    },
+    {
+      "abs_tolerance": 0.011,
+      "direction_key": "churn_monthly_vs_annual_change_pct",
+      "metric_keys": [
+        "churn_rate_monthly_pct",
+        "churn_rate_annual_pct",
+        "churn_monthly_vs_annual_change_pct"
+      ],
+      "question": "Contract effect (percentage change): churn rate in percent for Monthly contracts -> churn_rate_monthly_pct; for Annual contracts -> churn_rate_annual_pct; relative difference = (churn_rate_monthly_pct - churn_rate_annual_pct) / churn_rate_annual_pct * 100 -> churn_monthly_vs_annual_change_pct.",
+      "question_id": "q4",
+      "ranking_labels": null,
+      "rel_tolerance": 0.0001
+    },
+    {
+      "abs_tolerance": 0.011,
+      "direction_key": null,
+      "metric_keys": [
+        "at_risk_customer_count",
+        "at_risk_churn_rate_pct"
+      ],
+      "question": "At-risk segment (conditional filtering): customers with support_tickets >= 5 AND a non-missing satisfaction_score <= 2: their number -> at_risk_customer_count; their churn rate in percent -> at_risk_churn_rate_pct.",
+      "question_id": "q5",
+      "ranking_labels": null,
+      "rel_tolerance": 0.0001
+    },
+    {
+      "abs_tolerance": 0.011,
+      "direction_key": null,
+      "metric_keys": [
+        "tenure_mean",
+        "tenure_median",
+        "tenure_std",
+        "satisfaction_mean",
+        "satisfaction_missing_count"
+      ],
+      "question": "Tenure and satisfaction summary (statistical summary): mean, median and sample standard deviation (denominator n - 1) of tenure_months over all customers -> tenure_mean, tenure_median, tenure_std; mean satisfaction_score over customers with a non-missing score -> satisfaction_mean; number of customers with a missing satisfaction_score -> satisfaction_missing_count.",
+      "question_id": "q6",
+      "ranking_labels": null,
+      "rel_tolerance": 0.0001
+    },
+    {
+      "abs_tolerance": 0.011,
+      "direction_key": "premium_vs_basic_ltv_change_pct",
+      "metric_keys": [
+        "ltv_basic",
+        "ltv_standard",
+        "ltv_premium",
+        "premium_vs_basic_ltv_change_pct"
+      ],
+      "question": "Lifetime value by plan (derived step): mean lifetime_value for each plan -> ltv_basic, ltv_standard, ltv_premium; (ltv_premium - ltv_basic) / ltv_basic * 100 -> premium_vs_basic_ltv_change_pct.",
+      "question_id": "q7",
+      "ranking_labels": {
+        "ltv_basic": "Basic",
+        "ltv_premium": "Premium",
+        "ltv_standard": "Standard"
+      },
+      "rel_tolerance": 0.0001
+    }
+  ],
+  "canonical_cleaned_file": "canonical/cleaned.csv",
+  "canonical_findings_file": "canonical/findings.json",
+  "cleaned_data_filename": "cleaned.csv",
+  "cleaned_schema": [
+    {
+      "allowed_values": null,
+      "dtype": "str",
+      "max_value": null,
+      "min_value": null,
+      "name": "customer_id",
+      "nullable": false
+    },
+    {
+      "allowed_values": null,
+      "dtype": "date",
+      "max_value": null,
+      "min_value": null,
+      "name": "signup_date",
+      "nullable": false
+    },
+    {
+      "allowed_values": [
+        "Basic",
+        "Standard",
+        "Premium"
+      ],
+      "dtype": "category",
+      "max_value": null,
+      "min_value": null,
+      "name": "plan",
+      "nullable": false
+    },
+    {
+      "allowed_values": [
+        "Monthly",
+        "Annual"
+      ],
+      "dtype": "category",
+      "max_value": null,
+      "min_value": null,
+      "name": "contract_type",
+      "nullable": false
+    },
+    {
+      "allowed_values": null,
+      "dtype": "float",
+      "max_value": 500.0,
+      "min_value": 0.01,
+      "name": "monthly_fee",
+      "nullable": false
+    },
+    {
+      "allowed_values": null,
+      "dtype": "int",
+      "max_value": 120.0,
+      "min_value": 0.0,
+      "name": "tenure_months",
+      "nullable": false
+    },
+    {
+      "allowed_values": null,
+      "dtype": "int",
+      "max_value": 100.0,
+      "min_value": 0.0,
+      "name": "support_tickets",
+      "nullable": false
+    },
+    {
+      "allowed_values": null,
+      "dtype": "int",
+      "max_value": 5.0,
+      "min_value": 1.0,
+      "name": "satisfaction_score",
+      "nullable": true
+    },
+    {
+      "allowed_values": null,
+      "dtype": "int",
+      "max_value": 1.0,
+      "min_value": 0.0,
+      "name": "churned",
+      "nullable": false
+    },
+    {
+      "allowed_values": null,
+      "dtype": "float",
+      "max_value": null,
+      "min_value": 0.0,
+      "name": "lifetime_value",
+      "nullable": false
+    }
+  ],
+  "cleaning_requirements": [
+    "R1. Read every column of the raw CSV as text. Strip leading and trailing whitespace from every value. Treat the following values as missing (compare case-insensitively, after stripping): empty string, 'NA', 'N/A', 'null', 'None', '-'.",
+    "R2. Remove duplicate records BEFORE applying any other row filter: rows that share the same customer_id are duplicates; keep only the first occurrence in raw-file order and discard the later ones.",
+    "R3. signup_date: parse each value using exactly one of these formats: YYYY-MM-DD; MM/DD/YYYY (month first); DD-Mon-YYYY with an English 3-letter month abbreviation (e.g. 05-Mar-2024); YYYY/MM/DD; 'Month D, YYYY' with the full English month name (e.g. March 5, 2024). Drop rows whose signup_date is missing or cannot be parsed. Write signup_date as YYYY-MM-DD.",
+    "R4. plan: map case-insensitively to one of Basic, Standard, Premium. Also map these variants (case-insensitive): 'Basic Plan' -> Basic; 'Std' and 'Standard Plan' -> Standard; 'Prem' and 'Premium Plan' -> Premium. Drop rows whose plan is missing or maps to none of the three plans.",
+    "R5. contract_type: map case-insensitively: 'Monthly', 'Month-to-month', 'M2M' -> Monthly; 'Annual', 'Yearly', '1 Year' -> Annual. Drop rows whose contract_type is missing or not one of these.",
+    "R6. monthly_fee: remove the substrings '$', 'USD' and ',' and surrounding spaces, then parse as a number. Drop rows whose monthly_fee is missing, not a number, <= 0, or > 500.",
+    "R7. tenure_months: remove a trailing word 'months' or 'month' (case-insensitive) and spaces, then parse as a number. Drop rows whose tenure_months is missing, not a number, not a whole number, < 0, or > 120. Store as an integer.",
+    "R8. support_tickets: a missing value means 0. Otherwise parse as a number; drop rows whose value is not a number, not a whole number, < 0, or > 100. Store as an integer.",
+    "R9. satisfaction_score: parse as a number; if it is missing, not a number, not a whole number, < 1 or > 5, set it to missing (write an empty cell) and KEEP the row. Otherwise store as an integer 1-5.",
+    "R10. churned: map case-insensitively 'Yes', 'Y', 'True', '1', 'Churned' -> 1 and 'No', 'N', 'False', '0', 'Active' -> 0. Drop rows whose churned value is missing or not one of these. Store as integer 0/1.",
+    "R11. Add column lifetime_value = monthly_fee * tenure_months, rounded to 2 decimals.",
+    "R12. Output exactly these columns in this order: customer_id, signup_date, plan, contract_type, monthly_fee, tenure_months, support_tickets, satisfaction_score, churned, lifetime_value. Sort rows by customer_id ascending. Write a CSV with a header row and no index column; numbers are written without currency symbols or thousands separators; a missing satisfaction_score is an empty cell."
+  ],
+  "domain": "subscription customers",
+  "findings_filename": "findings.json",
+  "ground_truth_file": "ground_truth.json",
+  "input_files": [],
+  "notes": "SYNTHETIC data. Known raw imperfections: duplicate customer_id rows (exact and re-formatted); five date formats; missing tokens ('', NA, N/A, null, None, '-'); plan and contract spelling/case variants and an unknown plan ('Enterprise'); fees with '$', 'USD', padding, unparseable 'TBD', negative or > 500 values; tenure written as '12 months' or '12.0', negative, fractional or > 120; missing/negative support_tickets; satisfaction scores out of 1-5 (kept as missing); churned encoded as Yes/No/Y/N/True/False/1/0/Churned/Active or unrecognised ('?'). findings.json is a flat JSON object mapping each metric_key to a number.",
+  "objective": "Clean the raw customer snapshot and analyse churn: the overall churn rate, differences between plans, signup cohorts and contract types, an at-risk segment with many support tickets and low satisfaction, lifetime value by plan, and the distribution of tenure and satisfaction, then report the verified findings to business stakeholders.",
+  "project_id": "customer_churn",
+  "raw_data_file": "raw.csv",
+  "reporting": {
+    "audience": "business stakeholders",
+    "max_words": 600,
+    "required_finding_ids": [
+      "q1",
+      "q2",
+      "q3",
+      "q4",
+      "q5",
+      "q6",
+      "q7"
+    ]
+  },
+  "seed": 20261118
+}

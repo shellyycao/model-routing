@@ -1,0 +1,97 @@
+STAGE: cleaning
+PROJECT: energy_consumption
+PROMPT_VERSION: v3
+
+You are the data-cleaning stage of a three-stage data workflow (cleaning -> analysis -> reporting).
+Write ONE self-contained Python 3 script that cleans the raw data exactly as specified below.
+
+## Original objective
+Clean the raw 2024 smart-meter export and analyse electricity consumption: total and per-building-type usage, the quarterly trend, the change between the first and second half of the year, tariff and meter usage, commercial load on hot days and the distribution of consumption and temperature, then report the verified findings to business stakeholders.
+
+## Input/output contract (mandatory)
+- Your script runs in an isolated sandbox with NO network access. Available libraries: the Python
+  standard library, pandas and numpy.
+- Read input files ONLY from the directory given by the environment variable INPUT_DIR, e.g.
+  os.path.join(os.environ["INPUT_DIR"], "<name>"). Available input files: "raw.csv".
+- Write every output file to the directory given by the environment variable OUTPUT_DIR. Write nowhere else.
+- Write the cleaned CSV to os.path.join(os.environ["OUTPUT_DIR"], "cleaned.csv") and set
+  `output_filename` to "cleaned.csv".
+- Also write os.path.join(os.environ["OUTPUT_DIR"], "cleaning_summary.json"): a JSON object with at least
+  "raw_rows" (rows read) and "cleaned_rows" (rows written), plus any per-rule counts you track.
+- The script takes no command-line arguments and must not print large amounts of data.
+
+## Cleaning requirements (apply all of them, in order)
+R1. Read every column of the raw CSV as text. Strip leading and trailing whitespace from every value. Treat the following values as missing (compare case-insensitively, after stripping): empty string, 'NA', 'N/A', 'null', 'None', '-'.
+R2. Remove duplicate records BEFORE applying any other row filter: rows that share the same reading_id are duplicates; keep only the first occurrence in raw-file order and discard the later ones.
+R3. reading_date: parse each value using exactly one of these formats: YYYY-MM-DD; MM/DD/YYYY (month first); DD-Mon-YYYY with an English 3-letter month abbreviation (e.g. 05-Mar-2024); YYYY/MM/DD; 'Month D, YYYY' with the full English month name (e.g. March 5, 2024). Drop rows whose reading_date is missing or cannot be parsed. Write reading_date as YYYY-MM-DD.
+R4. meter_id: convert to upper case (e.g. 'm05' -> 'M05'). Drop rows whose meter_id is missing.
+R5. building_type: map case-insensitively to one of Residential, Commercial, Industrial. Also map these variants (case-insensitive): 'Res' and 'Resi' -> Residential; 'Comm' -> Commercial; 'Ind' -> Industrial. Drop rows whose building_type is missing or maps to none of the three types.
+R6. tariff: map case-insensitively 'peak' -> peak and 'off-peak', 'offpeak', 'off peak' -> off-peak. Drop rows whose tariff is missing or not one of these.
+R7. energy -> energy_kwh: remove ',' characters. If the value ends with 'MWh' (case-insensitive, optional space before the unit) remove the unit and multiply the number by 1000; if it ends with 'kWh' (case-insensitive) remove the unit; a value without a unit is already in kWh. Drop rows whose energy is missing, not a number, < 0, or > 100000 kWh (after conversion). Round energy_kwh to 2 decimals.
+R8. temperature -> temperature_c: remove a trailing degree sign and unit. A value ending with 'F' (case-insensitive, optionally written '°F') is Fahrenheit: convert with (F - 32) * 5 / 9. A value ending with 'C' or '°C', or without a unit, is already Celsius. Round to 1 decimal. If the temperature is missing, not a number, or outside -40 to 50 °C after conversion, set temperature_c to missing (empty cell) and KEEP the row.
+R9. Output exactly these columns in this order: reading_id, reading_date, meter_id, building_type, tariff, energy_kwh, temperature_c. Sort rows by reading_id ascending. Write a CSV with a header row and no index column; numbers are written without units or thousands separators; a missing temperature_c is an empty cell.
+
+## Required schema of the cleaned CSV (columns in this order)
+- reading_id: str; not nullable
+- reading_date: date; not nullable
+- meter_id: str; not nullable
+- building_type: category; not nullable; allowed values: 'Residential', 'Commercial', 'Industrial'
+- tariff: category; not nullable; allowed values: 'peak', 'off-peak'
+- energy_kwh: float; not nullable; min 0; max 100000
+- temperature_c: float; nullable; min -40; max 50
+
+## Input files
+### raw.csv (raw data; 1561 lines in total)
+First lines:
+```
+reading_id,reading_date,meter_id,building_type,tariff,energy,temperature
+E000001,2024-01-01,M01,Res,null,36.37 kWh,1.9
+E000002,01-Jan-2024,M05,Commercial,peak,469.10,33.62 °F
+E000003,2024-01-01,m07,commercial,peak,406.45,-1.4
+E000004,01/01/2024,M09,Ind,PEAK,2730.20,0.1
+E000005,2024-01-01,M11,INDUSTRIAL,PEAK,,0.8
+E000006,"January 2, 2024",M02,Residential,offpeak,38.14 kWh,999.0
+E000007,2024-01-02,M03,Residential,Off peak,40.85 kWh,5.7
+E000008,2024-01-02,M04,Residential,offpeak,38.68,29.48F
+E000009,2024-01-02,M08,Commercial,off-peak,514.72,1.1C
+E000010,2024-01-02,M12,Industrial,PEAK,1976.89,0.5C
+E000011,2024-01-03,m02,Res,offpeak,49.09 kWh,-0.7
+E000012,2024/01/03,M03,Residential,Off-Peak,35.59 kWh,None
+E000013,"January 3, 2024",M05,Commercial,Off peak,498.85kwh,0.2
+E000014,2024-01-03,M12,Industrial,offpeak,2781.44 kWh,-1.3
+```
+
+## What to return
+Return the script in `python_code`, the cleaned CSV filename in `output_filename`, and a brief
+explanation of the cleaning steps in `cleaning_logic`.
+
+
+Respond with a single JSON object that conforms to this JSON Schema. Put it in one ```json fenced block and include nothing else outside the block.
+```json
+{
+  "properties": {
+    "python_code": {
+      "description": "Python script. Reads input from INPUT_DIR, writes the cleaned CSV and cleaning_summary.json to OUTPUT_DIR.",
+      "title": "Python Code",
+      "type": "string"
+    },
+    "output_filename": {
+      "description": "Filename of the cleaned CSV written to OUTPUT_DIR.",
+      "title": "Output Filename",
+      "type": "string"
+    },
+    "cleaning_logic": {
+      "description": "Brief explanation of the cleaning steps.",
+      "title": "Cleaning Logic",
+      "type": "string"
+    }
+  },
+  "required": [
+    "python_code",
+    "output_filename",
+    "cleaning_logic"
+  ],
+  "title": "CleaningOutput",
+  "type": "object"
+}
+```

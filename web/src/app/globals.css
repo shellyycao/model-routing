@@ -1,0 +1,125 @@
+@import "tailwindcss";
+
+/* Design tokens from docs/design/modelflow_canvas_first_copilot.html */
+@theme {
+  --color-bg: #10111a;
+  --color-canvas: #11131c;
+  --color-panel: #171823;
+  --color-panel2: #202232;
+  --color-card: #222437;
+  --color-ink: #f1effb;
+  --color-muted: #a6a6ba;
+  --color-soft: #73758d;
+  --color-line: #303244;
+  --color-line2: #48485f;
+  --color-accent: #b3a2ff;
+  --color-accent2: #a995ff;
+  --color-accent-deep: #7062cd;
+  --color-teal: #66cbbd;
+  --color-warn: #eec280;
+  --color-danger: #f29b9b;
+  --font-sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+html,
+body {
+  height: 100%;
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  color-scheme: dark;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* Shared control styles (single definition; no duplicated CSS blocks) */
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-[10px] bg-accent px-5 py-3 text-sm font-bold text-[#171321] transition-colors hover:bg-[#c8bbff] disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-[9px] border border-[#424157] bg-[#292a3b] px-3.5 py-2.5 text-sm text-[#e4e0f6] transition-colors hover:border-[#756aa1] disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-[9px] px-2.5 py-2 text-sm text-muted transition-colors hover:bg-[#272636] hover:text-ink disabled:cursor-not-allowed disabled:opacity-40;
+  }
+  .btn-text {
+    @apply font-semibold text-accent hover:text-[#d3c8ff];
+  }
+  .field-input {
+    @apply w-full rounded-[9px] border border-line2 bg-[#222432] px-3 py-2.5 text-sm text-ink outline-none placeholder:text-soft focus:border-accent;
+  }
+  .field-label {
+    @apply mb-2 block text-xs text-muted;
+  }
+  .eyebrow {
+    @apply text-xs font-bold tracking-[0.18em] text-[#b3a5ff];
+  }
+  .pill {
+    @apply inline-flex items-center gap-1 rounded-full border border-line px-2.5 py-1 text-xs text-muted;
+  }
+}
+
+/* React Flow dark theme overrides */
+.react-flow {
+  --xy-background-color: var(--color-canvas);
+  --xy-edge-stroke: #7066a7;
+  --xy-edge-stroke-width: 2.5;
+  --xy-edge-stroke-selected: var(--color-teal);
+  --xy-connectionline-stroke: var(--color-accent2);
+  --xy-connectionline-stroke-width: 2.5;
+  --xy-handle-background-color: var(--color-accent2);
+  --xy-handle-border-color: #171823;
+  --xy-controls-button-background-color: #1b1d2a;
+  --xy-controls-button-background-color-hover: #343247;
+  --xy-controls-button-color: var(--color-ink);
+  --xy-controls-button-color-hover: #fff;
+  --xy-controls-button-border-color: var(--color-line);
+  --xy-controls-box-shadow: 0 10px 25px #0006;
+}
+.react-flow__edge:hover .react-flow__edge-path {
+  stroke: #c8b8ff;
+  stroke-width: 4;
+}
+.react-flow__handle {
+  width: 16px;
+  height: 16px;
+  border-width: 3px;
+}
+.react-flow__handle.target {
+  background: var(--color-teal);
+}
+.react-flow__handle.connectingto:not(.valid) {
+  background: var(--color-danger);
+}
+.react-flow__handle:hover {
+  box-shadow: 0 0 0 7px #a995ff33;
+}
+.react-flow__node:focus-visible {
+  outline: none;
+}
+.react-flow__node:focus-visible > div {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+.react-flow__controls {
+  border-radius: 11px;
+  overflow: hidden;
+  border: 1px solid var(--color-line);
+}
+.edge-preview-added .react-flow__edge-path {
+  stroke: var(--color-accent);
+  stroke-dasharray: 8 5;
+}
+.edge-preview-removed .react-flow__edge-path {
+  stroke: var(--color-danger);
+  stroke-dasharray: 3 6;
+  opacity: 0.7;
+}
+.edge-preview .react-flow__edge-path {
+  stroke: #9f8aee;
+  stroke-dasharray: 8 5;
+}

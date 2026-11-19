@@ -1,0 +1,123 @@
+{
+  "stage": "cleaning",
+  "model_alias": "B",
+  "model_id": "us.moonshotai.kimi-k3",
+  "prompt_version": "v3",
+  "prompt_hash": "4c80e726ad39dcec71d0f3668b55982f474546dfd54cafee800a7f420e1182ec",
+  "invocation_ids": [
+    "a97c8e3d-f6f5-4662-a845-cb7fd1becc80"
+  ],
+  "cache_hit": false,
+  "shared_with_run_ids": [],
+  "status": "failed",
+  "structural_ok": false,
+  "failure_type": "execution_error",
+  "failure_detail": "execution runtime_error (exit 1): Traceback (most recent call last):\n  File \"/sandbox/code/main.py\", line 98, in <module>\n    df[\"resolution_minutes\"] = df[\"resolution_minutes\"].map(parse_minutes)\n                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/series.py\", line 4700, in map\n    new_values = self._map_values(arg, na_action=na_action)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/base.py\", line 921, in _map_values\n    return algorithms.map_array(arr, mapper, na_action=na_action, convert=convert)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/algorithms.py\", line 1743, in map_array\n    return lib.map_infer(values, mapper, convert=convert)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"lib.pyx\", line 2972, in pandas._libs.lib.map_infer\n  File \"/sandbox/code/main.py\", line 90, in parse_minutes\n    t = re.sub(r\"(?i)\\s*(minutes|min)\\s*$\", s.strip())\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: sub() missing 1 required positional argument: 'string'\n",
+  "parse_ok": true,
+  "execution": {
+    "status": "runtime_error",
+    "exit_code": 1,
+    "stdout": "",
+    "stderr": "Traceback (most recent call last):\n  File \"/sandbox/code/main.py\", line 98, in <module>\n    df[\"resolution_minutes\"] = df[\"resolution_minutes\"].map(parse_minutes)\n                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/series.py\", line 4700, in map\n    new_values = self._map_values(arg, na_action=na_action)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/base.py\", line 921, in _map_values\n    return algorithms.map_array(arr, mapper, na_action=na_action, convert=convert)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/algorithms.py\", line 1743, in map_array\n    return lib.map_infer(values, mapper, convert=convert)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"lib.pyx\", line 2972, in pandas._libs.lib.map_infer\n  File \"/sandbox/code/main.py\", line 90, in parse_minutes\n    t = re.sub(r\"(?i)\\s*(minutes|min)\\s*$\", s.strip())\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: sub() missing 1 required positional argument: 'string'\n",
+    "runtime_ms": 747.8788329972303,
+    "output_files": [],
+    "sandbox_image": "sha256:88988a15503bdb96538c3dd62244a79879d5c7848397db18b1267ccfd0a9727a"
+  },
+  "validation": {
+    "stage": "cleaning",
+    "hard_pass": false,
+    "checks": [
+      {
+        "name": "output_exists",
+        "passed": false,
+        "mandatory": true,
+        "detail": "cleaned CSV not found: /Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expB_price_matched_workflow_v3-02398e23004a2e21/cleaning/output/cleaned.csv",
+        "value": null
+      },
+      {
+        "name": "output_parses",
+        "passed": false,
+        "mandatory": true,
+        "detail": "no output",
+        "value": null
+      },
+      {
+        "name": "required_columns_present",
+        "passed": false,
+        "mandatory": true,
+        "detail": "no output",
+        "value": null
+      },
+      {
+        "name": "schema_constraints",
+        "passed": false,
+        "mandatory": true,
+        "detail": "no output",
+        "value": null
+      },
+      {
+        "name": "no_duplicate_keys",
+        "passed": false,
+        "mandatory": true,
+        "detail": "no output",
+        "value": null
+      },
+      {
+        "name": "row_set_matches_reference",
+        "passed": false,
+        "mandatory": true,
+        "detail": "no output",
+        "value": null
+      },
+      {
+        "name": "values_match_reference",
+        "passed": false,
+        "mandatory": true,
+        "detail": "no output",
+        "value": null
+      }
+    ],
+    "quality": {
+      "cleaning_correctness": 0.0,
+      "data_integrity": 0.0,
+      "schema_compliance": 0.0
+    },
+    "quality_basis": "ground_truth",
+    "validator_version": "1.0"
+  },
+  "conditional_validation": null,
+  "input_artifacts": [
+    "datasets/projects/support_operations/raw.csv",
+    "datasets/projects/support_operations/agents.csv"
+  ],
+  "output_artifacts": [
+    "results/raw/runs/expB_price_matched_workflow_v3-02398e23004a2e21/cleaning/prompt.txt",
+    "results/raw/runs/expB_price_matched_workflow_v3-02398e23004a2e21/cleaning/response.txt",
+    "results/raw/runs/expB_price_matched_workflow_v3-02398e23004a2e21/cleaning/reasoning.txt",
+    "results/raw/runs/expB_price_matched_workflow_v3-02398e23004a2e21/cleaning/parsed.json",
+    "results/raw/runs/expB_price_matched_workflow_v3-02398e23004a2e21/cleaning/code.py"
+  ],
+  "input_artifact_hashes": {
+    "datasets/projects/support_operations/raw.csv": "d260e1c2251ade14aa044895797fa2d39647b6d1fe43ba7c79d8c5a48fd287fd",
+    "datasets/projects/support_operations/agents.csv": "51d9c560abc74a09ea32b0c667fc52c8d0f5479fd5a01314fc8f7f2fc0ff4442"
+  },
+  "output_artifact_hashes": {
+    "results/raw/runs/expB_price_matched_workflow_v3-02398e23004a2e21/cleaning/prompt.txt": "4c80e726ad39dcec71d0f3668b55982f474546dfd54cafee800a7f420e1182ec",
+    "results/raw/runs/expB_price_matched_workflow_v3-02398e23004a2e21/cleaning/response.txt": "c7ae2b6530aa6d3cc3457bfe90edc27a35b15ec09705525af58c186cff263479",
+    "results/raw/runs/expB_price_matched_workflow_v3-02398e23004a2e21/cleaning/reasoning.txt": "9fef307f534488853e6e26900437ea5b78249ef762b01a2e1789fe50a41c244f",
+    "results/raw/runs/expB_price_matched_workflow_v3-02398e23004a2e21/cleaning/parsed.json": "42bc5469eeadf9b9c9ebbab779f790d2b376945ee06db8072b77452ab904c845",
+    "results/raw/runs/expB_price_matched_workflow_v3-02398e23004a2e21/cleaning/code.py": "973441a440246b5f973353b55aa1790fb87bbb98d7a9dfd00b6ca3c930bddaa8"
+  },
+  "handoff_in_path": "results/raw/runs/expB_price_matched_workflow_v3-02398e23004a2e21/cleaning/handoff_in.json",
+  "handoff_size_bytes": 424,
+  "input_tokens": 7,
+  "output_tokens": 4905,
+  "cost_usd": 0.08095559999999999,
+  "cost_status": "estimated",
+  "timings": {
+    "generation_ms": 20946.452333002526,
+    "execution_ms": 747.8788329972303,
+    "validation_ms": 2.95745900075417,
+    "handoff_ms": 0.18724999972619116
+  }
+}

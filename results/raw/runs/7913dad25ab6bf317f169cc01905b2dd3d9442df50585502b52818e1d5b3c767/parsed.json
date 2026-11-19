@@ -1,0 +1,7 @@
+{
+  "fixed_code": "def chunks(xs, size):\n    if size <= 0:\n        raise ValueError('size')\n    return [xs[i:i+size] for i in range(0, len(xs), size)]",
+  "bug_locations": [
+    "range(0, len(xs)-size+1, size)"
+  ],
+  "explanation": "The original code used `range(0, len(xs)-size+1, size)` which stops before the last chunk if it's shorter than `size`, violating the spec to include a short final chunk. The fix changes the range to `range(0, len(xs), size)` to ensure all elements are processed, including the final short chunk."
+}

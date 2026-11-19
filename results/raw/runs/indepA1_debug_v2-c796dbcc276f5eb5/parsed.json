@@ -1,0 +1,7 @@
+{
+  "fixed_code": "def paginate(items, size, cursor=None):\n    if size <= 0:\n        raise ValueError('Size must be positive')\n    if cursor is not None and not cursor.isdigit():\n        raise ValueError('Invalid cursor')\n    start = 0 if cursor is None else int(cursor)\n    if start < 0 or start >= len(items):\n        raise ValueError('Invalid cursor')\n    end = start + size\n    if end > len(items):\n        end = None\n    else:\n        end = str(end)\n    return list(items[start:end]), end",
+  "bug_locations": [
+    "paginate function"
+  ],
+  "explanation": "The original code did not handle invalid cursors, nonpositive sizes, or the case where the end index exceeds the length of the items list. It also incorrectly returned an empty list instead of None when there were no more items to paginate. The fixed code raises a ValueError for invalid cursors and nonpositive sizes, checks if the start index is within the bounds of the items list, and returns None for the next_cursor when there are no more items to paginate."
+}

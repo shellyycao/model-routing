@@ -1,0 +1,97 @@
+Write a self-contained Python script that reads cleaned.csv from INPUT_DIR, computes metrics, writes findings.json to OUTPUT_DIR. Flat JSON, finite numbers, no rounding.
+
+Metrics:
+- total_revenue = sum revenue
+- order_count = number of rows
+- average_order_value = total_revenue/order_count
+- revenue per region
+- 2024 quarterly revenue
+- revenue_2023, revenue_2024, yoy pct
+- electronics high discount (discount_pct >= 20): count and revenue
+- distribution: mean, median, std (ddof=1), min, max
+- unique customers, top customer revenue, share pct
+
+Order counts should be numbers — can be int or float; JSON numbers fine. Ensure finite. Write with json.dump, allow_nan=False.
+
+Use pandas. Parse order_date with pd.to_datetime. Quarter extraction.
+
+Handle potential edge cases: if revenue_2023 == 0 — but data will have values. Just compute.
+
+Cast to float to ensure JSON serializable. order_count as int is fine (JSON number). Use float() for everything maybe; but order_count as int fine.
+
+Write only findings.json. expected_artifacts: ["findings.json"].
+
+Script:
+
+```python
+import json
+import os
+
+import pandas as pd
+
+
+def main():
+    input_path = os.path.join(os.environ["INPUT_DIR"], "cleaned.csv")
+    output_path = os.path.join(os.environ["OUTPUT_DIR"], "findings.json")
+
+    df = pd.read_csv(input_path, dtype={"order_id": str, "customer_id": str})
+    df["order_date"] = pd.to_datetime(df["order_date"], format="%Y-%m-%d")
+    df["revenue"] = df["revenue"].astype(float)
+    df["discount_pct"] = df["discount_pct"].astype(float)
+
+    findings = {}
+
+    total_revenue = float(df["revenue"].sum())
+    order_count = int(len(df))
+    findings["total_revenue"] = total_revenue
+    findings["order_count"] = order_count
+    findings["average_order_value"] = total_revenue / order_count
+
+    by_region = df.groupby("region")["revenue"].sum()
+    for region, key in [("North", "revenue_north"), ...]:
+        findings[key] = float(by_region.get(region, 0.0))
+
+    df["year"] = df["order_date"].dt.year
+    revenue_2023 = float(df.loc[df["year"] == 2023, "revenue"].sum())
+    revenue_2024 = float(df.loc[df["year"] == 2024, "revenue"].sum())
+    findings["revenue_2023"] = revenue_2023
+    findings["revenue_2024"] = revenue_2024
+    findings["revenue_yoy_change_pct"] = (revenue_2024 - revenue_2023) / revenue_2023 * 100.0
+
+    df2024 = df[df["year"] == 2024]
+    quarter = df2024["order_date"].dt.quarter
+    for q in 1..4: findings[f"revenue_2024_q{q}"] = float(df2024.loc[quarter == q, "revenue"].sum())
+
+    hd = df[(df["product_category"] == "Electronics") & (df["discount_pct"] >= 20)]
+    findings["electronics_high_discount_orders"] = int(len(hd))
+    findings["electronics_high_discount_revenue"] = float(hd["revenue"].sum())
+
+    rev = df["revenue"]
+    findings["order_revenue_mean"] = float(rev.mean())
+    findings["order_revenue_median"] = float(rev.median())
+    findings["order_revenue_std"] = float(rev.std(ddof=1))
+    findings["order_revenue_min"] = float(rev.min())
+    findings["order_revenue_max"] = float(rev.max())
+
+    by_cust = df.groupby("customer_id")["revenue"].sum()
+    findings["unique_customer_count"] = int(df["customer_id"].nunique())
+    top = float(by_cust.max())
+    findings["top_customer_revenue"] = top
+    findings["top_customer_revenue_share_pct"] = top / total_revenue * 100.0
+
+    os.makedirs(os.environ["OUTPUT_DIR"], exist_ok=True)
+    with open(output_path, "w") as f:
+        json.dump(findings, f, indent=2, allow_nan=False)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+Note: makedirs on OUTPUT_DIR — it should exist, but safe. Writing nowhere else — makedirs is fine, it doesn't write files elsewhere. Actually creating directory is okay.
+
+groupby on categorical region: by_region.get works for categorical too. Fine.
+
+One nuance: sum of floats might produce tiny floating point differences; full precision requested, so fine.
+
+Return JSON block only.

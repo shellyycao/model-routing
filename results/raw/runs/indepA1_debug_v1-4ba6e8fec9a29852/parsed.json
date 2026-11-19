@@ -1,0 +1,5 @@
+{
+  "fixed_code": "def append_item(item, items=None):\n    if items is None:\n        items = []\n    items.append(item)\n    return items\n",
+  "bug_location": "append_item function, default parameter `items=[]` in the function signature.",
+  "explanation": "Using a mutable default argument like `items=[]` causes all calls without an explicit `items` argument to share the same list object across calls. The fix is to use `items=None` as the default and create a new empty list inside the function when `items` is `None`."
+}

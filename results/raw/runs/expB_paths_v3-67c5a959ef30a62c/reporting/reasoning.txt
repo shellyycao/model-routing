@@ -1,0 +1,117 @@
+We need to produce JSON per schema. Include title, executive_summary, key_findings (array of 7 entries), limitations, conclusion. Each key_finding must have finding_id, statement, evidence_refs, reported_values (include all metric_keys for that question), direction if required, ranking if required, derived_values if any.
+
+We must use verified findings only. Rounding sensible.
+
+Let's compute values:
+
+From verified findings:
+
+customer_count: 749.0 (should be integer but keep as number)
+churn_rate_pct: 37.6502002670227 -> round maybe 37.65%
+avg_monthly_fee: 42.106154873164215 -> 42.11
+
+q1 metrics: customer_count, churn_rate_pct, avg_monthly_fee.
+
+Statement: "The dataset contains 749 customers, with an overall churn rate of 37.65% and an average monthly fee of $42.11."
+
+No direction, no ranking.
+
+evidence_refs: list those three metric_keys.
+
+reported_values: copy each metric_key with rounded values? Should we keep original? It says include EVERY metric_key of that question with its verified value (copy it). So we should copy the exact numbers as in findings. Could round but still copy? "copy it" suggests exact. We'll copy original values.
+
+q2: churn_rate_basic_pct, churn_rate_standard_pct, churn_rate_premium_pct.
+
+Need ranking high-to-low using labels Basic, Premium, Standard mapping. Values:
+
+basic 38.87240356083086
+standard 36.67953667953668
+premium 36.60130718954248
+
+Ranking highest to lowest: Basic (38.87), Standard (36.68), Premium (36.60). So ranking list: ["Basic", "Standard", "Premium"].
+
+Statement: "Churn rates differ by plan: Basic 38.87%, Standard 36.68%, Premium 36.60%."
+
+No direction.
+
+evidence_refs: three metric_keys.
+
+reported_values: copy each metric_key with original values.
+
+derived_values: none.
+
+q3: churn_rate_cohort_2021_pct, 2022, 2023, 2024.
+
+Values:
+
+2021: 38.02083333333333
+2022: 36.74418604651163
+2023: 37.05357142857143
+2024: 39.83050847457627
+
+Ranking high-to-low: 2024 (39.83), 2021 (38.02), 2023 (37.05), 2022 (36.74). Labels as years.
+
+Ranking list: ["2024", "2021", "2023", "2022"].
+
+Statement: "Churn by signup cohort shows highest in 2024 (39.83%) and lowest in 2022 (36.74%)."
+
+evidence_refs: four metric_keys.
+
+reported_values: copy.
+
+q4: churn_rate_monthly_pct, churn_rate_annual_pct, churn_monthly_vs_annual_change_pct.
+
+Need direction based on churn_monthly_vs_annual_change_pct. Positive 121.11% indicates increase (monthly churn higher than annual). So direction = "increase". Statement: "Monthly contracts churn at 48.32% versus 21.85% for annual contracts, a 121.11% higher churn rate for monthly contracts."
+
+Derived value: maybe we could compute difference or ratio, but we already have change pct metric. No need derived.
+
+evidence_refs: three metric_keys.
+
+reported_values: copy.
+
+direction: "increase".
+
+ranking not required.
+
+q5: at_risk_customer_count, at_risk_churn_rate_pct.
+
+Statement: "There are 100 at‑risk customers (≥5 support tickets and satisfaction ≤2), and 71% of them have churned."
+
+evidence_refs: two metric_keys.
+
+reported_values: copy.
+
+q6: tenure_mean, tenure_median, tenure_std, satisfaction_mean, satisfaction_missing_count.
+
+Statement: "Average tenure is 20.81 months (median 19, std dev 13.25). Average satisfaction score among respondents is 3.42, with 27 customers missing a score."
+
+evidence_refs: five metric_keys.
+
+reported_values: copy.
+
+q7: ltv_basic, ltv_standard, ltv_premium, premium_vs_basic_ltv_change_pct.
+
+Need direction based on premium_vs_basic_ltv_change_pct positive 292% => increase. Also ranking required for plans based on ltv values high-to-low: Premium (1816.78), Standard (868.83), Basic (463.46). Labels mapping: "Premium", "Standard", "Basic". Ranking list: ["Premium", "Standard", "Basic"].
+
+Statement: "Average lifetime value is $463.46 for Basic, $868.83 for Standard, and $1,816.78 for Premium plans; Premium LTV is 292.01% higher than Basic."
+
+Derived value: maybe compute premium vs basic change pct, but we have metric. Could still include derived value? Not needed.
+
+evidence_refs: four metric_keys.
+
+reported_values: copy.
+
+Now limitations: mention missing satisfaction scores, churn definition, snapshot, etc.
+
+Conclusion: summarize.
+
+Now produce JSON.
+
+Need to ensure each key_finding includes required fields: finding_id, statement, evidence_refs, reported_values, optional direction, ranking, derived_values (can be empty array or omitted? Schema says derived_values optional? Not required. We'll include empty array for consistency.
+
+Make sure reported_values includes all metric_keys for that question.
+
+Now rounding: we will copy original numbers as they appear. Provide as numbers.
+
+Now produce final JSON.
+

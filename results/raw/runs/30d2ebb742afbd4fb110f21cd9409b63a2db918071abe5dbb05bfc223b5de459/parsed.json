@@ -1,0 +1,9 @@
+{
+  "fixed_code": "def paginate(items, size, cursor=None):\n    \"\"\"Return (page, next_cursor) for the requested window of items.\n\n    cursor is a zero-based start index encoded as a string; next_cursor is\n    None once the end of items has been reached. Invalid cursors and\n    nonpositive sizes raise ValueError.\n    \"\"\"\n    if size <= 0:\n        raise ValueError(\"size must be a positive integer\")\n\n    items = list(items)\n\n    if cursor is None:\n        start = 0\n    else:\n        try:\n            start = int(cursor)\n        except (TypeError, ValueError):\n            raise ValueError(\"invalid cursor: %r\" % (cursor,))\n        if start < 0 or start > len(items):\n            raise ValueError(\"invalid cursor: %r\" % (cursor,))\n\n    end = start + size\n    page = items[start:end]\n    next_cursor = str(end) if end < len(items) else None\n    return page, next_cursor\n",
+  "bug_locations": [
+    "paginate: missing size validation (nonpositive sizes must raise ValueError)",
+    "paginate: cursor parsing/validation (unparseable, negative, or out-of-range cursors must raise ValueError)",
+    "paginate: next_cursor computation in the return statement (must be None at the end instead of always str(end))"
+  ],
+  "explanation": "Three interacting defects: (1) next_cursor was always str(end), so it never became None when the page reached the end of items; it is now None whenever end >= len(items). (2) There was no validation of size, so nonpositive sizes produced wrong slices instead of raising ValueError as specified. (3) There was no validation of the cursor: unparseable values leaked a raw int() error and, worse, negative cursor strings were silently accepted and used Python's negative indexing; the cursor is now parsed defensively and rejected with ValueError when it is not a valid zero-based index within bounds. The items are also materialized to a list so len() and slicing work for any iterable."
+}

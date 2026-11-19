@@ -1,0 +1,139 @@
+Let me work through the verified findings:
+
+- total_revenue: 445325.07
+- order_count: 520.0
+- average_order_value: 856.3943653846154 → ~856.39
+- revenue_north: 124845.75
+- revenue_south: 90534.48
+- revenue_east: 130516.68
+- revenue_west: 99428.16
+- revenue_2024_q1: 36108.32
+- revenue_2024_q2: 56616.79
+- revenue_2024_q3: 71674.98
+- revenue_2024_q4: 68948.7
+- revenue_2023: 211976.28
+- revenue_2024: 233348.79
+- revenue_yoy_change_pct: 10.082500740177146 → ~10.08%
+- electronics_high_discount_orders: 22.0
+- electronics_high_discount_revenue: 50035.32
+- order_revenue_mean: 856.3943653846154
+- order_revenue_median: 313.275 → 313.28
+- order_revenue_std: 1295.7423548861245 → 1295.74
+- order_revenue_min: 5.27
+- order_revenue_max: 7844.02
+- unique_customer_count: 222.0
+- top_customer_revenue: 27793.12
+- top_customer_revenue_share_pct: 6.241085865657642 → ~6.24%
+
+Rankings:
+- q2 regions high to low: East (130516.68), North (124845.75), West (99428.16), South (90534.48).
+- q3 quarters high to low: Q3 (71674.98), Q4 (68948.70), Q2 (56616.79), Q1 (36108.32).
+
+Direction q4: increase.
+
+Derived values I might state:
+- Average order value: already a verified metric (average_order_value) — no need to declare as derived since it's in reported_values. Only declare numbers I compute in text.
+- East vs South difference: 130516.68 - 90534.48 = 39982.20. If I state it, declare as difference with operands [revenue_east, revenue_south].
+- Q3 vs Q1 difference: 71674.98 - 36108.32 = 35566.66. Declare if stated.
+- YoY change pct is verified metric — copy as reported value.
+- Electronics high discount share of total revenue: 50035.32 / 445325.07 * 100 = let me compute: 50035.32 / 445325.07 ≈ 0.112356 → 11.24%. If I state it, declare share with operands [electronics_high_discount_revenue, total_revenue].
+- Median vs mean: mean is ~2.73x median: 856.39/313.275 ≈ 2.7336. Could declare ratio. Or just say mean ($856.39) far exceeds median ($313.28) — both are verified values, no derivation needed if I don't state the ratio. Simpler to state both values without computing ratio. But "nearly 3x" would be a derived claim. I could declare ratio 856.3943653846154 / 313.275 = 2.7337... Let me compute: 313.275 * 2.73 = 855.24; 313.275*2.734 = 856.49. So ~2.7336. I'll either declare it or avoid it. Let me declare it properly to be safe, or just avoid derived numbers except a few declared ones.
+
+Keep it simple: minimize derived numbers; declare all that appear.
+
+Derived values I plan to use:
+1. q2: East–South gap = 39982.20 (difference, [revenue_east, revenue_south]). Value as stated: 39982.20 (rounded). Should the value match exactly what's stated in text. I'll state "$39,982.20".
+2. q3: Q3 vs Q1 difference = 35566.66 (difference, [revenue_2024_q3, revenue_2024_q1]). Q3 71674.98 - Q1 36108.32 = 35566.66.
+3. q5: share of total revenue = 50035.32/445325.07*100. Compute: 50035.32/445325.07 = 0.1123566... *100 = 11.23566 → 11.24%. Let me compute more precisely: 445325.07 * 0.1124 = 50054.5 — slightly over. 445325.07 * 0.11235 = 50032.2. 445325.07*0.112357 = 50035.3. So ≈11.2357% → 11.24%.
+4. q6: ratio mean/median ≈ 2.73 (ratio, [order_revenue_mean, order_revenue_median]). 856.3943653846154/313.275 = ?
+
+313.275 * 2.7 = 845.8425. Remainder 10.5519. 10.5519/313.275 = 0.033683. So 2.73368 ≈ 2.73.
+
+Also q1: maybe note order_count 520, total revenue $445,325.07, AOV $856.39. All verified.
+
+q7: 222 customers, top customer $27,793.12 = 6.24% of revenue. All verified.
+
+Rounding: use 2 decimals for currency, 2 decimals for percentages.
+
+For reported_values, include every metric_key of the question with verified value (copy it). Should I copy exact unrounded values or rounded? "include EVERY metric_key of that question with its verified value (copy it)". Copy exact values. I'll copy exact values from JSON.
+
+Word count: keep under 600 words total. Statements concise.
+
+Limitations: 
+- Data covers only 2023–2024; no earlier baseline.
+- AOV skewed by large orders (mean >> median), so averages can mislead.
+- Customer concentration moderate but top-customer dependence exists.
+- Discount analysis limited to electronics >=20%; profitability/margin not available — revenue only, no cost data.
+- No returns/cancellations info; cleaned data may not reflect net revenue.
+
+Conclusion: summarize.
+
+Executive summary: 2-3 sentences.
+
+Let me draft:
+
+Title: "Retail Sales Performance Report 2023–2024"
+
+Executive summary: "In 2023–2024 the business generated $445,325.07 across 520 cleaned orders (average order value $856.39). Revenue grew 10.08% year over year, from $211,976.28 in 2023 to $233,348.79 in 2024, with 2024 momentum building through Q3 before a slight Q4 dip. The East region leads revenue, and order values are highly skewed, with a median of $313.28 well below the mean."
+
+Key findings statements:
+
+q1: "Total verified revenue for 2023–2024 was $445,325.07 across 520 orders, giving an average order value of $856.39."
+evidence_refs: [total_revenue, order_count, average_order_value]; reported_values exact.
+
+q2: "The East region generated the most revenue ($130,516.68), followed by North ($124,845.75), West ($99,428.16) and South ($90,534.48); East exceeded South by $39,982.20."
+ranking: [East, North, West, South]. derived: difference 39982.2 operands [revenue_east, revenue_south].
+
+q3: "2024 revenue rose through the year, peaking in Q3 at $71,674.98, then easing to $68,948.70 in Q4; Q2 was $56,616.79 and Q1 the lowest at $36,108.32 — Q3 exceeded Q1 by $35,566.66."
+ranking: [Q3, Q4, Q2, Q1]. derived difference 35566.66 operands [revenue_2024_q3, revenue_2024_q1].
+
+q4: "Revenue increased 10.08% year over year, from $211,976.28 in 2023 to $233,348.79 in 2024." direction increase.
+
+q5: "22 electronics orders had discounts of 20% or more, contributing $50,035.32 in revenue — about 11.24% of total revenue." derived share 11.24 operands [electronics_high_discount_revenue, total_revenue]. Value 11.24.
+
+Compute precisely: 50035.32/445325.07 = ?
+445325.07 * 0.1124 = 50054.54. Slightly above 50035.32, so ratio slightly below 0.1124. Difference 50054.54-50035.32=19.22; 19.22/445325.07=0.00004316. So 0.1124-0.0000432=0.1123568 → 11.2357% → 11.24%. Good.
+
+q6: "Order revenue is highly skewed: the mean ($856.39) is about 2.73× the median ($313.28), with a standard deviation of $1,295.74 and values ranging from $5.27 to $7,844.02." derived ratio 2.73 operands [order_revenue_mean, order_revenue_median].
+
+q7: "There are 222 distinct customers; the highest-revenue customer spent $27,793.12, accounting for 6.24% of total revenue — meaningful but not dominant concentration."
+
+reported_values copies exact numbers.
+
+Direction fields: q1 not_applicable? Schema: direction for change/trend findings. q4 must be "increase". Others: "not_applicable" or null. Structured claim requirements: q4 direction_required true. Others false. I'll set direction "increase" for q4, "not_applicable" for others (or null). I'll use "not_applicable" to be explicit.
+
+Rankings: q2 and q3 arrays; others null.
+
+Derived values arrays per finding.
+
+Word count: need under 600 for title, summary, statements, limitations, conclusion. Should be fine.
+
+Let me write the JSON.
+
+Check numbers copied exactly:
+- total_revenue 445325.07
+- order_count 520.0
+- average_order_value 856.3943653846154
+- revenue_north 124845.75
+- revenue_south 90534.48
+- revenue_east 130516.68000000001
+- revenue_west 99428.16
+- revenue_2024_q1 36108.32
+- revenue_2024_q2 56616.79
+- revenue_2024_q3 71674.98
+- revenue_2024_q4 68948.7
+- revenue_2023 211976.28
+- revenue_2024 233348.78999999998
+- revenue_yoy_change_pct 10.082500740177146
+- electronics_high_discount_orders 22.0
+- electronics_high_discount_revenue 50035.32
+- order_revenue_mean 856.3943653846154
+- order_revenue_median 313.275
+- order_revenue_std 1295.7423548861245
+- order_revenue_min 5.27
+- order_revenue_max 7844.02
+- unique_customer_count 222.0
+- top_customer_revenue 27793.12
+- top_customer_revenue_share_pct 6.241085865657642
+
+Good. Write final JSON in one fenced block, nothing else.

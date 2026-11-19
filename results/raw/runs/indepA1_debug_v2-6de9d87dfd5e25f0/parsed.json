@@ -1,0 +1,11 @@
+{
+  "fixed_code": "def paginate(items, size, cursor=None):\n    \"\"\"Return a page of items and a cursor for the next page.\n\n    Args:\n        items (Iterable): The collection to paginate.\n        size (int): Positive number of items per page.\n        cursor (str, optional): Zero‑based start index as a string. If ``None`` pagination starts at 0.\n\n    Returns:\n        tuple: (page, next_cursor) where ``page`` is a list of up to ``size`` items and\n        ``next_cursor`` is a string representing the start index for the next page, or ``None``\n        when the end of the collection has been reached.\n\n    Raises:\n        ValueError: If ``size`` is not a positive integer, if ``cursor`` is not a string\n        representing a non‑negative integer, or if the cursor is out of range.\n    \"\"\"\n    # Validate size\n    if not isinstance(size, int) or size <= 0:\n        raise ValueError(\"size must be a positive integer\")\n\n    # Materialise items as a list for slicing\n    seq = list(items)\n    n = len(seq)\n\n    # Determine start index from cursor\n    if cursor is None:\n        start = 0\n    else:\n        if not isinstance(cursor, str):\n            raise ValueError(\"cursor must be a string\")\n        try:\n            start = int(cursor)\n        except Exception:\n            raise ValueError(\"cursor must be a string representing an integer\")\n        if start < 0 or start > n:\n            raise ValueError(\"cursor out of range\")\n\n    end = start + size\n    page = seq[start:end]\n    next_cursor = str(end) if end < n else None\n    return page, next_cursor\n",
+  "bug_locations": [
+    "Added validation for non‑positive size",
+    "Added validation and conversion for cursor (type, format, range)",
+    "Converted items to a list to support slicing",
+    "Implemented correct next_cursor logic (None when at end)",
+    "Returned page as a list and next_cursor as per specification"
+  ],
+  "explanation": "The original implementation ignored the specification: it never validated ``size`` or ``cursor``, always returned a string cursor even when pagination was finished, and produced an out‑of‑range cursor for the last page. The fix adds proper input validation, handles cursor conversion safely, computes the slice correctly, and returns ``None`` as the next cursor when there are no more items."
+}

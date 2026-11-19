@@ -1,0 +1,35 @@
+# Support Operations Analysis — Verified Findings Report
+
+Across 220 support tickets, the operation spent $17,445.07 in labor with a mean resolution time of 75.66 minutes. Team Beta carries the largest labor cost ($6,928.72), while chat is the slowest channel (82.23 minutes on average) yet reopens least often (6.85%); email reopens at 15.24%, a relative change of +122.48% versus chat. Only 9 tickets are both high-cost (labor_cost >= $100) and low-satisfaction (<= 2), with an 11.11% reopen rate. Mean satisfaction is 4.14 where reported, with 14 tickets missing a score. Workload is broadly distributed across 18 agents, the busiest handling 7.27% of tickets. Caution: both the cleaning and analysis stages reported validation status 'failed', so figures should be re-validated before major decisions.
+
+## Key findings
+- [q1] The dataset covers 220 support tickets, with a mean resolution time of 75.66 minutes and total labor cost of $17,445.07.
+  - Reported values: ticket_count=220.0, mean_resolution_minutes=75.6590909090909, total_labor_cost=17445.07
+- [q2] Team Beta carries the highest total labor cost at $6,928.72 (a 39.72% share of the $17,445.07 total), followed by Gamma at $5,911.44 and Alpha at $4,604.91.
+  - Reported values: labor_cost_alpha=4604.91, labor_cost_beta=6928.72, labor_cost_gamma=5911.44
+  - Ranking: Beta, Gamma, Alpha
+  - Derived share(labor_cost_beta, total_labor_cost): 39.72
+- [q3] Chat tickets take the longest to resolve on average (82.23 minutes), ahead of phone (74.07 minutes) and email (71.72 minutes); chat averages 10.51 minutes longer than email.
+  - Reported values: resolution_email=71.72380952380952, resolution_chat=82.23287671232876, resolution_phone=74.07142857142857
+  - Ranking: chat, phone, email
+  - Derived difference(resolution_chat, resolution_email): 10.51
+- [q4] Email tickets reopen at 15.24% versus 6.85% for chat — an increase of 8.39 percentage points, equivalent to a relative change of +122.48% (direction: increase).
+  - Reported values: reopen_rate_email_pct=15.238095238095239, reopen_rate_chat_pct=6.8493150684931505, email_vs_chat_reopen_change_pct=122.47619047619051
+  - Direction: increase
+  - Derived difference(reopen_rate_email_pct, reopen_rate_chat_pct): 8.39
+- [q5] 9 tickets combine labor cost of $100 or more with a satisfaction score of 2 or lower; 11.11% of this high-cost low-satisfaction segment were reopened.
+  - Reported values: high_cost_low_sat_count=9.0, high_cost_low_sat_reopen_pct=11.11111111111111
+- [q6] Resolution times are right-skewed: the median is 65 minutes versus a mean of 75.66 minutes, with a sample standard deviation of 51.30 minutes. Mean satisfaction is 4.14, calculated excluding 14 tickets with missing scores.
+  - Reported values: resolution_median=65.0, resolution_std=51.302729053162466, satisfaction_mean=4.140776699029126, satisfaction_missing_count=14.0
+- [q7] 18 distinct agents handled tickets, and the busiest single agent handled 16 tickets — a 7.27% share of all tickets — indicating workload is broadly distributed with no concentration risk.
+  - Reported values: unique_agent_count=18.0, top_agent_ticket_count=16.0, top_agent_ticket_share_pct=7.2727272727272725
+
+## Limitations
+- Both upstream stages (cleaning and analysis) report validation status 'failed'; figures are reported exactly as computed but should be re-validated before driving major decisions.
+- Satisfaction scores are missing for 14 of 220 tickets; the mean satisfaction of 4.14 excludes them and may be biased if missingness is not random.
+- The high-cost low-satisfaction segment contains only 9 tickets, so its 11.11% reopen rate rests on a very small sample.
+- The reopen comparison covers email and chat only; phone reopen behavior was not computed.
+- No time period, ticket priority, or wage-rate context was available, so trends, seasonality, and per-dollar efficiency cannot be assessed.
+
+## Conclusion
+The clearest improvement lever is email resolution quality: email reopens at 15.24%, a 122.48% relative increase over chat's 6.85%, even though email is the fastest channel. Cost is concentrated in Team Beta ($6,928.72), and agent workload shows no risky concentration (top agent share 7.27%). Recommended next steps: investigate email first-contact resolution practices, review Beta's cost drivers, and re-run the pipeline to clear the failed cleaning and analysis validations before acting on these results.

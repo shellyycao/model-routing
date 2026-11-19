@@ -1,0 +1,101 @@
+STAGE: cleaning
+PROJECT: retail_sales
+PROMPT_VERSION: v3
+
+You are the data-cleaning stage of a three-stage data workflow (cleaning -> analysis -> reporting).
+Write ONE self-contained Python 3 script that cleans the raw data exactly as specified below.
+
+## Original objective
+Clean the raw retail order export and analyse 2023-2024 sales performance: overall revenue, regional differences, the 2024 quarterly trend, year-over-year growth, high-discount electronics orders, customer concentration and the distribution of order revenue, then report the verified findings to business stakeholders.
+
+## Input/output contract (mandatory)
+- Your script runs in an isolated sandbox with NO network access. Available libraries: the Python
+  standard library, pandas and numpy.
+- Read input files ONLY from the directory given by the environment variable INPUT_DIR, e.g.
+  os.path.join(os.environ["INPUT_DIR"], "<name>"). Available input files: "raw.csv".
+- Write every output file to the directory given by the environment variable OUTPUT_DIR. Write nowhere else.
+- Write the cleaned CSV to os.path.join(os.environ["OUTPUT_DIR"], "cleaned.csv") and set
+  `output_filename` to "cleaned.csv".
+- Also write os.path.join(os.environ["OUTPUT_DIR"], "cleaning_summary.json"): a JSON object with at least
+  "raw_rows" (rows read) and "cleaned_rows" (rows written), plus any per-rule counts you track.
+- The script takes no command-line arguments and must not print large amounts of data.
+
+## Cleaning requirements (apply all of them, in order)
+R1. Read every column of the raw CSV as text. Strip leading and trailing whitespace from every value. Treat the following values as missing (compare case-insensitively, after stripping): empty string, 'NA', 'N/A', 'null', 'None', '-'.
+R2. Remove duplicate records BEFORE applying any other row filter: rows that share the same order_id are duplicates; keep only the first occurrence in raw-file order and discard the later ones.
+R3. order_date: parse each value using exactly one of these formats: YYYY-MM-DD; MM/DD/YYYY (month first); DD-Mon-YYYY with an English 3-letter month abbreviation (e.g. 05-Mar-2024); YYYY/MM/DD; 'Month D, YYYY' with the full English month name (e.g. March 5, 2024). Drop rows whose order_date is missing or cannot be parsed. Write order_date as YYYY-MM-DD.
+R4. region: map case-insensitively to one of North, South, East, West; the single-letter abbreviations N, S, E, W map to North, South, East, West. Drop rows whose region is missing or not one of these.
+R5. product_category: map case-insensitively to one of Electronics, Clothing, Home & Garden, Sports, Books. Also map these variants (case-insensitive): 'Electronic' -> Electronics; 'Home and Garden' and 'Home&Garden' -> Home & Garden; 'Sport' -> Sports; 'Apparel' -> Clothing; 'Book' -> Books. Drop rows whose product_category is missing or maps to none of the five categories.
+R6. unit_price: remove the substrings '$', 'USD' and ',' and surrounding spaces, then parse as a number. Drop rows whose unit_price is missing, not a number, <= 0, or > 5000. Keep the value as given (raw prices have at most 2 decimals).
+R7. quantity: parse as a number (values such as '3.0' are allowed). Drop rows whose quantity is missing, not a number, not a whole number, < 1, or > 50. Store quantity as an integer.
+R8. discount_pct: remove a trailing '%' and parse as a number (it is a percentage, e.g. 15 means 15%). A missing discount_pct means no discount: set it to 0. Drop rows whose discount_pct is not a number, < 0, or > 100.
+R9. customer_id: convert to upper case. A missing customer_id is set to the string 'UNKNOWN' (the row is kept).
+R10. Add column revenue = quantity * unit_price * (1 - discount_pct / 100), rounded to 2 decimals.
+R11. Output exactly these columns in this order: order_id, order_date, customer_id, region, product_category, quantity, unit_price, discount_pct, revenue. Sort rows by order_id ascending. Write a CSV with a header row and no index column; numbers are written without currency symbols, percent signs or thousands separators.
+
+## Required schema of the cleaned CSV (columns in this order)
+- order_id: str; not nullable
+- order_date: date; not nullable
+- customer_id: str; not nullable
+- region: category; not nullable; allowed values: 'North', 'South', 'East', 'West'
+- product_category: category; not nullable; allowed values: 'Electronics', 'Clothing', 'Home & Garden', 'Sports', 'Books'
+- quantity: int; not nullable; min 1; max 50
+- unit_price: float; not nullable; min 0.01; max 5000
+- discount_pct: float; not nullable; min 0; max 100
+- revenue: float; not nullable; min 0
+
+## Input files
+### raw.csv (raw data; 637 lines in total)
+First lines:
+```
+order_id,order_date,customer_id,region,product_category,quantity,unit_price,discount_pct
+R100001,2023-01-04,c0012,North,Clothing,8.0,$97.72,30
+R100002,01/05/2023,c0054,North,Home & Garden,5.0,319.16,10
+R100003,2023-01-08,C0113,EAST,Clothing, 9 ,45.33,0
+R100004,01/09/2023,None,east,Books,2.0,31.39,15
+R100005,01/11/2023,C0097,  North ,Clothing,3,39.08,10
+R100006,2023-01-12,C0011,  East ,Clothing,60,USD 148.91,10
+R100007,2023/01/13,C0054,West,Home & Garden,5,TBD,0
+R100008,2023-01-14,C0241,East,Home & Garden,1,354.95,15
+R100009,2023-01-23,c0169,None,home & garden,1,166.83,0
+R100010,01/24/2023,C0182,WEST,Home And Garden,1,16.87,10%
+R100011,2023-01-26,c0116,W,Sport,5,308.14,10
+R100012,01/26/2023,C0014,West,Clothing,4,$52.61,0%
+R100013,01/27/2023,C0190,  South ,Clothing, 2 ,120.20,0
+R100014,None,c0033,South,Books,2.0,59.21,15
+```
+
+## What to return
+Return the script in `python_code`, the cleaned CSV filename in `output_filename`, and a brief
+explanation of the cleaning steps in `cleaning_logic`.
+
+
+Respond with a single JSON object that conforms to this JSON Schema. Put it in one ```json fenced block and include nothing else outside the block.
+```json
+{
+  "properties": {
+    "python_code": {
+      "description": "Python script. Reads input from INPUT_DIR, writes the cleaned CSV and cleaning_summary.json to OUTPUT_DIR.",
+      "title": "Python Code",
+      "type": "string"
+    },
+    "output_filename": {
+      "description": "Filename of the cleaned CSV written to OUTPUT_DIR.",
+      "title": "Output Filename",
+      "type": "string"
+    },
+    "cleaning_logic": {
+      "description": "Brief explanation of the cleaning steps.",
+      "title": "Cleaning Logic",
+      "type": "string"
+    }
+  },
+  "required": [
+    "python_code",
+    "output_filename",
+    "cleaning_logic"
+  ],
+  "title": "CleaningOutput",
+  "type": "object"
+}
+```

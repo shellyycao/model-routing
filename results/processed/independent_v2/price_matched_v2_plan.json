@@ -1,0 +1,698 @@
+{
+  "analysis": {
+    "metrics": [
+      "actual cost per task from recorded input/output tokens",
+      "A1 cost per functional_correct and A2 cost per content_correct",
+      "A3 cost per valid response and cost per strict-nDCG point",
+      "per-task quality-cost Pareto frontier using strict A3 nDCG",
+      "token usage, latency, truncation and format-failure rates"
+    ],
+    "script": "experiments/analyze_price_matched_v2.py"
+  },
+  "budget": {
+    "hard_cap_usd": 100.0,
+    "realistic_estimate": {
+      "assumptions": {
+        "billed_output_tokens_including_reasoning_per_call": {
+          "a1": 3500,
+          "a2": 1000,
+          "a3": 2000
+        },
+        "includes_completed_pilot_and_repilot_actual": true,
+        "input_tokens": "UTF-8 bytes / 4 rounded up + 256 tokens per rendered prompt including schema",
+        "retries": 0
+      },
+      "models": [
+        {
+          "assumed_input_tokens": 315333,
+          "assumed_output_tokens_including_reasoning": 585000,
+          "estimated_usd": 10.6930989,
+          "includes_repilot_calls": 0,
+          "model_alias": "sonnet_4_6"
+        },
+        {
+          "assumed_input_tokens": 315333,
+          "assumed_output_tokens_including_reasoning": 585000,
+          "estimated_usd": 10.6930989,
+          "includes_repilot_calls": 0,
+          "model_alias": "kimi_k3"
+        },
+        {
+          "assumed_input_tokens": 315333,
+          "assumed_output_tokens_including_reasoning": 585000,
+          "estimated_usd": 2.187333,
+          "includes_repilot_calls": 0,
+          "model_alias": "glm_5"
+        }
+      ],
+      "sunk_pilot_actual_priced_usd": 0.6713839999999999,
+      "total_usd": 24.2449148
+    },
+    "runtime_enforcement": {
+      "checkpoint_rule": "stop after repeat 1; resume only after ledger audit and projected total = pilot actual + 3 * repeat-1 evaluation actual is <= $100",
+      "cost_checkpoint_after_repeat": 1,
+      "reserve_then_settle": true,
+      "single_shared_cap_for_pilot_and_main": true
+    },
+    "static_worst_case": {
+      "assumptions": "completed pilot and re-pilot ledger actual plus 810 evaluation calls; five attempts per future logical call; conservative byte-count input bound and 16384 output tokens on every future attempt",
+      "completed_initial_pilot_logical_slots": 9,
+      "completed_repilot_logical_calls": 6,
+      "evaluation_logical_calls": 810,
+      "maximum_api_attempts": 4063,
+      "maximum_future_api_attempts": 4050,
+      "models": [
+        {
+          "includes_repilot_calls": 0,
+          "input_token_reservation": 5267685,
+          "model_alias": "sonnet_4_6",
+          "output_token_reservation": 22118400,
+          "worst_case_usd": 382.3369605
+        },
+        {
+          "includes_repilot_calls": 0,
+          "input_token_reservation": 5267685,
+          "model_alias": "kimi_k3",
+          "output_token_reservation": 22118400,
+          "worst_case_usd": 382.3369605
+        },
+        {
+          "includes_repilot_calls": 0,
+          "input_token_reservation": 5267685,
+          "model_alias": "glm_5",
+          "output_token_reservation": 22118400,
+          "worst_case_usd": 76.046565
+        }
+      ],
+      "sunk_pilot_actual_priced_usd": 0.6713839999999999,
+      "sunk_pilot_api_attempts": 13,
+      "total_usd": 841.3918699999999
+    }
+  },
+  "compatibility_pilot": {
+    "authorized": true,
+    "calls": [
+      {
+        "callable_model_id": "us.anthropic.claude-sonnet-4-6",
+        "checks": [
+          "call_succeeds",
+          "structured_output_parses",
+          "raw_usage_and_reasoning_accounting_recorded",
+          "temperature_parameter_support_recorded",
+          "effective_maxTokens_is_16384"
+        ],
+        "maxTokens": 16384,
+        "model_alias": "sonnet_4_6",
+        "quality_review_forbidden": true,
+        "reasoning": "vendor default; no reasoning-control field",
+        "status": "completed_or_skipped_as_recorded",
+        "synthetic_case_id": "pilot_a1_counter",
+        "task": "a1",
+        "temperature": 0.0
+      },
+      {
+        "callable_model_id": "us.moonshotai.kimi-k3",
+        "checks": [
+          "call_succeeds",
+          "structured_output_parses",
+          "raw_usage_and_reasoning_accounting_recorded",
+          "temperature_parameter_support_recorded",
+          "effective_maxTokens_is_16384"
+        ],
+        "maxTokens": 16384,
+        "model_alias": "kimi_k3",
+        "quality_review_forbidden": true,
+        "reasoning": "vendor default; no reasoning-control field",
+        "status": "completed_or_skipped_as_recorded",
+        "synthetic_case_id": "pilot_a1_counter",
+        "task": "a1",
+        "temperature": 0.0
+      },
+      {
+        "callable_model_id": "us.xai.grok-4.7",
+        "checks": [
+          "call_succeeds",
+          "structured_output_parses",
+          "raw_usage_and_reasoning_accounting_recorded",
+          "temperature_parameter_support_recorded",
+          "effective_maxTokens_is_16384"
+        ],
+        "maxTokens": 16384,
+        "model_alias": "grok_4_7",
+        "quality_review_forbidden": true,
+        "reasoning": "vendor default; no reasoning-control field",
+        "status": "completed_or_skipped_as_recorded",
+        "synthetic_case_id": "pilot_a1_counter",
+        "task": "a1",
+        "temperature": 0.0
+      },
+      {
+        "callable_model_id": "us.anthropic.claude-sonnet-4-6",
+        "checks": [
+          "call_succeeds",
+          "structured_output_parses",
+          "raw_usage_and_reasoning_accounting_recorded",
+          "temperature_parameter_support_recorded",
+          "effective_maxTokens_is_16384"
+        ],
+        "maxTokens": 16384,
+        "model_alias": "sonnet_4_6",
+        "quality_review_forbidden": true,
+        "reasoning": "vendor default; no reasoning-control field",
+        "status": "completed_or_skipped_as_recorded",
+        "synthetic_case_id": "pilot_a2_badge",
+        "task": "a2",
+        "temperature": 0.0
+      },
+      {
+        "callable_model_id": "us.moonshotai.kimi-k3",
+        "checks": [
+          "call_succeeds",
+          "structured_output_parses",
+          "raw_usage_and_reasoning_accounting_recorded",
+          "temperature_parameter_support_recorded",
+          "effective_maxTokens_is_16384"
+        ],
+        "maxTokens": 16384,
+        "model_alias": "kimi_k3",
+        "quality_review_forbidden": true,
+        "reasoning": "vendor default; no reasoning-control field",
+        "status": "completed_or_skipped_as_recorded",
+        "synthetic_case_id": "pilot_a2_badge",
+        "task": "a2",
+        "temperature": 0.0
+      },
+      {
+        "callable_model_id": "us.xai.grok-4.7",
+        "checks": [
+          "call_succeeds",
+          "structured_output_parses",
+          "raw_usage_and_reasoning_accounting_recorded",
+          "temperature_parameter_support_recorded",
+          "effective_maxTokens_is_16384"
+        ],
+        "maxTokens": 16384,
+        "model_alias": "grok_4_7",
+        "quality_review_forbidden": true,
+        "reasoning": "vendor default; no reasoning-control field",
+        "status": "completed_or_skipped_as_recorded",
+        "synthetic_case_id": "pilot_a2_badge",
+        "task": "a2",
+        "temperature": 0.0
+      },
+      {
+        "callable_model_id": "us.anthropic.claude-sonnet-4-6",
+        "checks": [
+          "call_succeeds",
+          "structured_output_parses",
+          "raw_usage_and_reasoning_accounting_recorded",
+          "temperature_parameter_support_recorded",
+          "effective_maxTokens_is_16384"
+        ],
+        "maxTokens": 16384,
+        "model_alias": "sonnet_4_6",
+        "quality_review_forbidden": true,
+        "reasoning": "vendor default; no reasoning-control field",
+        "status": "completed_or_skipped_as_recorded",
+        "synthetic_case_id": "pilot_a3_gardens",
+        "task": "a3",
+        "temperature": 0.0
+      },
+      {
+        "callable_model_id": "us.moonshotai.kimi-k3",
+        "checks": [
+          "call_succeeds",
+          "structured_output_parses",
+          "raw_usage_and_reasoning_accounting_recorded",
+          "temperature_parameter_support_recorded",
+          "effective_maxTokens_is_16384"
+        ],
+        "maxTokens": 16384,
+        "model_alias": "kimi_k3",
+        "quality_review_forbidden": true,
+        "reasoning": "vendor default; no reasoning-control field",
+        "status": "completed_or_skipped_as_recorded",
+        "synthetic_case_id": "pilot_a3_gardens",
+        "task": "a3",
+        "temperature": 0.0
+      },
+      {
+        "callable_model_id": "us.xai.grok-4.7",
+        "checks": [
+          "call_succeeds",
+          "structured_output_parses",
+          "raw_usage_and_reasoning_accounting_recorded",
+          "temperature_parameter_support_recorded",
+          "effective_maxTokens_is_16384"
+        ],
+        "maxTokens": 16384,
+        "model_alias": "grok_4_7",
+        "quality_review_forbidden": true,
+        "reasoning": "vendor default; no reasoning-control field",
+        "status": "completed_or_skipped_as_recorded",
+        "synthetic_case_id": "pilot_a3_gardens",
+        "task": "a3",
+        "temperature": 0.0
+      }
+    ],
+    "executed": true,
+    "executor": "experiments/run_price_matched_v2_pilot.py",
+    "logical_calls": 9,
+    "outcome_summary": {
+      "blocked_models": {
+        "kimi_k3": {
+          "code": "ValidationException",
+          "message": "This model doesn't support the temperature field. Remove temperature and try again."
+        }
+      },
+      "errors": 4,
+      "logical_calls_attempted_this_run": 7,
+      "overall_hard_cap_usd": 100.0,
+      "parse_errors": 0,
+      "pilot_hard_cap_usd": 15.0,
+      "planned_slots": 9,
+      "protocol": "price-matched-v2-compatibility-pilot",
+      "quality_inspected": false,
+      "records": "/Users/shellyy/Desktop/model-routing-xai/results/raw/price_matched_v2_pilot/records.jsonl",
+      "shared_ledger": "/Users/shellyy/Desktop/model-routing-xai/results/raw/ledgers/price_matched_v2.json",
+      "skipped_after_parameter_failure": 2,
+      "status": "complete",
+      "successes": 3,
+      "total_attempted_records": 7
+    },
+    "pilot_hard_cap_usd": 15.0,
+    "pilot_spend_counts_toward_overall_100_usd": true,
+    "shared_overall_ledger": "results/raw/ledgers/price_matched_v2.json"
+  },
+  "compatibility_repilot": {
+    "authorized": true,
+    "calls": [
+      {
+        "callable_model_id": "us.moonshotai.kimi-k3",
+        "checks": [
+          "call_succeeds",
+          "structured_output_parses",
+          "raw_usage_and_reasoning_accounting_recorded",
+          "temperature_parameter_support_recorded",
+          "effective_maxTokens_is_16384"
+        ],
+        "maxTokens": 16384,
+        "model_alias": "kimi_k3",
+        "quality_review_forbidden": true,
+        "reasoning": "vendor default; no reasoning-control field",
+        "status": "completed_success_as_recorded",
+        "synthetic_case_id": "pilot_a1_counter",
+        "task": "a1",
+        "temperature": null,
+        "temperature_field": "omitted"
+      },
+      {
+        "callable_model_id": "zai.glm-5",
+        "checks": [
+          "call_succeeds",
+          "structured_output_parses",
+          "raw_usage_and_reasoning_accounting_recorded",
+          "temperature_parameter_support_recorded",
+          "effective_maxTokens_is_16384"
+        ],
+        "maxTokens": 16384,
+        "model_alias": "glm_5",
+        "quality_review_forbidden": true,
+        "reasoning": "vendor default; no reasoning-control field",
+        "status": "completed_success_as_recorded",
+        "synthetic_case_id": "pilot_a1_counter",
+        "task": "a1",
+        "temperature": 0.0,
+        "temperature_field": "sent"
+      },
+      {
+        "callable_model_id": "us.moonshotai.kimi-k3",
+        "checks": [
+          "call_succeeds",
+          "structured_output_parses",
+          "raw_usage_and_reasoning_accounting_recorded",
+          "temperature_parameter_support_recorded",
+          "effective_maxTokens_is_16384"
+        ],
+        "maxTokens": 16384,
+        "model_alias": "kimi_k3",
+        "quality_review_forbidden": true,
+        "reasoning": "vendor default; no reasoning-control field",
+        "status": "completed_success_as_recorded",
+        "synthetic_case_id": "pilot_a2_badge",
+        "task": "a2",
+        "temperature": null,
+        "temperature_field": "omitted"
+      },
+      {
+        "callable_model_id": "zai.glm-5",
+        "checks": [
+          "call_succeeds",
+          "structured_output_parses",
+          "raw_usage_and_reasoning_accounting_recorded",
+          "temperature_parameter_support_recorded",
+          "effective_maxTokens_is_16384"
+        ],
+        "maxTokens": 16384,
+        "model_alias": "glm_5",
+        "quality_review_forbidden": true,
+        "reasoning": "vendor default; no reasoning-control field",
+        "status": "completed_success_as_recorded",
+        "synthetic_case_id": "pilot_a2_badge",
+        "task": "a2",
+        "temperature": 0.0,
+        "temperature_field": "sent"
+      },
+      {
+        "callable_model_id": "us.moonshotai.kimi-k3",
+        "checks": [
+          "call_succeeds",
+          "structured_output_parses",
+          "raw_usage_and_reasoning_accounting_recorded",
+          "temperature_parameter_support_recorded",
+          "effective_maxTokens_is_16384"
+        ],
+        "maxTokens": 16384,
+        "model_alias": "kimi_k3",
+        "quality_review_forbidden": true,
+        "reasoning": "vendor default; no reasoning-control field",
+        "status": "completed_success_as_recorded",
+        "synthetic_case_id": "pilot_a3_gardens",
+        "task": "a3",
+        "temperature": null,
+        "temperature_field": "omitted"
+      },
+      {
+        "callable_model_id": "zai.glm-5",
+        "checks": [
+          "call_succeeds",
+          "structured_output_parses",
+          "raw_usage_and_reasoning_accounting_recorded",
+          "temperature_parameter_support_recorded",
+          "effective_maxTokens_is_16384"
+        ],
+        "maxTokens": 16384,
+        "model_alias": "glm_5",
+        "quality_review_forbidden": true,
+        "reasoning": "vendor default; no reasoning-control field",
+        "status": "completed_success_as_recorded",
+        "synthetic_case_id": "pilot_a3_gardens",
+        "task": "a3",
+        "temperature": 0.0,
+        "temperature_field": "sent"
+      }
+    ],
+    "executed": true,
+    "executor": "experiments/run_price_matched_v2_pilot.py",
+    "ledger_spent_usd_after_repilot": 0.6713839999999999,
+    "logical_calls": 6,
+    "outcome_summary": {
+      "blocked_models": {},
+      "errors": 0,
+      "logical_calls_attempted_this_run": 6,
+      "overall_hard_cap_usd": 100.0,
+      "parse_errors": 0,
+      "pilot_hard_cap_usd": 15.0,
+      "planned_slots": 6,
+      "protocol": "price-matched-v2-compatibility-repilot",
+      "quality_inspected": false,
+      "records": "/Users/shellyy/Desktop/model-routing-xai/results/raw/price_matched_v2_pilot/repilot_records.jsonl",
+      "shared_ledger": "/Users/shellyy/Desktop/model-routing-xai/results/raw/ledgers/price_matched_v2.json",
+      "skipped_after_parameter_failure": 0,
+      "status": "complete",
+      "successes": 6,
+      "total_attempted_records": 6
+    },
+    "pilot_hard_cap_usd": 15.0,
+    "required_flag": "--execute-approved-repilot",
+    "shared_overall_ledger": "results/raw/ledgers/price_matched_v2.json"
+  },
+  "evaluation": {
+    "calls_per_repeat": 270,
+    "cost_checkpoint_after_repeat_1": true,
+    "first_rows": [
+      {
+        "callable_model_id": "us.anthropic.claude-sonnet-4-6",
+        "case_id": "a1v2_e01_clamp_1",
+        "model": "sonnet_4_6",
+        "protocol": "price-matched-v2",
+        "repeat": 0,
+        "run_id": "f4be1be313b7e059cad93737366dd44571433cfecd3910e00b44222370dd7e79",
+        "task": "a1"
+      },
+      {
+        "callable_model_id": "us.moonshotai.kimi-k3",
+        "case_id": "a1v2_e01_clamp_1",
+        "model": "kimi_k3",
+        "protocol": "price-matched-v2",
+        "repeat": 0,
+        "run_id": "c1931f8ed22433ae4c1e323644ae069cefc7d89e783682fe6cdf4dd77c62017b",
+        "task": "a1"
+      },
+      {
+        "callable_model_id": "zai.glm-5",
+        "case_id": "a1v2_e01_clamp_1",
+        "model": "glm_5",
+        "protocol": "price-matched-v2",
+        "repeat": 0,
+        "run_id": "54f39057efcb79df7534f7107a03412b436ba49820a9e65e4936869da8fc3c93",
+        "task": "a1"
+      },
+      {
+        "callable_model_id": "us.anthropic.claude-sonnet-4-6",
+        "case_id": "a1v2_e02_clamp_2",
+        "model": "sonnet_4_6",
+        "protocol": "price-matched-v2",
+        "repeat": 0,
+        "run_id": "1f7003f102e12167613448ba16f8b4585d5a1381911af3d8c9007a1b4fc2f7a4",
+        "task": "a1"
+      },
+      {
+        "callable_model_id": "us.moonshotai.kimi-k3",
+        "case_id": "a1v2_e02_clamp_2",
+        "model": "kimi_k3",
+        "protocol": "price-matched-v2",
+        "repeat": 0,
+        "run_id": "73d5728a0dd62ccea37f96eefb37afed3b77d7cc65e361c9c6ed9ffcfbe27636",
+        "task": "a1"
+      },
+      {
+        "callable_model_id": "zai.glm-5",
+        "case_id": "a1v2_e02_clamp_2",
+        "model": "glm_5",
+        "protocol": "price-matched-v2",
+        "repeat": 0,
+        "run_id": "e26487e6458c3ef74e23cb99872021fcd95dba0d899acc72489f90868320b258",
+        "task": "a1"
+      },
+      {
+        "callable_model_id": "us.anthropic.claude-sonnet-4-6",
+        "case_id": "a1v2_e03_chunks_1",
+        "model": "sonnet_4_6",
+        "protocol": "price-matched-v2",
+        "repeat": 0,
+        "run_id": "e8ae29cbe5e405b114d1e1324d7e37da9b4fd57b87c591ae5367204bf9c55a4b",
+        "task": "a1"
+      },
+      {
+        "callable_model_id": "us.moonshotai.kimi-k3",
+        "case_id": "a1v2_e03_chunks_1",
+        "model": "kimi_k3",
+        "protocol": "price-matched-v2",
+        "repeat": 0,
+        "run_id": "f0fdcfbb2215c2f2729c6adf10b5dbe749c7de6b9718bded271f5a900d33a8d9",
+        "task": "a1"
+      },
+      {
+        "callable_model_id": "zai.glm-5",
+        "case_id": "a1v2_e03_chunks_1",
+        "model": "glm_5",
+        "protocol": "price-matched-v2",
+        "repeat": 0,
+        "run_id": "9ed73a5ca071b202012cd0f96344a8fbf82893e2dedfce81ba72adc9f510ef8c",
+        "task": "a1"
+      }
+    ],
+    "last_rows": [
+      {
+        "callable_model_id": "us.anthropic.claude-sonnet-4-6",
+        "case_id": "a3v2_28",
+        "model": "sonnet_4_6",
+        "protocol": "price-matched-v2",
+        "repeat": 2,
+        "run_id": "dceb792892aedb13d65c02c3ced7b587430ed5eeefcf8dc661d3575c9f1efc46",
+        "task": "a3"
+      },
+      {
+        "callable_model_id": "us.moonshotai.kimi-k3",
+        "case_id": "a3v2_28",
+        "model": "kimi_k3",
+        "protocol": "price-matched-v2",
+        "repeat": 2,
+        "run_id": "8d57a67f2bd18ba167485a057ee3d854fb176e92919f55e4420bce618aed7e67",
+        "task": "a3"
+      },
+      {
+        "callable_model_id": "zai.glm-5",
+        "case_id": "a3v2_28",
+        "model": "glm_5",
+        "protocol": "price-matched-v2",
+        "repeat": 2,
+        "run_id": "37d71e6e273c9d2fc12f81f1ff47b58a34b3744b597bceb92915919c4647df3d",
+        "task": "a3"
+      },
+      {
+        "callable_model_id": "us.anthropic.claude-sonnet-4-6",
+        "case_id": "a3v2_29",
+        "model": "sonnet_4_6",
+        "protocol": "price-matched-v2",
+        "repeat": 2,
+        "run_id": "1b21d245cb17b1170ba7a6fa35574ff52b41827cd384819b47a9386e73326a2a",
+        "task": "a3"
+      },
+      {
+        "callable_model_id": "us.moonshotai.kimi-k3",
+        "case_id": "a3v2_29",
+        "model": "kimi_k3",
+        "protocol": "price-matched-v2",
+        "repeat": 2,
+        "run_id": "3efd5926d6c4423727d2bdc23da3096666308b45dfc945de6a40ec818f4d7c76",
+        "task": "a3"
+      },
+      {
+        "callable_model_id": "zai.glm-5",
+        "case_id": "a3v2_29",
+        "model": "glm_5",
+        "protocol": "price-matched-v2",
+        "repeat": 2,
+        "run_id": "d146ae9635ffb37d1b17fa517d3d246a6bb3961a8be5a9fada38c51d4681c10e",
+        "task": "a3"
+      },
+      {
+        "callable_model_id": "us.anthropic.claude-sonnet-4-6",
+        "case_id": "a3v2_30",
+        "model": "sonnet_4_6",
+        "protocol": "price-matched-v2",
+        "repeat": 2,
+        "run_id": "e879efbad1cb2f382fe804f2593e66b62932a62cc62962d7439552700d5fef7d",
+        "task": "a3"
+      },
+      {
+        "callable_model_id": "us.moonshotai.kimi-k3",
+        "case_id": "a3v2_30",
+        "model": "kimi_k3",
+        "protocol": "price-matched-v2",
+        "repeat": 2,
+        "run_id": "ddfea73e4a53b10e2852a7fc5ee93cd0ee22a28cd05b4df59e972c97ee5f3404",
+        "task": "a3"
+      },
+      {
+        "callable_model_id": "zai.glm-5",
+        "case_id": "a3v2_30",
+        "model": "glm_5",
+        "protocol": "price-matched-v2",
+        "repeat": 2,
+        "run_id": "0c947458ca506106e6308037691cd12200b26b066d3435cbbbc827320ce03fa8",
+        "task": "a3"
+      }
+    ],
+    "logical_calls": 810,
+    "ordering": "repeat-major, then task, case, model; models interleaved within every case",
+    "repeat_boundaries": [
+      {
+        "end_index_exclusive": 270,
+        "repeat": 1,
+        "start_index": 0
+      },
+      {
+        "end_index_exclusive": 540,
+        "repeat": 2,
+        "start_index": 270
+      },
+      {
+        "end_index_exclusive": 810,
+        "repeat": 3,
+        "start_index": 540
+      }
+    ],
+    "repeats": 3
+  },
+  "execution_gate": {
+    "hard_cap_usd": 100.0,
+    "protocol_manifest_must_be_frozen": true,
+    "repilot_completed": true,
+    "required_tag": "price-matched-v2-frozen-v1",
+    "user_paid_execution_approval": "Approve main run"
+  },
+  "generation": {
+    "maxTokens": 16384,
+    "reasoning": "vendor default; no reasoning-control field",
+    "temperature": "0 for Sonnet 4.6 and GLM 5; omitted for Kimi K3 after the pilot ValidationException and final user approval"
+  },
+  "hash_inputs": {
+    "a1_prompt_sha256": "c9fa8de29965c54d56405ca1875495a5c1cf1333c8eef9f3f6f69d4e3fa8399e",
+    "a2_prompt_sha256": "e383be6d986e3218e76134a78eed486471782f6dd5dacc86848bb818d8908f39",
+    "a3_prompt_sha256": "221c04d70d42b740c1d8e6bbe351f0e71468184569723e206b81edf616e79996",
+    "a3_scoring_decisions_sha256": "de707dcef023751b8452aa4f3966e53dddb2f90798547dc95a9b8133bdc5da6f",
+    "dataset_tree_sha256": "831c081d073dbabc036f080c5da4b41c4ed71d7156a5c9dd3bb8a75e2b902c4a",
+    "initial_pilot_records_sha256": "d3a08fa64b64f8ea67d428442e8d8891c2cd2c2c3cc22dd7ccf59a0b8302ba81",
+    "initial_pilot_summary_sha256": "c95dd4acefead4023909cf43a0de9d9873497d86c99e2429e9154198efa5b2da",
+    "model_probe_sha256": "25b378a6bd4719a0bb0ce5aca2d46402f2d9e2da415dcf041d913cb240cf14ae",
+    "model_verification_sha256": "c20f1011a8b13575dc4d6ad077b85f526647c8a08ebdb9be8047540495f27c62",
+    "pilot_config_sha256": "7f06a5dbee97f891b9db907a85fe0b72ac4f34583a72d1324979669ce1cbd7fd",
+    "pilot_executor_sha256": "110f7299428fe8ec655650356ae12dd8e6d233811c47c34e50b0b03a8a5015ac",
+    "repilot_invocations_sha256": "62c8bf0f0d8b7a0070c66668ad81b4a6cf389c2d92a3d5d8014fb7b7e3cee0fb",
+    "repilot_records_sha256": "5f24bc4a950a9168c8a990ddf71800286239c23c89170806885e8c5a7e1431f3",
+    "repilot_summary_sha256": "01881367acfc47be3b1313a04ec81a68e99b1b2bed05ef53a3294eb26a62f3ba",
+    "scorer_v2_2_sha256": "40eed0373ddfd80614f2fb6c0777a2eb104cc0ec7e30bf3fc13480dc3521990b"
+  },
+  "models": [
+    {
+      "alias": "sonnet_4_6",
+      "base_model_id": "anthropic.claude-sonnet-4-6",
+      "callable_model_id": "us.anthropic.claude-sonnet-4-6",
+      "input_per_mtok": 3.3,
+      "output_per_mtok": 16.5,
+      "provider": "Anthropic",
+      "reasoning_setting": "vendor_default_no_control_field",
+      "temperature": 0.0,
+      "temperature_support": "temperature_0_verified_in_compatibility_pilot"
+    },
+    {
+      "alias": "kimi_k3",
+      "base_model_id": "moonshotai.kimi-k3",
+      "callable_model_id": "us.moonshotai.kimi-k3",
+      "input_per_mtok": 3.3,
+      "output_per_mtok": 16.5,
+      "provider": "Moonshot AI",
+      "reasoning_setting": "vendor_default_no_control_field",
+      "temperature": null,
+      "temperature_support": "temperature_omission_verified_in_repilot_3_of_3"
+    },
+    {
+      "alias": "glm_5",
+      "base_model_id": "zai.glm-5",
+      "callable_model_id": "zai.glm-5",
+      "input_per_mtok": 1.0,
+      "output_per_mtok": 3.2,
+      "provider": "Z AI",
+      "reasoning_setting": "vendor_default_no_control_field",
+      "temperature": 0.0,
+      "temperature_support": "temperature_0_verified_in_repilot_3_of_3"
+    }
+  ],
+  "protocol": "price-matched-v2",
+  "selection_disclosure": {
+    "decision_priority": "generation match over price match",
+    "new_blended_price_ratio": 4.258064516129032,
+    "previous_blended_price_ratio": 2.0,
+    "removed_model": "grok_4_7",
+    "removed_reason": "real compatibility-pilot invokes returned AccessDeniedException despite AVAILABLE control-plane metadata",
+    "replacement_model": "glm_5"
+  },
+  "status": "protocol_frozen_paid_execution_approved",
+  "user_approval": {
+    "date": "2026-11-18",
+    "wording": "Approve main run"
+  }
+}

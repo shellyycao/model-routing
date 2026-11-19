@@ -1,0 +1,85 @@
+We need to produce JSON per schema. Include title, executive_summary, key_findings (array of 7 entries), limitations, conclusion.
+
+We must include for each finding: finding_id, statement, evidence_refs, reported_values (all metric_keys for that question), direction (if required), ranking (if required), derived_values (any computed numbers). Use verified findings only.
+
+We need to compute rankings for q2 and q3.
+
+q2 ranking: labor_cost_alpha, labor_cost_beta, labor_cost_gamma values: alpha 7787.78, beta 10247.32, gamma 9387.74. Highest to lowest: Beta (10247.32), Gamma (9387.74), Alpha (7787.78). Use labels from ranking_metric_key_to_label: "Alpha","Beta","Gamma". So ranking array: ["Beta","Gamma","Alpha"].
+
+q3 ranking: resolution_chat 83.039216, resolution_email 73.017241, resolution_phone 69.253521. Highest to lowest: chat, email, phone. Labels: "chat","email","phone". So ranking: ["chat","email","phone"].
+
+q4 direction required: metric key email_vs_chat_reopen_change_pct = 119.827586. Positive indicates increase (email higher than chat). Direction should be "increase". Provide direction field.
+
+Derived values: maybe compute share of top agent tickets: top_agent_ticket_share_pct already given, but we could compute ratio? Not needed. Maybe compute difference between labor costs? Not required but could include derived values for clarity. But we must list any derived numbers we mention. We can mention that Beta's labor cost exceeds Alpha by 2,459.54 (difference). That would be derived. Provide derived_values entry with kind "difference", operands ["labor_cost_beta","labor_cost_alpha"], value 10247.32-7787.78 = 2459.54. Round maybe 2459.54.
+
+Also maybe compute that chat resolution is slower than email by 10.02 minutes (difference). Provide derived.
+
+Also compute that email reopen rate is higher than chat by 9.398242 pct points (difference). Provide derived.
+
+Also compute that high-cost low-sat tickets represent 12 out of 347 tickets = 3.46% share. Provide derived share.
+
+Also compute that top agent ticket share is 7.49% already given; we could compute but it's already metric. Not needed.
+
+We must ensure each derived value includes metric_keys as operands.
+
+Now construct each key_finding.
+
+q1: metrics: ticket_count, mean_resolution_minutes, total_labor_cost. Statement: "The dataset contains 347 tickets with an average resolution time of 75.2 minutes and total labor cost of $27,422.84." Provide rounding. evidence_refs list those three keys. reported_values copy values (maybe round to 2 decimals). Provide as numbers.
+
+No direction, no ranking, derived_values maybe none.
+
+q2: metrics: labor_cost_alpha, labor_cost_beta, labor_cost_gamma. Statement: "Team labor costs vary, with Beta highest, Gamma middle, Alpha lowest." Provide ranking. Also mention Beta exceeds Alpha by $2,459.54. Provide derived.
+
+evidence_refs list three keys. reported_values copy values.
+
+direction null, ranking array as above. derived_values include difference.
+
+q3: metrics: resolution_email, resolution_chat, resolution_phone. Statement: "Average resolution speed is fastest on phone (69.3 min), then email (73.0 min), and slowest on chat (83.0 min)." Provide ranking chat>email>phone? Wait ranking required highest to lowest value, i.e., highest mean resolution minutes (slowest) first. The ranking metric is for value, not speed. The ranking metric keys are resolution_chat, resolution_email, resolution_phone. Highest value is chat (slowest), then email, then phone. So ranking array ["chat","email","phone"] as earlier. Also mention chat is 10.0 minutes slower than email (difference). Provide derived.
+
+q4: metrics: reopen_rate_email_pct, reopen_rate_chat_pct, email_vs_chat_reopen_change_pct. Statement: "Email tickets have a 17.2% reopen rate, which is 119.8% higher than the 7.8% rate for chat, indicating a substantial increase." Direction "increase". evidence_refs list three keys. reported_values copy values.
+
+derived maybe none (the pct change is given). Could also compute difference 9.398242 but not required.
+
+q5: metrics: high_cost_low_sat_count, high_cost_low_sat_reopen_pct. Statement: "There are 12 high‑cost, low‑satisfaction tickets, representing 3.5% of all tickets, with an 8.3% reopen rate." Need derived share: share = high_cost_low_sat_count / ticket_count *100 = 12/347*100 = 3.459... round 3.46. Provide derived share.
+
+evidence_refs list two keys. reported_values copy values.
+
+q6: metrics: resolution_median, resolution_std, satisfaction_mean, satisfaction_missing_count. Statement: "Median resolution time is 65 min, with a standard deviation of 51.9 min. Average satisfaction score is 4.15, and 19 tickets lack a satisfaction rating." No derived.
+
+q7: metrics: unique_agent_count, top_agent_ticket_count, top_agent_ticket_share_pct. Statement: "Tickets were handled by 18 agents; the busiest agent resolved 26 tickets, accounting for 7.5% of all tickets." No derived.
+
+Now assemble JSON.
+
+Need to ensure each reported_values includes all metric_keys for that question.
+
+Precision: Use values as in verified findings, maybe round to 2 decimals for readability but must be numbers. It's okay to round but must be consistent. Provide maybe two decimals.
+
+Let's compute derived values precisely:
+
+Difference Beta - Alpha: 10247.32 - 7787.78 = 2459.54.
+
+Difference chat - email: 83.039216 - 73.017241 = 10.021975 (approx 10.02).
+
+Difference email reopen - chat reopen: 17.241379 - 7.843137 = 9.398242.
+
+Share high_cost_low_sat: (12 / 347) * 100 = 3.459... = 3.46.
+
+Now produce derived_values entries.
+
+For q2 derived: kind "difference", operands ["labor_cost_beta","labor_cost_alpha"], value 2459.54.
+
+For q3 derived: kind "difference", operands ["resolution_chat","resolution_email"], value 10.02 (rounded). Also maybe include difference email - phone? Not needed.
+
+For q4 derived maybe not needed.
+
+For q5 derived: kind "share", operands ["high_cost_low_sat_count","ticket_count"], value 3.46.
+
+Now ensure each key_finding includes derived_values array (empty if none). Provide direction for q4.
+
+Now produce final JSON.
+
+Word count under 650 words; JSON not counted.
+
+Let's craft statements.
+
+Now produce final answer.

@@ -1,0 +1,10 @@
+{
+  "fixed_code": "def shortest_path(graph, start, goal):\n    queue = [(start, [start])]\n    seen = set()\n    while queue:\n        node, path = queue.pop(0)\n        seen.add(node)\n        if node == goal:\n            return path\n        for n in graph.get(node, []):\n            if n not in seen:\n                queue.append((n, path + [n]))\n    return None",
+  "bug_locations": [
+    "shortest_path function",
+    "stack variable",
+    "while loop",
+    "for loop"
+  ],
+  "explanation": "The original code used a stack (LIFO) instead of a queue (FIFO), which is incorrect for a breadth-first search required to find the shortest path in an unweighted graph. The stack was changed to a queue and the pop operation was changed to pop(0) to ensure FIFO behavior. Additionally, the order of neighbors was maintained by iterating directly over the graph's neighbors list."
+}

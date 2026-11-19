@@ -1,0 +1,62 @@
+We need to produce JSON with fields python_code (script), output_filename "cleaned.csv", cleaning_logic description.
+
+Script must read raw.csv from INPUT_DIR, apply cleaning steps exactly as described, write cleaned.csv and cleaning_summary.json to OUTPUT_DIR.
+
+We need to track raw_rows, cleaned_rows, and per-rule counts maybe.
+
+Implement steps:
+
+- Read raw.csv with pandas read_csv dtype=str, keep all columns as strings. Use keep_default_na=False to avoid default NA.
+
+- Strip whitespace from all values: applymap lambda x: x.strip() if isinstance(x,str) else x.
+
+- Define missing values set: {'', 'na', 'n/a', 'null', 'none', '-', 'tbd'}? Actually spec says treat empty string, 'NA', 'N/A', 'null', 'None', '-'. Not 'TBD'. So TBD is not missing; but later unit_price parsing will fail.
+
+- Convert missing values to None (np.nan). Use applymap.
+
+- Count raw rows.
+
+- R2 duplicate removal: based on order_id column. Keep first occurrence. Use drop_duplicates(subset='order_id', keep='first').
+
+- Then apply row filters sequentially, but we can apply all transformations and drop rows where needed.
+
+Implement per-rule counters: e.g., duplicates_removed, rows_dropped_order_date, region, product_category, unit_price, quantity, discount_pct.
+
+Processing:
+
+- order_date: parse using multiple formats. Use a function that tries each format with datetime.strptime. Accept formats: "%Y-%m-%d", "%m/%d/%Y", "%d-%b-%Y", "%Y/%m/%d", "%B %d, %Y". For %d-%b-%Y month abbreviation case-insensitive; need to ensure locale English. Use datetime.strptime after title-casing month? Actually strptime expects proper case; we can .title() for month abbreviation? We'll just use strptime directly after stripping; it should accept e.g., "05-Mar-2024". We'll try each format; if fails, return None. Drop rows where result is None.
+
+- region: map case-insensitively. Use dict mapping lower to proper. Also single letters N,S,E,W. So mapping dict: {'north':'North','n':'North',...}. If missing or not in mapping, drop.
+
+- product_category: mapping dict lower to proper. Include variants. Use lower stripped. Map.
+
+- unit_price: remove '$','USD',',' and surrounding spaces. Use regex: replace r'[\$,]' and 'USD' case-insensitively. Then strip. If after cleaning empty -> missing. Parse float. Drop if missing, not number, <=0, >5000.
+
+- quantity: parse float, then check integer (value.is_integer()), >=1 <=50. Store int.
+
+- discount_pct: if missing (NaN) set 0. Else remove trailing '%' and strip, parse float. Drop if not number or <0 >100.
+
+- customer_id: if missing set 'UNKNOWN', else upper.
+
+- revenue: compute quantity * unit_price * (1 - discount_pct/100). Round to 2 decimals.
+
+- Output columns order.
+
+- Sort by order_id ascending (string sort). Write CSV with header, index=False.
+
+- Write cleaning_summary.json with counts.
+
+Implementation details: Use pandas DataFrame; after each step, we can filter rows and count dropped.
+
+Edge Cases: missing values after stripping become np.nan. Use pandas.isna.
+
+Implement function parse_date.
+
+Now produce script as a string.
+
+Make sure to import json, os, pandas as pd, numpy as np, datetime.
+
+Write summary dict.
+
+Now produce final JSON.
+

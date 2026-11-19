@@ -1,0 +1,121 @@
+{
+  "stage": "cleaning",
+  "model_alias": "C",
+  "model_id": "openai.gpt-oss-120b-1:0",
+  "prompt_version": "v3",
+  "prompt_hash": "54fccecaa4539ea6f9bf17463a0da069f9e72816d3512b9a1510b4481adbcc9d",
+  "invocation_ids": [
+    "702301aa-1c6e-4c8a-9638-86718b8e29b8"
+  ],
+  "cache_hit": false,
+  "shared_with_run_ids": [],
+  "status": "failed",
+  "structural_ok": false,
+  "failure_type": "execution_error",
+  "failure_detail": "execution runtime_error (exit 1): /sandbox/code/main.py:109: FutureWarning: DataFrame.applymap has been deprecated. Use DataFrame.map instead.\n  df = df.applymap(strip_and_mark_missing)\n/sandbox/code/main.py:183: UserWarning: Boolean Series key will be reindexed to match DataFrame index.\n  df = df[mask_energy_ok].copy()\nTraceback (most recent call last):\n  File \"/sandbox/code/main.py\", line 225, in <module>\n    main()\n  File \"/sandbox/code/main.py\", line 183, in main\n    df = df[mask_energy_ok].copy()\n         ~~^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/frame.py\", line 4093, in __getitem__\n    return self._getitem_bool_array(key)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/frame.py\", line 4149, in _getitem_bool_array\n    key = check_bool_indexer(self.index, key)\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/indexing.py\", line 2662, in check_bool_indexer\n    raise IndexingError(\npandas.errors.IndexingError: Unalignable boolean Series provided as indexer (index of the boolean Series and of the indexed object do not match).\n",
+  "parse_ok": true,
+  "execution": {
+    "status": "runtime_error",
+    "exit_code": 1,
+    "stdout": "",
+    "stderr": "/sandbox/code/main.py:109: FutureWarning: DataFrame.applymap has been deprecated. Use DataFrame.map instead.\n  df = df.applymap(strip_and_mark_missing)\n/sandbox/code/main.py:183: UserWarning: Boolean Series key will be reindexed to match DataFrame index.\n  df = df[mask_energy_ok].copy()\nTraceback (most recent call last):\n  File \"/sandbox/code/main.py\", line 225, in <module>\n    main()\n  File \"/sandbox/code/main.py\", line 183, in main\n    df = df[mask_energy_ok].copy()\n         ~~^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/frame.py\", line 4093, in __getitem__\n    return self._getitem_bool_array(key)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/frame.py\", line 4149, in _getitem_bool_array\n    key = check_bool_indexer(self.index, key)\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/pandas/core/indexing.py\", line 2662, in check_bool_indexer\n    raise IndexingError(\npandas.errors.IndexingError: Unalignable boolean Series provided as indexer (index of the boolean Series and of the indexed object do not match).\n",
+    "runtime_ms": 704.9564170010854,
+    "output_files": [],
+    "sandbox_image": "sha256:88988a15503bdb96538c3dd62244a79879d5c7848397db18b1267ccfd0a9727a"
+  },
+  "validation": {
+    "stage": "cleaning",
+    "hard_pass": false,
+    "checks": [
+      {
+        "name": "output_exists",
+        "passed": false,
+        "mandatory": true,
+        "detail": "cleaned CSV not found: /Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expB_paths_v3-607057037d2829a6/cleaning/output/cleaned.csv",
+        "value": null
+      },
+      {
+        "name": "output_parses",
+        "passed": false,
+        "mandatory": true,
+        "detail": "no output",
+        "value": null
+      },
+      {
+        "name": "required_columns_present",
+        "passed": false,
+        "mandatory": true,
+        "detail": "no output",
+        "value": null
+      },
+      {
+        "name": "schema_constraints",
+        "passed": false,
+        "mandatory": true,
+        "detail": "no output",
+        "value": null
+      },
+      {
+        "name": "no_duplicate_keys",
+        "passed": false,
+        "mandatory": true,
+        "detail": "no output",
+        "value": null
+      },
+      {
+        "name": "row_set_matches_reference",
+        "passed": false,
+        "mandatory": true,
+        "detail": "no output",
+        "value": null
+      },
+      {
+        "name": "values_match_reference",
+        "passed": false,
+        "mandatory": true,
+        "detail": "no output",
+        "value": null
+      }
+    ],
+    "quality": {
+      "cleaning_correctness": 0.0,
+      "data_integrity": 0.0,
+      "schema_compliance": 0.0
+    },
+    "quality_basis": "ground_truth",
+    "validator_version": "1.0"
+  },
+  "conditional_validation": null,
+  "input_artifacts": [
+    "datasets/projects/energy_consumption/raw.csv"
+  ],
+  "output_artifacts": [
+    "results/raw/runs/expB_paths_v3-607057037d2829a6/cleaning/prompt.txt",
+    "results/raw/runs/expB_paths_v3-607057037d2829a6/cleaning/response.txt",
+    "results/raw/runs/expB_paths_v3-607057037d2829a6/cleaning/reasoning.txt",
+    "results/raw/runs/expB_paths_v3-607057037d2829a6/cleaning/parsed.json",
+    "results/raw/runs/expB_paths_v3-607057037d2829a6/cleaning/code.py"
+  ],
+  "input_artifact_hashes": {
+    "datasets/projects/energy_consumption/raw.csv": "615e9dd3f351c49e26a813e2a6b47e6c9e2c812b579dae7b15497467a0d01572"
+  },
+  "output_artifact_hashes": {
+    "results/raw/runs/expB_paths_v3-607057037d2829a6/cleaning/prompt.txt": "54fccecaa4539ea6f9bf17463a0da069f9e72816d3512b9a1510b4481adbcc9d",
+    "results/raw/runs/expB_paths_v3-607057037d2829a6/cleaning/response.txt": "bc3ca57ffad067f26423484e96050b7575075998a1c8abb59b202bd97816de22",
+    "results/raw/runs/expB_paths_v3-607057037d2829a6/cleaning/reasoning.txt": "1531b7836706bf3021847f11ae79d1bb57284af27c334a849f20aa42c06c8b03",
+    "results/raw/runs/expB_paths_v3-607057037d2829a6/cleaning/parsed.json": "affae7c1a512c6b57611ef5653f6b22a6aba4e9522fec723bed8d474478b4729",
+    "results/raw/runs/expB_paths_v3-607057037d2829a6/cleaning/code.py": "7f6c6d02e249c74859a1bdcafd8d1ea55c6d49cfa204c135b5f64775afc7b2d0"
+  },
+  "handoff_in_path": "results/raw/runs/expB_paths_v3-607057037d2829a6/cleaning/handoff_in.json",
+  "handoff_size_bytes": 616,
+  "input_tokens": 1819,
+  "output_tokens": 3729,
+  "cost_usd": null,
+  "cost_status": "unavailable",
+  "timings": {
+    "generation_ms": 10624.346084001445,
+    "execution_ms": 704.9564170010854,
+    "validation_ms": 2.2587080020457506,
+    "handoff_ms": 0.2486669982317835
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "fixed_code": "def running_total(xs):\n    out = []\n    total = 0\n    for value in xs:\n        total += value\n        out.append(total)\n    return out",
+  "bug_locations": [
+    "for value in xs[:-1]:"
+  ],
+  "explanation": "The original code incorrectly iterates over xs[:-1], which skips the last element of the input list. This causes the function to miss the final cumulative sum. The fix changes the loop to iterate over the entire list (xs), ensuring all elements are processed. The rest of the logic (initializing total and out, appending cumulative sums) is correct."
+}

@@ -1,0 +1,11 @@
+```json
+{
+  "fixed_code": "def rolling_mean(xs, window, min_periods=1):\n    '''Return trailing means, using None when a position has too few values.'''\n    if not 1 <= min_periods <= window:\n        raise ValueError('min_periods must satisfy 1 <= min_periods <= window')\n\n    means = []\n    for i in range(len(xs)):\n        start = max(0, i - window + 1)\n        values = xs[start:i + 1]\n        if len(values) >= min_periods:\n            means.append(sum(values) / len(values))\n        else:\n            means.append(None)\n    return means\n",
+  "bug_locations": [
+    "rolling_mean: trailing-window slice bounds",
+    "rolling_mean: denominator and partial-window handling",
+    "rolling_mean: missing min_periods validation and null output"
+  ],
+  "explanation": "The buggy slice excluded the current element and shifted the window backward; it also divided by the full window even for empty or partial windows, never returned None for insufficient samples, and did no validation. The fix validates 1 <= min_periods <= window, uses the inclusive trailing window xs[max(0, i - window + 1):i + 1], and returns sum(values) / len(values) only when len(values) >= min_periods, otherwise None."
+}
+```

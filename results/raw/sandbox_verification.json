@@ -1,0 +1,25 @@
+{
+  "all_controls_verified": true,
+  "image": "model-routing-xai-sandbox:1.0",
+  "image_id": "sha256:7f95c0dedbe5dedde14b03130fce5c5e889062d63d7bde9dd10c3f7891bbb738",
+  "base_image": "python:3.12.8-slim-bookworm (pinned by tag; digest not recorded by BuildKit)",
+  "packages": {"numpy": "2.2.6", "pandas": "2.2.3"},
+  "verified_at": "2026-11-18T03:09:19Z",
+  "verified_by": "lead",
+  "docker": "Docker Desktop 28.3.3 (macOS host, LinuxKit VM)",
+  "test_command": ".venv/bin/python -m pytest -v -rs tests/test_executor.py",
+  "result": "16 passed, 0 failed, 0 skipped",
+  "controls": {
+    "no_network": "verified (no routes; only lo up; connect + DNS blocked; cannot raise interfaces). Negative control with network enabled detected eth0/routes/connect.",
+    "no_aws_env_or_credentials": "verified",
+    "no_write_outside_output_dir": "verified",
+    "inputs_read_only": "verified",
+    "non_root_no_privilege_escalation": "verified",
+    "memory_limit": "verified",
+    "timeout_kill": "verified",
+    "runtime_error_mapping": "verified",
+    "reference_solutions_end_to_end": "verified for retail_sales, customer_churn, energy_consumption"
+  },
+  "notes": "Valid only for this image_id. Rebuilding the image requires re-verification.",
+  "test_correction": "docs/reviews/2026-11-18_sandbox_verification.md"
+}

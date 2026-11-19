@@ -1,0 +1,9 @@
+{
+  "fixed_code": "from bisect import bisect_right, insort\nfrom collections import defaultdict\n\ndef allowed(events, limit, window):\n    accepted = defaultdict(list)\n    out = []\n    for user, t in events:\n        times = accepted[user]\n        start = t - window\n        in_window = bisect_right(times, t) - bisect_right(times, start)\n        ok = in_window < limit\n        out.append(ok)\n        if ok:\n            insort(times, t)\n    return out\n",
+  "bug_locations": [
+    "module imports: replaced the single deque support with per-user storage plus bisect helpers",
+    "allowed: replaced the shared global queue with a sorted accepted-timestamp list per user",
+    "allowed: capacity check now counts only prior accepted events for the same user in (t-window, t], and only accepted events are inserted"
+  ],
+  "explanation": "The original code used one queue for all users, so one user's accepted events could consume or evict another user's capacity, and it implicitly depended on global chronological ordering. The fix keeps only accepted timestamps per user, rejects without inserting, and counts events strictly greater than t-window and less than or equal to t before deciding."
+}

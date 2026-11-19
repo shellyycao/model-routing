@@ -1,0 +1,111 @@
+We need to produce JSON with fields: title, executive_summary, key_findings (array of objects per q1..q7), limitations, conclusion.
+
+Each key_finding must include finding_id, statement, evidence_refs, reported_values (include every metric_key of that question), direction (if required), ranking (if required), derived_values (if any computed numbers). Use verified findings values.
+
+We must also include rankings for q2, q3, q7 as required. Use labels mapping.
+
+For q2 ranking: order from highest to lowest kwh values among Residential, Commercial, Industrial. Values: residential 15970.65, commercial 196367.15, industrial 995362.16. Highest is Industrial, then Commercial, then Residential. So ranking list should be labels: ["Industrial", "Commercial", "Residential"].
+
+For q3 ranking: quarters values: Q1 319677.67, Q2 270277.36, Q3 264863.12, Q4 352881.81. Highest Q4, then Q1, then Q2, then Q3. So ranking: ["Q4", "Q1", "Q2", "Q3"].
+
+For q7 ranking: need order from highest to lowest between off-peak and peak. Values: kwh_off_peak 608075.89, kwh_peak 599624.07. Highest off-peak, then peak. Labels: off-peak, peak. So ranking: ["off-peak", "peak"].
+
+Direction for q4: metric kwh_h2_vs_h1_change_pct = 4.71% positive, so direction "increase". Use direction field.
+
+Derived values: any computed numbers not directly from findings. For q4 we might compute the percent change already given; but it's a metric itself, not derived. However we could compute difference (kwh_h2 - kwh_h1) as derived. Let's include derived value: kind "difference", operands ["kwh_h2","kwh_h1"], value = 617744.93 - 589955.03 = 27789.9 (approx). Let's compute precisely: 617,744.93 - 589,955.03 = 27,789.90. We'll include.
+
+Also maybe compute peak share percent derived from kwh_peak / total_kwh *100, but we have metric peak_kwh_share_pct already. Could still include derived? Not required. But we can include derived for clarity. However derived values must be numbers we state in text. If we mention share, we could use metric directly. Not needed.
+
+For q5, we might compute average energy per hot commercial reading already given as hot_commercial_mean_kwh. No derived.
+
+For q6, correlation given.
+
+For q1, we might compute total_kwh / reading_count = mean_kwh_per_reading already metric. No derived.
+
+For q7, we might compute peak share percent derived but metric exists.
+
+Thus only derived needed for q4 difference.
+
+Now construct statements.
+
+Need to keep under 600 words total.
+
+Write concise statements.
+
+Key findings:
+
+q1: "The dataset contains 1,428 readings with a total electricity consumption of 1,207,699.96 kWh, averaging 845.73 kWh per reading."
+
+Evidence refs: total_kwh, reading_count, mean_kwh_per_reading.
+
+Reported values: include those three.
+
+direction: null (not required). ranking null.
+
+derived_values empty.
+
+q2: "Industrial buildings dominate consumption (995,362.16 kWh), followed by Commercial (196,367.15 kWh) and Residential (15,970.65 kWh)."
+
+Evidence refs: kwh_residential, kwh_commercial, kwh_industrial.
+
+Reported values: all three.
+
+ranking: ["Industrial","Commercial","Residential"].
+
+direction null.
+
+derived_values empty.
+
+q3: "Quarterly consumption peaks in Q4 (352,881.81 kWh), then Q1 (319,677.67 kWh), Q2 (270,277.36 kWh) and Q3 (264,863.12 kWh)."
+
+Evidence refs: kwh_q1, kwh_q2, kwh_q3, kwh_q4.
+
+Reported values: all four.
+
+ranking: ["Q4","Q1","Q2","Q3"].
+
+q4: "Second‑half consumption (617,744.93 kWh) exceeds the first half (589,955.03 kWh) by 27,789.90 kWh, a 4.71 % increase."
+
+Evidence refs: kwh_h1, kwh_h2, kwh_h2_vs_h1_change_pct.
+
+Reported values: all three.
+
+direction: "increase".
+
+derived_values: one entry for difference.
+
+q5: "On days with temperature ≥ 25 °C, 19 Commercial readings were recorded, averaging 415.29 kWh each."
+
+Evidence refs: hot_commercial_reading_count, hot_commercial_mean_kwh.
+
+Reported values: both.
+
+q6: "Overall consumption median is 406.8 kWh with a standard deviation of 913.44 kWh. The average temperature across readings is 11.61 °C, with 62 missing temperature values. Among Commercial meters, temperature and consumption are negatively correlated (‑0.64)."
+
+Evidence refs: kwh_median, kwh_std, temperature_mean, temperature_missing_count, commercial_temp_kwh_corr.
+
+Reported values: all five.
+
+q7: "Peak‑tariff usage accounts for 49.65 % of total consumption (599,624.07 kWh) while off‑peak accounts for 50.35 % (608,075.89 kWh). Twelve distinct meters are represented, and the highest‑use meter consumed 252,241.26 kWh."
+
+Evidence refs: kwh_peak, kwh_off_peak, peak_kwh_share_pct, unique_meter_count, highest_use_meter_kwh.
+
+Reported values: all five.
+
+Ranking: ["off-peak","peak"].
+
+Now limitations: mention missing temperature data, limited sample size, only 2024 data, potential bias, etc.
+
+Conclusion: summarize.
+
+Now produce JSON.
+
+Make sure each key_finding includes required fields: finding_id, statement, evidence_refs, reported_values, direction (if applicable else null), ranking (if applicable else null), derived_values (array possibly empty). The schema requires direction default null, ranking default null. Provide explicit null.
+
+Now compute derived value for q4 difference: value 27789.9 (rounded maybe 27789.9). Use kind "difference". operands ["kwh_h2","kwh_h1"].
+
+Now produce JSON.
+
+Word count: keep under 600 words. Should be fine.
+
+Now craft final JSON.

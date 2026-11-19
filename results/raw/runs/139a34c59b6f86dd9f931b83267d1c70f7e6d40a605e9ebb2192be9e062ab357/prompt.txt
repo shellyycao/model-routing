@@ -1,0 +1,18 @@
+You are debugging a Python module. The specification is authoritative.
+
+Specification:
+overlap_minutes(a, b) accepts half-open minute intervals (start,end), returns overlap length, and rejects end < start. Touching intervals have zero overlap.
+
+Buggy module:
+```python
+def overlap_minutes(a,b):
+                 return min(a[1],b[1])-max(a[0],b[0])
+
+```
+
+Visible checks:
+```python
+assert overlap_minutes((10,20),(15,25)) == 5
+```
+
+Return the complete corrected module. There may be multiple interacting defects. Do not hard-code the visible examples.

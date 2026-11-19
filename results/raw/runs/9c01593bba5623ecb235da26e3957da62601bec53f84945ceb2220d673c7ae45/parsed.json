@@ -1,0 +1,7 @@
+{
+  "fixed_code": "def running_total(xs):\n    out = []\n    total = 0\n    for value in xs:\n        total += value\n        out.append(total)\n    return out\n",
+  "bug_locations": [
+    "Inside the for loop: `total=0` was being reset to 0 on every iteration"
+  ],
+  "explanation": "The bug is that `total=0` was placed inside the for loop, resetting the accumulator to zero on every iteration before adding the current value. This meant each element in the output was just the element itself rather than the cumulative sum. The fix is to initialize `total = 0` outside the loop so it accumulates across all iterations."
+}

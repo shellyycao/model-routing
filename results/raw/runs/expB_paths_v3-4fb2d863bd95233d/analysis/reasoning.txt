@@ -1,0 +1,114 @@
+We need to produce JSON with fields python_code (string containing script), expected_artifacts (list of filenames), methods_description (string). The script must read cleaned.csv from INPUT_DIR env var, compute metrics, write findings.json to OUTPUT_DIR, and ensure flat JSON with numeric values only.
+
+We must compute many metrics. Use pandas.
+
+Potential pitfalls: missing temperature values (NaN). Need median, std (sample). Use pandas .median(), .std(ddof=1). For correlation: Pearson correlation between temperature_c and energy_kwh for Commercial rows with non-missing temperature. Use .corr().
+
+Hot day commercial load: temperature_c >= 25 and not missing. Count and mean energy_kwh.
+
+Quarterly totals: need to filter by reading_date month.
+
+Half-year totals: Jan-Jun (months 1-6) vs Jul-Dec (7-12).
+
+Tariff totals: peak/off-peak.
+
+Unique meter count: distinct meter_id.
+
+Highest use meter: groupby meter_id sum energy_kwh, max.
+
+All metrics must be numeric (float or int). Ensure we output as Python numbers; json dumps will convert.
+
+Potential issues: reading_date column is date type; pandas will parse automatically if we specify parse_dates.
+
+We need to ensure we treat missing temperature as NaN; pandas will read empty as NaN.
+
+Compute reading_count as integer.
+
+Mean kwh per reading: total_kwh / reading_count.
+
+All metrics: keep full precision; not rounding.
+
+Write findings.json with json.dump with ensure_ascii=False.
+
+Also need to list expected_artifacts: ["findings.json"].
+
+Now craft script.
+
+Script steps:
+
+import os, json, pandas as pd, numpy as np
+
+input_path = os.path.join(os.getenv("INPUT_DIR"), "cleaned.csv")
+df = pd.read_csv(input_path, parse_dates=["reading_date"])
+
+Compute total_kwh = df["energy_kwh"].sum()
+reading_count = len(df)
+mean_kwh_per_reading = total_kwh / reading_count
+
+Building type totals: use groupby.
+
+kwh_residential = df.loc[df["building_type"]=="Residential","energy_kwh"].sum()
+Similarly for Commercial, Industrial.
+
+Quarterly: define quarter mapping: month 1-3 Q1, 4-6 Q2, 7-9 Q3, 10-12 Q4.
+
+df["quarter"] = df["reading_date"].dt.quarter
+
+kwh_q1 = df.loc[df["quarter"]==1,"energy_kwh"].sum() etc.
+
+Half-year: df["month"] = df["reading_date"].dt.month
+
+kwh_h1 = df.loc[df["month"]<=6,"energy_kwh"].sum()
+kwh_h2 = df.loc[df["month"]>=7,"energy_kwh"].sum()
+kwh_h2_vs_h1_change_pct = (kwh_h2 - kwh_h1) / kwh_h1 * 100 if kwh_h1 !=0 else np.nan (but kwh_h1 >0 likely). Use float.
+
+Hot commercial: mask = (df["building_type"]=="Commercial") & (df["temperature_c"].notna()) & (df["temperature_c"]>=25)
+
+hot_commercial_reading_count = mask.sum()
+hot_commercial_mean_kwh = df.loc[mask, "energy_kwh"].mean() (if count 0, result NaN; but we can keep NaN? Must be finite number; but maybe there are none. Safer to set 0 if count 0. Use .mean() which returns nan; we can replace with 0.0.)
+
+Distribution summary:
+
+kwh_median = df["energy_kwh"].median()
+kwh_std = df["energy_kwh"].std(ddof=1)  # default ddof=1
+
+temperature_mean = df["temperature_c"].mean() (skip NaN). If all NaN, result NaN; but likely not.
+
+temperature_missing_count = df["temperature_c"].isna().sum()
+
+commercial_temp_kwh_corr: mask = (df["building_type"]=="Commercial") & df["temperature_c"].notna()
+if mask.sum() >=2: compute corr = df.loc[mask, "temperature_c"].corr(df.loc[mask, "energy_kwh"]) else corr = np.nan. Ensure finite.
+
+Tariff totals:
+
+kwh_peak = df.loc[df["tariff"]=="peak","energy_kwh"].sum()
+kwh_off_peak = df.loc[df["tariff"]=="off-peak","energy_kwh"].sum()
+peak_kwh_share_pct = kwh_peak / total_kwh * 100 if total_kwh !=0 else np.nan
+
+unique_meter_count = df["meter_id"].nunique()
+highest_use_meter_kwh = df.groupby("meter_id")["energy_kwh"].sum().max()
+
+Now assemble dict with all metric keys.
+
+Write to output_path.
+
+Make sure to convert numpy types to python native (float, int). json.dump handles numpy scalars? It may not; better convert using float() or int().
+
+We'll create a dict where each value is python float or int.
+
+Implementation: after computing each metric, cast: total_kwh = float(total_kwh) etc. reading_count = int(reading_count). For median, std, etc., float.
+
+Edge Cases: NaN values not allowed. Ensure we replace NaN with None? Not allowed. Must be finite numbers. So we need to handle potential NaN by substituting 0.0 maybe. For correlation, if insufficient data, set 0.0.
+
+Similarly for hot_commercial_mean_kwh if count 0, set 0.0.
+
+For temperature_mean if all missing, set 0.0.
+
+For peak_kwh_share_pct if total_kwh 0, set 0.0.
+
+Now produce script.
+
+Add docstring.
+
+Now produce JSON output.
+

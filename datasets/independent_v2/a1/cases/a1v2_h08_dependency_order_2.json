@@ -1,0 +1,28 @@
+{
+  "bug_locations": [
+    "dependency_order node universe",
+    "dependency_order ready queue deduplication",
+    "dependency_order cycle error"
+  ],
+  "buggy": "import heapq\ndef dependency_order(deps):\n    nodes=set(deps);incoming={n:set(deps.get(n,[])) for n in nodes};ready=[n for n in nodes if not incoming[n]];heapq.heapify(ready);out=[]\n    while ready:\n        n=heapq.heappop(ready);out.append(n)\n        for m in nodes:\n            if n in incoming[m]:incoming[m].remove(n)\n            if not incoming[m] and m not in out and m not in ready:heapq.heappush(ready,m)\n    return out\n",
+  "case_id": "a1v2_h08_dependency_order_2",
+  "difficulty": "hard",
+  "family": "dependency_order",
+  "hidden": [
+    "dependency_order({'b':['a'],'a':[]})==['a','b']",
+    "dependency_order({'c':['a'],'b':['a'],'a':[]})==['a','b','c']",
+    "dependency_order({'b':['a']})==['a','b']",
+    "dependency_order({})==[]",
+    "_raises(lambda: dependency_order({'a':['b'],'b':['a']}),ValueError)"
+  ],
+  "label_source": "executable reference plus independently checked tests",
+  "reference": "import heapq\ndef dependency_order(deps):\n    nodes=set(deps)\n    for values in deps.values():nodes.update(values)\n    incoming={n:set(deps.get(n,[])) for n in nodes}; ready=[n for n in nodes if not incoming[n]];heapq.heapify(ready);out=[]\n    while ready:\n        n=heapq.heappop(ready);out.append(n)\n        for m in nodes:\n            if n in incoming[m]:\n                incoming[m].remove(n)\n                if not incoming[m]:heapq.heappush(ready,m)\n    if len(out)!=len(nodes):raise ValueError('cycle')\n    return out\n",
+  "spec": "dependency_order(deps) returns a deterministic topological order over every key and referenced node, choosing alphabetically among available nodes; raise ValueError on a cycle.",
+  "verification": {
+    "buggy_fails": 2,
+    "reference_passes": 5
+  },
+  "visible": [
+    "dependency_order({'b':['a'],'a':[]}) == ['a','b']"
+  ]
+}

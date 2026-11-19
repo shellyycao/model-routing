@@ -1,0 +1,10 @@
+```json
+{
+  "fixed_code": "def dependency_order(deps):\n    nodes = set(deps)\n    # Include nodes that are referenced but not keys\n    for v in deps.values():\n        nodes.update(v)\n    out = []\n    while nodes:\n        # Find nodes with no dependencies within the remaining set\n        ready = sorted(n for n in nodes if not set(deps.get(n, [])) & nodes)\n        if not ready:\n            # If no nodes are ready, but nodes remain, there is a cycle\n            raise ValueError(\"Cycle detected\")\n        out += ready\n        nodes -= set(ready)\n    return out",
+  "bug_locations": [
+    "nodes=set(deps)",
+    "if not ready:break"
+  ],
+  "explanation": "The original code had two defects. First, `nodes=set(deps)` only initialized the set with the keys of the dictionary, ignoring nodes that appeared only as dependencies (values). This was fixed by iterating over the values to add all referenced nodes to the set. Second, the cycle detection was incomplete; the code would simply break the loop and return an incomplete list if a cycle was encountered. This was fixed by raising a `ValueError` when `ready` is empty but `nodes` still contains items."
+}
+```

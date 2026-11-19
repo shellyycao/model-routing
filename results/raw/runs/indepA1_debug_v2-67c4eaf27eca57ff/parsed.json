@@ -1,0 +1,9 @@
+{
+  "fixed_code": "def chunks(xs, size):\n    \"\"\"Return consecutive chunks of *xs* with length *size*.\n\n    The final chunk may be shorter than *size* if the length of ``xs``\n    is not a multiple of ``size``. ``xs`` is not mutated.\n\n    Args:\n        xs (list): The list to split.\n        size (int): Desired chunk size; must be a positive integer.\n\n    Returns:\n        list[list]: A list containing the chunked sub‑lists.\n\n    Raises:\n        ValueError: If ``size`` is less than or equal to zero.\n    \"\"\"\n    if size <= 0:\n        raise ValueError(\"size must be a positive integer\")\n    return [xs[i:i + size] for i in range(0, len(xs), size)]\n",
+  "bug_locations": [
+    "Incorrect validation: only raised for size < 0 and returned [] for size == 0",
+    "Removed unnecessary size == 0 branch that returned an empty list",
+    "Added proper ValueError raise for size <= 0 and improved documentation"
+  ],
+  "explanation": "The original implementation treated size == 0 as a valid input and returned an empty list, violating the specification that requires a ValueError for any non‑positive size. By changing the condition to `size <= 0` and raising a ValueError, the function now conforms to the spec. The redundant branch for size == 0 was removed, and a clear docstring was added to describe behavior and guarantees that the input list is not mutated."
+}

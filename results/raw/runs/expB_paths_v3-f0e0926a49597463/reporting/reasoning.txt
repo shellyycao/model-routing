@@ -1,0 +1,43 @@
+We need to produce JSON conforming to schema. Include title, executive_summary, key_findings (array of 7 entries), limitations, conclusion.
+
+We must use verified findings only. Provide statements, evidence_refs list metric_keys, reported_values include all metric_keys for that question.
+
+Also need ranking for q2 and q3. Provide ranking arrays of labels from highest to lowest.
+
+For q4 direction required: direction_metric_key = email_vs_chat_reopen_change_pct. Need to state direction (increase/decrease). Since email_vs_chat_reopen_change_pct = 122.48% positive, meaning email reopen rate is higher than chat, so direction is increase (email vs chat increase). Probably direction "increase". Provide direction field.
+
+No derived values needed unless we compute something else. For q4 we could just state the percent change, but that's already a metric. No derived needed.
+
+For q2 ranking: need order highest labor cost to lowest. Values: alpha 4604.91, beta 6928.72, gamma 5911.44. Highest is Beta, then Gamma, then Alpha. Provide ranking ["Beta","Gamma","Alpha"].
+
+For q3 ranking: need order highest mean resolution time to lowest. Values: email 71.72, chat 82.23, phone 74.07. Highest is chat, then phone, then email. Provide ranking ["chat","phone","email"].
+
+Now construct each key_finding.
+
+q1: metrics ticket_count, mean_resolution_minutes, total_labor_cost. Statement summarizing overall. Provide evidence_refs list those three. reported_values copy values.
+
+q2: metrics labor_cost_alpha, labor_cost_beta, labor_cost_gamma. Statement: Team labor cost totals, ranking. Provide ranking. evidence_refs list three. reported_values copy.
+
+q3: metrics resolution_email, resolution_chat, resolution_phone. Statement: channel resolution times, ranking. evidence_refs list three. reported_values copy.
+
+q4: metrics reopen_rate_email_pct, reopen_rate_chat_pct, email_vs_chat_reopen_change_pct. Statement: Reopen rates and change, direction increase. evidence_refs list three. reported_values copy. direction "increase". No ranking.
+
+q5: metrics high_cost_low_sat_count, high_cost_low_sat_reopen_pct. Statement summarizing segment. evidence_refs list two. reported_values copy.
+
+q6: metrics resolution_median, resolution_std, satisfaction_mean, satisfaction_missing_count. Statement summarizing distribution. evidence_refs list four. reported_values copy.
+
+q7: metrics unique_agent_count, top_agent_ticket_count, top_agent_ticket_share_pct. Statement summarizing agent concentration. evidence_refs list three. reported_values copy.
+
+Derived values: none needed because we didn't compute any new numbers. But we could compute share of top agent already given as metric. So none.
+
+Now produce JSON.
+
+Word limit 650 words, but JSON is fine.
+
+Let's craft executive_summary: brief.
+
+Limitations: mention cleaning failed, data may have missing values, small sample, etc.
+
+Conclusion: summarize.
+
+Now produce final JSON.

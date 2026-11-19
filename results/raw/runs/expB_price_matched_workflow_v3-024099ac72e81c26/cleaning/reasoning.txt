@@ -1,0 +1,657 @@
+Let me write a Python script that implements the cleaning rules R1-R11.
+
+Key considerations:
+- Read all columns as text (dtype=str).
+- Strip whitespace, treat missing values: '', 'NA', 'N/A', 'null', 'None', '-' (case-insensitive) as NaN.
+- R2: drop duplicates on order_id keeping first — before other row filters. Note: what if order_id is missing? Spec says rows sharing same order_id are duplicates. Missing order_id — schema says order_id not nullable, but no explicit rule to drop missing order_id rows. Hmm. Keep it simple: drop_duplicates on order_id keep first. Missing order_ids: pandas drop_duplicates treats NaN values as equal to each other, so multiple missing order_ids would be considered duplicates. But we shouldn't drop all-but-one missing. Actually the schema says order_id not nullable, but there's no rule for dropping missing order_id. To be safe, we could drop rows with missing order_id? The spec doesn't say to. Hmm. Let me be careful: "rows that share the same order_id are duplicates; keep only the first occurrence in raw-file order". If order_id is missing, they don't "share the same order_id" strictly. I'll implement: drop_duplicates(subset='order_id', keep='first') but only among rows where order_id is not missing. And keep rows with missing order_id? Schema says not nullable, but no rule says drop. Given typical generated data, missing order_id probably doesn't exist. I'll drop duplicates only on non-missing order_id and keep missing ones (they'd remain; but schema says not nullable... safest is to follow spec literally). Actually, I could drop rows with missing order_id as part of ensuring schema—not specified. I'll keep them unless... Hmm, let me just dedupe non-missing and leave missing ones; likely none exist. Actually to ensure schema validity, dropping missing order_id rows would be reasonable, but it could affect counts. I'll follow spec exactly: dedupe on order_id among non-null. I might add drop of missing order_id? No — don't add rules not specified. Keep literal.
+
+- R3: parse order_date with formats:
+  - %Y-%m-%d
+  - %m/%d/%Y
+  - %d-%b-%Y (English 3-letter month, e.g., 05-Mar-2024)
+  - %Y/%m/%d
+  - %B %d, %Y (e.g., March 5, 2024)
+  Try each with datetime.strptime, exact. For month abbreviations, locale should be C locale English by default. Use datetime.strptime. Note %b handles 'Mar'. Case-insensitivity? e.g. '05-mar-2024'? Spec says English 3-letter abbreviation; strptime %b is case-insensitive in Python (yes, it matches case-insensitively). Good.
+  Drop rows where missing or unparseable. Format output as YYYY-MM-DD.
+
+- R4: region mapping: North, South, East, West; N/S/E/W abbreviations. Case-insensitive. Drop missing/invalid.
+
+- R5: product_category mapping with variants.
+
+- R6: unit_price: remove '$', 'USD', ',', and surrounding spaces, parse float. Drop missing, non-number, <=0, >5000. Keep value as given (max 2 decimals) — so just float, maybe round to 2? "Keep the value as given" means don't round. But to avoid float representation issues, could round to 2... "raw prices have at most 2 decimals". I'll keep float(parsed) without rounding; when writing CSV, floats may print like 97.72 fine. To be safe, I could round(2) — but "keep the value as given" — rounding to 2 wouldn't change since max 2 decimals. Floating point representation may cause output like 97.72000000000001? Python's repr of float(97.72) is '97.72'. pandas to_csv uses repr essentially, shortest repr. So fine. I'll not round, or round to 2 for safety — rounding to 2 with Python round then repr shortest: round(97.72,2) = 97.72. It's safe. I'll do float(value) and maybe leave. I'll keep as-is.
+
+  Removing substrings: '$', 'USD', ','. Case-sensitive 'USD'? Spec says remove substrings '$', 'USD', ','. Example "USD 148.91". Maybe also 'usd'? I'll remove case-insensitively 'USD' to be safe? Spec says exactly those substrings. I'll remove '$', ',', and 'USD' case-insensitively (upper first). Let's do: s.replace('$','').replace(',',''), then remove 'USD' via regex case-insensitive, then strip. Then float. Should also handle surrounding spaces: strip after.
+
+- R7: quantity: parse as number ('3.0' allowed, also ' 9 ' stripped already). Must be whole number, 1-50. Store int.
+
+- R8: discount_pct: remove trailing '%', parse float. Missing -> 0. Drop non-number, <0, >100.
+
+- R9: customer_id upper; missing -> 'UNKNOWN'.
+
+- R10: revenue = round(quantity * unit_price * (1 - discount_pct/100), 2).
+
+- R11: columns in order, sort by order_id ascending, CSV header no index, numbers without symbols.
+
+Sorting by order_id ascending — string sort. Fine.
+
+Write cleaning_summary.json with raw_rows, cleaned_rows, per-rule counts.
+
+Track counts: duplicates_removed, invalid order_date dropped, invalid region dropped, invalid product_category dropped, invalid unit_price dropped, invalid quantity dropped, invalid discount_pct dropped.
+
+raw_rows: rows read (number of data rows). 637 lines total includes header, so 636 data rows presumably.
+
+Implementation with pandas, vectorized or row-wise. I'll write functions and use apply.
+
+Order of filters: R2 dedupe first, then R3 date, R4 region, R5 category, R6 unit_price, R7 quantity, R8 discount.
+
+Note R1: read as text, strip, missing values. Replace missing tokens with pd.NA.
+
+Important: reading CSV with dtype=str and keep_default_na=False, na_filter=False so that pandas doesn't convert 'NA' etc. itself. Then strip and map.
+
+Let me write code:
+
+```python
+import os, json, re
+from datetime import datetime
+import pandas as pd
+import numpy as np
+
+MISSING_TOKENS = {"", "na", "n/a", "null", "none", "-"}
+
+def main():
+    input_path = os.path.join(os.environ["INPUT_DIR"], "raw.csv")
+    output_dir = os.environ["OUTPUT_DIR"]
+    out_csv = os.path.join(output_dir, "cleaned.csv")
+    out_json = os.path.join(output_dir, "cleaning_summary.json")
+
+    raw = pd.read_csv(input_path, dtype=str, keep_default_na=False, na_filter=False)
+    summary = {}
+    summary["raw_rows"] = int(len(raw))
+
+    # R1 strip and missing
+    df = raw.copy()
+    for col in df.columns:
+        df[col] = df[col].astype(str).str.strip()
+        df[col] = df[col].where(~df[col].str.lower().isin(MISSING_TOKENS), other=pd.NA)
+
+    # R2 dedupe on order_id (first occurrence), only among non-missing order_id
+    before = len(df)
+    mask_missing_oid = df["order_id"].isna()
+    dup_mask = (~mask_missing_oid) & df.duplicated(subset=["order_id"], keep="first")
+    df = df.loc[~dup_mask].copy()
+    summary["duplicates_removed"] = int(dup_mask.sum())
+
+    # R3 order_date
+    DATE_FORMATS = ["%Y-%m-%d", "%m/%d/%Y", "%d-%b-%Y", "%Y/%m/%d", "%B %d, %Y"]
+    def parse_date(v):
+        if v is pd.NA or v is None or (isinstance(v, float) and np.isnan(v)):
+            return None
+        s = str(v).strip()
+        for fmt in DATE_FORMATS:
+            try:
+                return datetime.strptime(s, fmt).date()
+            except (ValueError, TypeError):
+                continue
+        return None
+
+    parsed = df["order_id"]  # placeholder
+```
+
+Wait, need to parse order_date column.
+
+Note: 'Month D, YYYY' like "March 5, 2024" — %B %d, %Y works ("March 05, 2024" also). Also maybe "March 5, 2024" with single digit day — %d accepts both with strptime? Yes, strptime %d accepts '5'. Good.
+
+Also MM/DD/YYYY month-first; could dates like 1/5/2023 appear? strptime %m/%d/%Y accepts single digits too. Fine.
+
+Continue:
+
+```python
+    parsed_dates = df["order_date"].map(parse_date)
+    bad_date = parsed_dates.isna()
+    summary["dropped_invalid_order_date"] = int(bad_date.sum())
+    df = df.loc[~bad_date].copy()
+    df["order_date"] = parsed_dates.loc[~bad_date].map(lambda d: d.isoformat())
+```
+
+parsed_dates.isna() — if map returns None, becomes NaN in object series. Fine.
+
+R4 region:
+
+```python
+    REGION_MAP = {
+        "north": "North", "south": "South", "east": "East", "west": "West",
+        "n": "North", "s": "South", "e": "East", "w": "West",
+    }
+    def map_region(v):
+        if v is pd.NA or v is None: return None
+        return REGION_MAP.get(str(v).strip().lower())
+    mapped_region = df["region"].map(map_region)
+    bad = mapped_region.isna()
+    summary["dropped_invalid_region"] = int(bad.sum())
+    df = df.loc[~bad].copy()
+    df["region"] = mapped_region.loc[~bad]
+```
+
+R5 category:
+
+```python
+    CATEGORY_MAP = {
+        "electronics": "Electronics",
+        "electronic": "Electronics",
+        "clothing": "Clothing",
+        "apparel": "Clothing",
+        "home & garden": "Home & Garden",
+        "home and garden": "Home & Garden",
+        "home&garden": "Home & Garden",
+        "sports": "Sports",
+        "sport": "Sports",
+        "books": "Books",
+        "book": "Books",
+    }
+```
+
+Lower and strip; also collapse internal multiple spaces? 'home & garden' lower works. What about 'Home  &  Garden' with double spaces? Unlikely. Could normalize whitespace: ' '.join(s.split()). Do that for robustness.
+
+R6 unit_price:
+
+```python
+    def parse_price(v):
+        if v is pd.NA or v is None: return None
+        s = str(v).strip()
+        s = s.replace("$", "").replace(",", "")
+        s = re.sub(r"(?i)usd", "", s)
+        s = s.strip()
+        if s == "": return None
+        try:
+            return float(s)
+        except ValueError:
+            return None
+    price = df["unit_price"].map(parse_price)
+    bad = price.isna() | (price <= 0) | (price > 5000)
+    summary["dropped_invalid_unit_price"] = int(bad.sum())
+    df = df.loc[~bad].copy()
+    df["unit_price"] = price.loc[~bad].astype(float)
+```
+
+Hmm "Keep the value as given (raw prices have at most 2 decimals)" — float fine.
+
+R7 quantity:
+
+```python
+    def parse_qty(v):
+        if v is pd.NA or v is None: return None
+        s = str(v).strip()
+        try:
+            f = float(s)
+        except ValueError:
+            return None
+        if not f.is_integer(): return None
+        return int(f)
+    qty = df["quantity"].map(parse_qty)
+    bad = qty.isna() | (qty < 1) | (qty > 50)
+    ...
+    df["quantity"] = qty.loc[~bad].astype(int)
+```
+
+R8 discount:
+
+```python
+    def parse_discount(v):
+        if v is pd.NA or v is None: return 0.0  # missing -> 0
+        s = str(v).strip()
+        if s.endswith("%"): s = s[:-1].strip()
+        if s == "": return 0.0  # hmm, '%' alone? treat as invalid? 
+        try:
+            return float(s)
+        except ValueError:
+            return None
+```
+
+Careful: missing already converted to pd.NA in R1, so v is NA -> 0.0. A value '%' alone -> s becomes '' -> return 0.0? That's weird; treat as invalid (return None) better. But '' wouldn't occur because empty strings are NA. So if s == '' after removing %, return None. Let me do that.
+
+    bad = disc.isna() | (disc < 0) | (disc > 100)
+
+R9 customer_id:
+
+```python
+    df["customer_id"] = df["customer_id"].fillna("UNKNOWN").astype(str).str.upper()
+```
+
+Note: fillna on pd.NA. Also strip already done; upper.
+
+R10 revenue:
+
+```python
+    df["revenue"] = (df["quantity"] * df["unit_price"] * (1 - df["discount_pct"] / 100)).round(2)
+```
+
+R11 select columns, sort by order_id:
+
+```python
+    cols = ["order_id", "order_date", "customer_id", "region", "product_category",
+            "quantity", "unit_price", "discount_pct", "revenue"]
+    df = df[cols].sort_values("order_id", kind="mergesort").reset_index(drop=True)
+    df.to_csv(out_csv, index=False)
+```
+
+Sort stable. order_id strings.
+
+Edge: order_id missing — schema not nullable. Keep? I'll leave rows with missing order_id (spec doesn't say to drop). Actually wait — could there be missing order_id in data? If so, cleaned CSV would violate schema. But follow spec. Hmm, I'd add dropping missing order_id? The instructions: "R2. Remove duplicate records..." Only duplicates. I'll not drop missing order_id. But maybe safer for downstream schema validation to drop them and count. The prompt's "Required schema" says order_id: str; not nullable. To guarantee the schema, dropping missing order_id is defensible. But rules say apply exactly. Risk either way. Data likely has no missing order_id. I'll keep them — no, hmm.
+
+Let me think: The schema lists not nullable for all columns, and the rules ensure that for each column via drops, except order_id and customer_id (customer gets UNKNOWN). For order_id there's no rule to fill or drop missing. If data generator included missing order_id, the expected cleaned output would... probably drop? Since schema says not nullable. But rule R2 only mentions duplicates. I'll follow the explicit rules only, and not drop missing order_id rows, since rules are "exactly as specified". Most likely there are no missing order_ids.
+
+Float formatting in to_csv: unit_price float may print as 97.72; quantity int prints as 8; discount_pct float prints as 30.0. Is "30.0" acceptable? "numbers are written without currency symbols, percent signs or thousands separators" — 30.0 fine. discount could be float e.g. 12.5. Fine.
+
+One nuance: unit_price parse of values like "45.33" fine. "TBD" -> None -> dropped. " 9 " quantity already stripped in R1 -> "9". Good.
+
+Date parse: value like "01/05/2023" -> %m/%d/%Y -> Jan 5. Also could match... %Y-%m-%d? No. Fine. "2023/01/13" -> %Y/%m/%d. Good. But careful: "01/05/2023" also matches "%d-%b-%Y"? No. Order of formats: put %m/%d/%Y before %Y/%m/%d? "2023/01/13" against %m/%d/%Y fails (month 2023 invalid). Fine.
+
+Also "March 5, 2024" - %B %d, %Y. Also possible trailing/leading spaces stripped. Good.
+
+%b case-insensitive: yes.
+
+Sorting: order_id ascending as strings (R100001...). Fine.
+
+Summary JSON: raw_rows, cleaned_rows, plus counts. Also maybe missing_customer_filled count. Let's track:
+- duplicates_removed
+- dropped_invalid_order_date
+- dropped_invalid_region
+- dropped_invalid_product_category
+- dropped_invalid_unit_price
+- dropped_invalid_quantity
+- dropped_invalid_discount_pct
+- customer_id_unknown_filled
+
+Write JSON with json.dump indent=2.
+
+Ensure output dir exists: os.makedirs(output_dir, exist_ok=True).
+
+Region whitespace: R1 strips values, so "  North " -> "North". Good.
+
+One more nuance: duplicated() considers pd.NA equal? In pandas, duplicated treats NaN values as duplicates of each other. My mask excludes missing order_id rows from dup consideration: dup_mask = (~mask_missing) & df.duplicated(subset=['order_id'], keep='first'). But careful: df.duplicated includes the NA rows in computation, but we AND with ~mask_missing so NA rows are never marked. However, non-missing rows can't duplicate NA. Fine.
+
+But should missing order_id rows be dropped as duplicates of each other? Not per spec. Fine.
+
+Also product category normalization whitespace: use ' '.join(str(v).split()).lower().
+
+For region too, maybe normalize. Fine.
+
+Date parsing returns date object; isoformat gives YYYY-MM-DD.
+
+Let me also ensure df["unit_price"] values like "1,234.56" handled by comma removal.
+
+Discount "10%" -> "10". "0%" -> 0.
+
+Write script cleanly.
+
+For counts when dropping: compute bad mask, sum, filter df and the mapped series consistently. I'll implement helper.
+
+Also note df["order_date"] etc. After R1, columns are object dtype with pd.NA.
+
+Map functions need to handle pd.NA: `if v is pd.NA` — actually `v is pd.NA` works since pd.NA is singleton. Also could use pd.isna(v).
+
+Let me write final code.
+
+```python
+import os
+import re
+import json
+from datetime import datetime
+
+import pandas as pd
+import numpy as np
+
+MISSING_TOKENS = {"", "na", "n/a", "null", "none", "-"}
+
+DATE_FORMATS = (
+    "%Y-%m-%d",   # YYYY-MM-DD
+    "%m/%d/%Y",   # MM/DD/YYYY (month first)
+    "%d-%b-%Y",   # DD-Mon-YYYY
+    "%Y/%m/%d",   # YYYY/MM/DD
+    "%B %d, %Y",  # Month D, YYYY
+)
+
+REGION_MAP = {
+    "north": "North", "south": "South", "east": "East", "west": "West",
+    "n": "North", "s": "South", "e": "East", "w": "West",
+}
+
+CATEGORY_MAP = {
+    "electronics": "Electronics",
+    "electronic": "Electronics",
+    "clothing": "Clothing",
+    "apparel": "Clothing",
+    "home & garden": "Home & Garden",
+    "home and garden": "Home & Garden",
+    "home&garden": "Home & Garden",
+    "sports": "Sports",
+    "sport": "Sports",
+    "books": "Books",
+    "book": "Books",
+}
+
+
+def is_missing(v):
+    return v is None or (isinstance(v, type(pd.NA)) and v is pd.NA) or pd.isna(v)
+```
+
+Simpler: `pd.isna(v)` returns True for None and pd.NA. Use that (scalar). Fine.
+
+Full code:
+
+```python
+def parse_date(v):
+    if pd.isna(v):
+        return None
+    s = str(v).strip()
+    for fmt in DATE_FORMATS:
+        try:
+            return datetime.strptime(s, fmt).date()
+        except ValueError:
+            pass
+    return None
+```
+
+Then main. I'll wrap in main() and guard.
+
+Potential pitfall: datetime.strptime with format "%B %d, %Y" and value "March 5, 2024": works. With value like "march 5, 2024" lowercase: %B is case-insensitive in strptime? Yes, Python's strptime matches month names case-insensitively (it uses regex with IGNORECASE? Actually _strptime builds regex with re.IGNORECASE? Let me recall: TimeRE compiles with re.IGNORECASE? Yes, LocaleTime patterns compiled with IGNORECASE in datetime._strptime: `self.pattern = re.compile(pattern, re.IGNORECASE)`. Yes.)
+
+Now assemble. Also, after filtering rows sequentially, indexes misalign with mapped series; use .loc with same index. Since we never reset index until the end, .loc works.
+
+For unit_price: after computing `price` series over current df index, bad mask, df = df.loc[~bad]; df["unit_price"] = price.loc[df.index].astype(float).
+
+Better pattern: 
+
+```python
+def apply_rule(df, series, bad_mask, summary, key):
+    summary[key] = int(bad_mask.sum())
+    kept = df.loc[~bad_mask].copy()
+    return kept
+```
+
+Then assign.
+
+Write final CSV: `df_out.to_csv(out_csv, index=False)`. order_date is strings. quantity int64. unit_price float, discount float, revenue float.
+
+Float printing: pandas prints floats with repr; 319.16 -> 319.16. Good.
+
+JSON summary: ints native.
+
+cleaning_logic text: brief explanation.
+
+Now produce final JSON with python_code string.
+
+Let me also double check R6: "remove the substrings '$', 'USD' and ',' and surrounding spaces". So "$97.72" -> "97.72". "USD 148.91" -> "148.91". My regex removes 'usd' case-insensitively anywhere — "USD" substring only. Fine.
+
+What about a price like "$1,299.99 USD"? -> "1299.99". Good.
+
+R7: "values such as '3.0' are allowed". Whole number check via float.is_integer.
+
+Discount missing -> 0: after R1 missing tokens are NA. Also note a literal '-' discount becomes NA -> 0. Good per spec.
+
+customer_id: 'None' -> NA -> 'UNKNOWN'. Uppercase: 'c0012' -> 'C0012'.
+
+Revenue rounding: use round half-even? Python round is banker's; pandas .round uses numpy around (half to even as well). Values typically fine. Use np.round? Just .round(2).
+
+Also ensure revenue >= 0: prices > 0, qty >=1, discount <=100, so >=0. If discount=100, revenue=0.0. Good.
+
+Now write the script as a string. Keep moderate length.
+
+Also note: reading CSV — some fields may contain commas inside quotes (e.g., "March 5, 2024" in one CSV field must be quoted in raw file). pandas handles quoted fields. Good.
+
+na_filter=False keeps everything as raw strings.
+
+Write summary JSON.
+
+Final answer: JSON block only.
+
+Let me draft the code string:
+
+```python
+"""Cleaning stage for the retail_sales project.
+
+Reads raw.csv from INPUT_DIR, applies cleaning rules R1-R11 and writes
+cleaned.csv plus cleaning_summary.json to OUTPUT_DIR.
+"""
+
+import os
+import re
+import json
+from datetime import datetime
+
+import pandas as pd
+
+MISSING_TOKENS = {"", "na", "n/a", "null", "none", "-"}
+
+DATE_FORMATS = (
+    "%Y-%m-%d",    # YYYY-MM-DD
+    "%m/%d/%Y",    # MM/DD/YYYY (month first)
+    "%d-%b-%Y",    # DD-Mon-YYYY (e.g. 05-Mar-2024)
+    "%Y/%m/%d",    # YYYY/MM/DD
+    "%B %d, %Y",   # Month D, YYYY (e.g. March 5, 2024)
+)
+
+REGION_MAP = {
+    "north": "North", "south": "South", "east": "East", "west": "West",
+    "n": "North", "s": "South", "e": "East", "w": "West",
+}
+
+CATEGORY_MAP = {
+    "electronics": "Electronics", "electronic": "Electronics",
+    "clothing": "Clothing", "apparel": "Clothing",
+    "home & garden": "Home & Garden", "home and garden": "Home & Garden",
+    "home&garden": "Home & Garden",
+    "sports": "Sports", "sport": "Sports",
+    "books": "Books", "book": "Books",
+}
+
+FINAL_COLUMNS = [
+    "order_id", "order_date", "customer_id", "region", "product_category",
+    "quantity", "unit_price", "discount_pct", "revenue",
+]
+
+
+def normalize_ws(text):
+    return " ".join(str(text).split())
+
+
+def parse_order_date(value):
+    if pd.isna(value):
+        return None
+    text = str(value).strip()
+    for fmt in DATE_FORMATS:
+        try:
+            return datetime.strptime(text, fmt).date()
+        except ValueError:
+            continue
+    return None
+
+
+def map_region(value):
+    if pd.isna(value):
+        return None
+    return REGION_MAP.get(normalize_ws(value).lower())
+
+
+def map_category(value):
+    if pd.isna(value):
+        return None
+    return CATEGORY_MAP.get(normalize_ws(value).lower())
+
+
+def parse_unit_price(value):
+    if pd.isna(value):
+        return None
+    text = str(value).replace("$", "").replace(",", "")
+    text = re.sub(r"usd", "", text, flags=re.IGNORECASE).strip()
+    if not text:
+        return None
+    try:
+        return float(text)
+    except ValueError:
+        return None
+
+
+def parse_quantity(value):
+    if pd.isna(value):
+        return None
+    try:
+        number = float(str(value).strip())
+    except ValueError:
+        return None
+    if not number.is_integer():
+        return None
+    return int(number)
+
+
+def parse_discount(value):
+    if pd.isna(value):
+        return 0.0  # missing discount means no discount
+    text = str(value).strip()
+    if text.endswith("%"):
+        text = text[:-1].strip()
+    if not text:
+        return None
+    try:
+        return float(text)
+    except ValueError:
+        return None
+
+
+def main():
+    input_path = os.path.join(os.environ["INPUT_DIR"], "raw.csv")
+    output_dir = os.environ["OUTPUT_DIR"]
+    os.makedirs(output_dir, exist_ok=True)
+    cleaned_path = os.path.join(output_dir, "cleaned.csv")
+    summary_path = os.path.join(output_dir, "cleaning_summary.json")
+
+    summary = {}
+
+    # R1: read everything as text, strip whitespace, standardise missing values.
+    df = pd.read_csv(input_path, dtype=str, keep_default_na=False, na_filter=False)
+    summary["raw_rows"] = int(len(df))
+    for column in df.columns:
+        stripped = df[column].astype(str).str.strip()
+        df[column] = stripped.mask(stripped.str.lower().isin(MISSING_TOKENS), pd.NA)
+
+    # R2: drop duplicate order_id rows (keep first in raw-file order) before any other filter.
+    has_order_id = df["order_id"].notna()
+    duplicate_mask = has_order_id & df.duplicated(subset=["order_id"], keep="first")
+    summary["duplicates_removed"] = int(duplicate_mask.sum())
+    df = df.loc[~duplicate_mask].copy()
+
+    # R3: order_date
+    parsed_dates = df["order_date"].map(parse_order_date)
+    bad = parsed_dates.isna()
+    summary["dropped_invalid_order_date"] = int(bad.sum())
+    df = df.loc[~bad].copy()
+    df["order_date"] = parsed_dates.loc[df.index].map(lambda d: d.isoformat())
+
+    # R4: region
+    mapped = df["region"].map(map_region)
+    bad = mapped.isna()
+    summary["dropped_invalid_region"] = int(bad.sum())
+    df = df.loc[~bad].copy()
+    df["region"] = mapped.loc[df.index]
+
+    # R5: product_category
+    mapped = df["product_category"].map(map_category)
+    bad = mapped.isna()
+    summary["dropped_invalid_product_category"] = int(bad.sum())
+    df = df.loc[~bad].copy()
+    df["product_category"] = mapped.loc[df.index]
+
+    # R6: unit_price
+    parsed = df["unit_price"].map(parse_unit_price)
+    bad = parsed.isna() | (parsed <= 0) | (parsed > 5000)
+    summary["dropped_invalid_unit_price"] = int(bad.sum())
+    df = df.loc[~bad].copy()
+    df["unit_price"] = parsed.loc[df.index].astype(float)
+
+    # R7: quantity
+    parsed = df["quantity"].map(parse_quantity)
+    bad = parsed.isna() | (parsed < 1) | (parsed > 50)
+    summary["dropped_invalid_quantity"] = int(bad.sum())
+    df = df.loc[~bad].copy()
+    df["quantity"] = parsed.loc[df.index].astype(int)
+
+    # R8: discount_pct (missing -> 0)
+    parsed = df["discount_pct"].map(parse_discount)
+    bad = parsed.isna() | (parsed < 0) | (parsed > 100)
+    summary["dropped_invalid_discount_pct"] = int(bad.sum())
+    df = df.loc[~bad].copy()
+    df["discount_pct"] = parsed.loc[df.index].astype(float)
+
+    # R9: customer_id upper-case; missing -> UNKNOWN
+    summary["customer_id_set_unknown"] = int(df["customer_id"].isna().sum())
+    df["customer_id"] = df["customer_id"].fillna("UNKNOWN").astype(str).str.upper()
+
+    # R10: revenue
+    df["revenue"] = (
+        df["quantity"] * df["unit_price"] * (1.0 - df["discount_pct"] / 100.0)
+    ).round(2)
+
+    # R11: column order, sort, write
+    df = df[FINAL_COLUMNS].sort_values("order_id", kind="mergesort").reset_index(drop=True)
+    df.to_csv(cleaned_path, index=False)
+
+    summary["cleaned_rows"] = int(len(df))
+    with open(summary_path, "w", encoding="utf-8") as fh:
+        json.dump(summary, fh, indent=2)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+Wait: comparisons like `parsed <= 0` when parsed has None values: parsed is object dtype with None; `parsed <= 0` with None will raise TypeError ("'<=' not supported between 'NoneType' and 'int'")? In pandas, comparing object Series containing None with scalar: pandas elementwise comparison with None... Actually pandas object series comparison `series <= 0` where elements include None: pandas tries elementwise and None <= 0 raises TypeError in Python 3. Let me check: pd.Series([None, 1.0]) <= 0 — I believe this raises TypeError? Hmm. Actually pandas converts: for object dtype, it does libops scalar_compare which handles None? I think `pd.Series([None, 1, 2]) < 2` raises TypeError: 'Invalid comparison between dtype=object and int'? No, that error is for complex. Let me think carefully.
+
+In modern pandas, `pd.Series([None, 1.0, 2.0])` becomes float64 with NaN automatically! Yes — a list with None and floats is coerced to float64 with NaN. So `df["unit_price"].map(parse_unit_price)` where function returns float or None -> pandas will infer float64 and None becomes NaN. So parsed is float64 with NaN. Then `parsed.isna() | (parsed <= 0) | (parsed > 5000)` — NaN comparisons give False, but isna catches them. Good.
+
+But careful with parse_quantity returning int or None: map result coerces to float64 with NaN (since ints + None -> float64). Then `parsed < 1` fine; assignment `parsed.loc[df.index].astype(int)` — after filtering NaN out, astype(int) works on float64 without NaN. Good.
+
+parse_discount returns float or None -> float64 with NaN. Good.
+
+parse_order_date returns date or None -> object dtype; `.isna()` works on object. Good.
+
+map_region returns str or None -> object; isna works.
+
+One subtlety: for quantity, if all values valid ints, map returns... list of ints -> int64. If some None, float64. astype(int) fine after drop.
+
+Also `parsed <= 0` where parsed float64 with NaN — fine.
+
+Edge: What if parsed_dates.isna() — object series with None -> isna True. Good.
+
+`stripped.mask(cond, pd.NA)` — mask replaces where cond True. Good.
+
+duplicated with pd.NA in order_id: subset duplicated treats NA as equal; we AND with has_order_id. Good.
+
+Sort by order_id: if any NA order_id remained, sort puts NaN last; schema not nullable but follow spec. Fine.
+
+to_csv of float unit_price: e.g., 45.33 -> "45.33". A price given as "45.3" -> 45.3. Fine ("keep value as given" numeric).
+
+One more: revenue round — use round(2) via pandas .round. Good.
+
+discount_pct output: 30.0. Acceptable.
+
+Potential issue: df["order_date"].map(parse_order_date) where column contains pd.NA: pd.isna(value) catches. Good.
+
+Also R1 missing tokens: '-', etc. Note "N/A" lower -> "n/a" in set. Good.
+
+Also note: the raw CSV first line is header; raw_rows = 636 presumably.
+
+JSON summary keys: raw_rows, cleaned_rows plus counts. Good.
+
+Now also consider: "Read every column of the raw CSV as text." done.
+
+One more nuance in R6: "Keep the value as given (raw prices have at most 2 decimals)." — i.e., don't round. Fine.
+
+Potential float printing issue: unit_price like 16.87 prints "16.87". pandas uses str(float) which is shortest repr. Good.
+
+Also for CSV, quantity int64 prints "8" not "8.0". Good, since astype(int).
+
+I think the script is solid. Also guard: no command-line args, minimal printing (none).
+
+cleaning_logic: brief explanation.
+
+Now output the JSON in a fenced block only.

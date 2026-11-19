@@ -1,0 +1,25 @@
+{
+  "bug_locations": [
+    "running_total accumulator initialization"
+  ],
+  "buggy": "def running_total(xs):\n                 out=[]\n                 for value in xs:\n                     total=0; total += value; out.append(total)\n                 return out\n",
+  "case_id": "a1v2_e07_running_total_1",
+  "difficulty": "easy",
+  "family": "running_total",
+  "hidden": [
+    "running_total([1,2,3])==[1,3,6]",
+    "running_total([])==[]",
+    "running_total([-2,5,-1])==[-2,3,2]",
+    "running_total([0.5,0.25])==[0.5,0.75]"
+  ],
+  "label_source": "executable reference plus independently checked tests",
+  "reference": "def running_total(xs):\n             out=[]; total=0\n             for value in xs:\n                 total += value; out.append(total)\n             return out\n",
+  "spec": "running_total(xs) returns cumulative sums as floats or ints; empty input returns [].",
+  "verification": {
+    "buggy_fails": 3,
+    "reference_passes": 4
+  },
+  "visible": [
+    "running_total([1,2,3]) == [1,3,6]"
+  ]
+}

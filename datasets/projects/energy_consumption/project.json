@@ -1,0 +1,212 @@
+{
+  "analysis_questions": [
+    {
+      "abs_tolerance": 0.01,
+      "direction_key": null,
+      "metric_keys": [
+        "total_kwh",
+        "reading_count",
+        "mean_kwh_per_reading"
+      ],
+      "question": "Overall (aggregation): sum of energy_kwh -> total_kwh; number of readings (rows) -> reading_count; total_kwh / reading_count -> mean_kwh_per_reading.",
+      "question_id": "q1",
+      "ranking_labels": null,
+      "rel_tolerance": 0.0001
+    },
+    {
+      "abs_tolerance": 0.011,
+      "direction_key": null,
+      "metric_keys": [
+        "kwh_residential",
+        "kwh_commercial",
+        "kwh_industrial"
+      ],
+      "question": "Building types (group comparison): total energy_kwh per building_type -> kwh_residential, kwh_commercial, kwh_industrial.",
+      "question_id": "q2",
+      "ranking_labels": {
+        "kwh_commercial": "Commercial",
+        "kwh_industrial": "Industrial",
+        "kwh_residential": "Residential"
+      },
+      "rel_tolerance": 0.0001
+    },
+    {
+      "abs_tolerance": 0.011,
+      "direction_key": null,
+      "metric_keys": [
+        "kwh_q1",
+        "kwh_q2",
+        "kwh_q3",
+        "kwh_q4"
+      ],
+      "question": "Quarterly trend (trend): total energy_kwh of readings dated in each calendar quarter of 2024 (Q1 = Jan-Mar, Q2 = Apr-Jun, Q3 = Jul-Sep, Q4 = Oct-Dec) -> kwh_q1, kwh_q2, kwh_q3, kwh_q4.",
+      "question_id": "q3",
+      "ranking_labels": {
+        "kwh_q1": "Q1",
+        "kwh_q2": "Q2",
+        "kwh_q3": "Q3",
+        "kwh_q4": "Q4"
+      },
+      "rel_tolerance": 0.0001
+    },
+    {
+      "abs_tolerance": 0.011,
+      "direction_key": "kwh_h2_vs_h1_change_pct",
+      "metric_keys": [
+        "kwh_h1",
+        "kwh_h2",
+        "kwh_h2_vs_h1_change_pct"
+      ],
+      "question": "Half-year change (percentage change): total energy_kwh for January-June -> kwh_h1; July-December -> kwh_h2; (kwh_h2 - kwh_h1) / kwh_h1 * 100 -> kwh_h2_vs_h1_change_pct (in percent).",
+      "question_id": "q4",
+      "ranking_labels": null,
+      "rel_tolerance": 0.0001
+    },
+    {
+      "abs_tolerance": 0.01,
+      "direction_key": null,
+      "metric_keys": [
+        "hot_commercial_reading_count",
+        "hot_commercial_mean_kwh"
+      ],
+      "question": "Hot-day commercial load (conditional filtering): readings with building_type Commercial and a non-missing temperature_c >= 25: their number -> hot_commercial_reading_count; their mean energy_kwh -> hot_commercial_mean_kwh.",
+      "question_id": "q5",
+      "ranking_labels": null,
+      "rel_tolerance": 0.0001
+    },
+    {
+      "abs_tolerance": 0.0001,
+      "direction_key": null,
+      "metric_keys": [
+        "kwh_median",
+        "kwh_std",
+        "temperature_mean",
+        "temperature_missing_count",
+        "commercial_temp_kwh_corr"
+      ],
+      "question": "Distribution summary (statistical summary): median and sample standard deviation (denominator n - 1) of energy_kwh over all readings -> kwh_median, kwh_std; mean temperature_c over readings with a non-missing temperature -> temperature_mean; number of readings with missing temperature_c -> temperature_missing_count; Pearson correlation between temperature_c and energy_kwh over Commercial readings with a non-missing temperature -> commercial_temp_kwh_corr.",
+      "question_id": "q6",
+      "ranking_labels": null,
+      "rel_tolerance": 0.0001
+    },
+    {
+      "abs_tolerance": 0.011,
+      "direction_key": null,
+      "metric_keys": [
+        "kwh_peak",
+        "kwh_off_peak",
+        "peak_kwh_share_pct",
+        "unique_meter_count",
+        "highest_use_meter_kwh"
+      ],
+      "question": "Tariff and meter usage (derived step): total energy_kwh for peak and off-peak tariffs -> kwh_peak, kwh_off_peak; kwh_peak / total_kwh * 100 -> peak_kwh_share_pct; number of distinct meter_id values -> unique_meter_count; largest total energy_kwh for any single meter_id -> highest_use_meter_kwh.",
+      "question_id": "q7",
+      "ranking_labels": {
+        "kwh_off_peak": "off-peak",
+        "kwh_peak": "peak"
+      },
+      "rel_tolerance": 0.0001
+    }
+  ],
+  "canonical_cleaned_file": "canonical/cleaned.csv",
+  "canonical_findings_file": "canonical/findings.json",
+  "cleaned_data_filename": "cleaned.csv",
+  "cleaned_schema": [
+    {
+      "allowed_values": null,
+      "dtype": "str",
+      "max_value": null,
+      "min_value": null,
+      "name": "reading_id",
+      "nullable": false
+    },
+    {
+      "allowed_values": null,
+      "dtype": "date",
+      "max_value": null,
+      "min_value": null,
+      "name": "reading_date",
+      "nullable": false
+    },
+    {
+      "allowed_values": null,
+      "dtype": "str",
+      "max_value": null,
+      "min_value": null,
+      "name": "meter_id",
+      "nullable": false
+    },
+    {
+      "allowed_values": [
+        "Residential",
+        "Commercial",
+        "Industrial"
+      ],
+      "dtype": "category",
+      "max_value": null,
+      "min_value": null,
+      "name": "building_type",
+      "nullable": false
+    },
+    {
+      "allowed_values": [
+        "peak",
+        "off-peak"
+      ],
+      "dtype": "category",
+      "max_value": null,
+      "min_value": null,
+      "name": "tariff",
+      "nullable": false
+    },
+    {
+      "allowed_values": null,
+      "dtype": "float",
+      "max_value": 100000.0,
+      "min_value": 0.0,
+      "name": "energy_kwh",
+      "nullable": false
+    },
+    {
+      "allowed_values": null,
+      "dtype": "float",
+      "max_value": 50.0,
+      "min_value": -40.0,
+      "name": "temperature_c",
+      "nullable": true
+    }
+  ],
+  "cleaning_requirements": [
+    "R1. Read every column of the raw CSV as text. Strip leading and trailing whitespace from every value. Treat the following values as missing (compare case-insensitively, after stripping): empty string, 'NA', 'N/A', 'null', 'None', '-'.",
+    "R2. Remove duplicate records BEFORE applying any other row filter: rows that share the same reading_id are duplicates; keep only the first occurrence in raw-file order and discard the later ones.",
+    "R3. reading_date: parse each value using exactly one of these formats: YYYY-MM-DD; MM/DD/YYYY (month first); DD-Mon-YYYY with an English 3-letter month abbreviation (e.g. 05-Mar-2024); YYYY/MM/DD; 'Month D, YYYY' with the full English month name (e.g. March 5, 2024). Drop rows whose reading_date is missing or cannot be parsed. Write reading_date as YYYY-MM-DD.",
+    "R4. meter_id: convert to upper case (e.g. 'm05' -> 'M05'). Drop rows whose meter_id is missing.",
+    "R5. building_type: map case-insensitively to one of Residential, Commercial, Industrial. Also map these variants (case-insensitive): 'Res' and 'Resi' -> Residential; 'Comm' -> Commercial; 'Ind' -> Industrial. Drop rows whose building_type is missing or maps to none of the three types.",
+    "R6. tariff: map case-insensitively 'peak' -> peak and 'off-peak', 'offpeak', 'off peak' -> off-peak. Drop rows whose tariff is missing or not one of these.",
+    "R7. energy -> energy_kwh: remove ',' characters. If the value ends with 'MWh' (case-insensitive, optional space before the unit) remove the unit and multiply the number by 1000; if it ends with 'kWh' (case-insensitive) remove the unit; a value without a unit is already in kWh. Drop rows whose energy is missing, not a number, < 0, or > 100000 kWh (after conversion). Round energy_kwh to 2 decimals.",
+    "R8. temperature -> temperature_c: remove a trailing degree sign and unit. A value ending with 'F' (case-insensitive, optionally written '°F') is Fahrenheit: convert with (F - 32) * 5 / 9. A value ending with 'C' or '°C', or without a unit, is already Celsius. Round to 1 decimal. If the temperature is missing, not a number, or outside -40 to 50 °C after conversion, set temperature_c to missing (empty cell) and KEEP the row.",
+    "R9. Output exactly these columns in this order: reading_id, reading_date, meter_id, building_type, tariff, energy_kwh, temperature_c. Sort rows by reading_id ascending. Write a CSV with a header row and no index column; numbers are written without units or thousands separators; a missing temperature_c is an empty cell."
+  ],
+  "domain": "energy",
+  "findings_filename": "findings.json",
+  "ground_truth_file": "ground_truth.json",
+  "input_files": [],
+  "notes": "SYNTHETIC data. Known raw imperfections: duplicate reading_id rows (exact and re-formatted); five date formats; missing tokens ('', NA, N/A, null, None, '-'); lower-case/padded meter ids; building-type and tariff spelling/case variants and an unknown type ('Agricultural'); energy with 'kWh'/'MWh' units (mixed scales), thousands separators, unparseable 'ERR' and negative values; temperatures in Celsius and Fahrenheit with/without '°', and sensor errors (999, -99) kept as missing. findings.json is a flat JSON object mapping each metric_key to a number.",
+  "objective": "Clean the raw 2024 smart-meter export and analyse electricity consumption: total and per-building-type usage, the quarterly trend, the change between the first and second half of the year, tariff and meter usage, commercial load on hot days and the distribution of consumption and temperature, then report the verified findings to business stakeholders.",
+  "project_id": "energy_consumption",
+  "raw_data_file": "raw.csv",
+  "reporting": {
+    "audience": "business stakeholders",
+    "max_words": 600,
+    "required_finding_ids": [
+      "q1",
+      "q2",
+      "q3",
+      "q4",
+      "q5",
+      "q6",
+      "q7"
+    ]
+  },
+  "seed": 20261119
+}

@@ -1,0 +1,45 @@
+We need to produce JSON with fields python_code (string containing script), expected_artifacts (list of filenames), methods_description (string). The script must read cleaned.csv from INPUT_DIR env var, compute metrics, write findings.json to OUTPUT_DIR. Must output flat JSON with all metric keys as numbers (float or int). No NaN, Infinity, null. Must compute percentages as percent (i.e., 0-100). Use full precision (no rounding). Use pandas.
+
+Potential issues: missing satisfaction_score values (NaN). Need to compute satisfaction_missing_count as count of NaN. satisfaction_mean over non-missing.
+
+At-risk segment: support_tickets >=5 AND satisfaction_score <=2 (non-missing). So filter where satisfaction_score not null and <=2.
+
+Compute churn_rate_pct = (sum churned)/customer_count * 100.
+
+Similarly for each plan: filter plan, compute churn rate percent.
+
+Cohort: signup_date year. Need to compute for years 2021-2024. If no customers for a year, churn rate should be 0? But division by zero. Should handle: if count==0, set churn rate 0.0.
+
+Contract effect: monthly vs annual churn rates percent. Then relative difference: (monthly - annual)/annual *100. If annual churn rate is 0, then maybe set change to inf? But must be finite. Could set to 0 or maybe handle division by zero: if annual==0, set change to 0.0 (or maybe None). We'll set to 0.0 to avoid NaN.
+
+Tenure stats: mean, median, std (sample). Use pandas .mean(), .median(), .std(ddof=1). Ensure std is sample.
+
+Lifetime value by plan: mean ltv per plan. Then premium_vs_basic_ltv_change_pct = (ltv_premium - ltv_basic)/ltv_basic *100. If ltv_basic==0, set change 0.0.
+
+Write findings.json with json.dump ensuring default conversion of numpy types to python floats/ints. Use .item().
+
+Implementation steps:
+
+- import os, pandas as pd, json, numpy as np
+- input_path = os.path.join(os.environ["INPUT_DIR"], "cleaned.csv")
+- df = pd.read_csv(input_path, parse_dates=['signup_date'])
+- Compute metrics.
+
+Make sure to convert to python scalars: float(x) or int(x). Use .astype(float) maybe.
+
+Edge Cases: satisfaction_score column may have missing values; pandas reads as float (NaN). For satisfaction_mean, compute df['satisfaction_score'].mean(skipna=True). This returns float.
+
+Now produce JSON.
+
+expected_artifacts: ["findings.json"]
+
+methods_description: brief description.
+
+Now craft final JSON.
+
+Let's write script.
+
+Potential pitfalls: ensure we write findings.json with json.dump with ensure_ascii=False, indent=None (no extra). Use open(..., 'w').
+
+Now produce final answer.
+

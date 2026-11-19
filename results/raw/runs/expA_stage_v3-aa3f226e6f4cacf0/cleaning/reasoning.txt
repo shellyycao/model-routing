@@ -1,0 +1,50 @@
+We need to produce JSON with fields python_code (string containing script), output_filename = "cleaned.csv", cleaning_logic brief explanation.
+
+We must write script that follows cleaning steps.
+
+Implementation details:
+
+- Read raw.csv with pandas read_csv dtype=str, keep all columns as strings. Use na_values? But we need custom missing detection after stripping. So read as strings, then apply strip to all values.
+
+- Count raw_rows = number of rows read.
+
+- Apply R1: strip whitespace, treat missing values: after strip, if lowercased value in set {'', 'na', 'n/a', 'null', 'none', '-'} then set to None (np.nan). We'll replace with np.nan.
+
+- R2: remove duplicate reading_id, keep first. Use drop_duplicates(subset='reading_id', keep='first').
+
+- Keep track of duplicate count.
+
+- R3: parse reading_date with multiple formats. We'll define a function that tries each format using datetime.strptime. Also need to handle month name full. Formats list: "%Y-%m-%d", "%m/%d/%Y", "%d-%b-%Y", "%Y/%m/%d", "%B %d, %Y". Note that %b expects Jan, Feb etc case-insensitive? We'll use .title() maybe. We'll try each; if fails, return None. Drop rows where missing or cannot parse. Then format to ISO string.
+
+- R4: meter_id to upper, drop if missing.
+
+- R5: building_type mapping: lower stripped. Map dict: {'residential':'Residential','res':'Residential','resi':'Residential','commercial':'Commercial','comm':'Commercial','industrial':'Industrial','ind':'Industrial'}. Use lower. Drop if missing or not mapped.
+
+- R6: tariff mapping: lower stripped. Map {'peak':'peak','off-peak':'off-peak','offpeak':'off-peak','off peak':'off-peak'}. Drop if missing or not mapped.
+
+- R7: energy conversion: remove commas. Then detect unit. Use regex. Steps: strip, replace ','; if endswith case-insensitive 'mwh' possibly with space: we can use re.search(r'(?i)^\s*([\d\.]+)\s*mwh\s*$', value). If matches, number*1000. If endswith 'kwh' similarly, number. Else just number. Convert to float. Drop if missing, not numeric, <0 or >100000. Round to 2 decimals.
+
+- R8: temperature conversion: strip, remove trailing degree sign and unit. We'll detect pattern: optional spaces, number possibly with decimal, optional whitespace, optional degree sign (°) and unit letter. Use regex. If ends with 'f' (case-insensitive) after optional degree sign, convert. If ends with 'c' or no unit, treat as Celsius. If missing or not numeric, set temperature_c to np.nan (empty). After conversion, round to 1 decimal. If out of -40 to 50, set to np.nan.
+
+- Keep row even if temperature missing.
+
+- R9: select columns, order, sort by reading_id ascending (string). Write CSV with header, index=False, float formatting: we can let pandas default but ensure no scientific notation. Use float_format='%.2f' for energy_kwh, but temperature may have 1 decimal; we can format after rounding.
+
+Simplify: after processing, we have columns: reading_id (str), reading_date (str), meter_id (str), building_type (category), tariff (category), energy_kwh (float), temperature_c (float or np.nan). We'll convert building_type and tariff to category dtype.
+
+Write cleaned.csv.
+
+Create cleaning_summary.json with raw_rows, cleaned_rows, duplicate_rows_removed, rows_dropped_due_to_date, rows_dropped_due_to_meter_id, rows_dropped_due_to_building_type, rows_dropped_due_to_tariff, rows_dropped_due_to_energy, rows_with_invalid_temperature (count where temperature set to missing). Provide counts.
+
+Implementation details: Use os.getenv('INPUT_DIR'), etc.
+
+Edge Cases: reading_id may have leading/trailing spaces; after strip they become proper.
+
+Now produce script as a string.
+
+We'll need to import json, pandas, numpy, os, datetime, re.
+
+Write summary dict and dump to json file.
+
+Now produce final JSON output.
+

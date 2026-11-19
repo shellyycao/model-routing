@@ -1,0 +1,76 @@
+We need to produce a JSON with fields python_code (string containing script), expected_artifacts (list of filenames), methods_description (string). The script must read cleaned.csv from INPUT_DIR env var, compute metrics, write findings.json to OUTPUT_DIR, no other files. Must output flat JSON with metric keys and numeric values (no NaN). Must not round results; write full precision (so default Python float representation). Use pandas.
+
+We need to compute each metric.
+
+Let's list metrics and formulas.
+
+Data columns: ticket_id (str), agent_id (str), team (category), region, channel, resolution_minutes (int), satisfaction_score (int nullable), reopened (int 0/1), hourly_cost (float), labor_cost (float).
+
+Compute:
+
+ticket_count = number of rows.
+
+mean_resolution_minutes = mean of resolution_minutes (float). Use pandas mean.
+
+total_labor_cost = sum of labor_cost.
+
+Team labor cost sums: labor_cost_alpha = sum labor_cost where team == 'Alpha', similarly Beta, Gamma.
+
+Channel mean resolution minutes: resolution_email = mean resolution_minutes where channel == 'email', etc. If no rows for a channel, mean would be NaN; but we must output a finite number. Assuming there is at least one row each channel. If not, we could output 0. But likely there are rows.
+
+Reopen rates: reopened percentage for email and chat. reopened is 0/1 per ticket. So rate = (sum reopened) / count * 100? The description says "reopened percentage for email and chat". Usually percentage = (reopened tickets / total tickets) * 100. We'll compute as (sum reopened) / count * 100.
+
+So reopen_rate_email_pct = 100 * sum(reopened) / count for channel email.
+
+Similarly chat.
+
+email_vs_chat_reopen_change_pct = (email_rate - chat_rate) / chat_rate * 100.
+
+If chat_rate is zero, would cause division by zero; but likely not zero. We'll handle by returning 0 or maybe NaN; but must be finite. We'll guard: if chat_rate == 0, set change_pct = 0.
+
+High-cost low-satisfaction segment: tickets with labor_cost >= 100 and satisfaction_score not missing and <=2. Count them: high_cost_low_sat_count. Also reopened percentage among those tickets: high_cost_low_sat_reopen_pct = 100 * sum(reopened) / count (if count>0 else 0). Must be finite.
+
+Distribution: median and sample standard deviation of resolution_minutes. Use pandas median, std (ddof=1 default). resolution_median, resolution_std.
+
+Mean non-missing satisfaction_score: satisfaction_mean = mean of satisfaction_score ignoring NaN.
+
+Missing satisfaction count: satisfaction_missing_count = number of rows where satisfaction_score is NaN.
+
+Agent concentration: unique_agent_count = number of distinct agent_id.
+
+top_agent_ticket_count = max ticket count per agent (groupby agent_id size). top_agent_ticket_share_pct = 100 * top_agent_ticket_count / ticket_count.
+
+All metrics must be numeric (int or float). We'll keep as Python numbers; when writing JSON, json.dump will convert.
+
+Potential issues: pandas may produce numpy.float64; json can't serialize that directly? Actually json.dump can handle numpy types? It may raise TypeError. Safer to convert to Python float via float() and int via int().
+
+We'll compute each metric, convert to Python float (or int). For counts, we can keep int.
+
+Edge Cases: satisfaction_score nullable; reading CSV will treat empty as NaN (float). We'll set dtype maybe not needed.
+
+Implementation steps:
+
+- import os, json, pandas as pd, numpy as np.
+
+- input_path = os.path.join(os.environ["INPUT_DIR"], "cleaned.csv")
+
+- df = pd.read_csv(input_path)
+
+- Compute metrics.
+
+- Build dict findings = { ... }
+
+- output_path = os.path.join(os.environ["OUTPUT_DIR"], "findings.json")
+
+- with open(output_path, "w") as f: json.dump(findings, f, ensure_ascii=False)
+
+- expected_artifacts = ["findings.json"]
+
+Make sure script is self-contained.
+
+Now produce JSON output with fields.
+
+Methods description: brief description of steps.
+
+Now produce final answer.
+

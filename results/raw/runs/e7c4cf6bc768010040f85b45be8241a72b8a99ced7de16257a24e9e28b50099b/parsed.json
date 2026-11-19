@@ -1,0 +1,9 @@
+{
+  "fixed_code": "def paginate(items, size, cursor=None):\n    if size <= 0:\n        raise ValueError(\"size must be positive\")\n    start = 0 if cursor is None else int(cursor)\n    if start < 0 or start > len(items):\n        raise ValueError(\"invalid cursor\")\n    end = start + size\n    page = items[start:end]\n    next_cursor = str(end) if end < len(items) else None\n    return page, next_cursor",
+  "bug_locations": [
+    "size validation",
+    "cursor validation",
+    "next_cursor calculation"
+  ],
+  "explanation": "The original code lacked validation for non-positive sizes and invalid cursors (negative or beyond the list length). It also incorrectly returned a string for next_cursor even at the end of the list, instead of null. The fixes add proper validation and correct the next_cursor logic to return None when the end of the list is reached."
+}

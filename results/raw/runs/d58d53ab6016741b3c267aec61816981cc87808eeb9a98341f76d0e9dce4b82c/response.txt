@@ -1,0 +1,11 @@
+```json
+{
+  "fixed_code": "def paginate(items, size, cursor=None):\n    if size <= 0:\n        raise ValueError('size')\n    if cursor is None:\n        start = 0\n    else:\n        start = int(cursor)\n        if start < 0 or start > len(items):\n            raise ValueError('cursor')\n    end = min(start + size, len(items))\n    next_cursor = str(end) if end < len(items) else None\n    return list(items[start:end]), next_cursor\n",
+  "bug_locations": [
+    "paginate: size guard changed from 'size < 0' to 'size <= 0'",
+    "paginate: initial start for cursor=None changed from 1 to 0",
+    "paginate: cursor parsing changed from 'int(cursor)+1' to 'int(cursor)' with added range validation (negative or beyond-end cursors raise ValueError)"
+  ],
+  "explanation": "The implementation treated cursors as one-based: it started at index 1 when no cursor was given and added 1 to every supplied cursor, so pages were shifted and the visible check failed. The specification says cursors are zero-based start indices, so the default start is 0 and a supplied cursor is used directly via int(cursor). The size guard only rejected negative sizes, but the spec requires nonpositive sizes to raise ValueError, so it now uses size <= 0. Finally, int() alone only rejects non-numeric cursor strings; explicit bounds checking was added so negative or out-of-range cursors (invalid per the spec) also raise ValueError instead of silently producing wrong slices."
+}
+```

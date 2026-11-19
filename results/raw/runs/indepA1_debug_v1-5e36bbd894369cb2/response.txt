@@ -1,0 +1,7 @@
+```json
+{
+  "fixed_code": "def moving_average(xs, k):\n    if k <= 0 or k > len(xs):\n        return []\n    return [sum(xs[i:i + k]) / k for i in range(len(xs) - k + 1)]",
+  "bug_location": "moving_average: The range in the list comprehension was incorrect. It should iterate up to len(xs) - k + 1 instead of len(xs) - k.",
+  "explanation": "The bug was in the range of the list comprehension. It should go up to len(xs) - k + 1 to include the last window of size k. This ensures that all possible windows are considered."
+}
+```

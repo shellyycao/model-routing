@@ -1,0 +1,692 @@
+{
+  "contract_version": "1.2",
+  "run_id": "expB_paths_v3-c289b2f37cb7a13c",
+  "experiment_id": "expB_paths_v3",
+  "project_id": "customer_churn",
+  "path_id": "C-C-C",
+  "models": [
+    "C",
+    "C",
+    "C"
+  ],
+  "repeat_index": 0,
+  "config_hash": "7de4a4286590c8a5b770c53c44fbeafdc2fd70554cd6547cf99617ec3593a79a",
+  "failure_policy": "continue_with_actual_artifact",
+  "started_at": "2026-11-18T05:20:16.671069+00:00",
+  "finished_at": "2026-11-18T05:21:16.935110+00:00",
+  "stages": [
+    {
+      "stage": "cleaning",
+      "model_alias": "C",
+      "model_id": "openai.gpt-oss-120b-1:0",
+      "prompt_version": "v3",
+      "prompt_hash": "75d018237537d053a761286adc2946865bc568d7563b334eb22d7222cdd285d5",
+      "invocation_ids": [
+        "48f98bbc-24b7-49e9-b12c-8d3c08a43f33"
+      ],
+      "cache_hit": false,
+      "shared_with_run_ids": [],
+      "status": "failed",
+      "structural_ok": true,
+      "failure_type": "validation_failed",
+      "failure_detail": "row_set_matches_reference: 88 reference rows missing (e.g. ['CUST-0018', 'CUST-0037', 'CUST-0046', 'CUST-0048', 'CUST-0060']); 0 unexpected rows (e.g. []); output rows=661, reference rows=749; values_match_reference: satisfaction_score: 96 mismatches (e.g. ['CUST-0007', 'CUST-0012', 'CUST-0038'])",
+      "parse_ok": true,
+      "execution": {
+        "status": "success",
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "/sandbox/code/main.py:145: FutureWarning: DataFrame.applymap has been deprecated. Use DataFrame.map instead.\n  df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)\n",
+        "runtime_ms": 1229.444083000999,
+        "output_files": [
+          "/Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expB_paths_v3-c289b2f37cb7a13c/cleaning/output/cleaned.csv",
+          "/Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expB_paths_v3-c289b2f37cb7a13c/cleaning/output/cleaning_summary.json"
+        ],
+        "sandbox_image": "sha256:88988a15503bdb96538c3dd62244a79879d5c7848397db18b1267ccfd0a9727a"
+      },
+      "validation": {
+        "stage": "cleaning",
+        "hard_pass": false,
+        "checks": [
+          {
+            "name": "output_exists",
+            "passed": true,
+            "mandatory": true,
+            "detail": "/Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expB_paths_v3-c289b2f37cb7a13c/cleaning/output/cleaned.csv",
+            "value": null
+          },
+          {
+            "name": "output_parses",
+            "passed": true,
+            "mandatory": true,
+            "detail": "661 rows, 10 columns",
+            "value": null
+          },
+          {
+            "name": "required_columns_present",
+            "passed": true,
+            "mandatory": true,
+            "detail": "all present",
+            "value": null
+          },
+          {
+            "name": "schema_constraints",
+            "passed": true,
+            "mandatory": true,
+            "detail": "all constraints satisfied",
+            "value": 1.0
+          },
+          {
+            "name": "no_extra_columns",
+            "passed": true,
+            "mandatory": false,
+            "detail": "",
+            "value": null
+          },
+          {
+            "name": "no_duplicate_keys",
+            "passed": true,
+            "mandatory": true,
+            "detail": "",
+            "value": 0.0
+          },
+          {
+            "name": "row_set_matches_reference",
+            "passed": false,
+            "mandatory": true,
+            "detail": "88 reference rows missing (e.g. ['CUST-0018', 'CUST-0037', 'CUST-0046', 'CUST-0048', 'CUST-0060']); 0 unexpected rows (e.g. []); output rows=661, reference rows=749",
+            "value": null
+          },
+          {
+            "name": "values_match_reference",
+            "passed": false,
+            "mandatory": true,
+            "detail": "satisfaction_score: 96 mismatches (e.g. ['CUST-0007', 'CUST-0012', 'CUST-0038'])",
+            "value": 0.9854765506807867
+          }
+        ],
+        "quality": {
+          "cleaning_correctness": 0.8696929238985314,
+          "data_integrity": 0.8825100133511349,
+          "schema_compliance": 1.0
+        },
+        "quality_basis": "ground_truth",
+        "validator_version": "1.0"
+      },
+      "conditional_validation": null,
+      "input_artifacts": [
+        "datasets/projects/customer_churn/raw.csv"
+      ],
+      "output_artifacts": [
+        "results/raw/runs/expB_paths_v3-c289b2f37cb7a13c/cleaning/prompt.txt",
+        "results/raw/runs/expB_paths_v3-c289b2f37cb7a13c/cleaning/response.txt",
+        "results/raw/runs/expB_paths_v3-c289b2f37cb7a13c/cleaning/reasoning.txt",
+        "results/raw/runs/expB_paths_v3-c289b2f37cb7a13c/cleaning/parsed.json",
+        "results/raw/runs/expB_paths_v3-c289b2f37cb7a13c/cleaning/code.py",
+        "results/raw/runs/expB_paths_v3-c289b2f37cb7a13c/cleaning/output/cleaned.csv",
+        "results/raw/runs/expB_paths_v3-c289b2f37cb7a13c/cleaning/output/cleaning_summary.json"
+      ],
+      "input_artifact_hashes": {
+        "datasets/projects/customer_churn/raw.csv": "85dac8de024e160a903ebbe93296e8559aac12a30deb203e3eb85937afc2e281"
+      },
+      "output_artifact_hashes": {
+        "results/raw/runs/expB_paths_v3-c289b2f37cb7a13c/cleaning/prompt.txt": "75d018237537d053a761286adc2946865bc568d7563b334eb22d7222cdd285d5",
+        "results/raw/runs/expB_paths_v3-c289b2f37cb7a13c/cleaning/response.txt": "82dd5e5f89736ccb40fa98ad5365b2f956d40dcc503a86aca755566c6ff44933",
+        "results/raw/runs/expB_paths_v3-c289b2f37cb7a13c/cleaning/reasoning.txt": "3705c506518c4295936a5e8e84b1d28089798310653e6cedad56b8be4b79ae12",
+        "results/raw/runs/expB_paths_v3-c289b2f37cb7a13c/cleaning/parsed.json": "de40671aa1207cb3f0afd0dd6ae4d078d16240bf56e7fe9175eeb59e5ff8811a",
+        "results/raw/runs/expB_paths_v3-c289b2f37cb7a13c/cleaning/code.py": "8c83f64162613332334beafa9cba198bd2e90f0c4a62f493ecdb70725ece34a1",
+        "results/raw/runs/expB_paths_v3-c289b2f37cb7a13c/cleaning/output/cleaned.csv": "f21508e48eb785cfe77b244eeae9e111b52e2a27318f39dbbe6e3b479d4fe993",
+        "results/raw/runs/expB_paths_v3-c289b2f37cb7a13c/cleaning/output/cleaning_summary.json": "2654c58f7337a3b24f0f81599b6926b47db8e095b603033b9a124ba1358f1c6e"
+      },
+      "handoff_in_path": "results/raw/runs/expB_paths_v3-c289b2f37cb7a13c/cleaning/handoff_in.json",
+      "handoff_size_bytes": 595,
+      "input_tokens": 1996,
+      "output_tokens": 3283,
+      "cost_usd": null,
+      "cost_status": "unavailable",
+      "timings": {
+        "generation_ms": 19331.160292000277,
+        "execution_ms": 1229.444083000999,
+        "validation_ms": 10.44954199824133,
+        "handoff_ms": 0.9637910006858874
+      }
+    },
+    {
+      "stage": "analysis",
+      "model_alias": "C",
+      "model_id": "openai.gpt-oss-120b-1:0",
+      "prompt_version": "v3",
+      "prompt_hash": "45eade6a21da4f8da3f0cd00c602cacdf2393eddb5c59c4f0896077c3db64602",
+      "invocation_ids": [
+        "3e53e4e1-aee8-49a2-99c2-9ff79da4c631"
+      ],
+      "cache_hit": false,
+      "shared_with_run_ids": [],
+      "status": "failed",
+      "structural_ok": true,
+      "failure_type": "validation_failed",
+      "failure_detail": "values_within_tolerance: customer_count=661.0 (expected 749.0); churn_rate_pct=36.7624810892587 (expected 37.6502); avg_monthly_fee=42.01723146747352 (expected 42.106155); churn_rate_basic_pct=38.38383838383838 (expected 38.872404); churn_rate_standard_pct=35.65217391304348 (expected 36.679537); churn_rate_premium_pct=35.07462686567165 (expected 36.601307); churn_rate_cohort_2021_pct=36.93181818181818 (expected 38.020833); churn_rate_cohort_2022_pct=37.17277486910995 (expected 36.744186)",
+      "parse_ok": true,
+      "execution": {
+        "status": "success",
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "runtime_ms": 1258.9165829995181,
+        "output_files": [
+          "/Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expB_paths_v3-c289b2f37cb7a13c/analysis/output/findings.json"
+        ],
+        "sandbox_image": "sha256:88988a15503bdb96538c3dd62244a79879d5c7848397db18b1267ccfd0a9727a"
+      },
+      "validation": {
+        "stage": "analysis",
+        "hard_pass": false,
+        "checks": [
+          {
+            "name": "findings_exists",
+            "passed": true,
+            "mandatory": true,
+            "detail": "",
+            "value": null
+          },
+          {
+            "name": "findings_parses",
+            "passed": true,
+            "mandatory": true,
+            "detail": "",
+            "value": null
+          },
+          {
+            "name": "required_keys_present",
+            "passed": true,
+            "mandatory": true,
+            "detail": "all 24 present",
+            "value": null
+          },
+          {
+            "name": "values_numeric",
+            "passed": true,
+            "mandatory": true,
+            "detail": "",
+            "value": null
+          },
+          {
+            "name": "values_within_tolerance",
+            "passed": false,
+            "mandatory": true,
+            "detail": "customer_count=661.0 (expected 749.0); churn_rate_pct=36.7624810892587 (expected 37.6502); avg_monthly_fee=42.01723146747352 (expected 42.106155); churn_rate_basic_pct=38.38383838383838 (expected 38.872404); churn_rate_standard_pct=35.65217391304348 (expected 36.679537); churn_rate_premium_pct=35.07462686567165 (expected 36.601307); churn_rate_cohort_2021_pct=36.93181818181818 (expected 38.020833); churn_rate_cohort_2022_pct=37.17277486910995 (expected 36.744186)",
+            "value": 0.08333333333333333
+          },
+          {
+            "name": "reproducible_across_executions",
+            "passed": true,
+            "mandatory": false,
+            "detail": "24/24 keys agree",
+            "value": 1.0
+          }
+        ],
+        "quality": {
+          "numerical_accuracy": 0.08333333333333333,
+          "calculation_coverage": 1.0,
+          "reproducibility": 1.0
+        },
+        "quality_basis": "ground_truth",
+        "validator_version": "1.0"
+      },
+      "conditional_validation": {
+        "stage": "analysis",
+        "hard_pass": true,
+        "checks": [
+          {
+            "name": "findings_exists",
+            "passed": true,
+            "mandatory": true,
+            "detail": "",
+            "value": null
+          },
+          {
+            "name": "findings_parses",
+            "passed": true,
+            "mandatory": true,
+            "detail": "",
+            "value": null
+          },
+          {
+            "name": "required_keys_present",
+            "passed": true,
+            "mandatory": true,
+            "detail": "all 24 present",
+            "value": null
+          },
+          {
+            "name": "values_numeric",
+            "passed": true,
+            "mandatory": true,
+            "detail": "",
+            "value": null
+          },
+          {
+            "name": "values_within_tolerance",
+            "passed": true,
+            "mandatory": true,
+            "detail": "24/24 correct",
+            "value": 1.0
+          },
+          {
+            "name": "reproducible_across_executions",
+            "passed": true,
+            "mandatory": false,
+            "detail": "24/24 keys agree",
+            "value": 1.0
+          }
+        ],
+        "quality": {
+          "numerical_accuracy": 1.0,
+          "calculation_coverage": 1.0,
+          "reproducibility": 1.0
+        },
+        "quality_basis": "conditional_reference",
+        "validator_version": "1.0"
+      },
+      "input_artifacts": [
+        "results/raw/runs/expB_paths_v3-c289b2f37cb7a13c/cleaning/output/cleaned.csv"
+      ],
+      "output_artifacts": [
+        "results/raw/runs/expB_paths_v3-c289b2f37cb7a13c/analysis/prompt.txt",
+        "results/raw/runs/expB_paths_v3-c289b2f37cb7a13c/analysis/response.txt",
+        "results/raw/runs/expB_paths_v3-c289b2f37cb7a13c/analysis/reasoning.txt",
+        "results/raw/runs/expB_paths_v3-c289b2f37cb7a13c/analysis/parsed.json",
+        "results/raw/runs/expB_paths_v3-c289b2f37cb7a13c/analysis/code.py",
+        "results/raw/runs/expB_paths_v3-c289b2f37cb7a13c/analysis/output/findings.json"
+      ],
+      "input_artifact_hashes": {
+        "results/raw/runs/expB_paths_v3-c289b2f37cb7a13c/cleaning/output/cleaned.csv": "f21508e48eb785cfe77b244eeae9e111b52e2a27318f39dbbe6e3b479d4fe993"
+      },
+      "output_artifact_hashes": {
+        "results/raw/runs/expB_paths_v3-c289b2f37cb7a13c/analysis/prompt.txt": "45eade6a21da4f8da3f0cd00c602cacdf2393eddb5c59c4f0896077c3db64602",
+        "results/raw/runs/expB_paths_v3-c289b2f37cb7a13c/analysis/response.txt": "8a076a79d3b792a33d6aa540b8c61b535512c61e15bc017af8a35bb2eb6ee139",
+        "results/raw/runs/expB_paths_v3-c289b2f37cb7a13c/analysis/reasoning.txt": "d7381e39713c90d7d8ba421398c7936bb905c16362b034c6339b715ba1d3d32f",
+        "results/raw/runs/expB_paths_v3-c289b2f37cb7a13c/analysis/parsed.json": "fe6c84f726a3cca182f9ff3d0ff931cb0bac44e7e11c9de06ff3afc495a278e7",
+        "results/raw/runs/expB_paths_v3-c289b2f37cb7a13c/analysis/code.py": "f9a96f49833b6142b37fd85c9126917a7e8ca71f696df1422db0bd559f1666e5",
+        "results/raw/runs/expB_paths_v3-c289b2f37cb7a13c/analysis/output/findings.json": "03c115137f1c256af89d565e7bde1a693a2761575dfdbfe57a076d269ef08e25"
+      },
+      "handoff_in_path": "results/raw/runs/expB_paths_v3-c289b2f37cb7a13c/analysis/handoff_in.json",
+      "handoff_size_bytes": 18523,
+      "input_tokens": 2327,
+      "output_tokens": 2595,
+      "cost_usd": null,
+      "cost_status": "unavailable",
+      "timings": {
+        "generation_ms": 13592.145041002368,
+        "execution_ms": 1258.9165829995181,
+        "validation_ms": 9.851041999354493,
+        "handoff_ms": 1.7714999994495884
+      }
+    },
+    {
+      "stage": "reporting",
+      "model_alias": "C",
+      "model_id": "openai.gpt-oss-120b-1:0",
+      "prompt_version": "v3",
+      "prompt_hash": "9fba73977a280f47ba96fabbedb99c087acfa747abd49f798c121517a2ca9009",
+      "invocation_ids": [
+        "dc3ff292-daba-4693-a9eb-52abda73639a"
+      ],
+      "cache_hit": false,
+      "shared_with_run_ids": [],
+      "status": "failed",
+      "structural_ok": true,
+      "failure_type": "validation_failed",
+      "failure_detail": "reported_values_consistent: q1.customer_count=661.0 (verified 749.0); q1.churn_rate_pct=36.7624810892587 (verified 37.6502); q1.avg_monthly_fee=42.01723146747352 (verified 42.106155); q2.churn_rate_basic_pct=38.38383838383838 (verified 38.872404); q2.churn_rate_standard_pct=35.65217391304348 (verified 36.679537); q2.churn_rate_premium_pct=35.07462686567165 (verified 36.601307); q3.churn_rate_cohort_2021_pct=36.93181818181818 (verified 38.020833); q3.churn_rate_cohort_2022_pct=37.17277486910995 (verified 36.744186); rankings_correct: q3: stated order ['2022', '2023', '2021', '2024'] is not descending; derived_values_correct: q4.derived_values[0]=26.68717481295811 (recomputed 26.467843); q7.derived_values[0]=4.06 (recomputed 3.9200536505020738); finding_statements_substantive: q1: statement contains no supported numeric finding; q2: statement contains no supported numeric finding; q4: statement contains no supported numeric finding; q7: statement contains no supported numeric finding",
+      "parse_ok": true,
+      "execution": null,
+      "validation": {
+        "stage": "reporting",
+        "hard_pass": false,
+        "checks": [
+          {
+            "name": "report_valid",
+            "passed": true,
+            "mandatory": true,
+            "detail": "",
+            "value": null
+          },
+          {
+            "name": "required_findings_covered",
+            "passed": true,
+            "mandatory": true,
+            "detail": "7/7",
+            "value": 1.0
+          },
+          {
+            "name": "required_metric_keys_present",
+            "passed": true,
+            "mandatory": true,
+            "detail": "every required metric key reported in its finding",
+            "value": null
+          },
+          {
+            "name": "reported_values_consistent",
+            "passed": false,
+            "mandatory": true,
+            "detail": "q1.customer_count=661.0 (verified 749.0); q1.churn_rate_pct=36.7624810892587 (verified 37.6502); q1.avg_monthly_fee=42.01723146747352 (verified 42.106155); q2.churn_rate_basic_pct=38.38383838383838 (verified 38.872404); q2.churn_rate_standard_pct=35.65217391304348 (verified 36.679537); q2.churn_rate_premium_pct=35.07462686567165 (verified 36.601307); q3.churn_rate_cohort_2021_pct=36.93181818181818 (verified 38.020833); q3.churn_rate_cohort_2022_pct=37.17277486910995 (verified 36.744186)",
+            "value": 0.08333333333333333
+          },
+          {
+            "name": "directions_correct",
+            "passed": true,
+            "mandatory": true,
+            "detail": "all required directions correct",
+            "value": null
+          },
+          {
+            "name": "rankings_correct",
+            "passed": false,
+            "mandatory": true,
+            "detail": "q3: stated order ['2022', '2023', '2021', '2024'] is not descending",
+            "value": null
+          },
+          {
+            "name": "rankings_explicit",
+            "passed": true,
+            "mandatory": false,
+            "detail": "all required rankings explicitly structured",
+            "value": 1.0
+          },
+          {
+            "name": "derived_values_correct",
+            "passed": false,
+            "mandatory": true,
+            "detail": "q4.derived_values[0]=26.68717481295811 (recomputed 26.467843); q7.derived_values[0]=4.06 (recomputed 3.9200536505020738)",
+            "value": null
+          },
+          {
+            "name": "finding_statements_substantive",
+            "passed": false,
+            "mandatory": true,
+            "detail": "q1: statement contains no supported numeric finding; q2: statement contains no supported numeric finding; q4: statement contains no supported numeric finding; q7: statement contains no supported numeric finding",
+            "value": null
+          },
+          {
+            "name": "prose_claims_consistent",
+            "passed": true,
+            "mandatory": true,
+            "detail": "structured claims agree with prose",
+            "value": null
+          },
+          {
+            "name": "numeric_attribution_correct",
+            "passed": true,
+            "mandatory": true,
+            "detail": "all finding numbers belong to their finding",
+            "value": null
+          },
+          {
+            "name": "unsupported_claims_within_threshold",
+            "passed": false,
+            "mandatory": false,
+            "detail": "executive_summary: '661'; executive_summary: '36.8%'; executive_summary: '73.2%'; key_findings[0].statement: '661'; key_findings[0].statement: '36.8%'; key_findings[0].statement: '$42.02'; key_findings[1].statement: '38.4%'; key_findings[1].statement: '35.7%'; key_findings[1].statement: '35.1%'; key_findings[2].statement: '37.2%' (30 numeric claims checked)",
+            "value": 27.0
+          },
+          {
+            "name": "evidence_refs_valid",
+            "passed": true,
+            "mandatory": false,
+            "detail": "",
+            "value": null
+          },
+          {
+            "name": "within_word_limit",
+            "passed": true,
+            "mandatory": false,
+            "detail": "293 words (limit 600)",
+            "value": 293.0
+          }
+        ],
+        "quality": {
+          "finding_coverage": 1.0,
+          "numerical_consistency": 0.08333333333333333,
+          "unsupported_claim_count": 27.0
+        },
+        "quality_basis": "ground_truth",
+        "validator_version": "3.0-post-freeze"
+      },
+      "conditional_validation": {
+        "stage": "reporting",
+        "hard_pass": true,
+        "checks": [
+          {
+            "name": "report_valid",
+            "passed": true,
+            "mandatory": true,
+            "detail": "",
+            "value": null
+          },
+          {
+            "name": "required_findings_covered",
+            "passed": true,
+            "mandatory": true,
+            "detail": "7/7",
+            "value": 1.0
+          },
+          {
+            "name": "required_metric_keys_present",
+            "passed": true,
+            "mandatory": true,
+            "detail": "every required metric key reported in its finding",
+            "value": null
+          },
+          {
+            "name": "reported_values_consistent",
+            "passed": true,
+            "mandatory": true,
+            "detail": "all consistent",
+            "value": 1.0
+          },
+          {
+            "name": "directions_correct",
+            "passed": true,
+            "mandatory": true,
+            "detail": "all required directions correct",
+            "value": null
+          },
+          {
+            "name": "rankings_correct",
+            "passed": true,
+            "mandatory": true,
+            "detail": "all ranking semantics correct",
+            "value": null
+          },
+          {
+            "name": "rankings_explicit",
+            "passed": true,
+            "mandatory": false,
+            "detail": "all required rankings explicitly structured",
+            "value": 1.0
+          },
+          {
+            "name": "derived_values_correct",
+            "passed": true,
+            "mandatory": true,
+            "detail": "all declared derived values recompute",
+            "value": null
+          },
+          {
+            "name": "finding_statements_substantive",
+            "passed": true,
+            "mandatory": true,
+            "detail": "every statement has a supported numeric finding",
+            "value": null
+          },
+          {
+            "name": "prose_claims_consistent",
+            "passed": true,
+            "mandatory": true,
+            "detail": "structured claims agree with prose",
+            "value": null
+          },
+          {
+            "name": "numeric_attribution_correct",
+            "passed": true,
+            "mandatory": true,
+            "detail": "all finding numbers belong to their finding",
+            "value": null
+          },
+          {
+            "name": "unsupported_claims_within_threshold",
+            "passed": true,
+            "mandatory": false,
+            "detail": "none (30 numeric claims checked)",
+            "value": 0.0
+          },
+          {
+            "name": "evidence_refs_valid",
+            "passed": true,
+            "mandatory": false,
+            "detail": "",
+            "value": null
+          },
+          {
+            "name": "within_word_limit",
+            "passed": true,
+            "mandatory": false,
+            "detail": "293 words (limit 600)",
+            "value": 293.0
+          }
+        ],
+        "quality": {
+          "finding_coverage": 1.0,
+          "numerical_consistency": 1.0,
+          "unsupported_claim_count": 0.0
+        },
+        "quality_basis": "conditional_reference",
+        "validator_version": "3.0-post-freeze"
+      },
+      "input_artifacts": [
+        "results/raw/runs/expB_paths_v3-c289b2f37cb7a13c/analysis/output/findings.json"
+      ],
+      "output_artifacts": [
+        "results/raw/runs/expB_paths_v3-c289b2f37cb7a13c/reporting/prompt.txt",
+        "results/raw/runs/expB_paths_v3-c289b2f37cb7a13c/reporting/response.txt",
+        "results/raw/runs/expB_paths_v3-c289b2f37cb7a13c/reporting/reasoning.txt",
+        "results/raw/runs/expB_paths_v3-c289b2f37cb7a13c/reporting/parsed.json",
+        "results/raw/runs/expB_paths_v3-c289b2f37cb7a13c/reporting/output/report.json",
+        "results/raw/runs/expB_paths_v3-c289b2f37cb7a13c/reporting/output/report.md"
+      ],
+      "input_artifact_hashes": {
+        "results/raw/runs/expB_paths_v3-c289b2f37cb7a13c/analysis/output/findings.json": "03c115137f1c256af89d565e7bde1a693a2761575dfdbfe57a076d269ef08e25"
+      },
+      "output_artifact_hashes": {
+        "results/raw/runs/expB_paths_v3-c289b2f37cb7a13c/reporting/prompt.txt": "9fba73977a280f47ba96fabbedb99c087acfa747abd49f798c121517a2ca9009",
+        "results/raw/runs/expB_paths_v3-c289b2f37cb7a13c/reporting/response.txt": "110552fc4675246da6586c1827cf673f6677824b9a26f61232abb470f71c88b4",
+        "results/raw/runs/expB_paths_v3-c289b2f37cb7a13c/reporting/reasoning.txt": "4c425e2b0e8e769601518abdd2e5a56c673ae246465e95b43cf0b49bce4473ef",
+        "results/raw/runs/expB_paths_v3-c289b2f37cb7a13c/reporting/parsed.json": "5e09095f88f07dab7084284451d12408bf566507b87d23c84523617d905eeaf6",
+        "results/raw/runs/expB_paths_v3-c289b2f37cb7a13c/reporting/output/report.json": "5e09095f88f07dab7084284451d12408bf566507b87d23c84523617d905eeaf6",
+        "results/raw/runs/expB_paths_v3-c289b2f37cb7a13c/reporting/output/report.md": "f1469f8a61f733b49c8b01da8739af822149ce584555adb412f27d3ae51d4c66"
+      },
+      "handoff_in_path": "results/raw/runs/expB_paths_v3-c289b2f37cb7a13c/reporting/handoff_in.json",
+      "handoff_size_bytes": 32940,
+      "input_tokens": 3046,
+      "output_tokens": 3083,
+      "cost_usd": null,
+      "cost_status": "unavailable",
+      "timings": {
+        "generation_ms": 20122.61129200124,
+        "execution_ms": null,
+        "validation_ms": 8.015332998184022,
+        "handoff_ms": 2.4272500013466924
+      }
+    }
+  ],
+  "feasibility": {
+    "outcome": "infeasible",
+    "stage_status": {
+      "cleaning": "failed",
+      "analysis": "failed",
+      "reporting": "failed"
+    },
+    "first_failure_stage": "cleaning",
+    "failure_type": "validation_failed"
+  },
+  "quality": {
+    "cleaning": {
+      "cleaning_correctness": 0.8696929238985314,
+      "data_integrity": 0.8825100133511349,
+      "schema_compliance": 1.0
+    },
+    "analysis": {
+      "numerical_accuracy": 0.08333333333333333,
+      "calculation_coverage": 1.0,
+      "reproducibility": 1.0
+    },
+    "reporting": {
+      "finding_coverage": 1.0,
+      "numerical_consistency": 0.08333333333333333,
+      "unsupported_claim_count": 27.0
+    }
+  },
+  "conditional_quality": {
+    "analysis": {
+      "numerical_accuracy": 1.0,
+      "calculation_coverage": 1.0,
+      "reproducibility": 1.0
+    },
+    "reporting": {
+      "finding_coverage": 1.0,
+      "numerical_consistency": 1.0,
+      "unsupported_claim_count": 0.0
+    }
+  },
+  "efficiency": {
+    "total_api_latency_ms": 53045.91662500388,
+    "total_execution_ms": 2488.360666000517,
+    "total_validation_ms": 28.315916995779844,
+    "total_handoff_ms": 5.162541001482168,
+    "end_to_end_ms": 60264.05254099882,
+    "input_tokens": 7369,
+    "output_tokens": 8961,
+    "cost_usd": null,
+    "cost_status": "unavailable",
+    "n_calls": 3,
+    "n_cache_hits": 0,
+    "n_switches": 0,
+    "handoff_bytes_total": 52058
+  },
+  "propagation": {
+    "downstream_executable": {
+      "cleaning": true,
+      "analysis": true,
+      "reporting": true
+    },
+    "upstream_error_severity": {
+      "analysis": {
+        "cleaning_correctness": 0.13030707610146863,
+        "data_integrity": 0.11748998664886512,
+        "schema_compliance": 0.0
+      },
+      "reporting": {
+        "numerical_accuracy": 0.9166666666666666,
+        "calculation_coverage": 0.0,
+        "reproducibility": 0.0
+      }
+    },
+    "end_to_end_accuracy": {
+      "finding_coverage": 1.0,
+      "numerical_consistency": 0.08333333333333333,
+      "unsupported_claim_count": 27.0
+    },
+    "propagation_impact": {
+      "analysis": {
+        "calculation_coverage": 0.0,
+        "numerical_accuracy": 0.9166666666666666,
+        "reproducibility": 0.0
+      },
+      "reporting": {
+        "finding_coverage": 0.0,
+        "numerical_consistency": 0.9166666666666666,
+        "unsupported_claim_count": -27.0
+      }
+    },
+    "blocked_stages": []
+  },
+  "final_artifacts": []
+}

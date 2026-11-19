@@ -1,0 +1,11 @@
+```json
+{
+  "fixed_code": "def allocate_stock(stock, requests):\n    remaining = dict(stock)\n    seen = set()\n    fulfilled = []\n    for request_id, sku, qty in requests:\n        if request_id in seen:\n            continue\n        seen.add(request_id)\n        if qty <= 0:\n            continue\n        available = remaining.get(sku, 0)\n        if available >= qty:\n            remaining[sku] = available - qty\n            fulfilled.append(request_id)\n    return fulfilled, remaining\n",
+  "bug_locations": [
+    "allocate_stock: duplicate request_id tracking",
+    "allocate_stock: positive quantity validation",
+    "allocate_stock: sufficient stock comparison"
+  ],
+  "explanation": "The copy of stock was correct, but requests were fulfilled only when stock was strictly greater than qty, rejecting exactly sufficient stock. Non-positive quantities were not rejected, so negative qty could increase stock. Duplicate request_ids were only recorded after fulfillment, so a later retry of a previously seen unfulfilled id could be processed. The fix records each request_id on first encounter, requires qty > 0, and fulfills only when available stock is >= qty."
+}
+```

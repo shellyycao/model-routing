@@ -1,0 +1,112 @@
+We need to produce JSON with fields python_code (script), output_filename "cleaned.csv", cleaning_logic description.
+
+We must write script that follows all cleaning steps.
+
+Let's design script.
+
+Steps:
+
+- import os, pandas as pd, numpy as np, json, re, csv maybe.
+
+- Define helper to treat missing values: we can read csv with dtype str, keep as strings, then strip whitespace and replace missing tokens.
+
+R1: read both as text, strip whitespace, treat empty, NA, N/A, null, None, - as missing. We'll read using pd.read_csv with dtype=str, keep default na_values? We'll manually replace after reading.
+
+Implementation:
+
+def clean_strings(df):
+    for col in df.columns:
+        df[col] = df[col].astype(str).str.strip()
+    # replace missing tokens with np.nan
+    missing_vals = ['', 'NA', 'N/A', 'null', 'None', '-']
+    df.replace(missing_vals, np.nan, inplace=True)
+    return df
+
+- R2: tickets duplicate ticket_id rows, keep first. Use drop_duplicates(subset='ticket_id', keep='first').
+
+- R3: agents: normalize agent_id to upper case, then drop duplicates.
+
+- R4: roster mapping:
+
+team mapping: case-insensitive mapping: if team string contains 'alpha' -> 'Alpha', 'beta' -> 'Beta', 'gamma' -> 'Gamma'. Also allow 'Team Alpha' etc. We'll map using lower and check.
+
+region mapping: 'east', 'e' -> 'East'; 'west', 'w' -> 'West'.
+
+hourly_cost: remove $ , USD, commas, spaces. Then parse float. If parsing fails or <=0, drop row.
+
+Also need to ensure after mapping, fields not missing.
+
+Implementation:
+
+def normalize_team(val):
+    if pd.isna(val): return np.nan
+    val = val.lower()
+    if 'alpha' in val: return 'Alpha'
+    if 'beta' in val: return 'Beta'
+    if 'gamma' in val: return 'Gamma'
+    return np.nan
+
+Similarly region.
+
+hourly_cost: use regex to extract number: re.sub(r'[^0-9.]', '', str(val)). Then float.
+
+After cleaning, drop rows where any of team, region, hourly_cost is NaN or hourly_cost <=0.
+
+- R5: tickets: normalize agent_id to upper case. Then join with agents on agent_id (inner). Drop tickets without match.
+
+- R6: channel mapping: case-insensitive mapping: 'email', 'e-mail' -> 'email'; 'chat', 'live chat' -> 'chat'; 'phone', 'call' -> 'phone'. Use lower and strip.
+
+If not in mapping, drop.
+
+- R7: resolution_minutes: remove trailing 'min' or 'minutes' (case-insensitive). Then parse integer. Must be 1-480 inclusive. Drop invalid.
+
+Implementation: use regex to extract digits: re.search(r'\d+', val). Then int.
+
+- R8: satisfaction_score: parse int 1-5. If missing or invalid, set NaN (empty). Keep row.
+
+Implementation: try convert to int, else NaN.
+
+- R9: reopened mapping: map Yes/Y/True/1 -> 1; No/N/False/0 -> 0. case-insensitive. Drop rows where missing or not in mapping.
+
+- R10: labor_cost = resolution_minutes / 60 * hourly_cost, round 2.
+
+- R11: output columns order, sort by ticket_id, write CSV without index.
+
+Also produce cleaning_summary.json with raw_rows (tickets rows read?), cleaned_rows (rows written). Also per-rule counts: duplicates_removed, agents_removed_invalid, tickets_no_agent, invalid_channels, invalid_resolution, invalid_reopened, etc.
+
+We'll track counts.
+
+Implementation details:
+
+Read tickets raw rows count = len(tickets_raw). After duplicate removal, count duplicates_removed = raw - after.
+
+Similarly for agents.
+
+After roster cleaning, count invalid_roster_rows.
+
+After join, tickets_no_agent = tickets after previous steps - after join.
+
+After channel mapping drop, count invalid_channels.
+
+After resolution parsing drop, count invalid_resolution.
+
+After reopened mapping drop, count invalid_reopened.
+
+Finally cleaned_rows = len(final_df).
+
+Write summary dict to json.
+
+Edge Cases: satisfaction_score missing -> keep NaN; when writing CSV, pandas will output empty cell for NaN.
+
+Make sure categories: we can set dtype but not required.
+
+Now produce script as string.
+
+Need to ensure script uses environment variables.
+
+Write to output CSV path.
+
+Now produce final JSON.
+
+Let's craft script.
+

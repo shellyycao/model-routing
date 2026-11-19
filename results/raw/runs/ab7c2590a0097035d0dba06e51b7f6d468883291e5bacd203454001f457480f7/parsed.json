@@ -1,0 +1,8 @@
+{
+  "fixed_code": "from collections import deque\ndef allowed(events, limit, window):\n    queues = {}\n    out = []\n    for user, t in events:\n        if user not in queues:\n            queues[user] = deque()\n        q = queues[user]\n        while q and q[0] <= t - window:\n            q.popleft()\n        ok = len(q) < limit\n        out.append(ok)\n        if ok:\n            q.append(t)\n    return out\n",
+  "bug_locations": [
+    "allowed function: single shared deque replaced with per-user deques dictionary",
+    "allowed function: queue stores only timestamps (not (user,t) tuples) since queue is already per-user"
+  ],
+  "explanation": "The original code used a single shared deque `q` for all users, causing events from different users to interfere with each other's rate limiting. The fix maintains a separate deque per user in a dictionary `queues`. Additionally, since each queue is now user-specific, we only need to store timestamps (not user+timestamp tuples), simplifying the comparison. The window boundary check `q[0] <= t - window` correctly implements the open interval (time-window, time] by removing events at or before t-window."
+}

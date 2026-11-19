@@ -1,0 +1,122 @@
+STAGE: cleaning
+PROJECT: support_operations
+PROMPT_VERSION: v3
+
+You are the data-cleaning stage of a three-stage data workflow (cleaning -> analysis -> reporting).
+Write ONE self-contained Python 3 script that cleans the raw data exactly as specified below.
+
+## Original objective
+Clean and join a support-ticket export with an agent roster, analyse cost, speed, reopening, satisfaction and agent concentration, then report verified findings.
+
+## Input/output contract (mandatory)
+- Your script runs in an isolated sandbox with NO network access. Available libraries: the Python
+  standard library, pandas and numpy.
+- Read input files ONLY from the directory given by the environment variable INPUT_DIR, e.g.
+  os.path.join(os.environ["INPUT_DIR"], "<name>"). Available input files: "tickets.csv", "agents.csv".
+- Write every output file to the directory given by the environment variable OUTPUT_DIR. Write nowhere else.
+- Write the cleaned CSV to os.path.join(os.environ["OUTPUT_DIR"], "cleaned.csv") and set
+  `output_filename` to "cleaned.csv".
+- Also write os.path.join(os.environ["OUTPUT_DIR"], "cleaning_summary.json"): a JSON object with at least
+  "raw_rows" (rows read) and "cleaned_rows" (rows written), plus any per-rule counts you track.
+- The script takes no command-line arguments and must not print large amounts of data.
+
+## Cleaning requirements (apply all of them, in order)
+R1. Read both tickets.csv and agents.csv as text. Strip whitespace. Treat empty, NA, N/A, null, None and - as missing.
+R2. In tickets.csv, remove duplicate ticket_id rows before any filtering; keep the first in raw-file order.
+R3. In agents.csv, normalise agent_id to upper case and remove duplicate agent_id rows, keeping the first.
+R4. Agent roster: map team case-insensitively from Alpha/Team Alpha, Beta/Team Beta, Gamma/Team Gamma; map region East/E and West/W; parse hourly_cost after removing $, USD and commas. Exclude roster rows with an invalid field or cost <= 0.
+R5. Tickets: normalise agent_id to upper case. Join to the cleaned agent roster by agent_id and drop tickets without a matching agent.
+R6. Map channel case-insensitively: Email/E-mail -> email, Chat/Live Chat -> chat, Phone/Call -> phone. Drop invalid channels.
+R7. resolution_minutes: remove a trailing 'min' or 'minutes', parse a whole number from 1 through 480, and drop invalid rows.
+R8. satisfaction_score: parse a whole number from 1 through 5. Invalid or missing values become an empty cell and the row is kept.
+R9. reopened: map Yes/Y/True/1 to 1 and No/N/False/0 to 0, case-insensitively. Drop invalid or missing values.
+R10. Add labor_cost = resolution_minutes / 60 * hourly_cost, rounded to 2 decimals.
+R11. Output exactly: ticket_id, agent_id, team, region, channel, resolution_minutes, satisfaction_score, reopened, hourly_cost, labor_cost. Sort by ticket_id and write CSV without an index.
+
+## Required schema of the cleaned CSV (columns in this order)
+- ticket_id: str; not nullable
+- agent_id: str; not nullable
+- team: category; not nullable; allowed values: 'Alpha', 'Beta', 'Gamma'
+- region: category; not nullable; allowed values: 'East', 'West'
+- channel: category; not nullable; allowed values: 'email', 'chat', 'phone'
+- resolution_minutes: int; not nullable; min 1; max 480
+- satisfaction_score: int; nullable; min 1; max 5
+- reopened: int; not nullable; min 0; max 1
+- hourly_cost: float; not nullable; min 0.01
+- labor_cost: float; not nullable; min 0
+
+## Input files
+### tickets.csv (support tickets; 381 lines in total)
+First lines:
+```
+ticket_id,agent_id,channel,resolution_minutes,satisfaction_score,reopened
+T00001,A007,Email,47 minutes,5,N
+T00002,A010,Email,69 minutes,4,0
+T00003,a018,E-mail,56,4,No
+T00004,A008,E-mail,155 min,3,No
+T00005,A002,Phone,30,5,1
+T00006,A015,Phone,27 min,4,0
+T00007,A010,Phone,65,4,No
+T00008,A002,Live Chat,85,3,No
+T00009,a002,E-mail,63 minutes,5,No
+T00010,A017,E-mail,93,5,No
+T00011,a003,Live Chat,81,4,N
+T00012,A016,Live Chat,85 minutes,5,0
+T00013,A009,Call,34,5,No
+T00014,A008,Email,196,3,0
+```
+
+### agents.csv (agent roster; 19 lines in total)
+First lines:
+```
+agent_id,team,region,hourly_cost
+A001,Alpha,west,$44.25
+A002,Beta,east,46.50
+a003,Gamma,West,$48.75
+A004,Alpha,E,$51.00
+A005,beta,W,53.25
+a006,Gamma,east,55.50
+A007,Alpha,West,USD 57.75
+a008,Beta,east,USD 60.00
+A009,Team Gamma,west,62.25
+a010,Team Alpha,East,64.50
+A011,Team Beta,W,$66.75
+A012,gamma,east,USD 69.00
+A013,alpha,west,$71.25
+A014,Beta,E,USD 73.50
+```
+
+## What to return
+Return the script in `python_code`, the cleaned CSV filename in `output_filename`, and a brief
+explanation of the cleaning steps in `cleaning_logic`.
+
+
+Respond with a single JSON object that conforms to this JSON Schema. Put it in one ```json fenced block and include nothing else outside the block.
+```json
+{
+  "properties": {
+    "python_code": {
+      "description": "Python script. Reads input from INPUT_DIR, writes the cleaned CSV and cleaning_summary.json to OUTPUT_DIR.",
+      "title": "Python Code",
+      "type": "string"
+    },
+    "output_filename": {
+      "description": "Filename of the cleaned CSV written to OUTPUT_DIR.",
+      "title": "Output Filename",
+      "type": "string"
+    },
+    "cleaning_logic": {
+      "description": "Brief explanation of the cleaning steps.",
+      "title": "Cleaning Logic",
+      "type": "string"
+    }
+  },
+  "required": [
+    "python_code",
+    "output_filename",
+    "cleaning_logic"
+  ],
+  "title": "CleaningOutput",
+  "type": "object"
+}
+```

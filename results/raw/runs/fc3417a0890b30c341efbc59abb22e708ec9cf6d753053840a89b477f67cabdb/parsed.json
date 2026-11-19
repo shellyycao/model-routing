@@ -1,0 +1,9 @@
+{
+  "fixed_code": "import heapq\n\ndef dependency_order(deps):\n    # Collect all nodes: keys and all referenced dependencies\n    nodes = set(deps)\n    for vals in deps.values():\n        nodes.update(vals)\n    \n    # Build incoming sets (dependencies that must come before each node)\n    incoming = {n: set(deps.get(n, [])) for n in nodes}\n    \n    # Start with nodes that have no dependencies\n    ready = [n for n in nodes if not incoming[n]]\n    heapq.heapify(ready)\n    \n    out = []\n    in_ready = set(ready)  # track what's in the heap to avoid duplicates\n    \n    while ready:\n        n = heapq.heappop(ready)\n        in_ready.discard(n)\n        out.append(n)\n        for m in nodes:\n            if n in incoming[m]:\n                incoming[m].remove(n)\n                if not incoming[m] and m not in out and m not in in_ready:\n                    heapq.heappush(ready, m)\n                    in_ready.add(m)\n    \n    if len(out) != len(nodes):\n        raise ValueError('Cycle detected in dependencies')\n    \n    return out\n",
+  "bug_locations": [
+    "dependency_order function - nodes collection (missing referenced nodes)",
+    "dependency_order function - missing cycle detection (no ValueError raised)",
+    "dependency_order function - duplicate-push guard using in_ready set instead of scanning heap list"
+  ],
+  "explanation": "Three bugs: (1) `nodes` only included dict keys, missing nodes that appear only as dependency values — fixed by also adding all values into `nodes`. (2) No cycle detection — fixed by checking if `len(out) != len(nodes)` after the loop and raising `ValueError`. (3) The `m not in ready` check scanned the heap list which is unreliable as a membership test when elements could be pushed multiple times — fixed by maintaining a separate `in_ready` set for O(1) duplicate prevention."
+}

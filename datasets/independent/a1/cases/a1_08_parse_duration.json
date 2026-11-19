@@ -1,0 +1,26 @@
+{
+  "buggy": "import re\n\ndef parse_duration(s):\n    m = re.fullmatch(r\"(?:(\\d+)h)?(?:(\\d+)m)?(?:(\\d+)s)?\", s or \"\")\n    if not s or not m:\n        raise ValueError(s)\n    h, mi, se = (int(x) if x else 0 for x in m.groups())\n    return h * 60 + mi * 60 + se\n",
+  "case_id": "a1_08_parse_duration",
+  "difficulty": "medium",
+  "func": "parse_duration",
+  "hidden": [
+    "parse_duration('45s') == 45",
+    "parse_duration('1h30m') == 5400",
+    "parse_duration('2h') == 7200",
+    "parse_duration('1h0m5s') == 3605",
+    "parse_duration('10m') == 600",
+    "_raises(lambda: parse_duration(''), ValueError)",
+    "_raises(lambda: parse_duration('5x'), ValueError)",
+    "parse_duration('0s') == 0"
+  ],
+  "operator": "wrong_constant",
+  "reference": "import re\n\ndef parse_duration(s):\n    m = re.fullmatch(r\"(?:(\\d+)h)?(?:(\\d+)m)?(?:(\\d+)s)?\", s or \"\")\n    if not s or not m:\n        raise ValueError(s)\n    h, mi, se = (int(x) if x else 0 for x in m.groups())\n    return h * 3600 + mi * 60 + se\n",
+  "spec": "parse_duration(s) converts strings like '1h30m', '45s', '2h', '1h0m5s' to total seconds (int). Units h, m, s each appear at most once, in that order. Raise ValueError for an empty or invalid string.",
+  "verification": {
+    "buggy_fails": 3,
+    "reference_passes": 8
+  },
+  "visible": [
+    "parse_duration('45s') == 45"
+  ]
+}

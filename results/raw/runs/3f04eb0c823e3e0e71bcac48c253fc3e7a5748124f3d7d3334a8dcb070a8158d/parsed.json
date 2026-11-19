@@ -1,0 +1,8 @@
+{
+  "fixed_code": "def chunks(xs, size):\n    if size <= 0:\n        raise ValueError('size')\n    return [xs[i:i + size] for i in range(0, len(xs), size)]\n",
+  "bug_locations": [
+    "chunks: invalid-size validation",
+    "chunks: removed incorrect size == 0 branch"
+  ],
+  "explanation": "The function incorrectly returned an empty list for size == 0 instead of raising ValueError. The validation now rejects every size <= 0, while the existing slicing logic already produces consecutive chunks, includes a short final chunk, and does not mutate xs."
+}

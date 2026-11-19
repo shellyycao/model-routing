@@ -1,0 +1,697 @@
+{
+  "contract_version": "1.2",
+  "run_id": "expB_paths_v3-a694fae6bcafd09f",
+  "experiment_id": "expB_paths_v3",
+  "project_id": "customer_churn",
+  "path_id": "A-C-C",
+  "models": [
+    "A",
+    "C",
+    "C"
+  ],
+  "repeat_index": 1,
+  "config_hash": "7de4a4286590c8a5b770c53c44fbeafdc2fd70554cd6547cf99617ec3593a79a",
+  "failure_policy": "continue_with_actual_artifact",
+  "started_at": "2026-11-18T06:37:53.901651+00:00",
+  "finished_at": "2026-11-18T06:38:43.881457+00:00",
+  "stages": [
+    {
+      "stage": "cleaning",
+      "model_alias": "A",
+      "model_id": "us.anthropic.claude-sonnet-4-6",
+      "prompt_version": "v3",
+      "prompt_hash": "75d018237537d053a761286adc2946865bc568d7563b334eb22d7222cdd285d5",
+      "invocation_ids": [
+        "804ec1d2-c6d5-4fe8-a64e-52682df67668"
+      ],
+      "cache_hit": false,
+      "shared_with_run_ids": [],
+      "status": "passed",
+      "structural_ok": true,
+      "failure_type": null,
+      "failure_detail": null,
+      "parse_ok": true,
+      "execution": {
+        "status": "success",
+        "exit_code": 0,
+        "stdout": "Cleaning complete: 840 raw rows -> 749 cleaned rows.\n",
+        "stderr": "/sandbox/code/main.py:19: FutureWarning: DataFrame.applymap has been deprecated. Use DataFrame.map instead.\n  df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)\n/sandbox/code/main.py:28: FutureWarning: DataFrame.applymap has been deprecated. Use DataFrame.map instead.\n  df = df.applymap(to_missing)\n",
+        "runtime_ms": 677.6524169981712,
+        "output_files": [
+          "/Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expB_paths_v3-a694fae6bcafd09f/cleaning/output/cleaned.csv",
+          "/Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expB_paths_v3-a694fae6bcafd09f/cleaning/output/cleaning_summary.json"
+        ],
+        "sandbox_image": "sha256:88988a15503bdb96538c3dd62244a79879d5c7848397db18b1267ccfd0a9727a"
+      },
+      "validation": {
+        "stage": "cleaning",
+        "hard_pass": true,
+        "checks": [
+          {
+            "name": "output_exists",
+            "passed": true,
+            "mandatory": true,
+            "detail": "/Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expB_paths_v3-a694fae6bcafd09f/cleaning/output/cleaned.csv",
+            "value": null
+          },
+          {
+            "name": "output_parses",
+            "passed": true,
+            "mandatory": true,
+            "detail": "749 rows, 10 columns",
+            "value": null
+          },
+          {
+            "name": "required_columns_present",
+            "passed": true,
+            "mandatory": true,
+            "detail": "all present",
+            "value": null
+          },
+          {
+            "name": "schema_constraints",
+            "passed": true,
+            "mandatory": true,
+            "detail": "all constraints satisfied",
+            "value": 1.0
+          },
+          {
+            "name": "no_extra_columns",
+            "passed": true,
+            "mandatory": false,
+            "detail": "",
+            "value": null
+          },
+          {
+            "name": "no_duplicate_keys",
+            "passed": true,
+            "mandatory": true,
+            "detail": "",
+            "value": 0.0
+          },
+          {
+            "name": "row_set_matches_reference",
+            "passed": true,
+            "mandatory": true,
+            "detail": "0 reference rows missing (e.g. []); 0 unexpected rows (e.g. []); output rows=749, reference rows=749",
+            "value": null
+          },
+          {
+            "name": "values_match_reference",
+            "passed": true,
+            "mandatory": true,
+            "detail": "7490/7490 cells match (abs_tol=0.011, rel_tol=1e-06)",
+            "value": 1.0
+          }
+        ],
+        "quality": {
+          "cleaning_correctness": 1.0,
+          "data_integrity": 1.0,
+          "schema_compliance": 1.0
+        },
+        "quality_basis": "ground_truth",
+        "validator_version": "1.0"
+      },
+      "conditional_validation": null,
+      "input_artifacts": [
+        "datasets/projects/customer_churn/raw.csv"
+      ],
+      "output_artifacts": [
+        "results/raw/runs/expB_paths_v3-a694fae6bcafd09f/cleaning/prompt.txt",
+        "results/raw/runs/expB_paths_v3-a694fae6bcafd09f/cleaning/response.txt",
+        "results/raw/runs/expB_paths_v3-a694fae6bcafd09f/cleaning/parsed.json",
+        "results/raw/runs/expB_paths_v3-a694fae6bcafd09f/cleaning/code.py",
+        "results/raw/runs/expB_paths_v3-a694fae6bcafd09f/cleaning/output/cleaned.csv",
+        "results/raw/runs/expB_paths_v3-a694fae6bcafd09f/cleaning/output/cleaning_summary.json"
+      ],
+      "input_artifact_hashes": {
+        "datasets/projects/customer_churn/raw.csv": "85dac8de024e160a903ebbe93296e8559aac12a30deb203e3eb85937afc2e281"
+      },
+      "output_artifact_hashes": {
+        "results/raw/runs/expB_paths_v3-a694fae6bcafd09f/cleaning/prompt.txt": "75d018237537d053a761286adc2946865bc568d7563b334eb22d7222cdd285d5",
+        "results/raw/runs/expB_paths_v3-a694fae6bcafd09f/cleaning/response.txt": "1d80c7660bce88c92b578e2db6e5512979b82b09b03e1d63316ec1cc2a557cdc",
+        "results/raw/runs/expB_paths_v3-a694fae6bcafd09f/cleaning/parsed.json": "2c152235c7a37c41e9d001facd0a8e0183d292391aeed7d21817ce3b2a2fd684",
+        "results/raw/runs/expB_paths_v3-a694fae6bcafd09f/cleaning/code.py": "ba9ebb9a564e54078de4a1088993318069d29660ef05157abd6b51508f6da13a",
+        "results/raw/runs/expB_paths_v3-a694fae6bcafd09f/cleaning/output/cleaned.csv": "682d45432b0ae0c8b242d5be6b7424d16780efa8d48eb36b9d98e42ef415a8fe",
+        "results/raw/runs/expB_paths_v3-a694fae6bcafd09f/cleaning/output/cleaning_summary.json": "0c35aece28c2016e4e1ed528d9295c5aac440122129859c5dde30099d4c2d332"
+      },
+      "handoff_in_path": "results/raw/runs/expB_paths_v3-a694fae6bcafd09f/cleaning/handoff_in.json",
+      "handoff_size_bytes": 595,
+      "input_tokens": 2198,
+      "output_tokens": 3585,
+      "cost_usd": null,
+      "cost_status": "unavailable",
+      "timings": {
+        "generation_ms": 21574.88204100082,
+        "execution_ms": 677.6524169981712,
+        "validation_ms": 9.761665998667013,
+        "handoff_ms": 0.25766599719645455
+      }
+    },
+    {
+      "stage": "analysis",
+      "model_alias": "C",
+      "model_id": "openai.gpt-oss-120b-1:0",
+      "prompt_version": "v3",
+      "prompt_hash": "f33172938bfb95aca1d0b53eb8c6caaf82af1987695a2d2b42463a8a61976225",
+      "invocation_ids": [
+        "13266298-fceb-4b08-9d5c-245c5519a5e4"
+      ],
+      "cache_hit": false,
+      "shared_with_run_ids": [],
+      "status": "passed",
+      "structural_ok": true,
+      "failure_type": null,
+      "failure_detail": null,
+      "parse_ok": true,
+      "execution": {
+        "status": "success",
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "/sandbox/code/main.py:30: FutureWarning: The default of observed=False is deprecated and will be changed to True in a future version of pandas. Pass observed=False to retain current behavior or observed=True to adopt the future default and silence this warning.\n  plan_churn = df.groupby(\"plan\")[\"churned\"].mean() * 100\n/sandbox/code/main.py:52: FutureWarning: The default of observed=False is deprecated and will be changed to True in a future version of pandas. Pass observed=False to retain current behavior or observed=True to adopt the future default and silence this warning.\n  contract_churn = df.groupby(\"contract_type\")[\"churned\"].mean() * 100\n/sandbox/code/main.py:78: FutureWarning: The default of observed=False is deprecated and will be changed to True in a future version of pandas. Pass observed=False to retain current behavior or observed=True to adopt the future default and silence this warning.\n  ltv_by_plan = df.groupby(\"plan\")[\"lifetime_value\"].mean()\n",
+        "runtime_ms": 676.3695420013391,
+        "output_files": [
+          "/Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expB_paths_v3-a694fae6bcafd09f/analysis/output/findings.json"
+        ],
+        "sandbox_image": "sha256:88988a15503bdb96538c3dd62244a79879d5c7848397db18b1267ccfd0a9727a"
+      },
+      "validation": {
+        "stage": "analysis",
+        "hard_pass": true,
+        "checks": [
+          {
+            "name": "findings_exists",
+            "passed": true,
+            "mandatory": true,
+            "detail": "",
+            "value": null
+          },
+          {
+            "name": "findings_parses",
+            "passed": true,
+            "mandatory": true,
+            "detail": "",
+            "value": null
+          },
+          {
+            "name": "required_keys_present",
+            "passed": true,
+            "mandatory": true,
+            "detail": "all 24 present",
+            "value": null
+          },
+          {
+            "name": "values_numeric",
+            "passed": true,
+            "mandatory": true,
+            "detail": "",
+            "value": null
+          },
+          {
+            "name": "values_within_tolerance",
+            "passed": true,
+            "mandatory": true,
+            "detail": "24/24 correct",
+            "value": 1.0
+          },
+          {
+            "name": "reproducible_across_executions",
+            "passed": true,
+            "mandatory": false,
+            "detail": "24/24 keys agree",
+            "value": 1.0
+          }
+        ],
+        "quality": {
+          "numerical_accuracy": 1.0,
+          "calculation_coverage": 1.0,
+          "reproducibility": 1.0
+        },
+        "quality_basis": "ground_truth",
+        "validator_version": "1.0"
+      },
+      "conditional_validation": {
+        "stage": "analysis",
+        "hard_pass": true,
+        "checks": [
+          {
+            "name": "findings_exists",
+            "passed": true,
+            "mandatory": true,
+            "detail": "",
+            "value": null
+          },
+          {
+            "name": "findings_parses",
+            "passed": true,
+            "mandatory": true,
+            "detail": "",
+            "value": null
+          },
+          {
+            "name": "required_keys_present",
+            "passed": true,
+            "mandatory": true,
+            "detail": "all 24 present",
+            "value": null
+          },
+          {
+            "name": "values_numeric",
+            "passed": true,
+            "mandatory": true,
+            "detail": "",
+            "value": null
+          },
+          {
+            "name": "values_within_tolerance",
+            "passed": true,
+            "mandatory": true,
+            "detail": "24/24 correct",
+            "value": 1.0
+          },
+          {
+            "name": "reproducible_across_executions",
+            "passed": true,
+            "mandatory": false,
+            "detail": "24/24 keys agree",
+            "value": 1.0
+          }
+        ],
+        "quality": {
+          "numerical_accuracy": 1.0,
+          "calculation_coverage": 1.0,
+          "reproducibility": 1.0
+        },
+        "quality_basis": "conditional_reference",
+        "validator_version": "1.0"
+      },
+      "input_artifacts": [
+        "results/raw/runs/expB_paths_v3-a694fae6bcafd09f/cleaning/output/cleaned.csv"
+      ],
+      "output_artifacts": [
+        "results/raw/runs/expB_paths_v3-a694fae6bcafd09f/analysis/prompt.txt",
+        "results/raw/runs/expB_paths_v3-a694fae6bcafd09f/analysis/response.txt",
+        "results/raw/runs/expB_paths_v3-a694fae6bcafd09f/analysis/reasoning.txt",
+        "results/raw/runs/expB_paths_v3-a694fae6bcafd09f/analysis/parsed.json",
+        "results/raw/runs/expB_paths_v3-a694fae6bcafd09f/analysis/code.py",
+        "results/raw/runs/expB_paths_v3-a694fae6bcafd09f/analysis/output/findings.json"
+      ],
+      "input_artifact_hashes": {
+        "results/raw/runs/expB_paths_v3-a694fae6bcafd09f/cleaning/output/cleaned.csv": "682d45432b0ae0c8b242d5be6b7424d16780efa8d48eb36b9d98e42ef415a8fe"
+      },
+      "output_artifact_hashes": {
+        "results/raw/runs/expB_paths_v3-a694fae6bcafd09f/analysis/prompt.txt": "f33172938bfb95aca1d0b53eb8c6caaf82af1987695a2d2b42463a8a61976225",
+        "results/raw/runs/expB_paths_v3-a694fae6bcafd09f/analysis/response.txt": "e82751a0ae61be97f0714d832870b5bbf24d263051ab6e12863acea15c2f1d48",
+        "results/raw/runs/expB_paths_v3-a694fae6bcafd09f/analysis/reasoning.txt": "9f04ac0f6a16e142bb40483ef8d973a1e466bf9b7cc99beaae5fdb6ab5eadd16",
+        "results/raw/runs/expB_paths_v3-a694fae6bcafd09f/analysis/parsed.json": "934cbfb6cecf2bb2989c5efd9148e67b70348475eeab781cd32c14dd636193d5",
+        "results/raw/runs/expB_paths_v3-a694fae6bcafd09f/analysis/code.py": "e76e74ae3c9934f2caa60a3e595cf089222633d994f096e3fe6130235046a1a0",
+        "results/raw/runs/expB_paths_v3-a694fae6bcafd09f/analysis/output/findings.json": "dbd3251e439b79df3ed5b785f3fe184d2fc04fa91ca6341435a3410ae754ac34"
+      },
+      "handoff_in_path": "results/raw/runs/expB_paths_v3-a694fae6bcafd09f/analysis/handoff_in.json",
+      "handoff_size_bytes": 21141,
+      "input_tokens": 2649,
+      "output_tokens": 2538,
+      "cost_usd": null,
+      "cost_status": "unavailable",
+      "timings": {
+        "generation_ms": 8710.7596249989,
+        "execution_ms": 676.3695420013391,
+        "validation_ms": 4.240959002345335,
+        "handoff_ms": 0.5337500006135087
+      }
+    },
+    {
+      "stage": "reporting",
+      "model_alias": "C",
+      "model_id": "openai.gpt-oss-120b-1:0",
+      "prompt_version": "v3",
+      "prompt_hash": "7edc668eb6a8c9d682deb709e5c38703f96f97917beee1c67c36d37a43e297d1",
+      "invocation_ids": [
+        "ce23a01a-9b28-40e8-963d-bbbd8fe83a5f"
+      ],
+      "cache_hit": false,
+      "shared_with_run_ids": [],
+      "status": "passed",
+      "structural_ok": true,
+      "failure_type": null,
+      "failure_detail": null,
+      "parse_ok": true,
+      "execution": null,
+      "validation": {
+        "stage": "reporting",
+        "hard_pass": true,
+        "checks": [
+          {
+            "name": "report_valid",
+            "passed": true,
+            "mandatory": true,
+            "detail": "",
+            "value": null
+          },
+          {
+            "name": "required_findings_covered",
+            "passed": true,
+            "mandatory": true,
+            "detail": "7/7",
+            "value": 1.0
+          },
+          {
+            "name": "required_metric_keys_present",
+            "passed": true,
+            "mandatory": true,
+            "detail": "every required metric key reported in its finding",
+            "value": null
+          },
+          {
+            "name": "reported_values_consistent",
+            "passed": true,
+            "mandatory": true,
+            "detail": "all consistent",
+            "value": 1.0
+          },
+          {
+            "name": "directions_correct",
+            "passed": true,
+            "mandatory": true,
+            "detail": "all required directions correct",
+            "value": null
+          },
+          {
+            "name": "rankings_correct",
+            "passed": true,
+            "mandatory": true,
+            "detail": "all ranking semantics correct",
+            "value": null
+          },
+          {
+            "name": "rankings_explicit",
+            "passed": true,
+            "mandatory": false,
+            "detail": "all required rankings explicitly structured",
+            "value": 1.0
+          },
+          {
+            "name": "derived_values_correct",
+            "passed": true,
+            "mandatory": true,
+            "detail": "all declared derived values recompute",
+            "value": null
+          },
+          {
+            "name": "finding_statements_substantive",
+            "passed": true,
+            "mandatory": true,
+            "detail": "every statement has a supported numeric finding",
+            "value": null
+          },
+          {
+            "name": "prose_claims_consistent",
+            "passed": true,
+            "mandatory": true,
+            "detail": "structured claims agree with prose",
+            "value": null
+          },
+          {
+            "name": "numeric_attribution_correct",
+            "passed": true,
+            "mandatory": true,
+            "detail": "all finding numbers belong to their finding",
+            "value": null
+          },
+          {
+            "name": "unsupported_claims_within_threshold",
+            "passed": true,
+            "mandatory": false,
+            "detail": "none (27 numeric claims checked)",
+            "value": 0.0
+          },
+          {
+            "name": "evidence_refs_valid",
+            "passed": true,
+            "mandatory": false,
+            "detail": "",
+            "value": null
+          },
+          {
+            "name": "within_word_limit",
+            "passed": true,
+            "mandatory": false,
+            "detail": "288 words (limit 600)",
+            "value": 288.0
+          }
+        ],
+        "quality": {
+          "finding_coverage": 1.0,
+          "numerical_consistency": 1.0,
+          "unsupported_claim_count": 0.0
+        },
+        "quality_basis": "ground_truth",
+        "validator_version": "3.0-post-freeze"
+      },
+      "conditional_validation": {
+        "stage": "reporting",
+        "hard_pass": true,
+        "checks": [
+          {
+            "name": "report_valid",
+            "passed": true,
+            "mandatory": true,
+            "detail": "",
+            "value": null
+          },
+          {
+            "name": "required_findings_covered",
+            "passed": true,
+            "mandatory": true,
+            "detail": "7/7",
+            "value": 1.0
+          },
+          {
+            "name": "required_metric_keys_present",
+            "passed": true,
+            "mandatory": true,
+            "detail": "every required metric key reported in its finding",
+            "value": null
+          },
+          {
+            "name": "reported_values_consistent",
+            "passed": true,
+            "mandatory": true,
+            "detail": "all consistent",
+            "value": 1.0
+          },
+          {
+            "name": "directions_correct",
+            "passed": true,
+            "mandatory": true,
+            "detail": "all required directions correct",
+            "value": null
+          },
+          {
+            "name": "rankings_correct",
+            "passed": true,
+            "mandatory": true,
+            "detail": "all ranking semantics correct",
+            "value": null
+          },
+          {
+            "name": "rankings_explicit",
+            "passed": true,
+            "mandatory": false,
+            "detail": "all required rankings explicitly structured",
+            "value": 1.0
+          },
+          {
+            "name": "derived_values_correct",
+            "passed": true,
+            "mandatory": true,
+            "detail": "all declared derived values recompute",
+            "value": null
+          },
+          {
+            "name": "finding_statements_substantive",
+            "passed": true,
+            "mandatory": true,
+            "detail": "every statement has a supported numeric finding",
+            "value": null
+          },
+          {
+            "name": "prose_claims_consistent",
+            "passed": true,
+            "mandatory": true,
+            "detail": "structured claims agree with prose",
+            "value": null
+          },
+          {
+            "name": "numeric_attribution_correct",
+            "passed": true,
+            "mandatory": true,
+            "detail": "all finding numbers belong to their finding",
+            "value": null
+          },
+          {
+            "name": "unsupported_claims_within_threshold",
+            "passed": true,
+            "mandatory": false,
+            "detail": "none (27 numeric claims checked)",
+            "value": 0.0
+          },
+          {
+            "name": "evidence_refs_valid",
+            "passed": true,
+            "mandatory": false,
+            "detail": "",
+            "value": null
+          },
+          {
+            "name": "within_word_limit",
+            "passed": true,
+            "mandatory": false,
+            "detail": "288 words (limit 600)",
+            "value": 288.0
+          }
+        ],
+        "quality": {
+          "finding_coverage": 1.0,
+          "numerical_consistency": 1.0,
+          "unsupported_claim_count": 0.0
+        },
+        "quality_basis": "conditional_reference",
+        "validator_version": "3.0-post-freeze"
+      },
+      "input_artifacts": [
+        "results/raw/runs/expB_paths_v3-a694fae6bcafd09f/analysis/output/findings.json"
+      ],
+      "output_artifacts": [
+        "results/raw/runs/expB_paths_v3-a694fae6bcafd09f/reporting/prompt.txt",
+        "results/raw/runs/expB_paths_v3-a694fae6bcafd09f/reporting/response.txt",
+        "results/raw/runs/expB_paths_v3-a694fae6bcafd09f/reporting/reasoning.txt",
+        "results/raw/runs/expB_paths_v3-a694fae6bcafd09f/reporting/parsed.json",
+        "results/raw/runs/expB_paths_v3-a694fae6bcafd09f/reporting/output/report.json",
+        "results/raw/runs/expB_paths_v3-a694fae6bcafd09f/reporting/output/report.md"
+      ],
+      "input_artifact_hashes": {
+        "results/raw/runs/expB_paths_v3-a694fae6bcafd09f/analysis/output/findings.json": "dbd3251e439b79df3ed5b785f3fe184d2fc04fa91ca6341435a3410ae754ac34"
+      },
+      "output_artifact_hashes": {
+        "results/raw/runs/expB_paths_v3-a694fae6bcafd09f/reporting/prompt.txt": "7edc668eb6a8c9d682deb709e5c38703f96f97917beee1c67c36d37a43e297d1",
+        "results/raw/runs/expB_paths_v3-a694fae6bcafd09f/reporting/response.txt": "b262e4f18742ef515bb14dea5027c7e2d365a253b38013c9e6c6c79f72dbb433",
+        "results/raw/runs/expB_paths_v3-a694fae6bcafd09f/reporting/reasoning.txt": "0b9baac649d44a1a2c575eb7e2cf46a793e4c0770e2b9c230e2c0893c8e73085",
+        "results/raw/runs/expB_paths_v3-a694fae6bcafd09f/reporting/parsed.json": "a9cb44bbf32817dcc1712afb510c2b12e2a4b76874aea432d07a3ccd13aa1ef2",
+        "results/raw/runs/expB_paths_v3-a694fae6bcafd09f/reporting/output/report.json": "a9cb44bbf32817dcc1712afb510c2b12e2a4b76874aea432d07a3ccd13aa1ef2",
+        "results/raw/runs/expB_paths_v3-a694fae6bcafd09f/reporting/output/report.md": "773941749b1f3df0e11a2052d4e6e8a0c2c163b071d7904e6f302b3d1d9e0761"
+      },
+      "handoff_in_path": "results/raw/runs/expB_paths_v3-a694fae6bcafd09f/reporting/handoff_in.json",
+      "handoff_size_bytes": 33739,
+      "input_tokens": 3087,
+      "output_tokens": 2821,
+      "cost_usd": null,
+      "cost_status": "unavailable",
+      "timings": {
+        "generation_ms": 15385.16704200083,
+        "execution_ms": null,
+        "validation_ms": 5.313124998792773,
+        "handoff_ms": 0.6434579991037026
+      }
+    }
+  ],
+  "feasibility": {
+    "outcome": "feasible",
+    "stage_status": {
+      "cleaning": "passed",
+      "analysis": "passed",
+      "reporting": "passed"
+    },
+    "first_failure_stage": null,
+    "failure_type": null
+  },
+  "quality": {
+    "cleaning": {
+      "cleaning_correctness": 1.0,
+      "data_integrity": 1.0,
+      "schema_compliance": 1.0
+    },
+    "analysis": {
+      "numerical_accuracy": 1.0,
+      "calculation_coverage": 1.0,
+      "reproducibility": 1.0
+    },
+    "reporting": {
+      "finding_coverage": 1.0,
+      "numerical_consistency": 1.0,
+      "unsupported_claim_count": 0.0
+    }
+  },
+  "conditional_quality": {
+    "analysis": {
+      "numerical_accuracy": 1.0,
+      "calculation_coverage": 1.0,
+      "reproducibility": 1.0
+    },
+    "reporting": {
+      "finding_coverage": 1.0,
+      "numerical_consistency": 1.0,
+      "unsupported_claim_count": 0.0
+    }
+  },
+  "efficiency": {
+    "total_api_latency_ms": 45670.80870800055,
+    "total_execution_ms": 1354.0219589995104,
+    "total_validation_ms": 19.31574999980512,
+    "total_handoff_ms": 1.434873996913666,
+    "end_to_end_ms": 49979.50829199908,
+    "input_tokens": 7934,
+    "output_tokens": 8944,
+    "cost_usd": null,
+    "cost_status": "unavailable",
+    "n_calls": 3,
+    "n_cache_hits": 0,
+    "n_switches": 1,
+    "handoff_bytes_total": 55475
+  },
+  "propagation": {
+    "downstream_executable": {
+      "cleaning": true,
+      "analysis": true,
+      "reporting": true
+    },
+    "upstream_error_severity": {
+      "analysis": {
+        "cleaning_correctness": 0.0,
+        "data_integrity": 0.0,
+        "schema_compliance": 0.0
+      },
+      "reporting": {
+        "numerical_accuracy": 0.0,
+        "calculation_coverage": 0.0,
+        "reproducibility": 0.0
+      }
+    },
+    "end_to_end_accuracy": {
+      "finding_coverage": 1.0,
+      "numerical_consistency": 1.0,
+      "unsupported_claim_count": 0.0
+    },
+    "propagation_impact": {
+      "analysis": {
+        "calculation_coverage": 0.0,
+        "numerical_accuracy": 0.0,
+        "reproducibility": 0.0
+      },
+      "reporting": {
+        "finding_coverage": 0.0,
+        "numerical_consistency": 0.0,
+        "unsupported_claim_count": 0.0
+      }
+    },
+    "blocked_stages": []
+  },
+  "final_artifacts": [
+    "results/raw/runs/expB_paths_v3-a694fae6bcafd09f/reporting/prompt.txt",
+    "results/raw/runs/expB_paths_v3-a694fae6bcafd09f/reporting/response.txt",
+    "results/raw/runs/expB_paths_v3-a694fae6bcafd09f/reporting/reasoning.txt",
+    "results/raw/runs/expB_paths_v3-a694fae6bcafd09f/reporting/parsed.json",
+    "results/raw/runs/expB_paths_v3-a694fae6bcafd09f/reporting/output/report.json",
+    "results/raw/runs/expB_paths_v3-a694fae6bcafd09f/reporting/output/report.md"
+  ]
+}

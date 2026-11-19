@@ -1,0 +1,23 @@
+You are debugging a Python module. The specification is authoritative.
+
+Specification:
+summarize_logs(lines) parses 'timestamp|LEVEL|service|message'. Skip malformed lines, normalize level uppercase, and return counts by service and level plus the lexicographically earliest ERROR timestamp (or null).
+
+Buggy module:
+```python
+def summarize_logs(lines):
+                 counts={};first_error=None
+                 for line in lines:
+                     ts,level,service,message=line.split('|')
+                     counts.setdefault(service,{})[level]=counts.setdefault(service,{}).get(level,0)+1
+                     if level=='ERROR' and first_error is None:first_error=ts
+                 return {'counts':counts,'first_error':first_error}
+
+```
+
+Visible checks:
+```python
+assert summarize_logs(['2026-01-01|INFO|api|ok'])['counts'] == {'api':{'INFO':1}}
+```
+
+Return the complete corrected module. There may be multiple interacting defects. Do not hard-code the visible examples.

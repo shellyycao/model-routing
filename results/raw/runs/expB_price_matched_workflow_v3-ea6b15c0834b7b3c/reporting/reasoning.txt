@@ -1,0 +1,97 @@
+Let me carefully construct the report.
+
+Verified findings:
+- customer_count: 749.0
+- churn_rate_pct: 37.6502002670227
+- avg_monthly_fee: 42.106154873164215
+- churn_rate_basic_pct: 38.87240356083086
+- churn_rate_standard_pct: 36.67953667953668
+- churn_rate_premium_pct: 36.60130718954248
+- churn_rate_cohort_2021_pct: 38.02083333333333
+- churn_rate_cohort_2022_pct: 36.74418604651163
+- churn_rate_cohort_2023_pct: 37.05357142857143
+- churn_rate_cohort_2024_pct: 39.83050847457627
+- churn_rate_monthly_pct: 48.322147651006716
+- churn_rate_annual_pct: 21.85430463576159
+- churn_monthly_vs_annual_change_pct: 121.11043319097013
+- at_risk_customer_count: 100.0
+- at_risk_churn_rate_pct: 71.0
+- tenure_mean: 20.81041388518024
+- tenure_median: 19.0
+- tenure_std: 13.24739298193327
+- satisfaction_mean: 3.4168975069252077
+- satisfaction_missing_count: 27.0
+- ltv_basic: 463.4573590504451
+- ltv_standard: 868.8301544401545
+- ltv_premium: 1816.7777124183006
+- premium_vs_basic_ltv_change_pct: 292.00536509779596
+
+Rankings:
+- q2: highest to lowest churn: Basic (38.87) > Standard (36.68) > Premium (36.60). Ranking: ["Basic", "Standard", "Premium"]
+- q3: 2024 (39.83) > 2021 (38.02) > 2023 (37.05) > 2022 (36.74). Ranking: ["2024", "2021", "2023", "2022"]
+- q7: LTV: Premium (1816.78) > Standard (868.83) > Basic (463.46). Ranking: ["Premium", "Standard", "Basic"]
+
+Directions:
+- q4: churn_monthly_vs_annual_change_pct = +121.11% → increase (monthly churn higher than annual).
+- q7: premium_vs_basic_ltv_change_pct = +292.01% → increase.
+
+Derived values: any number I compute from findings must be declared. I should minimize derived values to keep it simple. Possible derived values:
+- q4: difference between monthly and annual churn: 48.32 - 21.85 = 26.47 percentage points. If I state it, declare as difference. I could just state the pct change 121.1% which is a verified metric itself (churn_monthly_vs_annual_change_pct). That's already a verified metric, so no need to derive. I'll avoid stating the difference to keep derived_values minimal, or include it as a declared derived value. Let me include it perhaps in q4 statement: "48.3% vs 21.9%, a 121.1% relative increase". All three are verified metrics. Good, no derived values needed.
+
+- q5: at-risk segment share of customer base: 100/749 = 13.35%. If I state "13.4% of the customer base", that's a share derived value: share = at_risk_customer_count / customer_count * 100 = 13.35. Let me compute precisely: 100/749 = 0.133511... ×100 = 13.3511...%. Round to 13.4%. Declare as derived share.
+
+Also at-risk churn 71% vs overall 37.65% — difference 33.35 pp. Could mention or not. To keep it simple, maybe mention "nearly double the overall rate" — that's a ratio claim. Better avoid or declare. I'll keep it minimal: mention 71.0% vs overall 37.7% — both verified. If I say "roughly 1.9×", that's a ratio — declare. I'll avoid multiplier language, just state both numbers.
+
+- q7: premium_vs_basic_ltv_change_pct is verified (292.0%). If I mention standard vs basic difference, that's derived — avoid.
+
+Rounding: I'll round to 1-2 decimals consistently and use the rounded values in reported_values? The instructions: "In `reported_values`, include EVERY metric_key of that question with its verified value (copy it)." Copy it — so use exact values from JSON. I'll copy exact values.
+
+derived_values "value": "The number as stated in the report" — the rounded number as stated.
+
+Word count: under 600 words total. JSON content counts? Keep statements concise.
+
+Now build findings:
+
+q1 statement: "The cleaned dataset contains 749 customers, of whom 37.65% have churned; the average monthly fee is $42.11." Evidence: customer_count, churn_rate_pct, avg_monthly_fee. reported_values: all three exact. direction: not_applicable? The schema: direction for change/trend findings. q1 direction_required false. I can set "not_applicable" or null. I'll set "not_applicable"? Hmm — direction enum includes not_applicable. For non-direction findings, null is fine. I'll use null for q1, q2, q3, q5, q6; "increase" for q4 and q7. Actually for q3, it's a trend question but direction_required is false; ranking required. I'll leave direction null and provide ranking.
+
+q2 statement: "Churn is broadly similar across plans: Basic 38.87%, Standard 36.68%, Premium 36.60%. Basic ranks highest, Premium lowest, but the spread is only ~2.3 percentage points." Spread = 38.87 - 36.60 = 2.27 pp — derived difference. Declare it: kind difference, operands [churn_rate_basic_pct, churn_rate_premium_pct], value 2.27. Let me compute precisely: 38.87240356083086 - 36.60130718954248 = 2.27109637128838. Round to 2.27. I'll state "about 2.27 percentage points". OK, declare.
+
+q3 statement: "Churn by signup cohort: 2024 cohort highest at 39.83%, then 2021 (38.02%), 2023 (37.05%), 2022 lowest (36.74%); no strong cohort trend." Ranking: ["2024","2021","2023","2022"]. No derived needed if I don't compute anything.
+
+q4 statement: "Contract type is the strongest churn differentiator: Monthly contracts churn at 48.32% vs 21.85% for Annual — a 121.11% relative increase (monthly churn is ~2.2× annual)." If I say 2.2×, that's a ratio — declare. Or skip. I'll state the relative increase only, which is the verified metric. Maybe also the pp difference 26.47 — declare if stated. I'll include the difference: 48.322147651006716 - 21.85430463576159 = 26.467843015245126 → 26.47 pp. Declare as difference. Direction: increase.
+
+q5 statement: "The at-risk segment (≥5 support tickets and satisfaction ≤2) comprises 100 customers — 13.4% of the base — and churns at 71.0%, far above the 37.65% overall rate." Derived: share 13.35 (state 13.4? "The number as stated in the report" — must match text). I'll state "13.4%" and value 13.4. Hmm, maybe use 13.35 to be more precise: 13.3511 → state 13.35%. Either fine. I'll use 13.35.
+
+q6 statement: "Average tenure is 20.81 months (median 19.0, SD 13.25); mean satisfaction is 3.42 on its scale, with 27 customers missing a satisfaction score." All verified, no derived.
+
+q7 statement: "Lifetime value rises sharply with plan tier: Basic $463.46, Standard $868.83, Premium $1,816.78 — Premium LTV is 292.0% higher than Basic." Direction increase. Ranking ["Premium","Standard","Basic"]. All numbers verified.
+
+Executive summary: mention overall churn 37.65% of 749 customers; contract type strongest factor (monthly 48.32% vs annual 21.85%); at-risk segment 100 customers churning at 71%; plan barely matters for churn but Premium LTV is 292% higher than Basic. Word count — fine.
+
+Limitations:
+- Satisfaction scores missing for 27 customers; at-risk segment excludes those with missing scores, potentially understating it.
+- Analysis is descriptive/cross-sectional; no statistical significance testing, so differences (e.g., plan churn spread of ~2.3 pp) may not be significant.
+- Cohort churn is not tenure-adjusted; cohorts have different observation windows.
+- LTV differences by plan may reflect self-selection rather than causal plan effects.
+- avg monthly fee across plans mixed.
+
+Conclusion: prioritize monthly-to-annual conversion and the at-risk segment intervention; plan tier drives value not churn.
+
+Word count: The whole report (title, summary, statements, limitations, conclusion) under 600 words. JSON keys probably don't count as words in the report, but let me keep text concise anyway. Estimate: summary ~80 words, each finding ~25-35 words (~210), limitations ~80, conclusion ~40. Total ~420. Fine.
+
+reported_values: copy exact floats.
+
+Derived values summary:
+- q2: difference basic-premium = 2.27 (state "~2.27 percentage points"). Actually let me state 2.27.
+- q4: difference monthly-annual = 26.47.
+- q5: share 100/749 = 13.35.
+
+Check ranking labels exactly: "Basic", "Premium", "Standard" for q2 — order by value high→low: Basic (38.87), Standard (36.68), Premium (36.60) → ["Basic", "Standard", "Premium"].
+
+q3 labels: 2024 (39.83) > 2021 (38.02) > 2023 (37.05) > 2022 (36.74) → ["2024", "2021", "2023", "2022"].
+
+q7: Premium (1816.78) > Standard (868.83) > Basic (463.46) → ["Premium", "Standard", "Basic"].
+
+evidence_refs: list metric keys relied on.
+
+Now write JSON. Ensure single fenced block, nothing else.

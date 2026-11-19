@@ -1,0 +1,121 @@
+Let me write the analysis script. It reads cleaned.csv from INPUT_DIR, computes metrics, writes findings.json to OUTPUT_DIR.
+
+Key considerations:
+- Read with pandas, parse order_date as datetime.
+- q1: total_revenue = sum of revenue; order_count = number of rows; average_order_value = total/count.
+- q2: group by region sum revenue; ensure all four regions present, default 0.
+- q3: filter year 2024, quarter via dt.quarter, sum.
+- q4: revenue by year 2023, 2024; yoy change pct. Handle zero division gracefully (if revenue_2023 == 0, maybe 0.0 — but data likely has both).
+- q5: filter Electronics and discount_pct >= 20; count and revenue sum.
+- q6: mean, median, std (ddof=1), min, max of revenue.
+- q7: unique customer_id count; top customer revenue (group by customer_id, sum, max); share pct.
+
+Note: quantity column in the sample shows "8.0" — floats. But schema says int. We don't need quantity anyway. Just don't rely on its dtype. I'll read normally with pd.read_csv; quantity will be float — fine.
+
+Ensure all values are finite numbers. Convert numpy types to float/int via float(). For counts, int is fine (JSON numbers). Use float() for everything to be safe? The contract says "single finite number" — ints okay. I'll convert with float() for revenue metrics and int() for counts. Actually to be safe with validation maybe all floats fine. Counts as ints are fine.
+
+JSON dump with default float precision — json.dump writes full repr of floats.
+
+Let me write the script:
+
+```python
+import json
+import os
+
+import numpy as np
+import pandas as pd
+
+
+def main():
+    input_path = os.path.join(os.environ["INPUT_DIR"], "cleaned.csv")
+    output_path = os.path.join(os.environ["OUTPUT_DIR"], "findings.json")
+
+    df = pd.read_csv(input_path)
+    df["order_date"] = pd.to_datetime(df["order_date"], format="%Y-%m-%d")
+    df["revenue"] = pd.to_numeric(df["revenue"], errors="coerce")
+    df["discount_pct"] = pd.to_numeric(df["discount_pct"], errors="coerce")
+
+    findings = {}
+
+    # q1
+    total_revenue = float(df["revenue"].sum())
+    order_count = int(len(df))
+    findings["total_revenue"] = total_revenue
+    findings["order_count"] = order_count
+    findings["average_order_value"] = total_revenue / order_count if order_count else 0.0
+
+    # q2
+    region_rev = df.groupby("region")["revenue"].sum()
+    for region, key in [("North", "revenue_north"), ("South", "revenue_south"),
+                        ("East", "revenue_east"), ("West", "revenue_west")]:
+        findings[key] = float(region_rev.get(region, 0.0))
+
+    # q3
+    df2024 = df[df["order_date"].dt.year == 2024]
+    q_rev = df2024.groupby(df2024["order_date"].dt.quarter)["revenue"].sum()
+    for q in (1, 2, 3, 4):
+        findings[f"revenue_2024_q{q}"] = float(q_rev.get(q, 0.0))
+
+    # q4
+    revenue_2023 = float(df.loc[df["order_date"].dt.year == 2023, "revenue"].sum())
+    revenue_2024 = float(df.loc[df["order_date"].dt.year == 2024, "revenue"].sum())
+    findings["revenue_2023"] = revenue_2023
+    findings["revenue_2024"] = revenue_2024
+    findings["revenue_yoy_change_pct"] = (
+        (revenue_2024 - revenue_2023) / revenue_2023 * 100.0 if revenue_2023 != 0 else 0.0
+    )
+
+    # q5
+    hd = df[(df["product_category"] == "Electronics") & (df["discount_pct"] >= 20)]
+    findings["electronics_high_discount_orders"] = int(len(hd))
+    findings["electronics_high_discount_revenue"] = float(hd["revenue"].sum())
+
+    # q6
+    rev = df["revenue"]
+    findings["order_revenue_mean"] = float(rev.mean())
+    findings["order_revenue_median"] = float(rev.median())
+    findings["order_revenue_std"] = float(rev.std(ddof=1))
+    findings["order_revenue_min"] = float(rev.min())
+    findings["order_revenue_max"] = float(rev.max())
+
+    # q7
+    findings["unique_customer_count"] = int(df["customer_id"].nunique())
+    cust_rev = df.groupby("customer_id")["revenue"].sum()
+    top_customer_revenue = float(cust_rev.max())
+    findings["top_customer_revenue"] = top_customer_revenue
+    findings["top_customer_revenue_share_pct"] = (
+        top_customer_revenue / total_revenue * 100.0 if total_revenue != 0 else 0.0
+    )
+
+    # sanitize: ensure finite
+    for key, value in findings.items():
+        value = float(value)
+        if not np.isfinite(value):
+            value = 0.0
+        findings[key] = value
+
+    with open(output_path, "w") as f:
+        json.dump(findings, f, indent=2)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+Wait: converting order_count to float — JSON number 520.0 still a number, fine. But maybe keep ints as ints for counts. The sanitize step converts everything to float; that's acceptable ("single finite number"). But maybe nicer to keep counts as int. I'll sanitize but preserve int types for count keys. Simpler: just convert all to float; validators typically accept. But order_count as 520.0 is a number — okay. Hmm, some strict validators might check integer? Spec says "single finite number", so float is fine.
+
+Actually, let me keep counts as ints and only sanitize floats. I'll do:
+
+```python
+for key, value in findings.items():
+    if isinstance(value, float) and not np.isfinite(value):
+        findings[key] = 0.0
+```
+
+Also nunique includes "UNKNOWN" as a customer — that's per spec: distinct customer_id values, so include UNKNOWN. Yes.
+
+groupby region with categorical column may produce all categories even if absent — using .get handles it.
+
+groupby().sum() on categorical region: if region dtype is category, groupby default observed=False gives all categories; .get works either way.
+
+Write the JSON response. expected_artifacts: ["findings.json"].

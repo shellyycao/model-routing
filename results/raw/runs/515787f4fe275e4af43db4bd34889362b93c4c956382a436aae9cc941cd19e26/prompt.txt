@@ -1,0 +1,19 @@
+You are debugging a Python module. The specification is authoritative.
+
+Specification:
+clamp(x, low, high) bounds x inclusively; raise ValueError when low > high.
+
+Buggy module:
+```python
+def clamp(x, low, high):
+                 if low > high: raise ValueError('bounds')
+                 return max(min(x, low), high)
+
+```
+
+Visible checks:
+```python
+assert clamp(5, 0, 10) == 5
+```
+
+Return the complete corrected module. There may be multiple interacting defects. Do not hard-code the visible examples.

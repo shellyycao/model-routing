@@ -1,0 +1,10 @@
+```json
+{
+  "fixed_code": "def rolling_mean(xs, window, min_periods=1):\n    if window <= 0:\n        raise ValueError('window')\n    if not 1 <= min_periods <= window:\n        raise ValueError('min_periods')\n\n    values = list(xs)\n    result = []\n    for i in range(len(values)):\n        start = max(0, i - window + 1)\n        current = values[start:i + 1]\n        if len(current) < min_periods:\n            result.append(None)\n        else:\n            result.append(sum(current) / len(current))\n    return result\n",
+  "bug_locations": [
+    "rolling_mean: validate window and enforce 1 <= min_periods <= window",
+    "rolling_mean: compute one output per position and return None when the trailing window has fewer than min_periods values"
+  ],
+  "explanation": "The original function accepted min_periods but never validated or used it, so partial leading windows were averaged even when they had too few values. It also recomputed the same trailing slice twice. The fix validates the window/min_periods contract, materializes the input, and for each position averages the trailing window only when it contains at least min_periods values; otherwise it appends None."
+}
+```

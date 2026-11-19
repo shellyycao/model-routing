@@ -1,0 +1,10 @@
+```json
+{
+  "fixed_code": "def summarize_logs(lines):\n    counts = {}\n    errors = []\n    for line in lines:\n        parts = line.split('|')\n        if len(parts) < 4:\n            continue\n        ts, level, service = parts[0], parts[1], parts[2]\n        level = level.upper()\n        service_counts = counts.setdefault(service, {})\n        service_counts[level] = service_counts.get(level, 0) + 1\n        if level == 'ERROR':\n            errors.append(ts)\n    return {'counts': counts, 'first_error': min(errors) if errors else None}\n",
+  "bug_locations": [
+    "Loop body in summarize_logs: the counting expression `counts.setdefault(service,{})[level.upper()]=counts.setdefault(service,{}).get(level,0)+1` mixed the normalized key with the raw level",
+    "Return statement in summarize_logs: `'first_error': max(errors) if errors else None`"
+  ],
+  "explanation": "Two interacting defects. (1) Inconsistent key normalization: entries were stored under `level.upper()` but the running total was read with `.get(level, 0)` using the raw, un-normalized level. Any non-uppercase level (e.g. 'error' or 'Info') never matched its stored key, so the count reset to 1 on every occurrence instead of accumulating. Fixed by normalizing the level once and using that single normalized value for both reading and writing the count. (2) Wrong aggregate for the first ERROR timestamp: the spec requires the lexicographically earliest ERROR timestamp, but `max(errors)` returns the latest; changed to `min(errors)`, preserving `None` (null) when there are no errors. Malformed lines (fewer than four '|'-separated fields) were already skipped correctly and that behavior is retained."
+}
+```

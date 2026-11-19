@@ -1,0 +1,8 @@
+{
+  "fixed_code": "def rolling_mean(xs, window, min_periods=1):\n    if window <= 0:\n        raise ValueError('window')\n    if min_periods < 1 or min_periods > window:\n        raise ValueError('min_periods')\n    result = []\n    for i in range(len(xs)):\n        vals = xs[max(0, i - window + 1):i + 1]\n        if len(vals) < min_periods:\n            result.append(None)\n        else:\n            result.append(sum(vals) / len(vals))\n    return result\n",
+  "bug_locations": [
+    "rolling_mean: missing validation that 1 <= min_periods <= window",
+    "rolling_mean: result computation ignored min_periods and never emitted null for positions with fewer than min_periods values in the trailing window"
+  ],
+  "explanation": "The buggy function accepted min_periods but never used it: it neither validated that 1 <= min_periods <= window nor returned null for early positions whose trailing window contains fewer than min_periods values (it just averaged whatever values were present). The fix adds the required ValueError validation for min_periods and, for each position, returns None when the trailing window has fewer than min_periods elements, otherwise the mean of that window."
+}

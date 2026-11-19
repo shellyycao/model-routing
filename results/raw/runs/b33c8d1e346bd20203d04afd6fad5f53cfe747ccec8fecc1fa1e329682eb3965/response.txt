@@ -1,0 +1,12 @@
+```json
+{
+  "fixed_code": "import heapq\n\n\ndef dependency_order(deps):\n    '''Return a deterministic topological order for a dependency mapping.\n\n    deps maps a node to an iterable of prerequisite nodes. Every key and\n    every referenced node is emitted. Among nodes whose prerequisites have\n    all been emitted, the alphabetically smallest node is chosen next.\n    Raises ValueError if a cycle prevents a complete order.\n    '''\n    raw_deps = {node: set(node_deps) for node, node_deps in deps.items()}\n    nodes = set(raw_deps)\n    for node_deps in raw_deps.values():\n        nodes.update(node_deps)\n\n    dependencies = {node: raw_deps.get(node, set()) for node in nodes}\n    dependents = {node: [] for node in nodes}\n    indegree = {node: 0 for node in nodes}\n\n    for node, node_deps in dependencies.items():\n        for dep in node_deps:\n            dependents[dep].append(node)\n            indegree[node] += 1\n\n    ready = [node for node, degree in indegree.items() if degree == 0]\n    heapq.heapify(ready)\n    out = []\n\n    while ready:\n        node = heapq.heappop(ready)\n        out.append(node)\n        for dependent in dependents[node]:\n            indegree[dependent] -= 1\n            if indegree[dependent] == 0:\n                heapq.heappush(ready, dependent)\n\n    if len(out) != len(nodes):\n        raise ValueError('dependency graph contains a cycle')\n    return out\n",
+  "bug_locations": [
+    "module imports: added heapq for deterministic selection",
+    "dependency_order: dependency normalization and node universe construction",
+    "dependency_order: available-node selection and emission order",
+    "dependency_order: cycle failure handling"
+  ],
+  "explanation": "The original built the working set only from deps keys, so referenced-only nodes were omitted and dependents could be emitted before missing prerequisites. It also emitted a whole sorted batch per round; repeatedly choosing the alphabetically smallest available node can differ when emitting one node unlocks a smaller node. Finally, it silently returned a partial order on cycles. The fix normalizes dependencies, includes every key and referenced node, runs Kahn's algorithm with a min-heap for lexicographic choice, and raises ValueError unless all nodes are emitted."
+}
+```

@@ -1,0 +1,21 @@
+You are debugging a Python module. The specification is authoritative.
+
+Specification:
+paginate(items, size, cursor=None) returns (page, next_cursor). Cursor is a zero-based start index string; next_cursor is null at the end; invalid cursors and nonpositive sizes raise ValueError.
+
+Buggy module:
+```python
+def paginate(items, size, cursor=None):
+                 if size < 0: raise ValueError('size')
+                 start=1 if cursor is None else int(cursor)+1
+                 end=min(start+size,len(items))
+                 return list(items[start:end]), (str(end) if end<len(items) else None)
+
+```
+
+Visible checks:
+```python
+assert paginate([1,2,3], 2) == ([1,2], '2')
+```
+
+Return the complete corrected module. There may be multiple interacting defects. Do not hard-code the visible examples.

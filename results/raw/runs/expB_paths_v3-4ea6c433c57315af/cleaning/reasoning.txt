@@ -1,0 +1,162 @@
+We need to produce JSON with fields python_code (string), output_filename ("cleaned.csv"), cleaning_logic (brief explanation). Provide script that follows requirements.
+
+Let's design script.
+
+Steps:
+
+- import os, pandas as pd, numpy as np, json, datetime.
+
+- Input path: os.path.join(os.environ["INPUT_DIR"], "raw.csv").
+
+- Read raw CSV with dtype=str, keep all columns as strings. Use pandas.read_csv with dtype=str, keep default.
+
+- Strip whitespace from all values: df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)
+
+- Define missing values set: {'', 'na', 'n/a', 'null', 'none', '-'} after lower.
+
+- Replace those with np.nan: df = df.replace(to_replace=lambda v: isinstance(v,str) and v.lower() in missing_set, value=np.nan)
+
+- Count raw_rows = len(df)
+
+- R2 duplicate removal based on reading_id: keep first. Use df.drop_duplicates(subset='reading_id', keep='first', inplace=True). Count duplicates removed.
+
+- R3 reading_date parsing: define function parse_date(s). Try each format using datetime.strptime. For 'Month D, YYYY' we can use %B %d, %Y. Also need to handle month abbreviation with %d-%b-%Y (case-insensitive). For each format, try; if success, return date string formatted as %Y-%m-%d. If fails, return None.
+
+- Apply to column, drop rows where result is NaN.
+
+- R4 meter_id uppercase: df['meter_id'] = df['meter_id'].str.upper(); drop rows where missing.
+
+- R5 building_type mapping: define dict mapping lower stripped to canonical. Use .str.lower().map(mapping). Drop rows where result is NaN.
+
+- R6 tariff mapping: similar mapping dict.
+
+- R7 energy conversion: define function convert_energy(val). Steps: if val is NaN -> None. Remove commas. Strip. Use regex to detect unit. If endswith 'MWh' (case-insensitive, optional space). Use re. If endswith 'kWh' (case-insensitive). Remove unit. Then parse number. Multiply if MWh. Validate numeric, >=0 <=100000. Round to 2 decimals. Return float or None.
+
+- Drop rows where conversion fails (None).
+
+- R8 temperature conversion: define function convert_temp(val). If NaN -> return np.nan (missing). Remove whitespace. Remove trailing degree sign and unit. Use regex to capture number and optional unit. If unit is F (or '°F'), convert. If unit is C or '°C' or missing, treat as Celsius. Round to 1 decimal. If after conversion not numeric or out of -40 to 50, return np.nan (missing). Keep row.
+
+- R9 final columns order, sort by reading_id ascending (string). Write CSV with header, index=False, float format: for energy_kwh we need 2 decimals but can let pandas default; we can set float_format='%.2f' for all floats, but temperature may need 1 decimal. Could format after rounding.
+
+Simplify: after rounding, we can keep as float; pandas will output with default representation (maybe many decimals). To ensure formatting, we can use df['energy_kwh'] = df['energy_kwh'].map(lambda x: f"{x:.2f}") but column type should be float per schema. However CSV can have numbers with two decimals; it's okay.
+
+We'll output using df.to_csv(..., index=False, float_format='%.2f') which will format all floats with 2 decimals, but temperature needs 1 decimal. Could format temperature column separately as string with 1 decimal, but schema expects float. Accept 2 decimals maybe okay. But spec says round to 1 decimal; not about formatting. So we can keep float and use default; rounding ensures one decimal.
+
+Thus we can use df.to_csv(..., index=False, na_rep='').
+
+- cleaning_summary.json: include raw_rows, cleaned_rows, duplicate_rows_removed, rows_dropped_due_to_date, rows_dropped_due_to_meter_id, rows_dropped_due_to_building_type, rows_dropped_due_to_tariff, rows_dropped_due_to_energy, rows_with_missing_temperature (optional). Compute counts.
+
+Implementation details: after each drop, we can compute counts.
+
+Edge Cases: reading_date parsing: need to handle '01-Jan-2024' (DD-Mon-YYYY). Also '01/01/2024' (MM/DD/YYYY). Also '2024/01/03' (YYYY/MM/DD). Also 'January 2, 2024' (Month D, YYYY). Also '2024-01-01'.
+
+Implement parse_date:
+
+formats = ['%Y-%m-%d', '%m/%d/%Y', '%d-%b-%Y', '%Y/%m/%d', '%B %d, %Y']
+
+But need to handle case-insensitive month abbreviation; strptime handles case-insensitively? It expects proper case; we can .title() maybe. We'll just try after lower? Actually %b expects locale's abbreviated month name, case-insensitive? I think strptime is case-insensitive for month names. Should be fine.
+
+Also need to handle possible extra spaces.
+
+Implementation:
+
+def parse_date(s):
+    if pd.isna(s):
+        return None
+    s = s.strip()
+    for fmt in formats:
+        try:
+            dt = datetime.datetime.strptime(s, fmt)
+            return dt.strftime('%Y-%m-%d')
+        except ValueError:
+            continue
+    return None
+
+Apply: df['reading_date'] = df['reading_date'].apply(parse_date); then drop rows where isna.
+
+Now energy conversion: use regex.
+
+def convert_energy(val):
+    if pd.isna(val):
+        return None
+    s = str(val).replace(',', '').strip()
+    # detect unit
+    pattern = re.compile(r'(?i)^\s*([0-9]*\.?[0-9]+)\s*(mwh|kwh)?\s*$')
+    m = pattern.match(s)
+    if not m:
+        return None
+    number = float(m.group(1))
+    unit = m.group(2)
+    if unit:
+        unit = unit.lower()
+    if unit == 'mwh':
+        number *= 1000
+    # if unit is kwh or None, keep as is
+    if number < 0 or number > 100000:
+        return None
+    return round(number, 2)
+
+But need to handle 'kwh' case-insensitively; also 'kWh' etc.
+
+Now temperature conversion:
+
+def convert_temp(val):
+    if pd.isna(val):
+        return np.nan
+    s = str(val).strip()
+    # remove degree sign
+    s = s.replace('°', '')
+    pattern = re.compile(r'(?i)^\s*([+-]?[0-9]*\.?[0-9]+)\s*([cf])?\s*$')
+    m = pattern.match(s)
+    if not m:
+        return np.nan
+    number = float(m.group(1))
+    unit = m.group(2)
+    if unit:
+        unit = unit.lower()
+    if unit == 'f':
+        c = (number - 32) * 5.0 / 9.0
+    else:
+        c = number
+    if c < -40 or c > 50:
+        return np.nan
+    return round(c, 1)
+
+Now after conversion, assign columns.
+
+Now produce summary counts.
+
+Implementation steps:
+
+- raw_rows = len(df_original)
+
+- after duplicate removal: dup_removed = raw_rows - len(df)
+
+- after date parsing drop: date_dropped = previous_len - len(df)
+
+- after meter_id drop: meter_dropped = ...
+
+- after building_type drop: building_dropped
+
+- after tariff drop: tariff_dropped
+
+- after energy drop: energy_dropped
+
+- temperature_missing_count = df['temperature_c'].isna().sum()
+
+- cleaned_rows = len(df)
+
+Write summary dict.
+
+Write JSON file.
+
+Set output_filename = "cleaned.csv".
+
+Now produce final JSON output.
+
+Let's craft python_code string with triple quotes? In JSON string we need to escape newlines etc. We'll embed as raw string with \n.
+
+We'll produce script as a multi-line string.
+
+Now produce final answer.
+

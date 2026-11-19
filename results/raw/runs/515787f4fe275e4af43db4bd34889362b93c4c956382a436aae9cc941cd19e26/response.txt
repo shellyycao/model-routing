@@ -1,0 +1,9 @@
+```json
+{
+  "fixed_code": "def clamp(x, low, high):\n    if low > high:\n        raise ValueError('bounds')\n    return min(max(x, low), high)\n",
+  "bug_locations": [
+    "clamp"
+  ],
+  "explanation": "The return expression combined the bounds incorrectly: max(min(x, low), high) always evaluates to high when low <= high, so clamp(5, 0, 10) returned 10. The validation for low > high was correct and is kept. The fix bounds x inclusively with min(max(x, low), high): values below low become low, values above high become high, and in-range values are unchanged."
+}
+```

@@ -1,0 +1,21 @@
+TASK: Information extraction (independent benchmark A2, prompt independent_v1)
+
+Extract the fields defined below from the document. Rules:
+- Use EXACTLY these field names as keys (no extra keys).
+- Use null when the document does not state the value. Do not guess.
+- Follow each field's description; it resolves ambiguous cases.
+- Dates as YYYY-MM-DD, numbers as plain numbers (no currency symbols or thousands separators), booleans as true/false.
+
+FIELDS:
+- delivery_city: string: city goods are delivered to
+- item_count: integer: number of units ordered
+- order_date: date YYYY-MM-DD: the date the order was placed (not a delivery or quote date)
+- payment_terms_days: integer: payment due within N days; null if not stated
+- po_number: string: the purchase order number of THIS order (format PO-#####), not any referenced earlier order
+- total_usd: number: final amount payable in USD AFTER any discount
+- vendor_name: string: the supplying company
+
+DOCUMENT:
+"""
+Following up on our earlier order PO-70931, please find the new order details below. This purchase order, PO-38114, was placed with Tessellate Inc on April 4, 2026 (the vendor quote itself was dated March 27, 2026). We are ordering 262 units; list price $1,780.07 less a 10% volume discount of $178.01. Ship to our warehouse in Boise; invoices go to head office in Madison.
+"""

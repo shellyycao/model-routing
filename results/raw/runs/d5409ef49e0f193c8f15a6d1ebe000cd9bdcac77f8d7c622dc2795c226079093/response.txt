@@ -1,0 +1,7 @@
+```json
+{
+  "fixed_code": "def dedupe(xs):\n    seen = []\n    result = []\n    for x in xs:\n        if x not in seen:\n            seen.append(x)\n            result.append(x)\n    return result\n",
+  "bug_locations": ["dedupe: the entire body `return sorted(set(xs))`"],
+  "explanation": "The original `sorted(set(xs))` had two interacting defects: (1) `set(xs)` raises TypeError for unhashable elements (e.g., lists), violating the requirement to support unhashable values; (2) `sorted(...)` reorders elements by value instead of preserving first-occurrence order (and set iteration itself discards order). The fix iterates over the input once, appending each element to the result only if it has not been seen before, using an equality-based membership check (`x not in seen`) on a list so that unhashable values work and first-occurrence order is preserved."
+}
+```

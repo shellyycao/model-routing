@@ -1,0 +1,7 @@
+```json
+{
+  "fixed_code": "def rotate(xs, k):\n    if not xs: return []\n    k %= len(xs)\n    return list(xs[-k:] + xs[:-k])",
+  "bug_locations": ["return list(xs[k:] + xs[:k])"],
+  "explanation": "The original code rotated left instead of right. The fix uses negative indexing to correctly rotate right by k positions."
+}
+```

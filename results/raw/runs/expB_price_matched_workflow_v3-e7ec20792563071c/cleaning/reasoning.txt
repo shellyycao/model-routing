@@ -1,0 +1,668 @@
+Let me write a Python script that handles all the cleaning rules.
+
+Key points:
+- Read all columns as text (dtype=str), strip whitespace, treat NA variants as missing.
+- Dedupe by customer_id keeping first occurrence.
+- Parse signup_date with 5 formats.
+- Map plan, contract_type.
+- Clean monthly_fee ($, USD, commas), numeric, 0 < x <= 500.
+- tenure_months: strip trailing "months"/"month", numeric, whole, 0-120, int.
+- support_tickets: missing -> 0, else numeric whole 0-100, int; drop invalid non-missing.
+- satisfaction_score: invalid -> missing, keep row; valid -> int 1-5.
+- churned: map to 0/1, drop missing/unmappable.
+- lifetime_value = monthly_fee * tenure_months rounded 2 decimals.
+- Output columns order, sort by customer_id, no index.
+- Write cleaning_summary.json with raw_rows, cleaned_rows, per-rule counts.
+
+Note satisfaction "5.0" should parse as number 5.0, whole number -> 5. Good.
+
+Whole number check: float value equals integer value.
+
+Edge: monthly_fee "9999.00" > 500 -> drop.
+
+Missing values set: '', 'na', 'n/a', 'null', 'none', '-' case-insensitive after strip.
+
+Date formats:
+- %Y-%m-%d
+- %m/%d/%Y
+- %d-%b-%Y (English 3-letter month; need locale-independent — use mapping to be safe)
+- %Y/%m/%d
+- %B %d, %Y (e.g., "March 5, 2024" — day without zero padding; strptime %d handles "5"? On Linux yes, but to be safe, I can normalize or use custom parsing).
+
+To be safe, I'll implement date parsing manually with regex to avoid platform issues with %d parsing non-padded days (actually strptime on most platforms accepts non-padded). But month names locale — sandbox likely C locale, English fine. Still, safer to build a custom month map.
+
+Let me write parse_date:
+
+```python
+MONTHS = {
+    'jan': 1, 'january': 1, 'feb': 2, 'february': 2, 'mar': 3, 'march': 3,
+    'apr': 4, 'april': 4, 'may': 5, 'jun': 6, 'june': 6, 'jul': 7, 'july': 7,
+    'aug': 8, 'august': 8, 'sep': 9, 'sept': 9, 'september': 9,
+    'oct': 10, 'october': 10, 'nov': 11, 'november': 11, 'dec': 12, 'december': 12
+}
+
+def parse_signup_date(s):
+    if s is None:
+        return None
+    s = s.strip()
+    # YYYY-MM-DD
+    m = re.fullmatch(r'(\d{4})-(\d{1,2})-(\d{1,2})', s)
+    if m:
+        y, mo, d = map(int, m.groups())
+        return safe_date(y, mo, d)
+    # MM/DD/YYYY
+    m = re.fullmatch(r'(\d{1,2})/(\d{1,2})/(\d{4})', s)
+    if m:
+        mo, d, y = map(int, m.groups())
+        return safe_date(y, mo, d)
+    # DD-Mon-YYYY
+    m = re.fullmatch(r'(\d{1,2})-([A-Za-z]{3})-(\d{4})', s)
+    if m:
+        d = int(m.group(1)); mon = MONTHS.get(m.group(2).lower()); y = int(m.group(3))
+        if mon:
+            return safe_date(y, mon, d)
+        return None
+    # YYYY/MM/DD
+    m = re.fullmatch(r'(\d{4})/(\d{1,2})/(\d{1,2})', s)
+    if m:
+        y, mo, d = map(int, m.groups())
+        return safe_date(y, mo, d)
+    # Month D, YYYY
+    m = re.fullmatch(r"([A-Za-z]+)\s+(\d{1,2}),\s*(\d{4})", s)
+    if m:
+        mon = MONTHS.get(m.group(1).lower()); d = int(m.group(2)); y = int(m.group(3))
+        if mon:
+            return safe_date(y, mon, d)
+        return None
+    return None
+
+def safe_date(y, mo, d):
+    try:
+        return date(y, mo, d).isoformat()
+    except ValueError:
+        return None
+```
+
+Ambiguity: "2021/01/07" matches YYYY/MM/DD only if MM/DD/YYYY regex requires last group 4 digits — "2021/01/07" first group would be "2021" but \d{1,2} limits to 2 digits, so no conflict. Order of checks matters: YYYY-MM-DD before MM/DD/YYYY — "01/21/2021" doesn't match YYYY-MM-DD (slashes). Fine.
+
+monthly_fee cleaning: remove '$', 'USD' (case-insensitive? Spec says remove substrings '$', 'USD' and ',' — I'll remove 'USD' case-insensitively to be safe), and commas, strip spaces.
+
+tenure: remove trailing 'months'/'month' case-insensitive plus spaces: re.sub(r'\s*months?\s*$', '', s, flags=re.I).
+
+Whole number check: use float then check is_integer. Also handle values like "47.0"? Spec says parse as number, drop if not whole number. "47.0" is whole. Fine.
+
+support_tickets: missing -> 0.
+
+satisfaction: parse float; if missing/invalid/not whole/out of 1-5 -> NaN (empty cell). Else int.
+
+churned mapping: yes/y/true/1/churned -> 1; no/n/false/0/active -> 0.
+
+Counts per rule to track: duplicates_removed, dropped_signup_date, dropped_plan, dropped_contract_type, dropped_monthly_fee, dropped_tenure_months, dropped_support_tickets, satisfaction_set_missing, dropped_churned.
+
+Implementation: sequential filtering with masks, counting drops. Since rows are dropped progressively, per-rule counts reflect rows dropped at that step.
+
+Sorting by customer_id ascending — string sort. customer_id like "CUST-0001" — lexicographic fine. Keep as string.
+
+monthly_fee output: float. Values like 39.99. Write with to_csv; floats may write as 39.99. lifetime_value rounded 2.
+
+For satisfaction_score nullable int: use pandas nullable Int64 so it writes as empty when NA. to_csv writes <NA> as empty by default? pd.NA writes as empty string by default (na_rep=''). Yes, default na_rep is ''.
+
+tenure and support as int64, churned int64.
+
+monthly_fee: keep as float. Could round to 2? Not required; values presumably 2 decimals. Leave as parsed float. Actually to ensure clean output, maybe round monthly_fee to 2 decimals? Spec doesn't say; leave it.
+
+Build the script:
+
+```python
+import os
+import re
+import json
+from datetime import date
+
+import numpy as np
+import pandas as pd
+
+INPUT_DIR = os.environ["INPUT_DIR"]
+OUTPUT_DIR = os.environ["OUTPUT_DIR"]
+
+MISSING_TOKENS = {"", "na", "n/a", "null", "none", "-"}
+
+def is_missing(v):
+    if v is None:
+        return True
+    if isinstance(v, float) and np.isnan(v):
+        return True
+    return str(v).strip().lower() in MISSING_TOKENS
+```
+
+Reading: pd.read_csv(path, dtype=str, keep_default_na=False, na_filter=False) so nothing auto-converted; then strip all values. Actually with dtype=str and keep_default_na=False, all values are strings (except maybe NaN for truly empty? keep_default_na=False and na_filter=False means empty stays ''). Good.
+
+Strip: df = df.apply(lambda col: col.str.strip()).
+
+Then replace missing tokens with None: build mask.
+
+Dedupe: df = df[~df['customer_id'].duplicated(keep='first')]. But what about missing customer_id? Spec doesn't say drop missing customer_id... Schema says not nullable. R2 only mentions duplicates. Hmm, if customer_id missing, keep? Schema requires str not nullable. Safer: treat missing customer_id... The rules don't specify dropping rows with missing customer_id. I'll keep them unless duplicated. But empty customer_id would violate schema. Probably no such rows. I could add: drop rows with missing customer_id? Not in spec — avoid adding rules. But duplicated() on None values: all None customer_ids would be considered duplicates of each other. Edge case unlikely. I'll leave dedupe as-is but maybe drop missing customer_id rows as part of R2? The instruction says apply all in order, only these. I'll not drop missing ids... Actually to guarantee schema "customer_id: str; not nullable", I could drop missing customer_id. Risk vs benefit: if data has no missing ids, no effect. If it does, dropping ensures schema. I'll include it as a safety in dedupe step and count it. Hmm, might alter expected counts. I think it's safe and sensible. Let me include but name count "dropped_missing_customer_id". Actually, keep it minimal — I'll include it; unlikely to trigger.
+
+Sequential filtering approach: I'll process column by column, applying transformations and dropping invalid rows, counting.
+
+Plan map:
+```python
+PLAN_MAP = {
+    'basic': 'Basic', 'basic plan': 'Basic',
+    'standard': 'Standard', 'std': 'Standard', 'standard plan': 'Standard',
+    'premium': 'Premium', 'prem': 'Premium', 'premium plan': 'Premium',
+}
+```
+
+Contract map:
+```python
+CONTRACT_MAP = {
+    'monthly': 'Monthly', 'month-to-month': 'Monthly', 'm2m': 'Monthly',
+    'annual': 'Annual', 'yearly': 'Annual', '1 year': 'Annual',
+}
+```
+
+Churn map:
+```python
+CHURN_MAP = {
+    'yes': 1, 'y': 1, 'true': 1, '1': 1, 'churned': 1,
+    'no': 0, 'n': 0, 'false': 0, '0': 0, 'active': 0,
+}
+```
+
+monthly_fee parse:
+```python
+def parse_money(s):
+    t = re.sub(r'(?i)usd', '', s)
+    t = t.replace('$', '').replace(',', '').strip()
+    if t == '':
+        return None
+    try:
+        v = float(t)
+    except ValueError:
+        return None
+    return v
+```
+Wait: removing 'USD' substring — "USD 19.99" -> " 19.99" -> strip -> "19.99". Good. Should USD removal be case-insensitive? Spec says remove substrings '$', 'USD' and ','. I'll do case-insensitive for robustness.
+
+Validate 0 < v <= 500, else drop.
+
+tenure:
+```python
+def parse_tenure(s):
+    t = re.sub(r'(?i)\s*months?\s*$', '', s).strip()
+    ...
+```
+Careful: regex 'months?' removes "month" or "months". But value "47 Months" -> "47". Value "12 month" ok. Then parse float, check whole, 0<=v<=120.
+
+Whole number: v == int(v). Also reject things like "4.5". Also NaN.
+
+support_tickets similar without word stripping; missing -> 0.
+
+satisfaction: parse; invalid -> pd.NA; valid int.
+
+Then lifetime_value = round(monthly_fee * tenure_months, 2).
+
+Sorting: df.sort_values('customer_id').reset_index(drop=True).
+
+Column order, write CSV index=False.
+
+Summary JSON:
+
+```python
+summary = {
+    "raw_rows": raw_rows,
+    "cleaned_rows": cleaned_rows,
+    "duplicates_removed": ...,
+    "dropped_signup_date_invalid": ...,
+    ...
+}
+```
+
+Write with json.dump indent=2.
+
+Also ensure OUTPUT_DIR exists? It should exist; but os.makedirs(OUTPUT_DIR, exist_ok=True) is safe.
+
+Now counting drops per rule: process via applying functions row-wise with a working DataFrame. Simpler: iterate rows? 840 rows fine, but vectorized masks cleaner. I'll do stepwise:
+
+```python
+df = raw.copy()
+n = len(df)
+# dedupe
+dup_mask = df['customer_id'].duplicated(keep='first') | df['customer_id'].isna()  # maybe separate
+```
+
+Let me just do:
+
+```python
+before = len(df)
+df = df[df['customer_id'].notna()]
+missing_id = before - len(df)
+before = len(df)
+df = df[~df['customer_id'].duplicated(keep='first')]
+dups = before - len(df)
+```
+
+Then signup:
+
+```python
+df['signup_date'] = df['signup_date'].map(parse_signup_date)  # None for missing/invalid
+before = len(df); df = df[df['signup_date'].notna()]; dropped_signup = before - len(df)
+```
+
+Since None values in the column, map returns None; notna works.
+
+Plan:
+
+```python
+df['plan'] = df['plan'].map(lambda s: PLAN_MAP.get(s.lower()) if pd.notna(s) else None)
+```
+
+etc.
+
+monthly_fee: map to float or None (np.nan).
+
+```python
+def clean_money(s):
+    if pd.isna(s): return np.nan
+    t = re.sub(r'(?i)usd', '', str(s)).replace('$', '').replace(',', '').strip()
+    if not t: return np.nan
+    try:
+        v = float(t)
+    except ValueError:
+        return np.nan
+    if v <= 0 or v > 500: return np.nan
+    return v
+```
+
+Drop rows where isna.
+
+tenure:
+
+```python
+def clean_tenure(s):
+    if pd.isna(s): return None
+    t = re.sub(r'(?i)\s*months?\s*$', '', str(s)).strip()
+    if not t: return None
+    try:
+        v = float(t)
+    except ValueError:
+        return None
+    if not v.is_integer() or v < 0 or v > 120: return None
+    return int(v)
+```
+
+Drop None.
+
+support:
+
+```python
+def clean_tickets(s):
+    if pd.isna(s): return 0
+    t = str(s).strip()
+    try:
+        v = float(t)
+    except ValueError:
+        return None
+    if not v.is_integer() or v < 0 or v > 100: return None
+    return int(v)
+```
+
+Drop None rows (count). Note: after missing replacement, missing values are None/NaN already.
+
+satisfaction:
+
+```python
+def clean_sat(s):
+    if pd.isna(s): return pd.NA
+    t = str(s).strip()
+    try:
+        v = float(t)
+    except ValueError:
+        return pd.NA
+    if not v.is_integer() or v < 1 or v > 5: return pd.NA
+    return int(v)
+```
+
+Count how many became NA (including originally missing). satisfaction_missing count = number of NA after.
+
+churned:
+
+```python
+df['churned'] = df['churned'].map(lambda s: CHURN_MAP.get(str(s).lower()) if pd.notna(s) else None)
+```
+
+Wait churned values already stripped strings; lower. Map None -> drop.
+
+lifetime: round(df['monthly_fee'] * df['tenure_months'], 2).
+
+Set dtypes: tenure_months int, support_tickets int, satisfaction_score Int64, churned int.
+
+Write CSV. For floats, default repr fine. monthly_fee values like 19.99 write "19.99". lifetime_value e.g. 939.53. Might write 1879.06 etc. Fine.
+
+One nuance: float(t) accepts things like "1e3", "inf", "nan". "inf" > 500 gets dropped for fee. For tenure, float('nan').is_integer() raises? nan.is_integer() returns False actually. float('nan').is_integer() -> False. float('inf').is_integer() -> False. OK. But "nan" string: after missing-token replacement, 'nan' isn't a missing token (tokens: NA, N/A, null, None, '-'), so "nan" could reach parse — float('nan') parses, is_integer False -> rejected. Fine.
+
+Also for money: float('nan') — v <= 0 comparisons false, v > 500 false, so nan would pass! Guard: if not np.isfinite(v): return nan. Add that. Same for others: isfinite check.
+
+For date parse, ensure date validity via datetime.date.
+
+Now writing summary counts. Track:
+- raw_rows
+- duplicates_removed
+- dropped_missing_customer_id (maybe fold into duplicates? separate key fine)
+- dropped_invalid_signup_date
+- dropped_invalid_plan
+- dropped_invalid_contract_type
+- dropped_invalid_monthly_fee
+- dropped_invalid_tenure_months
+- dropped_invalid_support_tickets
+- satisfaction_score_set_missing
+- dropped_invalid_churned
+- cleaned_rows
+
+Now about reading: header present. pd.read_csv(input_path, dtype=str, keep_default_na=False). Then strip each cell: df = df.applymap? applymap deprecated in newer pandas; use df.apply(lambda c: c.str.strip()). Columns beyond expected? Use only expected columns — raw has exactly the 9 columns presumably. I'll select the expected columns if present.
+
+Replace missing tokens:
+
+```python
+for col in df.columns:
+    df[col] = df[col].map(lambda v: None if str(v).strip().lower() in MISSING_TOKENS else str(v).strip())
+```
+
+Since keep_default_na=False, empties are ''. After strip, '' in tokens -> None.
+
+Actually I strip first then replace. Combine: df[col].astype(str).str.strip() then mask.
+
+Now assemble final code. Also ensure not printing much.
+
+customer_id sorting: sort_values with kind stable.
+
+Let me now write the full script string.
+
+```python
+import os
+import re
+import json
+from datetime import date
+
+import numpy as np
+import pandas as pd
+
+INPUT_DIR = os.environ["INPUT_DIR"]
+OUTPUT_DIR = os.environ["OUTPUT_DIR"]
+os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+RAW_PATH = os.path.join(INPUT_DIR, "raw.csv")
+CLEANED_PATH = os.path.join(OUTPUT_DIR, "cleaned.csv")
+SUMMARY_PATH = os.path.join(OUTPUT_DIR, "cleaning_summary.json")
+
+MISSING_TOKENS = {"", "na", "n/a", "null", "none", "-"}
+
+EXPECTED_COLUMNS = [
+    "customer_id", "signup_date", "plan", "contract_type", "monthly_fee",
+    "tenure_months", "support_tickets", "satisfaction_score", "churned",
+]
+
+MONTHS = {...}
+
+def safe_date(y, m, d): ...
+def parse_signup_date(s): ...
+PLAN_MAP, CONTRACT_MAP, CHURN_MAP
+def clean_money(s): ...
+def clean_tenure(s): ...
+def clean_tickets(s): ...
+def clean_satisfaction(s): ...
+
+def main():
+    raw = pd.read_csv(RAW_PATH, dtype=str, keep_default_na=False, na_filter=False)
+    raw_rows = int(len(raw))
+    df = raw.copy()
+    for col in EXPECTED_COLUMNS:
+        if col not in df.columns:
+            df[col] = None
+    df = df[EXPECTED_COLUMNS]
+    for col in EXPECTED_COLUMNS:
+        df[col] = df[col].map(lambda v: None if v is None else (None if str(v).strip().lower() in MISSING_TOKENS else str(v).strip()))
+    ...
+```
+
+Then counts.
+
+Then final assembly, sort, write.
+
+Careful with map and None: Series.map with function returning None -> None preserved as None object; notna detects.
+
+Let me write everything concretely.
+
+```python
+MONTHS = {
+    "jan": 1, "january": 1,
+    "feb": 2, "february": 2,
+    "mar": 3, "march": 3,
+    "apr": 4, "april": 4,
+    "may": 5,
+    "jun": 6, "june": 6,
+    "jul": 7, "july": 7,
+    "aug": 8, "august": 8,
+    "sep": 9, "sept": 9, "september": 9,
+    "oct": 10, "october": 10,
+    "nov": 11, "november": 11,
+    "dec": 12, "december": 12,
+}
+
+
+def safe_date(y, m, d):
+    try:
+        return date(y, m, d).isoformat()
+    except ValueError:
+        return None
+
+
+def parse_signup_date(s):
+    if s is None:
+        return None
+    s = str(s).strip()
+    m = re.fullmatch(r"(\d{4})-(\d{1,2})-(\d{1,2})", s)
+    if m:
+        return safe_date(int(m.group(1)), int(m.group(2)), int(m.group(3)))
+    m = re.fullmatch(r"(\d{1,2})/(\d{1,2})/(\d{4})", s)
+    if m:
+        return safe_date(int(m.group(3)), int(m.group(1)), int(m.group(2)))
+    m = re.fullmatch(r"(\d{1,2})-([A-Za-z]{3})-(\d{4})", s)
+    if m:
+        mon = MONTHS.get(m.group(2).lower())
+        if mon is None:
+            return None
+        return safe_date(int(m.group(3)), mon, int(m.group(1)))
+    m = re.fullmatch(r"(\d{4})/(\d{1,2})/(\d{1,2})", s)
+    if m:
+        return safe_date(int(m.group(1)), int(m.group(2)), int(m.group(3)))
+    m = re.fullmatch(r"([A-Za-z]+)\s+(\d{1,2}),\s*(\d{4})", s)
+    if m:
+        mon = MONTHS.get(m.group(1).lower())
+        if mon is None:
+            return None
+        return safe_date(int(m.group(3)), mon, int(m.group(2)))
+    return None
+```
+
+Note "05-Mar-2024": day 05 -> int 5 fine. 3-letter abbreviation: regex {3} exactly; "Sept" 4 letters wouldn't match DD-Mon-YYYY — fine, spec says 3-letter.
+
+Money:
+
+```python
+def clean_money(s):
+    if s is None:
+        return np.nan
+    t = re.sub(r"usd", "", str(s), flags=re.IGNORECASE)
+    t = t.replace("$", "").replace(",", "").strip()
+    if t == "":
+        return np.nan
+    try:
+        v = float(t)
+    except ValueError:
+        return np.nan
+    if not np.isfinite(v) or v <= 0 or v > 500:
+        return np.nan
+    return v
+```
+
+Tenure:
+
+```python
+def clean_tenure(s):
+    if s is None:
+        return None
+    t = re.sub(r"\s*months?\s*$", "", str(s), flags=re.IGNORECASE).strip()
+    if t == "":
+        return None
+    try:
+        v = float(t)
+    except ValueError:
+        return None
+    if not np.isfinite(v) or not v.is_integer() or v < 0 or v > 120:
+        return None
+    return int(v)
+```
+
+Hmm: `months?\s*$` — for "47 Months" we remove " Months" via \s* prefix. But careful: re.sub pattern r"\s*months?\s*$" removes trailing spaces too. Good. But what about a value like "month" alone -> becomes "" -> None -> drop. Fine.
+
+Tickets:
+
+```python
+def clean_tickets(s):
+    if s is None:
+        return 0
+    t = str(s).strip()
+    try:
+        v = float(t)
+    except ValueError:
+        return None
+    if not np.isfinite(v) or not v.is_integer() or v < 0 or v > 100:
+        return None
+    return int(v)
+```
+
+Satisfaction:
+
+```python
+def clean_satisfaction(s):
+    if s is None:
+        return pd.NA
+    t = str(s).strip()
+    try:
+        v = float(t)
+    except ValueError:
+        return pd.NA
+    if not np.isfinite(v) or not v.is_integer() or v < 1 or v > 5:
+        return pd.NA
+    return int(v)
+```
+
+Main flow with counts. Then:
+
+```python
+df["lifetime_value"] = (df["monthly_fee"] * df["tenure_months"]).round(2)
+```
+
+monthly_fee float, tenure int -> product float.
+
+Dtypes:
+```python
+df["tenure_months"] = df["tenure_months"].astype(int)
+df["support_tickets"] = df["support_tickets"].astype(int)
+df["churned"] = df["churned"].astype(int)
+df["satisfaction_score"] = df["satisfaction_score"].astype("Int64")
+df["monthly_fee"] = df["monthly_fee"].astype(float)
+```
+
+Round monthly_fee to 2? Leave. Hmm, values like "39.99" parse to 39.99 exact repr. to_csv writes 39.99. Good.
+
+Sort:
+```python
+df = df.sort_values("customer_id", kind="mergesort").reset_index(drop=True)
+```
+
+customer_id as string.
+
+Write:
+```python
+df.to_csv(CLEANED_PATH, index=False)
+```
+
+Int64 NA writes as empty by default? pd.NA with na_rep default '' -> yes, empty.
+
+Summary:
+
+```python
+summary = {
+    "raw_rows": raw_rows,
+    "cleaned_rows": int(len(df)),
+    "duplicates_removed": ...,
+    "dropped_missing_customer_id": ...,
+    "dropped_invalid_signup_date": ...,
+    "dropped_invalid_plan": ...,
+    "dropped_invalid_contract_type": ...,
+    "dropped_invalid_monthly_fee": ...,
+    "dropped_invalid_tenure_months": ...,
+    "dropped_invalid_support_tickets": ...,
+    "satisfaction_score_set_missing": ...,
+    "dropped_invalid_churned": ...,
+    "rows_dropped_total": raw_rows - len(df),
+}
+with open(SUMMARY_PATH, "w") as f:
+    json.dump(summary, f, indent=2)
+```
+
+Helper for drop counting:
+
+```python
+def drop_na(df, col):
+    before = len(df)
+    df = df[df[col].notna()].copy()
+    return df, before - len(df)
+```
+
+But support_tickets missing->0: the clean function returns 0 for missing input and None for invalid. After mapping, drop rows with None. Good.
+
+One issue: after mapping satisfaction to int or pd.NA in object column, astype("Int64") works.
+
+Churn map: str(s).strip().lower().
+
+Also churned values like "TRUE" -> "true" -> 1. Good.
+
+Edge: plan "Basic Plan" lower "basic plan" in map. Good.
+
+Now the requirement "Read every column of the raw CSV as text" — dtype=str does that.
+
+Also count duplicates before other row filters — yes, R2 first.
+
+Missing customer_id dropping: spec doesn't require, but schema not nullable. I'll include drop and count. Fine.
+
+Print a short line maybe: print(f"Wrote {len(df)} rows"). "must not print large amounts of data" — one line fine.
+
+Now produce JSON answer with python_code string, output_filename "cleaned.csv", cleaning_logic brief.
+
+Double-check Int64 to_csv empty: Yes, missing values are written as empty string by default.
+
+Potential pitfall: `df[col].notna()` when column contains None and ints — fine.
+
+Also after `df = df[df[col].notna()]` for signup, subsequent maps handle None.
+
+Let me also ensure monthly_fee not written with symbols — yes floats.
+
+Whole-number float parse of tenure "47" -> 47.0 is_integer True.
+
+Satisfaction "5.0" -> 5.
+
+Now write final script cleanly.
+
+Also guard: raw.csv may have extra whitespace in header names? Header shown as normal. Strip column names too: raw.columns = [c.strip() for c in raw.columns]. Good idea.
+
+Write the code now.
+
+One more consideration: `pd.read_csv(..., dtype=str, keep_default_na=False)` — with keep_default_na=False, empty fields become ''. na_filter=False implied. I'll pass both.
+
+Also, thousands separator removal in monthly_fee: "1,234.56" -> "1234.56" which is > 500 -> dropped anyway.
+
+Final JSON.

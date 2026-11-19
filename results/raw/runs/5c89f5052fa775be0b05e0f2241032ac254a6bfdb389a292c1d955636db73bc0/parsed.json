@@ -1,0 +1,8 @@
+{
+  "fixed_code": "from collections import deque\n\n\ndef shortest_path(graph, start, goal):\n    q = deque([(start, [start])])\n    seen = {start}\n    while q:\n        node, path = q.popleft()\n        if node == goal:\n            return path\n        for nxt in graph.get(node, []):\n            if nxt not in seen:\n                seen.add(nxt)\n                q.append((nxt, path + [nxt]))\n    return None\n",
+  "bug_locations": [
+    "shortest_path initialization: the BFS queue was seeded as (start, []) so the path accumulator omitted the start node from every returned node list.",
+    "shortest_path initialization: the visited set was seeded empty instead of {start}, letting a back-edge/self-loop re-enqueue the start vertex and process it twice."
+  ],
+  "explanation": "The path stored with each queue entry never contained the start node: the queue began with an empty path and only the neighbour was appended, so the function returned the route without its first vertex (the visible check got ['b'] instead of ['a','b'], and start == goal returned []). Seed the queue with (start, [start]) so returned paths are complete node lists. Additionally, mark start as visited up front (seen = {start}) so the start vertex is treated as already discovered and is not re-added through a back-edge or self-loop. BFS still explores neighbours in listed order and returns None (null) if the queue empties before goal is reached."
+}

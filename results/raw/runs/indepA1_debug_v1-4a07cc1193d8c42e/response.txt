@@ -1,0 +1,7 @@
+```json
+{
+  "fixed_code": "def rank_key(item):\n    word, count = item\n    return (-count, word)\n\ndef top_k(counts, k):\n    return sorted(counts.items(), key=rank_key)[:max(k, 0)]\n",
+  "bug_location": "rank_key function: the return value uses positive count instead of negative count, and top_k uses reverse=True which breaks alphabetical ordering for equal counts.",
+  "explanation": "When using reverse=True, both count and word are reversed, so equal counts would be sorted in reverse alphabetical order instead of alphabetical order. The fix is to negate the count in rank_key and sort in ascending order (no reverse=True), so counts are sorted descending (via negation) and words are sorted ascending (alphabetically) for equal counts."
+}
+```

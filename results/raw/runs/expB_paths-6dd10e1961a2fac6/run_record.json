@@ -1,0 +1,140 @@
+{
+  "contract_version": "1.2",
+  "run_id": "expB_paths-6dd10e1961a2fac6",
+  "experiment_id": "expB_paths",
+  "project_id": "retail_sales",
+  "path_id": "C-C",
+  "models": [
+    "C",
+    "C"
+  ],
+  "repeat_index": 0,
+  "config_hash": "a269f988b9ccb012ff97b99f9b4c105b50a3293a71bd5c644dded63219e888f1",
+  "failure_policy": "continue_with_actual_artifact",
+  "started_at": "2026-11-18T02:29:44.468278+00:00",
+  "finished_at": "2026-11-18T02:30:04.809467+00:00",
+  "stages": [
+    {
+      "stage": "cleaning",
+      "model_alias": "C",
+      "model_id": "openai.gpt-oss-120b-1:0",
+      "prompt_version": "v2",
+      "prompt_hash": "db9085b5641fae0b1962e16963671aa36c598358db09e4a841d5a054b0253296",
+      "invocation_ids": [
+        "2f8f47c1-3c05-4f77-88de-af284ab556e1",
+        "2f8f47c1-3c05-4f77-88de-af284ab556e1:parse"
+      ],
+      "cache_hit": false,
+      "shared_with_run_ids": [],
+      "status": "failed",
+      "structural_ok": false,
+      "failure_type": "truncated",
+      "failure_detail": "output hit maxTokens and could not be parsed (invalid_json)",
+      "parse_ok": false,
+      "execution": null,
+      "validation": null,
+      "conditional_validation": null,
+      "input_artifacts": [
+        "datasets/projects/retail_sales/raw.csv"
+      ],
+      "output_artifacts": [
+        "results/raw/runs/expB_paths-6dd10e1961a2fac6/cleaning/prompt.txt",
+        "results/raw/runs/expB_paths-6dd10e1961a2fac6/cleaning/response.txt",
+        "results/raw/runs/expB_paths-6dd10e1961a2fac6/cleaning/reasoning.txt"
+      ],
+      "input_artifact_hashes": {
+        "datasets/projects/retail_sales/raw.csv": "a1c513b0966bc95bb7cf521bc8920d7a70ccac71ff98d1564a6d84e013f33a5c"
+      },
+      "output_artifact_hashes": {
+        "results/raw/runs/expB_paths-6dd10e1961a2fac6/cleaning/prompt.txt": "db9085b5641fae0b1962e16963671aa36c598358db09e4a841d5a054b0253296",
+        "results/raw/runs/expB_paths-6dd10e1961a2fac6/cleaning/response.txt": "778145de716c79d48c1b73c646b4e51f1f68decf92e9e15c3af7690c4ce6b2de",
+        "results/raw/runs/expB_paths-6dd10e1961a2fac6/cleaning/reasoning.txt": "3e28f2a9753d08bbf82057281863ad792fd33bebc9e213f23d1d697c08822204"
+      },
+      "handoff_in_path": "results/raw/runs/expB_paths-6dd10e1961a2fac6/cleaning/handoff_in.json",
+      "handoff_size_bytes": 573,
+      "input_tokens": 1870,
+      "output_tokens": 4096,
+      "cost_usd": null,
+      "cost_status": "unavailable",
+      "timings": {
+        "generation_ms": 20220.94170800119,
+        "execution_ms": null,
+        "validation_ms": null,
+        "handoff_ms": 0.17962499987334013
+      }
+    },
+    {
+      "stage": "analysis",
+      "model_alias": "C",
+      "model_id": "openai.gpt-oss-120b-1:0",
+      "prompt_version": "v2",
+      "prompt_hash": null,
+      "invocation_ids": [],
+      "cache_hit": false,
+      "shared_with_run_ids": [],
+      "status": "blocked_by_invalid_artifact",
+      "structural_ok": null,
+      "failure_type": null,
+      "failure_detail": "upstream cleaning artifact 'cleaned_csv' unusable: no structured output (parse failure)",
+      "parse_ok": null,
+      "execution": null,
+      "validation": null,
+      "conditional_validation": null,
+      "input_artifacts": [],
+      "output_artifacts": [],
+      "input_artifact_hashes": {},
+      "output_artifact_hashes": {},
+      "handoff_in_path": null,
+      "handoff_size_bytes": null,
+      "input_tokens": null,
+      "output_tokens": null,
+      "cost_usd": null,
+      "cost_status": "not_incurred",
+      "timings": {
+        "generation_ms": null,
+        "execution_ms": null,
+        "validation_ms": null,
+        "handoff_ms": null
+      }
+    }
+  ],
+  "feasibility": {
+    "outcome": "infeasible",
+    "stage_status": {
+      "cleaning": "failed",
+      "analysis": "blocked_by_invalid_artifact"
+    },
+    "first_failure_stage": "cleaning",
+    "failure_type": "truncated"
+  },
+  "quality": {},
+  "conditional_quality": {},
+  "efficiency": {
+    "total_api_latency_ms": 20220.94170800119,
+    "total_execution_ms": null,
+    "total_validation_ms": null,
+    "total_handoff_ms": 0.17962499987334013,
+    "end_to_end_ms": 20341.162791999523,
+    "input_tokens": 1870,
+    "output_tokens": 4096,
+    "cost_usd": null,
+    "cost_status": "unavailable",
+    "n_calls": 1,
+    "n_cache_hits": 0,
+    "n_switches": 0,
+    "handoff_bytes_total": 573
+  },
+  "propagation": {
+    "downstream_executable": {
+      "cleaning": false,
+      "analysis": false
+    },
+    "upstream_error_severity": {},
+    "end_to_end_accuracy": {},
+    "propagation_impact": {},
+    "blocked_stages": [
+      "analysis"
+    ]
+  },
+  "final_artifacts": []
+}

@@ -1,0 +1,7 @@
+{
+  "fixed_code": "def dedupe(xs):\n    \"\"\"Remove later duplicates while preserving first-occurrence order.\n\n    Uses equality comparisons instead of hashing, so unhashable values are supported.\n    \"\"\"\n    kept = []\n    for x in xs:\n        if x not in kept:\n            kept.append(x)\n    return kept\n",
+  "bug_locations": [
+    "dedupe"
+  ],
+  "explanation": "The implementation used sorted(set(xs)), which requires hashable items and destroys first-occurrence order by sorting. It now iterates the input once, appending only values not already kept via equality membership, so order is preserved and unhashable values work. This is O(n^2) in the worst case but matches general equality semantics."
+}

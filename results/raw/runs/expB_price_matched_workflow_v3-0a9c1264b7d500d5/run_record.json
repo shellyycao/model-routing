@@ -1,0 +1,409 @@
+{
+  "contract_version": "1.2",
+  "run_id": "expB_price_matched_workflow_v3-0a9c1264b7d500d5",
+  "experiment_id": "expB_price_matched_workflow_v3",
+  "project_id": "support_operations",
+  "path_id": "A-C-A",
+  "models": [
+    "A",
+    "C",
+    "A"
+  ],
+  "repeat_index": 0,
+  "config_hash": "f94f3b35f9df630d2ba3918b19bdabad39651af1185baa1d35cb3e571d93411e",
+  "failure_policy": "continue_with_actual_artifact",
+  "started_at": "2026-11-19T05:42:18.662532+00:00",
+  "finished_at": "2026-11-19T05:42:50.405808+00:00",
+  "stages": [
+    {
+      "stage": "cleaning",
+      "model_alias": "A",
+      "model_id": "us.anthropic.claude-sonnet-4-6",
+      "prompt_version": "v3",
+      "prompt_hash": "4c80e726ad39dcec71d0f3668b55982f474546dfd54cafee800a7f420e1182ec",
+      "invocation_ids": [
+        "28236d6f-cc3a-437d-a264-ac0a8aa04bbf"
+      ],
+      "cache_hit": false,
+      "shared_with_run_ids": [],
+      "status": "passed",
+      "structural_ok": true,
+      "failure_type": null,
+      "failure_detail": null,
+      "parse_ok": true,
+      "execution": {
+        "status": "success",
+        "exit_code": 0,
+        "stdout": "Cleaning complete: 380 raw rows -> 347 cleaned rows.\n{\n  \"raw_rows\": 380,\n  \"tickets_deduped\": 20,\n  \"agents_deduped\": 0,\n  \"agents_excluded_invalid\": 0,\n  \"tickets_dropped_no_agent\": 6,\n  \"tickets_dropped_invalid_channel\": 4,\n  \"tickets_dropped_invalid_resolution\": 3,\n  \"tickets_dropped_invalid_reopened\": 0,\n  \"cleaned_rows\": 347\n}\n",
+        "stderr": "",
+        "runtime_ms": 914.388165998389,
+        "output_files": [
+          "/Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expB_price_matched_workflow_v3-0a9c1264b7d500d5/cleaning/output/cleaned.csv",
+          "/Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expB_price_matched_workflow_v3-0a9c1264b7d500d5/cleaning/output/cleaning_summary.json"
+        ],
+        "sandbox_image": "sha256:88988a15503bdb96538c3dd62244a79879d5c7848397db18b1267ccfd0a9727a"
+      },
+      "validation": {
+        "stage": "cleaning",
+        "hard_pass": true,
+        "checks": [
+          {
+            "name": "output_exists",
+            "passed": true,
+            "mandatory": true,
+            "detail": "/Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expB_price_matched_workflow_v3-0a9c1264b7d500d5/cleaning/output/cleaned.csv",
+            "value": null
+          },
+          {
+            "name": "output_parses",
+            "passed": true,
+            "mandatory": true,
+            "detail": "347 rows, 10 columns",
+            "value": null
+          },
+          {
+            "name": "required_columns_present",
+            "passed": true,
+            "mandatory": true,
+            "detail": "all present",
+            "value": null
+          },
+          {
+            "name": "schema_constraints",
+            "passed": true,
+            "mandatory": true,
+            "detail": "all constraints satisfied",
+            "value": 1.0
+          },
+          {
+            "name": "no_extra_columns",
+            "passed": true,
+            "mandatory": false,
+            "detail": "",
+            "value": null
+          },
+          {
+            "name": "no_duplicate_keys",
+            "passed": true,
+            "mandatory": true,
+            "detail": "",
+            "value": 0.0
+          },
+          {
+            "name": "row_set_matches_reference",
+            "passed": true,
+            "mandatory": true,
+            "detail": "0 reference rows missing (e.g. []); 0 unexpected rows (e.g. []); output rows=347, reference rows=347",
+            "value": null
+          },
+          {
+            "name": "values_match_reference",
+            "passed": true,
+            "mandatory": true,
+            "detail": "3470/3470 cells match (abs_tol=0.011, rel_tol=1e-06)",
+            "value": 1.0
+          }
+        ],
+        "quality": {
+          "cleaning_correctness": 1.0,
+          "data_integrity": 1.0,
+          "schema_compliance": 1.0
+        },
+        "quality_basis": "ground_truth",
+        "validator_version": "1.0"
+      },
+      "conditional_validation": null,
+      "input_artifacts": [
+        "datasets/projects/support_operations/raw.csv",
+        "datasets/projects/support_operations/agents.csv"
+      ],
+      "output_artifacts": [
+        "results/raw/runs/expB_price_matched_workflow_v3-0a9c1264b7d500d5/cleaning/prompt.txt",
+        "results/raw/runs/expB_price_matched_workflow_v3-0a9c1264b7d500d5/cleaning/response.txt",
+        "results/raw/runs/expB_price_matched_workflow_v3-0a9c1264b7d500d5/cleaning/parsed.json",
+        "results/raw/runs/expB_price_matched_workflow_v3-0a9c1264b7d500d5/cleaning/code.py",
+        "results/raw/runs/expB_price_matched_workflow_v3-0a9c1264b7d500d5/cleaning/output/cleaned.csv",
+        "results/raw/runs/expB_price_matched_workflow_v3-0a9c1264b7d500d5/cleaning/output/cleaning_summary.json"
+      ],
+      "input_artifact_hashes": {
+        "datasets/projects/support_operations/raw.csv": "d260e1c2251ade14aa044895797fa2d39647b6d1fe43ba7c79d8c5a48fd287fd",
+        "datasets/projects/support_operations/agents.csv": "51d9c560abc74a09ea32b0c667fc52c8d0f5479fd5a01314fc8f7f2fc0ff4442"
+      },
+      "output_artifact_hashes": {
+        "results/raw/runs/expB_price_matched_workflow_v3-0a9c1264b7d500d5/cleaning/prompt.txt": "4c80e726ad39dcec71d0f3668b55982f474546dfd54cafee800a7f420e1182ec",
+        "results/raw/runs/expB_price_matched_workflow_v3-0a9c1264b7d500d5/cleaning/response.txt": "6cbad1d0dfbd6e9f43092742dcdb3048ef53ecd8434bda79b00ab50db8c08fb6",
+        "results/raw/runs/expB_price_matched_workflow_v3-0a9c1264b7d500d5/cleaning/parsed.json": "c4c4257b1fa65a4ef5e72bc8aa321b0c484c3dffb07faaf68eee68ae700fac90",
+        "results/raw/runs/expB_price_matched_workflow_v3-0a9c1264b7d500d5/cleaning/code.py": "998e7c78a1fd083fad91f2f0713741a0f2143d8ea2521e50407a02e3f5d28491",
+        "results/raw/runs/expB_price_matched_workflow_v3-0a9c1264b7d500d5/cleaning/output/cleaned.csv": "5b4c6d98fc2b827fad9ca4bb5a9686e6153b3eacb6e9a66ccb9fed0aa3c52af9",
+        "results/raw/runs/expB_price_matched_workflow_v3-0a9c1264b7d500d5/cleaning/output/cleaning_summary.json": "0a86687256e6ee7fa8cd9c36e18e76794b67ba3e475284361c8e866469438334"
+      },
+      "handoff_in_path": "results/raw/runs/expB_price_matched_workflow_v3-0a9c1264b7d500d5/cleaning/handoff_in.json",
+      "handoff_size_bytes": 424,
+      "input_tokens": 1757,
+      "output_tokens": 3271,
+      "cost_usd": 0.0597696,
+      "cost_status": "estimated",
+      "timings": {
+        "generation_ms": 19957.481750003353,
+        "execution_ms": 914.388165998389,
+        "validation_ms": 7.869667002523784,
+        "handoff_ms": 0.3345000004628673
+      }
+    },
+    {
+      "stage": "analysis",
+      "model_alias": "C",
+      "model_id": "zai.glm-5",
+      "prompt_version": "v3",
+      "prompt_hash": "a0b5dc10d3b5c24ffd4370359d0392e65fa75196c7a06fb815ad7435af11807d",
+      "invocation_ids": [
+        "7d439195-4fc6-4098-9485-02ac73589613"
+      ],
+      "cache_hit": false,
+      "shared_with_run_ids": [],
+      "status": "failed",
+      "structural_ok": false,
+      "failure_type": "execution_error",
+      "failure_detail": "execution runtime_error (exit 1): Traceback (most recent call last):\n  File \"/sandbox/code/main.py\", line 80, in <module>\n    json.dump(results, f)\n  File \"/usr/local/lib/python3.12/json/__init__.py\", line 179, in dump\n    for chunk in iterable:\n                 ^^^^^^^^\n  File \"/usr/local/lib/python3.12/json/encoder.py\", line 432, in _iterencode\n    yield from _iterencode_dict(o, _current_indent_level)\n  File \"/usr/local/lib/python3.12/json/encoder.py\", line 406, in _iterencode_dict\n    yield from chunks\n  File \"/usr/local/lib/python3.12/json/encoder.py\", line 439, in _iterencode\n    o = _default(o)\n        ^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/json/encoder.py\", line 180, in default\n    raise TypeError(f'Object of type {o.__class__.__name__} '\nTypeError: Object of type int64 is not JSON serializable\n",
+      "parse_ok": true,
+      "execution": {
+        "status": "runtime_error",
+        "exit_code": 1,
+        "stdout": "",
+        "stderr": "Traceback (most recent call last):\n  File \"/sandbox/code/main.py\", line 80, in <module>\n    json.dump(results, f)\n  File \"/usr/local/lib/python3.12/json/__init__.py\", line 179, in dump\n    for chunk in iterable:\n                 ^^^^^^^^\n  File \"/usr/local/lib/python3.12/json/encoder.py\", line 432, in _iterencode\n    yield from _iterencode_dict(o, _current_indent_level)\n  File \"/usr/local/lib/python3.12/json/encoder.py\", line 406, in _iterencode_dict\n    yield from chunks\n  File \"/usr/local/lib/python3.12/json/encoder.py\", line 439, in _iterencode\n    o = _default(o)\n        ^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/json/encoder.py\", line 180, in default\n    raise TypeError(f'Object of type {o.__class__.__name__} '\nTypeError: Object of type int64 is not JSON serializable\n",
+        "runtime_ms": 826.3048340013484,
+        "output_files": [
+          "/Users/shellyy/Desktop/model-routing-xai/results/raw/runs/expB_price_matched_workflow_v3-0a9c1264b7d500d5/analysis/output/findings.json"
+        ],
+        "sandbox_image": "sha256:88988a15503bdb96538c3dd62244a79879d5c7848397db18b1267ccfd0a9727a"
+      },
+      "validation": {
+        "stage": "analysis",
+        "hard_pass": false,
+        "checks": [
+          {
+            "name": "findings_exists",
+            "passed": true,
+            "mandatory": true,
+            "detail": "",
+            "value": null
+          },
+          {
+            "name": "findings_parses",
+            "passed": false,
+            "mandatory": true,
+            "detail": "invalid JSON: Expecting value: line 1 column 660 (char 659)",
+            "value": null
+          },
+          {
+            "name": "required_keys_present",
+            "passed": false,
+            "mandatory": true,
+            "detail": "no parseable findings",
+            "value": null
+          },
+          {
+            "name": "values_numeric",
+            "passed": false,
+            "mandatory": true,
+            "detail": "no parseable findings",
+            "value": null
+          },
+          {
+            "name": "values_within_tolerance",
+            "passed": false,
+            "mandatory": true,
+            "detail": "no parseable findings",
+            "value": null
+          }
+        ],
+        "quality": {
+          "numerical_accuracy": 0.0,
+          "calculation_coverage": 0.0
+        },
+        "quality_basis": "ground_truth",
+        "validator_version": "1.0"
+      },
+      "conditional_validation": {
+        "stage": "analysis",
+        "hard_pass": false,
+        "checks": [
+          {
+            "name": "findings_exists",
+            "passed": true,
+            "mandatory": true,
+            "detail": "",
+            "value": null
+          },
+          {
+            "name": "findings_parses",
+            "passed": false,
+            "mandatory": true,
+            "detail": "invalid JSON: Expecting value: line 1 column 660 (char 659)",
+            "value": null
+          },
+          {
+            "name": "required_keys_present",
+            "passed": false,
+            "mandatory": true,
+            "detail": "no parseable findings",
+            "value": null
+          },
+          {
+            "name": "values_numeric",
+            "passed": false,
+            "mandatory": true,
+            "detail": "no parseable findings",
+            "value": null
+          },
+          {
+            "name": "values_within_tolerance",
+            "passed": false,
+            "mandatory": true,
+            "detail": "no parseable findings",
+            "value": null
+          }
+        ],
+        "quality": {
+          "numerical_accuracy": 0.0,
+          "calculation_coverage": 0.0
+        },
+        "quality_basis": "conditional_reference",
+        "validator_version": "1.0"
+      },
+      "input_artifacts": [
+        "results/raw/runs/expB_price_matched_workflow_v3-0a9c1264b7d500d5/cleaning/output/cleaned.csv"
+      ],
+      "output_artifacts": [
+        "results/raw/runs/expB_price_matched_workflow_v3-0a9c1264b7d500d5/analysis/prompt.txt",
+        "results/raw/runs/expB_price_matched_workflow_v3-0a9c1264b7d500d5/analysis/response.txt",
+        "results/raw/runs/expB_price_matched_workflow_v3-0a9c1264b7d500d5/analysis/parsed.json",
+        "results/raw/runs/expB_price_matched_workflow_v3-0a9c1264b7d500d5/analysis/code.py",
+        "results/raw/runs/expB_price_matched_workflow_v3-0a9c1264b7d500d5/analysis/output/findings.json"
+      ],
+      "input_artifact_hashes": {
+        "results/raw/runs/expB_price_matched_workflow_v3-0a9c1264b7d500d5/cleaning/output/cleaned.csv": "5b4c6d98fc2b827fad9ca4bb5a9686e6153b3eacb6e9a66ccb9fed0aa3c52af9"
+      },
+      "output_artifact_hashes": {
+        "results/raw/runs/expB_price_matched_workflow_v3-0a9c1264b7d500d5/analysis/prompt.txt": "a0b5dc10d3b5c24ffd4370359d0392e65fa75196c7a06fb815ad7435af11807d",
+        "results/raw/runs/expB_price_matched_workflow_v3-0a9c1264b7d500d5/analysis/response.txt": "2eb3412f829d3ab06031a5d8f83a7801ba94244cbbd8a3e20f1bf1d786229283",
+        "results/raw/runs/expB_price_matched_workflow_v3-0a9c1264b7d500d5/analysis/parsed.json": "3ae8cf4889a3e94b87c026599932595f6aa3f73d1a73565f56f88b02acbdf24b",
+        "results/raw/runs/expB_price_matched_workflow_v3-0a9c1264b7d500d5/analysis/code.py": "c735ef99d953da501a2dbfff817309100311de00742f644f7a94bf6e6cde6320",
+        "results/raw/runs/expB_price_matched_workflow_v3-0a9c1264b7d500d5/analysis/output/findings.json": "307f9ccb26e702669fcaaf775d298765aa39fbf806e701861089a9834b4e87c4"
+      },
+      "handoff_in_path": "results/raw/runs/expB_price_matched_workflow_v3-0a9c1264b7d500d5/analysis/handoff_in.json",
+      "handoff_size_bytes": 19528,
+      "input_tokens": 2081,
+      "output_tokens": 1217,
+      "cost_usd": 0.0059754000000000005,
+      "cost_status": "estimated",
+      "timings": {
+        "generation_ms": 7604.919750003319,
+        "execution_ms": 826.3048340013484,
+        "validation_ms": 11.59491600265028,
+        "handoff_ms": 0.5342919976101257
+      }
+    },
+    {
+      "stage": "reporting",
+      "model_alias": "A",
+      "model_id": "us.anthropic.claude-sonnet-4-6",
+      "prompt_version": "v3",
+      "prompt_hash": null,
+      "invocation_ids": [],
+      "cache_hit": false,
+      "shared_with_run_ids": [],
+      "status": "blocked_by_invalid_artifact",
+      "structural_ok": null,
+      "failure_type": null,
+      "failure_detail": "upstream analysis artifact 'findings' unusable: failed structural checks findings_parses, required_keys_present",
+      "parse_ok": null,
+      "execution": null,
+      "validation": null,
+      "conditional_validation": null,
+      "input_artifacts": [],
+      "output_artifacts": [],
+      "input_artifact_hashes": {},
+      "output_artifact_hashes": {},
+      "handoff_in_path": null,
+      "handoff_size_bytes": null,
+      "input_tokens": null,
+      "output_tokens": null,
+      "cost_usd": null,
+      "cost_status": "not_incurred",
+      "timings": {
+        "generation_ms": null,
+        "execution_ms": null,
+        "validation_ms": null,
+        "handoff_ms": null
+      }
+    }
+  ],
+  "feasibility": {
+    "outcome": "infeasible",
+    "stage_status": {
+      "cleaning": "passed",
+      "analysis": "failed",
+      "reporting": "blocked_by_invalid_artifact"
+    },
+    "first_failure_stage": "analysis",
+    "failure_type": "execution_error"
+  },
+  "quality": {
+    "cleaning": {
+      "cleaning_correctness": 1.0,
+      "data_integrity": 1.0,
+      "schema_compliance": 1.0
+    },
+    "analysis": {
+      "numerical_accuracy": 0.0,
+      "calculation_coverage": 0.0
+    }
+  },
+  "conditional_quality": {
+    "analysis": {
+      "numerical_accuracy": 0.0,
+      "calculation_coverage": 0.0
+    }
+  },
+  "efficiency": {
+    "total_api_latency_ms": 27562.401500006672,
+    "total_execution_ms": 1740.6929999997374,
+    "total_validation_ms": 19.464583005174063,
+    "total_handoff_ms": 0.868791998072993,
+    "end_to_end_ms": 31742.983666998043,
+    "input_tokens": 3838,
+    "output_tokens": 4488,
+    "cost_usd": 0.065745,
+    "cost_status": "estimated",
+    "n_calls": 2,
+    "n_cache_hits": 0,
+    "n_switches": 2,
+    "handoff_bytes_total": 19952
+  },
+  "propagation": {
+    "downstream_executable": {
+      "cleaning": true,
+      "analysis": false,
+      "reporting": false
+    },
+    "upstream_error_severity": {
+      "analysis": {
+        "cleaning_correctness": 0.0,
+        "data_integrity": 0.0,
+        "schema_compliance": 0.0
+      }
+    },
+    "end_to_end_accuracy": {},
+    "propagation_impact": {
+      "analysis": {
+        "calculation_coverage": 0.0,
+        "numerical_accuracy": 0.0
+      }
+    },
+    "blocked_stages": [
+      "reporting"
+    ]
+  },
+  "final_artifacts": []
+}

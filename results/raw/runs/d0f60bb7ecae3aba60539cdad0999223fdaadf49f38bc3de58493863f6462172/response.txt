@@ -1,0 +1,10 @@
+```json
+{
+  "fixed_code": "from collections import defaultdict, deque\n\n\ndef allowed(events, limit, window):\n    q = defaultdict(deque)\n    out = []\n    for user, t in events:\n        # Evict prior allowed events that are no longer in (t - window, t].\n        # Events exactly at t - window are outside the half-open window.\n        while q[user] and q[user][0] <= t - window:\n            q[user].popleft()\n        ok = len(q[user]) < limit\n        out.append(ok)\n        if ok:\n            # Only allowed events consume capacity.\n            q[user].append(t)\n    return out\n",
+  "bug_locations": [
+    "allowed: the eviction loop condition `q[user][0] < t-window` uses the wrong boundary comparison for the half-open window (time-window, time]",
+    "allowed: the unconditional `q[user].append(t)` after the decision lets rejected events consume capacity"
+  ],
+  "explanation": "Two defects interacted in `allowed`. (1) Window boundary: the spec counts prior allowed events in the half-open interval (time-window, time], so an event exactly at time-window must be evicted; the buggy `< t-window` test kept it, wrongly counting it against the limit (this is exactly what the visible check catches: with limit=1, window=1, the event at t=1 must not count the event at t=0). Fixed by evicting while q[user][0] <= t - window. (2) Capacity accounting: the buggy code appended every event's timestamp to the deque, so rejected events consumed capacity and could block later events; per the spec, rejected events must not consume capacity. Fixed by appending t only when the event is allowed. The deque-based sliding window remains valid because each user's events are processed in the given order and only allowed (counted) timestamps are stored."
+}
+```

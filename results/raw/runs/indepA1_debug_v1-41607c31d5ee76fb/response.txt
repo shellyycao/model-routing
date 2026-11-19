@@ -1,0 +1,7 @@
+```json
+{
+  "fixed_code": "def binary_search(xs, target):\n    lo, hi = 0, len(xs) - 1\n    while lo <= hi:\n        mid = (lo + hi) // 2\n        if xs[mid] == target:\n            return mid\n        if xs[mid] < target:\n            lo = mid + 1\n        else:\n            hi = mid - 1\n    return -1",
+  "bug_location": "binary_search: the loop condition `while lo < hi` should be `while lo <= hi` to ensure the last element is examined.",
+  "explanation": "Using `lo < hi` skips checking the case where `lo == hi`, causing the algorithm to miss a target that resides at the final remaining index. Changing the condition to `<=` allows the search to consider all elements."
+}
+```

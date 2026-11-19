@@ -1,0 +1,7 @@
+{
+  "fixed_code": "def clamp(x, low, high):\n    if low > high: raise ValueError('bounds')\n    return max(min(x, high), low)\n",
+  "bug_locations": [
+    "return statement in clamp"
+  ],
+  "explanation": "The original code had `max(min(x, low), high)` which is inverted. `min(x, low)` caps x at the lower bound instead of the upper bound, and `max(..., high)` then tries to enforce the upper bound as a floor. The correct logic is `max(min(x, high), low)`: first clamp x to at most `high`, then ensure it is at least `low`."
+}
