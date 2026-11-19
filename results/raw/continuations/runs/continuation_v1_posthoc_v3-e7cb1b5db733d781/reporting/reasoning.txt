@@ -1,0 +1,84 @@
+Let me carefully construct the report.
+
+Verified findings:
+- ticket_count: 347
+- mean_resolution_minutes: 75.19
+- total_labor_cost: 27422.9
+- labor_cost_alpha: 7787.81
+- labor_cost_beta: 10247.36
+- labor_cost_gamma: 9387.73
+- resolution_email: 73.02
+- resolution_chat: 83.04
+- resolution_phone: 69.25
+- reopen_rate_email_pct: 17.24
+- reopen_rate_chat_pct: 7.84
+- email_vs_chat_reopen_change_pct: 119.83
+- high_cost_low_sat_count: 12
+- high_cost_low_sat_reopen_pct: 8.33
+- resolution_median: 65
+- resolution_std: 51.93
+- satisfaction_mean: 4.15
+- satisfaction_missing_count: 19
+- unique_agent_count: 18
+- top_agent_ticket_count: 26
+- top_agent_ticket_share_pct: 7.49
+
+Requirements:
+- q2 ranking required: labels Alpha, Beta, Gamma. Order high to low: Beta (10247.36), Gamma (9387.73), Alpha (7787.81). Ranking: ["Beta", "Gamma", "Alpha"].
+- q3 ranking required: labels chat, email, phone. Values: chat 83.04, email 73.02, phone 69.25. Ranking: ["chat", "email", "phone"].
+- q4 direction required: metric email_vs_chat_reopen_change_pct = 119.83 > 0 → increase.
+
+reported_values: include every metric_key of that question with verified value.
+
+derived_values: declare any number computed in text. If I state any derived numbers (e.g., difference between email and chat reopen rates ~9.4 pp), I should declare them. To keep it safe, I can avoid derived numbers in text except where required. But the email_vs_chat_reopen_change_pct is itself a verified metric, so I can state it directly. For q2, maybe I want to state Beta exceeds Alpha by X — that's derived; I could include it and declare. Simpler: avoid derived numbers, just state verified values. But statements must include at least one verified numeric value each — fine.
+
+However, if I say "Beta leads" no derived number needed. Let me keep statements with verified numbers only, no derived computations, so derived_values arrays are empty. But maybe adding a couple derived values is nice. The rules say derived_values must declare every number computed from findings. I could include e.g. q4 difference: 17.24 - 7.84 = 9.40 percentage points. That's a difference kind with operands [reopen_rate_email_pct, reopen_rate_chat_pct], value 9.40. That's fine but optional. I'll keep it minimal—maybe include one or two derived values to enrich, but each adds risk. I'll include a difference for q4 since it's natural: "9.4 percentage points higher". Actually the pct change metric already conveys it; I can just say "email reopen rate of 17.24% vs chat 7.84%, a 119.83% relative increase". All verified. No derived needed.
+
+Word count: under 650 words for title, summary, statements, limitations, conclusion. Keep concise.
+
+Let me draft:
+
+Title: "Support Operations Report: Cost, Speed, Reopening, Satisfaction & Agent Concentration"
+
+Executive summary: "Across 347 cleaned support tickets, mean resolution time was 75.19 minutes and total labor cost was $27,422.90. Team Beta carries the highest labor cost ($10,247.36), chat is the slowest channel (83.04 min mean), and email tickets reopen at 17.24% — a 119.83% relative increase over chat's 7.84%. Satisfaction averages 4.15 (19 missing scores), and workload is spread across 18 agents, with the top agent handling 26 tickets (7.49% share)."
+
+Key findings statements:
+
+q1: "The cleaned dataset contains 347 tickets with a mean resolution time of 75.19 minutes and total labor cost of $27,422.90." evidence: ticket_count, mean_resolution_minutes, total_labor_cost. reported_values all three.
+
+q2: "Total labor cost by team: Beta $10,247.36, Gamma $9,387.73, Alpha $7,787.81 — Beta highest, Alpha lowest." ranking ["Beta","Gamma","Alpha"].
+
+q3: "Mean resolution minutes by channel: chat 83.04, email 73.02, phone 69.25 — chat slowest, phone fastest." ranking ["chat","email","phone"].
+
+q4: "Email reopen rate 17.24% vs chat 7.84%, a 119.83% relative increase for email over chat." direction "increase".
+
+q5: "12 tickets have labor_cost >= $100 and satisfaction <= 2; their reopen rate is 8.33%."
+
+q6: "Median resolution time is 65 minutes (std 51.93); mean satisfaction is 4.15 with 19 missing satisfaction scores."
+
+q7: "18 unique agents; the busiest handled 26 tickets, a 7.49% share of all tickets — workload is broadly distributed."
+
+Limitations:
+- 19 tickets missing satisfaction scores; satisfaction mean excludes them, which may bias the average if missingness isn't random.
+- High-cost low-satisfaction segment is small (12 tickets), so its reopen rate is unstable.
+- Data is a single export snapshot; no time period given, so no trend or seasonality analysis possible.
+- Reopen analysis limited to email and chat; phone reopen rate not computed.
+- Labor cost by team doesn't account for ticket volume differences per team (no per-ticket normalization in verified metrics). Careful — don't invent numbers. It's a methodological limitation, fine.
+
+Conclusion: short.
+
+Word count check — should be well under 650.
+
+Numbers as stated: I'll round to 2 decimals. reported_values must copy verified values — "copy it" — I'll use the exact values from JSON to be safe? It says "metric_key -> number as stated in the report. Required for EVERY metric_key of the finding." Rounding to sensible precision is fine. I'll use rounded values matching the statement text, e.g. 75.19, 27422.90. Consistency between text and reported_values matters. I'll use 2-decimal rounded values in both.
+
+For ticket_count 347 (float 347.0) — use 347. high_cost_low_sat_count 12, satisfaction_missing_count 19, unique_agent_count 18, top_agent_ticket_count 26.
+
+reopen rates: 17.24, 7.84, 119.83. high_cost_low_sat_reopen_pct 8.33. resolution_median 65, resolution_std 51.93, satisfaction_mean 4.15, top_agent_ticket_share_pct 7.49.
+
+derived_values: empty arrays for all findings since I state no computed numbers. Actually wait — in q4 statement, "119.83% relative increase" is the verified metric itself, not derived by me. Good.
+
+Should direction be included for non-q4 findings? Schema default null. For q4, direction: "increase". Others: null or "not_applicable". The contract only requires direction for q4. I'll set null for others (or omit). I'll set null.
+
+Let me count words roughly. Title ~10, summary ~75, statements ~150 total, limitations ~90, conclusion ~40. Total ~365. Good.
+
+Format: single JSON fenced block, nothing else.

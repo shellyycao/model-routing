@@ -6,8 +6,9 @@
 Claude asked: **“花费上限 $15（预计实际约 $1.41），补跑这 40 次，行吗？”** The user's exact reply
 was **“批准了”**. The approval covers exactly the 40 reporting calls below and the separate $15
 reserve-then-settle ledger; it does not authorize a larger inventory or cap. These rules and runner
-were committed before approval. The CP8b manifest freezes that approval and all hashes, but Claude
-must still commit it and create exact tag `continuation-v1` before a Bedrock client can be built.
+were committed before approval. The amended manifest preserves that approval and freezes all
+replacement hashes, but Claude must still commit it and create exact tag `continuation-v1.1`
+before a Bedrock client can be built; tag `continuation-v1` remains retained.
 
 No corrected Part B feasibility number may be computed before the continuation records are
 complete. Frozen raw records, diagnostic replays, tags, scores, and conclusions are never modified.
@@ -97,7 +98,7 @@ must show execution in immutable image
 `sha256:88988a15503bdb96538c3dd62244a79879d5c7848397db18b1267ccfd0a9727a`.
 All current missing stages are reporting and execute no model-generated code; if a frozen inventory
 ever required a code stage, Docker run/availability/lease would have to use that exact ID and an
-unavailable sandbox would be `void_infra`, never model failure. `continuation-v1` instead refuses an
+unavailable sandbox would be `void_infra`, never model failure. The continuation runner refuses an
 inventory containing anything other than the reviewed 40 reporting-only calls.
 
 No compatibility smoke test is needed. These exact six models, prompt/schema version, maxTokens,
@@ -159,14 +160,14 @@ Before constructing any Bedrock client, the paid path requires:
 1. manifest `results/processed/continuation_protocol_manifest.json` with status
    `continuation_frozen_paid_execution_approved`, exact approval wording/date,
    `paid_execution_approved=true`, and hard cap `$15`;
-2. exact tag `continuation-v1` at HEAD;
+2. exact replacement tag `continuation-v1.1` at HEAD (the original `continuation-v1` tag is retained);
 3. matching hashes for both rule documents, runner, diagnostics JSON and replay tree, both frozen
    Part B stores, registries/pricing evidence, prompts, projects, handoff/stage/executor code, and
    reporting validator; and
 4. exactly 40 eligible cells with the frozen inventory hash.
 
-CP8b creates the approval manifest but does not create the tag. Claude will review and commit the
-manifest, create exact tag `continuation-v1`, verify the gate, and only then execute.
+The amended manifest does not create the tag. Claude will review and commit it, create exact tag
+`continuation-v1.1`, verify the gate, and only then resume execution.
 
 Execution/progress contract:
 
@@ -206,3 +207,26 @@ plan-only behavior without runtime construction, manifest/tag/hash/approval refu
 artifact hash and image checks, handoff contents (original code plus recovered output, without
 validator details), and idempotent `continued_from` resume selection. Mocks exercise record writing
 and infrastructure classification without Bedrock, Docker, model, or network calls.
+
+## Execution-bug amendment — 2026-11-19
+
+The `continuation-v1` execution appended 30/40 task records, spent $1.088 on the separate ledger,
+recorded zero failed API attempts and no pending reservation, then crashed before the next cell's
+model call. The crash occurred while the continuation runner attempted to parse an original
+truncated `cleaning_summary.json`; it also left an otherwise empty run directory. The first 30 raw
+records, invocation log and ledger are retained unchanged.
+
+The original orchestrator had already represented that invalid summary in the analysis handoff as
+`cleaning_summary: null`, while retaining the summary file, adding limitation
+`cleaning_summary.json is not valid JSON`, and preserving cleaning validation status `failed`.
+The amended runner now reads those exact saved handoff fields instead of reparsing the invalid
+file. No prompt, model output, recovered finding, or validation meaning changes.
+
+Resume bookkeeping now reuses a run directory only if no task record exists and the directory
+contains no files (empty subdirectories are allowed). A file, symlink or other payload still fails
+closed for audit. An offline dry run must successfully build all 40 handoffs before resume. The
+inventory, models, parameters, prompts, pinned replay image, 40-call ceiling, $15 cap and same
+separate ledger are unchanged; 30 records are complete and 10 calls remain.
+
+Paid resume requires replacement tag `continuation-v1.1`; original tag `continuation-v1` is kept.
+The manifest status and the user's approval question/answer remain unchanged.

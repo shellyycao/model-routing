@@ -1,0 +1,178 @@
+Let me carefully construct the report JSON.
+
+Verified findings:
+- customer_count: 749.0
+- churn_rate_pct: 37.6502002670227
+- avg_monthly_fee: 42.106154873164215
+- churn_rate_basic_pct: 38.87240356083086
+- churn_rate_standard_pct: 36.67953667953668
+- churn_rate_premium_pct: 36.60130718954248
+- churn_rate_cohort_2021_pct: 38.02083333333333
+- churn_rate_cohort_2022_pct: 36.74418604651163
+- churn_rate_cohort_2023_pct: 37.05357142857143
+- churn_rate_cohort_2024_pct: 39.83050847457627
+- churn_rate_monthly_pct: 48.322147651006716
+- churn_rate_annual_pct: 21.85430463576159
+- churn_monthly_vs_annual_change_pct: 121.11043319097013
+- at_risk_customer_count: 100.0
+- at_risk_churn_rate_pct: 71.0
+- tenure_mean: 20.81041388518024
+- tenure_median: 19.0
+- tenure_std: 13.24739298193327
+- satisfaction_mean: 3.4168975069252077
+- satisfaction_missing_count: 27.0
+- ltv_basic: 463.4573590504451
+- ltv_standard: 868.8301544401545
+- ltv_premium: 1816.7777124183006
+- premium_vs_basic_ltv_change_pct: 292.00536509779596
+
+Requirements:
+- 7 key findings, one per question.
+- reported_values must include EVERY metric_key of that question with verified value.
+- Rankings required for q2, q3, q7. High to low, using display labels exactly.
+  - q2: Basic (38.87) > Standard (36.68) > Premium (36.60). Ranking: ["Basic", "Standard", "Premium"]
+  - q3: 2024 (39.83) > 2021 (38.02) > 2023 (37.05) > 2022 (36.74). Ranking: ["2024", "2021", "2023", "2022"]
+  - q7: Premium (1816.78) > Standard (868.83) > Basic (463.46). Ranking: ["Premium", "Standard", "Basic"]
+- Direction required for q4 and q7.
+  - q4: churn_monthly_vs_annual_change_pct = +121.11 → increase (monthly churn is higher than annual). Direction: "increase"
+  - q7: premium_vs_basic_ltv_change_pct = +292.01 → increase. Direction: "increase"
+- derived_values: declare every number in text computed from findings. I should be careful — if I state rounded values of metrics themselves, those are not derived (they're copies). Derived values are differences, ratios, pct_changes, shares I compute.
+
+Let me decide what derived values I'll mention:
+- q1: maybe share of at-risk? No, keep simple. Churn rate ~37.7%, 749 customers, avg fee $42.11. No derived needed. Could compute churned count? That would be 749*0.3765 ≈ 282 — but I shouldn't invent; better to avoid since rounding. Actually computing 749 * 37.65% = 282.0... it might be exact? 282/749 = 0.376502... yes 282/749 = 0.3765020026... matches exactly. But I'd rather not risk it; the rule says any number derived must be declared. I could declare it as a share... kind options are difference, ratio, pct_change, share. Computing count from rate would be... not exactly any of those kinds. Avoid mentioning churned count.
+- q2: difference between Basic and Premium churn: 38.87 - 36.60 = 2.27 percentage points. I can declare that as difference with operands [churn_rate_basic_pct, churn_rate_premium_pct]. Let me compute precisely: 38.87240356083086 - 36.60130718954248 = 2.27109637128838 ≈ 2.27. Or I could just state values without derived differences. Maybe mention "all within about 2.3 points" — declare the difference.
+- q3: 2024 highest. Could mention difference between 2024 and 2022: 39.83 - 36.74 = 3.09 points. Optional. Let me maybe state "roughly 3.1 points above the lowest cohort". Declare difference.
+- q4: direction increase, monthly churn 48.32% vs annual 21.85%, +121.11% relative. The pct_change metric itself is given. Could also state difference 26.47 points: 48.322147651006716 - 21.85430463576159 = 26.467843015245126 ≈ 26.47. Declare if mentioned. And ratio ~2.2x: 48.322147651006716 / 21.85430463576159 = 2.2111... ≈ 2.21. If I mention "more than double", I could avoid a precise number, or declare ratio 2.21. I'll mention ratio 2.2 and declare it.
+- q5: at-risk 100 customers, churn 71%. Share of total: 100/749 = 13.35%. If I mention "~13% of the customer base", declare share: operands [at_risk_customer_count, customer_count] = 13.35. 100/749*100 = 13.3514... Let me compute: 100/749 = 0.133511..., *100 = 13.3511... Actually 100/749 = 0.133511348... so 13.35%. And comparison: at-risk churn 71% vs overall 37.65%, difference 33.35 points: 71 - 37.6502 = 33.3498 ≈ 33.35. Declare if mentioned.
+- q6: tenure mean 20.81, median 19, std 13.25, satisfaction mean 3.42, missing 27. Missing share: 27/749 = 3.6%. 27/749*100 = 3.6048% ≈ 3.6. Declare if mentioned.
+- q7: LTV values, premium vs basic +292.01% (given). Ratio premium/basic = 1816.78/463.46 = 3.92x. If mentioned, declare. Standard vs basic difference? Maybe mention "Standard LTV $868.83 is about $405 higher than Basic" — declare difference 868.8301544401545 - 463.4573590504451 = 405.3727953897094 ≈ 405.37. Keep it simpler.
+
+Word count: keep under 600 words total across title, summary, statements, limitations, conclusion. JSON keys don't count presumably, but text fields do. Keep statements concise.
+
+Rounding: I'll round to 1-2 decimals in text but reported_values must copy verified values exactly ("include EVERY metric_key of that question with its verified value (copy it)"). So reported_values contain full precision values. Text can round.
+
+Derived values "value": the number as stated in the report. So if I state 2.27 in text, value should be 2.27. If I state 2.3, value 2.3. Let me be consistent.
+
+Let me draft each finding:
+
+q1: statement: "The cleaned dataset covers 749 customers with an overall churn rate of 37.65% and an average monthly fee of $42.11."
+reported_values: customer_count 749.0, churn_rate_pct 37.6502002670227, avg_monthly_fee 42.106154873164215.
+evidence_refs: all three.
+derived_values: none. direction: not_applicable? Direction field is optional with default null. For non-direction findings I can set "not_applicable" or leave null. Schema allows enum or null. I'll set "not_applicable" for clarity? The requirement says "For every direction_required: true finding, return the direction implied by the named metric." For others, null or not_applicable both fine. I'll use null for non-required... Actually "not_applicable" seems cleaner. Hmm, either is fine. I'll use "not_applicable" for q1,q2,q3,q5,q6 and "increase" for q4,q7. Wait q3 is a trend question — direction not required, but is there a direction in the text? Cohorts fluctuate; 2024 is highest. The direction field: "For change/trend findings: the direction you state in the text." If I say "churn ticked up in the 2024 cohort", that could imply direction. But direction_required is false for q3. To be safe, set q3 direction to null or "not_applicable" and avoid stating a monotonic trend direction in text (since it's not monotonic). I'll say rates are stable with 2024 highest — no single trend direction. Set "not_applicable".
+
+q2: statement: "Churn is broadly flat across plans: Basic 38.87%, Standard 36.68%, Premium 36.60% — Basic sits only ~2.27 points above Premium."
+derived: difference basic - premium = 2.27 (2.27109637128838). Round stated 2.27.
+ranking: ["Basic", "Standard", "Premium"]
+reported_values: three churn rates.
+direction: not_applicable.
+
+q3: statement: "Cohort churn is stable across signup years: 2021 38.02%, 2022 36.74%, 2023 37.05%, 2024 39.83%; the newest (2024) cohort is highest, ~3.09 points above the lowest (2022)."
+derived: difference 2024 - 2022 = 39.83050847457627 - 36.74418604651163 = 3.08632242806464 ≈ 3.09.
+ranking: ["2024", "2021", "2023", "2022"]
+Check: 2024 39.83, 2021 38.02, 2023 37.05, 2022 36.74. Yes.
+
+q4: statement: "Contract type is the strongest churn driver: Monthly contracts churn at 48.32% versus 21.85% for Annual — a 121.11% relative increase (about 2.2x the rate, or 26.47 points higher)."
+derived: ratio monthly/annual = 2.21 (48.322147651006716/21.85430463576159). Compute: 48.322147651006716 / 21.85430463576159 = 2.21110... Let me compute: 21.85430463576159 * 2.2 = 48.0795; remainder 0.2427; 0.2427/21.854 = 0.0111. So 2.2111. State "2.2x" or "2.21x". I'll say 2.21 and value 2.21.
+difference: 26.47 (26.467843015245126 → 26.47).
+pct_change 121.11 is a given metric, not derived by me. Don't declare.
+direction: "increase".
+
+q5: statement: "The at-risk segment (≥5 support tickets and satisfaction ≤2) contains 100 customers — 13.35% of the base — and churns at 71%, roughly 33.35 points above the overall rate."
+derived: share [at_risk_customer_count, customer_count] = 13.35 (13.3511...). Let me compute precisely: 100/749 = 0.13351134846..., *100 = 13.351134846 → 13.35.
+difference: [at_risk_churn_rate_pct, churn_rate_pct] = 71 - 37.6502002670227 = 33.3497997329773 ≈ 33.35.
+
+q6: statement: "Typical tenure is ~20.81 months on average (median 19, std 13.25), and average satisfaction is 3.42 out of 5; 27 customers (3.6% of the base) lack a satisfaction score."
+derived: share [satisfaction_missing_count, customer_count] = 27/749*100 = 3.604806... Compute: 27/749 = 0.03604806..., *100 = 3.6048 → 3.6. State 3.6, value 3.6.
+Note: "out of 5" — is satisfaction on a 5-point scale? At-risk uses <=2 as low, suggesting 1-5. But I shouldn't invent; I can just say "average satisfaction score of 3.42". Avoid "out of 5" to not invent. Good catch.
+
+q7: statement: "Average lifetime value rises sharply with plan tier: Basic $463.46, Standard $868.83, Premium $1,816.78 — Premium is 292.01% above Basic (about 3.92x)."
+derived: ratio [ltv_premium, ltv_basic] = 1816.7777124183006/463.4573590504451 = 3.92005... Compute: 463.4574*3.92 = 1816.75... yes ≈3.92. State 3.92.
+direction: "increase". ranking: ["Premium", "Standard", "Basic"].
+
+Word budget: title (~8 words), summary (~70), findings 7 × ~30-35 = ~230, limitations 3 × ~25 = 75, conclusion ~50. Total ~440. Fine.
+
+Limitations:
+- Analysis is descriptive/correlational; no causal inference (e.g., annual contracts may attract lower-risk customers rather than reduce churn).
+- Satisfaction missing for 27 customers; at-risk definition excludes those with missing scores.
+- No statistical significance testing; group differences (e.g., plan churn spread of ~2.3 points) may not be significant. Hmm, 2.3 points mention — if I mention in limitations, that's another derived... I already declare it in q2. Should I re-declare in limitations? Derived values are per-finding (inside KeyFinding). Limitations is a list of strings, no derived_values field. To be safe, avoid numbers in limitations, or keep number-free. I'll avoid numbers in limitations and conclusion where possible, or reuse numbers already declared... Safer: only use numbers already declared within the same finding's statement. In conclusion, I might repeat "121.11%" which is a verified metric value (copy, not derived). That's fine — verified metrics aren't derived. And 71% at-risk churn is verified. So conclusion can cite verified metrics.
+
+Executive summary: mention overall churn 37.65%, monthly vs annual, at-risk 71%, plan LTV. Use verified numbers or ones declared. Declared derived values are per-finding; using "13.35% share" in summary would be a number computed from findings but not declared in the summary context... The derived_values arrays live inside key_findings. If summary mentions 13.35%, it's technically declared in q5's derived_values. The rules say derived_values must declare every number in your text computed from findings. It's ambiguous whether per-finding declaration covers summary text. To minimize risk, in summary I'll stick to verified metric values only (which are copied, not derived): 37.65%, 48.32% vs 21.85%, 121.11%, 71%, $1,816.78 vs $463.46, 292.01%. All verified. Good.
+
+Numbers formatting in statements: I'll round to 2 decimals. Ensure consistency between text and declared derived values.
+
+q2 difference: 2.27 (2.27109637128838). Rounded 2.27. Value: 2.27.
+q3 difference: 3.09 (3.08632242806464). Value 3.09.
+q4 ratio: 2.21; difference: 26.47.
+q5 share: 13.35; difference: 33.35.
+q6 share: 3.6.
+q7 ratio: 3.92.
+
+Double-check q5 share: 100/749*100. 749*0.1335 = 99.99... 100/749 = 0.13351134846461949 → 13.3511... → 13.35. Good.
+
+q6 share: 27/749 = 0.03604806408544726 → 3.6048 → 3.6. Good.
+
+Word count check on statements — fine.
+
+Ranking labels exact: "Basic", "Premium", "Standard" for q2 mapping; ordered high-to-low: Basic (38.87) > Standard (36.68) > Premium (36.60) → ["Basic", "Standard", "Premium"]. q3: ["2024", "2021", "2023", "2022"]. q7: ["Premium", "Standard", "Basic"].
+
+evidence_refs: list metric keys relied on. q1: three keys. q2: three keys. q3: four keys. q4: three keys. q5: at_risk_customer_count, at_risk_churn_rate_pct, plus customer_count and churn_rate_pct used in derived — I rely on them, include them in evidence_refs. q6: five keys + customer_count for share. q7: four keys.
+
+reported_values: must include EVERY metric_key of the finding. For q5, the question's metric_keys are at_risk_customer_count, at_risk_churn_rate_pct. Should reported_values also include customer_count and churn_rate_pct since I used them? The rule: "include EVERY metric_key of that question with its verified value (copy it)" — every metric key OF THAT QUESTION. Extra ones probably okay but might violate? It says include every; doesn't forbid extras. Including supporting extras seems safer for transparency. Hmm, but a strict validator might check exact key set. The safest reading: include exactly the question's metric_keys. But then derived operands reference keys not in reported_values — that's fine, operands reference findings metric_keys globally. I'll include only the question's own metric_keys in reported_values to match the spec strictly, and keep extra keys in evidence_refs. Actually, "reported_values: metric_key -> number as stated in the report. Required for EVERY metric_key of the finding." "Of the finding" = of the question. I'll go with exactly the question's keys.
+
+Now write the JSON.
+
+Title: "Customer Churn Analysis — Verified Findings Report"
+
+Executive summary: "Across 749 customers, overall churn is 37.65% at an average monthly fee of $42.11. Churn varies little by plan or signup cohort, but contract type matters most: Monthly contracts churn at 48.32% versus 21.85% for Annual, a 121.11% relative increase. An at-risk segment of 100 customers with heavy support contact and low satisfaction churns at 71%. Premium customers deliver the highest lifetime value, 292.01% above Basic."
+
+Key findings statements as drafted.
+
+Limitations:
+1. "Findings are descriptive and correlational; no causal claims can be made (for example, customers choosing Annual contracts may simply be lower-risk)."
+2. "Satisfaction scores are missing for 27 customers; the at-risk segment excludes customers without a score, so it may be understated."
+3. "No significance testing or confidence intervals were computed, so small differences between plans and cohorts may reflect random variation."
+4. "Churn is analyzed at a single snapshot; no time-to-event or seasonality effects are captured." Maybe keep 3-4.
+
+Conclusion: "Retention efforts should prioritize moving customers to Annual contracts and proactively engaging the 100 at-risk customers, who churn at 71%. While plan tier barely affects churn, Premium accounts are far more valuable (292.01% higher LTV than Basic), so retaining them delivers outsized returns."
+
+Wait — "100" and "71%" are verified values, fine. "292.01%" verified. Good.
+
+Word count: let me roughly tally.
+
+Title: 6 words.
+Summary: ~75 words.
+q1: ~22. q2: ~24. q3: ~32. q4: ~33. q5: ~30. q6: ~28. q7: ~27. ≈ 196.
+Limitations: ~75.
+Conclusion: ~45.
+Total ≈ 400. Under 600. 
+
+Now the JSON structure per schema. Include direction and ranking fields appropriately. For findings without ranking, set ranking: null. For direction not required: I'll set "not_applicable"? Hmm — for q3, if I say "the 2024 cohort is highest" that isn't a trend direction claim. not_applicable fits. For q2 similar. Let me set direction to "not_applicable" for q1,q2,q3,q5,q6; null also allowed. "not_applicable" is explicit. Good.
+
+Derived values format: {"kind": "...", "operands": [...], "value": ...}.
+
+q2 derived: {"kind":"difference","operands":["churn_rate_basic_pct","churn_rate_premium_pct"],"value":2.27}
+q3 derived: {"kind":"difference","operands":["churn_rate_cohort_2024_pct","churn_rate_cohort_2022_pct"],"value":3.09}
+q4 derived: ratio and difference.
+q5 derived: share and difference.
+q6 derived: share.
+q7 derived: ratio.
+
+Ensure statement text numbers match declared values: q2 "~2.27 points"; q3 "~3.09 points"; q4 "2.21x" and "26.47 points"; q5 "13.35%" and "33.35 points"; q6 "3.6%"; q7 "3.92x".
+
+Let me write statements carefully:
+
+q1: "The cleaned dataset contains 749 customers. Overall churn stands at 37.65%, and the average monthly fee is $42.11."
+
+q2: "Churn differs little across plans: Basic 38.87%, Standard 36.68%, and Premium 36.60%, with Basic only 2.27 points above Premium. Plan choice alone does not appear to drive churn."
+
+q3: "Churn is stable across signup cohorts — 2021: 38.02%, 2022: 36.74%, 2023: 37.05%, 2024: 39.83%. The 2024 cohort is highest, 3.09 points above the lowest cohort (2022)."
+
+q4: "Contract type is the clearest churn differentiator: Monthly contracts churn at 48.32% versus 21.85% for Annual, a 121.11% relative increase — roughly 2.21x the rate and 26.47 points higher."
+
+q5: "The at-risk segment (five or more support tickets and a satisfaction score of 2 or lower) comprises 100 customers, 13.35% of the base, and churns at 71.0% — 33.35 points above the overall churn rate."
+
+q6: "Customer tenure averages 20.81 months (median 19.0, standard deviation 13.25), indicating a wide spread of customer ages. Average satisfaction is 3.42; 27 customers, or 3.6% of the base, have no satisfaction score."
+
+q7: "Average lifetime value climbs steeply by plan: Basic $463.46, Standard $868.83, and Premium $1,816.78. Premium customers are worth 292.01% more than Basic — about 3.92x the value."
+
+All good. Now produce final JSON in one fenced block, nothing else.

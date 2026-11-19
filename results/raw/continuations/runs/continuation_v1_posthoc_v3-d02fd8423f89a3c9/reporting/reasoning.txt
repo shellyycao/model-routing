@@ -1,0 +1,127 @@
+We need to produce JSON with fields: title, executive_summary, key_findings (array of objects per q1..q7), limitations, conclusion.
+
+Each key_finding must include finding_id, statement, evidence_refs, reported_values (all metric_keys for that question), optional direction, ranking, derived_values.
+
+We must follow ranking requirements: q2 ranking required true, with labels mapping: kwh_commercial -> "Commercial", kwh_industrial -> "Industrial", kwh_residential -> "Residential". Need ranking from highest to lowest value. Values: kwh_commercial 196,367.15; kwh_industrial 995,362.16; kwh_residential 15,970.65. Highest is industrial, then commercial, then residential. So ranking array should be ["Industrial", "Commercial", "Residential"].
+
+q3 ranking required true, labels: kwh_q1 "Q1", kwh_q2 "Q2", kwh_q3 "Q3", kwh_q4 "Q4". Values: Q1 319,677.67; Q2 270,277.36; Q3 264,863.12; Q4 352,881.81. Highest Q4, then Q1, then Q2, then Q3. So ranking ["Q4","Q1","Q2","Q3"].
+
+q7 ranking required true, labels: kwh_off_peak "off-peak", kwh_peak "peak". Values: off-peak 608,075.89; peak 599,624.07. Highest off-peak, then peak. So ranking ["off-peak","peak"].
+
+q4 direction required true, direction_metric_key = kwh_h2_vs_h1_change_pct. Value is 4.71% positive, so direction "increase". Provide direction field.
+
+Other findings no ranking/direction.
+
+Now statements: need to be concise, include numbers maybe rounded.
+
+We must include derived_values if any computed numbers not directly from findings. For q4 we could compute the percent change already given; it's a metric itself, no derived needed. For q7 we could compute peak share percent already given as metric. No derived needed. For q2 maybe we could compute share percentages but not required. Not needed.
+
+But we must include reported_values: copy each metric_key with its verified value. Use same numeric values as in findings, maybe rounded to 2 decimals for readability but must be numbers. The schema expects numbers; we can round but must be consistent. Let's keep two decimal places.
+
+List of metric_keys per question:
+
+q1: total_kwh, reading_count, mean_kwh_per_reading.
+
+q2: kwh_residential, kwh_commercial, kwh_industrial.
+
+q3: kwh_q1, kwh_q2, kwh_q3, kwh_q4.
+
+q4: kwh_h1, kwh_h2, kwh_h2_vs_h1_change_pct.
+
+q5: hot_commercial_reading_count, hot_commercial_mean_kwh.
+
+q6: kwh_median, kwh_std, temperature_mean, temperature_missing_count, commercial_temp_kwh_corr.
+
+q7: kwh_peak, kwh_off_peak, peak_kwh_share_pct, unique_meter_count, highest_use_meter_kwh.
+
+Now statements: need to reference evidence_refs list of metric_keys used. For each, we can list all metric_keys used.
+
+Now produce executive summary summarizing key points.
+
+Limitations: mention missing temperature data, limited hot day sample, only 12 meters, etc.
+
+Conclusion: actionable.
+
+Now produce JSON.
+
+Make sure each key_finding includes required fields: finding_id, statement, evidence_refs, reported_values. direction optional; ranking optional; derived_values optional (empty array if none). Provide empty array for derived_values.
+
+Now craft statements.
+
+q1 statement: "The dataset contains 1,428 readings with a total electricity consumption of 1,207,700 kWh, averaging 846 kWh per reading." Use rounded numbers.
+
+q2 statement: "Industrial buildings dominate consumption (≈995,362 kWh), followed by Commercial (≈196,367 kWh) and Residential (≈15,971 kWh)." Provide ranking.
+
+q3 statement: "Quarterly consumption was highest in Q4 (≈352,882 kWh) and lowest in Q3 (≈264,863 kWh)." Provide ranking.
+
+q4 statement: "Second‑half consumption increased by about 4.7 % compared with the first half." direction increase.
+
+q5 statement: "On hot days (≥25 °C) there were 19 Commercial readings with an average consumption of 415 kWh.".
+
+q6 statement: "The median consumption is 406.8 kWh with a standard deviation of 913.4 kWh. Average temperature is 11.6 °C; 62 readings lack temperature. Among Commercial meters, temperature and consumption are negatively correlated (r ≈ ‑0.64)." No derived.
+
+q7 statement: "Peak‑tariff usage accounts for 49.7 % of total consumption (≈599,624 kWh) and off‑peak for 50.3 % (≈608,076 kWh). The dataset includes 12 distinct meters; the highest‑use meter consumed 252,241 kWh." Provide ranking.
+
+Now produce JSON.
+
+Make sure numbers are numbers not strings. Use rounding to 2 decimals where appropriate.
+
+Let's compute rounded values:
+
+total_kwh 1207699.96 -> 1207699.96
+
+reading_count 1428.0 -> 1428
+
+mean_kwh_per_reading 845.7282633053221 -> 845.73
+
+kwh_residential 15970.650000000001 -> 15970.65
+
+kwh_commercial 196367.15000000002 -> 196367.15
+
+kwh_industrial 995362.16 -> 995362.16
+
+kwh_q1 319677.67000000004 -> 319677.67
+
+kwh_q2 270277.36 -> 270277.36
+
+kwh_q3 264863.12 -> 264863.12
+
+kwh_q4 352881.81000000006 -> 352881.81
+
+kwh_h1 589955.03 -> 589955.03
+
+kwh_h2 617744.93 -> 617744.93
+
+kwh_h2_vs_h1_change_pct 4.710511579162232 -> 4.71
+
+hot_commercial_reading_count 19.0 -> 19
+
+hot_commercial_mean_kwh 415.29368421052624 -> 415.29
+
+kwh_median 406.8 -> 406.8
+
+kwh_std 913.4385157872866 -> 913.44
+
+temperature_mean 11.612298682284042 -> 11.61
+
+temperature_missing_count 62.0 -> 62
+
+commercial_temp_kwh_corr -0.6376362398654432 -> -0.64
+
+kwh_peak 599624.0700000001 -> 599624.07
+
+kwh_off_peak 608075.89 -> 608075.89
+
+peak_kwh_share_pct 49.65008610251176 -> 49.65
+
+unique_meter_count 12.0 -> 12
+
+highest_use_meter_kwh 252241.26 -> 252241.26
+
+Now produce JSON.
+
+Make sure each reported_values includes all metric_keys with these numbers.
+
+Derived_values: none needed; we can set empty array.
+
+Now craft final JSON.

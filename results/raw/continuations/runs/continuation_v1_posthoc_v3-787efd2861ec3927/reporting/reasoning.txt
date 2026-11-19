@@ -1,0 +1,187 @@
+Let me work through this task carefully.
+
+I need to write a structured report for the energy_consumption project based on verified findings. Let me plan:
+
+**Verified findings:**
+- total_kwh: 1207699.96
+- reading_count: 1428.0
+- mean_kwh_per_reading: 845.7282633053221
+- kwh_residential: 15970.65
+- kwh_commercial: 196367.15
+- kwh_industrial: 995362.16
+- kwh_q1: 319677.67
+- kwh_q2: 270277.36
+- kwh_q3: 264863.12
+- kwh_q4: 352881.81
+- kwh_h1: 589955.03
+- kwh_h2: 617744.93
+- kwh_h2_vs_h1_change_pct: 4.710511579162232
+- hot_commercial_reading_count: 19.0
+- hot_commercial_mean_kwh: 415.29368421052624
+- kwh_median: 406.8
+- kwh_std: 913.4385157872866
+- temperature_mean: 11.612298682284042
+- temperature_missing_count: 62.0
+- commercial_temp_kwh_corr: -0.637636239865442
+- kwh_peak: 599624.07
+- kwh_off_peak: 608075.89
+- peak_kwh_share_pct: 49.65008610251175
+- unique_meter_count: 12.0
+- highest_use_meter_kwh: 252241.26
+
+**Rankings needed:**
+- q2: Commercial (196367.15), Industrial (995362.16), Residential (15970.65). Ranking high-to-low: Industrial, Commercial, Residential.
+- q3: Q1 (319677.67), Q2 (270277.36), Q3 (264863.12), Q4 (352881.81). Ranking: Q4, Q1, Q2, Q3.
+- q7: peak (599624.07), off-peak (608075.89). Ranking: off-peak, peak.
+
+**Direction:**
+- q4: change is +4.71% → increase.
+
+**Derived values** I might state:
+- q2: Industrial share of total = 995362.16 / 1207699.96 * 100 ≈ 82.42%. Let me compute: 995362.16/1207699.96 = 0.824179... Let me calculate: 1207699.96 * 0.824 = 995145.57. 995362.16 - 995145.57 = 216.59. 216.59/1207699.96 = 0.0001793. So ≈ 82.42%. Good.
+- Or difference between Industrial and Commercial: 995362.16 - 196367.15 = 798995.01.
+- q3: difference between Q4 and Q3 (highest vs lowest): 352881.81 - 264863.12 = 88018.69.
+- q4: difference kwh_h2 - kwh_h1 = 617744.93 - 589955.03 = 27789.90.
+- q7: off-peak share = 100 - 49.65 = 50.35%. Or compute 608075.89/1207699.96*100 = 50.3499... ≈ 50.35%. Difference off-peak - peak = 8451.82.
+
+I'll keep derived values minimal and declared properly.
+
+Let me be careful: "derived_values must declare every number in your text computed from findings (difference, ratio, pct_change or share), with metric-key operands in formula order."
+
+So any computed number in statements must appear in derived_values. I should keep computed numbers few to make it manageable. But adding a couple of useful derived numbers is fine as long as I declare them.
+
+Plan per finding:
+
+**q1**: Total 2024 consumption was 1,207,699.96 kWh across 1,428 readings, averaging ~845.73 kWh per reading. reported_values: total_kwh, reading_count, mean_kwh_per_reading. No derived values needed if I just state these directly. Mean is verified already.
+
+**q2**: Industrial dominated with 995,362.16 kWh, ahead of Commercial 196,367.15 kWh and Residential 15,970.65 kWh. Could state Industrial share ≈ 82.4% — derived: share, operands [kwh_industrial, total_kwh], value 82.4. Ranking: [Industrial, Commercial, Residential].
+
+**q3**: Q4 highest (352,881.81), then Q1 (319,677.67), Q2 (270,277.36), Q3 lowest (264,863.12). Could state difference between highest and lowest = 88,018.69 kWh — derived difference, operands [kwh_q4, kwh_q3], value 88018.69. Ranking: [Q4, Q1, Q2, Q3].
+
+**q4**: H2 617,744.93 vs H1 589,955.03, up 4.71% (increase). Derived: difference 27,789.90 kWh, operands [kwh_h2, kwh_h1]. Direction: increase. The pct itself is verified, so no need to declare as derived.
+
+**q5**: 19 commercial hot-day readings (temp >= 25°C), mean 415.29 kWh. Note this is below overall commercial mean? Careful — I don't have overall commercial mean; mean_kwh_per_reading is over all readings. I could compare to overall mean 845.73 but that mixes groups. Safer to just report values. Could compare to the overall mean of all readings, noting it's lower — that's fine as both are verified values. But maybe keep it simple.
+
+**q6**: Median 406.8 kWh, std 913.44 (right-skewed, high variability; mean >> median — mean from q1). Mean temperature 11.61°C with 62 missing temps. Commercial temp-consumption correlation -0.64 (moderate-to-strong negative). Note: comparing mean vs median uses verified values only (mean 845.73 from q1, median 406.8). No derived numbers unless I compute ratio. I could state the ratio mean/median ≈ 2.08 as derived: ratio, operands [mean_kwh_per_reading, kwh_median], value 2.08. Compute: 845.728/406.8 = 2.0790. ≈ 2.08. Maybe optional. I could just say "the mean (845.73 kWh) is well above the median (406.8 kWh), indicating right skew" without computing ratio — that's qualitative and uses verified numbers only. Good, no derived needed.
+
+**q7**: Off-peak 608,075.89 kWh slightly exceeds peak 599,624.07 kWh; peak share 49.65%. 12 unique meters; highest-use meter 252,241.26 kWh. Derived: difference off-peak minus peak = 8451.82, operands [kwh_off_peak, kwh_peak]. Also could state highest meter share of total: 252241.26/1207699.96*100 = 20.89%. Compute: 252241.26/1207699.96 = 0.208860... Let me calculate: 1207699.96*0.2089 = 252,288.5. Slightly above. 252241.26/1207699.96: 1207699.96 * 0.2088 = 252,167.75. Difference 73.51; /1207699.96 = 0.0000609. So ≈ 20.886% → 20.89%. I could include that as share derived value. Keep it maybe. It's a nice insight: one meter accounts for ~20.9% of all consumption.
+
+Ranking for q7: labels "off-peak" and "peak" exactly as given. Ranking: ["off-peak", "peak"].
+
+Word count: keep under 600 words total. Let me draft concisely.
+
+**Title**: "2024 Smart-Meter Electricity Consumption — Verified Findings Report"
+
+**Executive summary**: ~60-80 words covering main points.
+
+**Limitations**: 
+- 62 readings missing temperature, so temperature-based analyses (mean temp, correlation, hot-day counts) exclude them.
+- Only 12 meters; highest meter ~20.9% of total → concentration; results sensitive to a single meter.
+- Hot-day commercial sample is small (19 readings), so the mean is unstable.
+- Correlation is not causation; negative commercial correlation may reflect operational schedules rather than temperature response.
+- Data covers a single year (2024); no multi-year context.
+
+**Conclusion**: short.
+
+Now count words carefully. The statements should each include at least one verified numeric value — yes all do.
+
+Check derived value computations precisely:
+- q2 share: 995362.16/1207699.96*100. 995362.16/1207699.96: Let me do it precisely. 1207699.96 * 0.82 = 990,313.97. 995362.16 - 990313.97 = 5048.19. 5048.19/1207699.96 = 0.004180. So 0.82418 → 82.42%. Value: 82.42.
+- q3 difference: 352881.81 - 264863.12 = 88018.69. ✓
+- q4 difference: 617744.93 - 589955.03 = 27789.90. ✓
+- q7 difference: 608075.89 - 599624.07 = 8451.82. ✓
+- q7 share: 252241.26/1207699.96*100 = 20.886... → 20.89. Let me recompute more precisely: 252241.26/1207699.96. 1207699.96*0.209 = 252,409.29. That's above 252,241.26 by 168.03. 168.03/1207699.96 = 0.0001391. So 0.209 - 0.0001391 = 0.2088609 → 20.8861% → 20.89. Good.
+
+In statements, I must use numbers consistent with derived values stated. I'll state rounded numbers and declare rounded values in derived_values matching the text ("82.42%", "88,018.69 kWh", "27,789.90 kWh", "8,451.82 kWh", "20.89%").
+
+Note: reading_count is 1428.0 — report as 1428. temperature_missing_count 62.0 → 62. hot_commercial_reading_count 19.0 → 19. unique_meter_count 12.0 → 12. reported_values should copy verified values — I'll keep them as numbers (1428.0 etc.). "include EVERY metric_key of that question with its verified value (copy it)" — so use exact values: 1428.0, 19.0, 62.0, 12.0. And full-precision floats for others? Copying exactly is safest: 845.7282633053221 etc. In the text I can round; reported_values copies exact.
+
+Hmm, but "reported_values: metric_key -> number as stated in the report." That says "as stated in the report" — but the rules say "include EVERY metric_key of that question with its verified value (copy it)". Copy exact verified values. I'll copy exact values.
+
+Word count check — need title, summary, statements, limitations, conclusion all under 600 words total. Let me draft and count.
+
+Draft:
+
+Title: "2024 Smart-Meter Electricity Consumption: Verified Findings for Business Stakeholders" (11 words)
+
+Executive summary (~75 words):
+"In 2024 the cleaned dataset of 1,428 smart-meter readings shows total electricity consumption of 1,207,699.96 kWh. Industrial sites dominate usage (995,362.16 kWh, 82.42% of the total). Demand is seasonal: Q4 is the highest quarter and Q3 the lowest, and second-half consumption rose 4.71% versus the first half. Peak and off-peak tariffs are nearly balanced (peak share 49.65%). Consumption is highly skewed across meters, and commercial usage correlates negatively (r = -0.64) with temperature."
+
+Wait — "82.42%" and "4.71%" appear in summary; these are derived/verified. Derived values declared per finding. The summary mentions 82.42% — that's a derived value also declared in q2. Should be fine; derived_values is per-finding. The schema has derived_values only within KeyFinding. The summary repeating a declared derived number should be acceptable. To be safe, I could avoid derived numbers in the summary... but 82.42% is declared in q2. It's fine.
+
+Key findings:
+
+q1: "Total 2024 electricity consumption was 1,207,699.96 kWh across 1,428 readings, an average of 845.73 kWh per reading."
+reported_values: total_kwh 1207699.96, reading_count 1428.0, mean_kwh_per_reading 845.7282633053221.
+evidence_refs: all three.
+derived: none. direction: not_applicable? Direction is optional; default null. q4 requires direction. For others I can set "not_applicable" or null. I'll use "not_applicable" for clarity, or omit. The schema allows null. I'll set not_applicable for non-q4 findings to be explicit. Actually direction enum includes "not_applicable" — good.
+
+q2: "Industrial buildings consumed 995,362.16 kWh — about 82.42% of total usage — far ahead of Commercial (196,367.15 kWh) and Residential (15,970.65 kWh)."
+ranking: ["Industrial", "Commercial", "Residential"]
+derived_values: share [kwh_industrial, total_kwh] = 82.42.
+
+q3: "Consumption was highest in Q4 (352,881.81 kWh), followed by Q1 (319,677.67 kWh), Q2 (270,277.36 kWh) and Q3 (264,863.12 kWh); the gap between the highest and lowest quarters was 88,018.69 kWh."
+ranking: ["Q4", "Q1", "Q2", "Q3"]
+derived: difference [kwh_q4, kwh_q3] = 88018.69.
+
+q4: "Consumption rose from 589,955.03 kWh in January–June to 617,744.93 kWh in July–December, an increase of 4.71% (27,789.90 kWh) in the second half."
+direction: increase.
+derived: difference [kwh_h2, kwh_h1] = 27789.9.
+
+q5: "On hot days (temperature ≥ 25 °C), 19 Commercial readings were recorded, averaging 415.29 kWh — below the overall per-reading average of 845.73 kWh."
+Hmm, comparing to overall mean — that references q1's metric. It's fine, verified value. No derived numbers.
+evidence_refs: hot_commercial_reading_count, hot_commercial_mean_kwh. (Maybe also mean_kwh_per_reading if I mention it — I'll include it in evidence_refs too since I use it.)
+
+q6: "Consumption is right-skewed: the median reading is 406.80 kWh while the mean is 845.73 kWh, with a large standard deviation of 913.44 kWh. Average temperature was 11.61 °C (62 readings lacked temperature data). Among Commercial readings, temperature and consumption correlate at -0.64, a moderately strong negative relationship."
+evidence_refs: kwh_median, kwh_std, temperature_mean, temperature_missing_count, commercial_temp_kwh_corr, mean_kwh_per_reading.
+
+q7: "Off-peak consumption (608,075.89 kWh) slightly exceeded peak (599,624.07 kWh) by 8,451.82 kWh; the peak share was 49.65%. Twelve unique meters reported data, and the single highest-use meter consumed 252,241.26 kWh — about 20.89% of the yearly total."
+ranking: ["off-peak", "peak"]
+derived: difference [kwh_off_peak, kwh_peak] = 8451.82; share [highest_use_meter_kwh, total_kwh] = 20.89.
+
+Limitations (concise):
+1. "62 readings have missing temperature values, so temperature-based metrics (mean temperature, hot-day counts, correlation) exclude them."
+2. "The hot-day Commercial sample is small (19 readings), so its mean is sensitive to individual readings."
+3. "Only 12 meters are covered, and one meter accounts for ~20.89% of consumption, so results are concentrated in a few sites."
+4. "The reported correlation is associational, not causal; building operations and occupancy likely confound the temperature–consumption link."
+5. "Findings cover a single year (2024), limiting longer-term trend conclusions."
+
+Conclusion (~50 words):
+"2024 demand was dominated by Industrial consumption and peaked in Q4, with a modest 4.71% second-half rise. Near-even peak/off-peak usage suggests limited tariff-driven shifting. Priority actions: investigate the dominant high-use meter, plan capacity for Q4 peaks, and improve temperature data completeness before refining heat-related commercial load analysis."
+
+Word count: Let me roughly count.
+
+Title ~10. Summary ~75. Findings: q1 ~20, q2 ~28, q3 ~35, q4 ~28, q5 ~25, q6 ~50, q7 ~40 → ~226. Limitations ~70. Conclusion ~50. Total ≈ 430-460 words. Under 600. Good.
+
+Wait — for q5, I say hot-day commercial mean (415.29) is below overall average 845.73. That's fine, no computed number. Actually "below the overall per-reading average" is a comparison statement, not a computed number. OK.
+
+One nuance: The overall mean includes industrial readings which are huge, so the comparison is a bit odd but factually fine.
+
+Derived value kinds:
+- q2: kind "share", operands ["kwh_industrial", "total_kwh"], value 82.42.
+- q3: kind "difference", operands ["kwh_q4", "kwh_q3"], value 88018.69.
+- q4: kind "difference", operands ["kwh_h2", "kwh_h1"], value 27789.9. (pct_change 4.71% is verified, not derived.)
+- q7: difference ["kwh_off_peak","kwh_peak"] = 8451.82; share ["highest_use_meter_kwh","total_kwh"] = 20.89.
+
+Rounding in text: I'll state 845.73, 82.42%, 88,018.69, 27,789.90, 8,451.82, 20.89%, 49.65%, 4.71%, 415.29, 406.80, 913.44, 11.61 °C, -0.64.
+
+Verify 8451.82: 608075.89 - 599624.07 = 8451.82. ✓
+27789.90: 617744.93 - 589955.03 = 27789.90. ✓
+88018.69: 352881.81 - 264863.12 = 88018.69. ✓
+
+reported_values — copy exact verified values:
+q1: total_kwh 1207699.96, reading_count 1428.0, mean_kwh_per_reading 845.7282633053221
+q2: kwh_residential 15970.65, kwh_commercial 196367.15, kwh_industrial 995362.16
+q3: kwh_q1 319677.67, kwh_q2 270277.36, kwh_q3 264863.12, kwh_q4 352881.81
+q4: kwh_h1 589955.03, kwh_h2 617744.93, kwh_h2_vs_h1_change_pct 4.710511579162232
+q5: hot_commercial_reading_count 19.0, hot_commercial_mean_kwh 415.29368421052624
+q6: kwh_median 406.8, kwh_std 913.4385157872866, temperature_mean 11.612298682284042, temperature_missing_count 62.0, commercial_temp_kwh_corr -0.637636239865442
+q7: kwh_peak 599624.07, kwh_off_peak 608075.89, peak_kwh_share_pct 49.65008610251175, unique_meter_count 12.0, highest_use_meter_kwh 252241.26
+
+evidence_refs: list the metric_keys relied on in the statement. For q5 I mention mean_kwh_per_reading → include it. For q6 I mention mean → include mean_kwh_per_reading. For q2 I use total_kwh in derived share → include it? evidence_refs are "metric_keys from findings.json supporting this statement." The share uses total_kwh, so include. For q7 share uses total_kwh → include. OK.
+
+Direction fields: q4 = "increase". Others: "not_applicable". That's allowed by enum.
+
+Rankings with exact labels: q2 ["Industrial", "Commercial", "Residential"]; q3 ["Q4", "Q1", "Q2", "Q3"]; q7 ["off-peak", "peak"].
+
+Now finalize JSON. Keep single fenced block, nothing outside.

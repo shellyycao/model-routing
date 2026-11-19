@@ -1,4 +1,33 @@
 {
+  "amendments": [
+    {
+      "approval_changed": false,
+      "crash": "json.JSONDecodeError while reconstructing an original truncated cleaning_summary.json; the crash occurred before any model call for that cell",
+      "date": "2026-11-19",
+      "handoff_fix": "reuse the exact cleaning representation saved in the original analysis handoff: summary None, file retained, original limitation and failed status",
+      "id": "unparseable-cleaning-summary-and-empty-directory-resume",
+      "models_parameters_prompts_inventory_cap_and_ledger_changed": false,
+      "old_tag_deleted": false,
+      "pre_resume_evidence": {
+        "completed_task_records": 30,
+        "crash_before_model_call": true,
+        "crashed_run_directory_empty": true,
+        "crashed_run_id": "continuation_v1_posthoc_v3-f3fadf5ca6325087",
+        "distinct_continued_from": 30,
+        "first_30_record_prefix_sha256": "c10676ad9823a47730f6873e58a91bc8a505ac3e2a0ca3f43f5ec9c15ceaa386",
+        "ledger_calls": 30,
+        "ledger_failed_attempts": 0,
+        "ledger_pending": {},
+        "ledger_spent_usd_priced": 1.0880523000000002,
+        "remaining_logical_calls": 10
+      },
+      "replacement_tag": "continuation-v1.1",
+      "resume_fix": "reuse an unrecorded run directory only when it contains no files and at most empty subdirectories; any payload still fails closed",
+      "scientific_protocol_changed": false,
+      "scope": "execution_bookkeeping_only",
+      "superseded_tag": "continuation-v1"
+    }
+  ],
   "approval": {
     "date": "2026-11-19",
     "question": "\u82b1\u8d39\u4e0a\u9650 $15\uff08\u9884\u8ba1\u5b9e\u9645\u7ea6 $1.41\uff09\uff0c\u8865\u8dd1\u8fd9 40 \u6b21\uff0c\u884c\u5417\uff1f",
@@ -980,12 +1009,12 @@
   "hashes": {
     "files": {
       "configs/models.yaml": "1446c776c2c6684e5ace8e30f0b95feaed70871b2cbdefa6985b1f4c1120b0e9",
-      "docs/CONTINUATION_PROTOCOL.md": "73c0e6ea34ad8fea35562d5977c7114bdc7a5e6b391fab32e4fd8209ca0ce604",
+      "docs/CONTINUATION_PROTOCOL.md": "ea418d38799783dc8c047d0e54354fd683542dd051b314ad38446af0863c7cdc",
       "docs/CORRECTED_VIEW_RULES.md": "88affcbbecb1949249394c0956ddbd37b7cc5e8706b4109d51aa358a35206c3c",
       "docs/reviews/2026-11-19_cp8a_review.md": "cf19f163398daec36c31e498d3f62b9cbe8f3d0f6b12b69d366d4e3ecb57b7e9",
       "experiments/analyze_diagnostics_posthoc.py": "6ce806ace25e97e6f8e810c4ca96db42fd9b4bb15e5d59da0a41ffac8d21dfc8",
-      "experiments/build_continuation_manifest.py": "408e2399781a9fe94be3911ad923b881225a129fe51a127962859db16224ab0d",
-      "experiments/run_continuations.py": "bbc42378082dde2df21a4b0b8b9936e61cb5437ca0e62a66a1ba535581580e0e",
+      "experiments/build_continuation_manifest.py": "66218df2a98f59a6cc196961132017a39b45094684f641dd20b86c787e0f5b4b",
+      "experiments/run_continuations.py": "177c06f07f8a9af1102bdc48157671008c19fdb52c6c17e73096a59136a9e828",
       "experiments/run_price_matched_workflow.py": "91c96132ddb5d9e3814e712afbc0bc8878d2894c22fd160f10eed6f127e9f85f",
       "results/processed/diagnostics_posthoc.json": "a6c0210e42d6894b642e023996952801c5d1e221fa712eac359cda49bd9b1a04",
       "results/processed/independent_v2/price_matched_model_verification.json": "c20f1011a8b13575dc4d6ad077b85f526647c8a08ebdb9be8047540495f27c62",
@@ -1019,6 +1048,7 @@
   "logical_call_ceiling": 40,
   "network_or_model_calls_during_freeze_preparation": 0,
   "paid_execution_approved": true,
+  "previous_tag_retained": "continuation-v1",
   "progress_field": "continued_from",
   "protocol": "continuation-v1-posthoc",
   "recovered_stage_counts": {
@@ -1034,7 +1064,7 @@
     "price_matched_16384|B|reporting": 7,
     "price_matched_16384|C|reporting": 15
   },
-  "required_tag": "continuation-v1",
+  "required_tag": "continuation-v1.1",
   "run_artifacts_path": "results/raw/continuations/runs",
   "scope": "40 reporting-stage continuations for reviewed int64-recovered Part B analysis cells only",
   "settings": {

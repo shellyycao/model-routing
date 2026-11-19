@@ -63,6 +63,10 @@ def test_paid_gate_refuses_missing_manifest(monkeypatch, tmp_path):
 
 
 def test_manifest_freezes_exact_approval_and_verifies_at_required_tag(monkeypatch, tmp_path):
+    # After the approved run completes at 40/40, rebuild from the manifest's frozen pre-resume
+    # evidence rather than asking the append-only raw store to look like its earlier 30/40 state.
+    saved = json.loads(continuation.MANIFEST.read_text())["amendments"][-1]["pre_resume_evidence"]
+    monkeypatch.setattr(manifest_builder, "_resume_amendment_evidence", lambda: saved)
     manifest = manifest_builder.build_manifest()
     assert manifest["status"] == "continuation_frozen_paid_execution_approved"
     assert manifest["approval"] == {
@@ -72,6 +76,10 @@ def test_manifest_freezes_exact_approval_and_verifies_at_required_tag(monkeypatc
     }
     assert manifest["logical_call_ceiling"] == manifest["complete_record_lines"] == 40
     assert manifest["hard_budget_cap_usd"] == 15
+    assert manifest["required_tag"] == "continuation-v1.1"
+    assert manifest["previous_tag_retained"] == "continuation-v1"
+    assert manifest["amendments"][0]["scientific_protocol_changed"] is False
+    assert manifest["amendments"][0]["pre_resume_evidence"]["remaining_logical_calls"] == 10
     assert manifest["ledger_path"] == "results/raw/ledgers/continuations.json"
     assert len(manifest["eligible_replay_evidence"]) == 40
     path = tmp_path / "manifest.json"
@@ -98,6 +106,42 @@ def test_handoff_uses_original_code_and_recovered_file_without_validator_details
     assert pkg.verified_results["analysis"]["findings"]
 
 
+def test_unparseable_cleaning_summary_reproduces_original_saved_handoff(tmp_path):
+    cell = next(cell for cell in continuation.eligible_cells()
+                if cell.original.run_id == "expB_price_matched_workflow_v3-c74b8e30d7cc56c5")
+    original = json.loads((continuation.REPO / cell.original.stages[1].handoff_in_path).read_text())
+    artifact = continuation.original_cleaning_artifact(cell)
+    assert artifact.verified_results == original["verified_results"]["cleaning"]
+    assert artifact.verified_results["cleaning_summary"] is None
+    assert artifact.validation_status == original["validation_status"]["cleaning"] == "failed"
+    assert artifact.limitations == ["cleaning_summary.json is not valid JSON"]
+    pkg, _, _ = continuation.build_continuation_handoff(cell, tmp_path / "handoff.json")
+    assert pkg.verified_results["cleaning"] == original["verified_results"]["cleaning"]
+    assert pkg.known_limitations == original["known_limitations"]
+
+
+def test_all_40_handoffs_build_offline(tmp_path):
+    assert continuation.dry_run_handoffs(continuation.eligible_cells(), tmp_path) == []
+
+
+def test_empty_interrupted_directory_is_reused(monkeypatch, tmp_path):
+    monkeypatch.setattr(continuation, "RUNS", tmp_path / "runs")
+    monkeypatch.setattr(continuation, "RECORDS", tmp_path / "records.jsonl")
+    run_dir = continuation.RUNS / "interrupted"
+    (run_dir / "reporting" / "empty").mkdir(parents=True)
+    assert continuation.prepare_continuation_run_dir("interrupted") == run_dir
+
+
+def test_nonempty_interrupted_directory_still_raises(monkeypatch, tmp_path):
+    monkeypatch.setattr(continuation, "RUNS", tmp_path / "runs")
+    monkeypatch.setattr(continuation, "RECORDS", tmp_path / "records.jsonl")
+    run_dir = continuation.RUNS / "interrupted"
+    run_dir.mkdir(parents=True)
+    (run_dir / "evidence.txt").write_text("keep")
+    with pytest.raises(FileExistsError, match="contains audit evidence"):
+        continuation.prepare_continuation_run_dir("interrupted")
+
+
 def test_pending_selection_is_idempotent_by_continued_from():
     cells = continuation.eligible_cells()
     existing = [{"continued_from": cells[0].original.run_id, "run_id": "continuation-existing"}]
@@ -117,6 +161,7 @@ def test_mock_execution_labels_infrastructure_without_model_blame(monkeypatch, t
     record = source.model_copy(update={"status": status, "failure_type": None,
                                        "failure_detail": None, "invocation_ids": ["mock"]})
     monkeypatch.setattr(continuation, "RUNS", tmp_path / "runs")
+    monkeypatch.setattr(continuation, "RECORDS", tmp_path / "records.jsonl")
     monkeypatch.setattr(continuation, "run_reporting",
                         lambda *args, **kwargs: StageResult(record=record, artifacts=None))
     result = continuation.execute_cell(cell, client=object())

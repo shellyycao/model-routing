@@ -30,7 +30,8 @@ from src.workflow.handoff import StageArtifacts, build_and_save
 from src.workflow.stages import StageContext, prompt_input_token_upper_bound, run_reporting
 
 REPO = Path(__file__).resolve().parents[1]
-TAG = "continuation-v1"
+TAG = "continuation-v1.1"
+PREVIOUS_TAG = "continuation-v1"
 EXPERIMENT_ID = "continuation_v1_posthoc_v3"
 MANIFEST = REPO / "results/processed/continuation_protocol_manifest.json"
 DIAGNOSTICS = REPO / "results/processed/diagnostics_posthoc.json"
@@ -298,19 +299,30 @@ def _artifact_file(stage, suffix: str) -> Path:
 
 
 def original_cleaning_artifact(cell: ContinuationCell) -> StageArtifacts:
+    """Reconstruct exactly the cleaning artifact saved in the original analysis handoff.
+
+    Invalid/truncated cleaning summaries were retained as files but represented as ``None`` in
+    verified results, with a limitation.  Reading the saved handoff avoids reparsing such a file or
+    inventing new continuation semantics.
+    """
     stage = cell.original.stages[0]
-    parsed_path = _artifact_file(stage, "/parsed.json")
-    code_path = _artifact_file(stage, "/code.py")
-    parsed = json.loads(parsed_path.read_text())
+    original_analysis_handoff = cell.original.stages[1].handoff_in_path
+    if not original_analysis_handoff:
+        raise FileNotFoundError(f"original analysis handoff missing: {cell.original.run_id}")
+    saved = json.loads((REPO / original_analysis_handoff).read_text())
+    parsed = saved["stage_outputs"]["cleaning"]
     cleaned = _artifact_file(stage, "/output/" + parsed["output_filename"])
     summary = next((REPO / p for p in stage.output_artifacts if p.endswith("/output/cleaning_summary.json")), None)
-    summary_obj = json.loads(summary.read_text()) if summary and summary.is_file() else None
+    files = {"cleaned_csv": str(cleaned)}
+    if summary and summary.is_file() and str(summary) in set(saved["source_files"]):
+        files["cleaning_summary"] = str(summary)
+    limitations = [value.removeprefix("cleaning: ") for value in saved.get("known_limitations", [])
+                   if value.startswith("cleaning: ")]
     return StageArtifacts(stage=StageId.CLEANING, model_alias=stage.model_alias, parsed_output=parsed,
-                          executed_code=code_path.read_text(),
-                          files={"cleaned_csv": str(cleaned)} | ({"cleaning_summary": str(summary)} if summary and summary.is_file() else {}),
-                          verified_results={"cleaning_summary": summary_obj,
-                                            "cleaned_csv_sha256": hash_file(cleaned)},
-                          validation_status="passed" if stage.validation and stage.validation.hard_pass else "failed")
+                          executed_code=saved["executed_code"]["cleaning"], files=files,
+                          verified_results=saved["verified_results"]["cleaning"],
+                          validation_status=saved["validation_status"]["cleaning"],
+                          limitations=limitations)
 
 
 def recovered_analysis_artifact(cell: ContinuationCell) -> StageArtifacts:
@@ -345,6 +357,34 @@ def pending_cells(cells: list[ContinuationCell], existing: list[dict[str, Any]] 
     return [cell for cell in cells if cell.original.run_id not in completed]
 
 
+def prepare_continuation_run_dir(run_id: str, existing: list[dict[str, Any]] | None = None) -> Path:
+    """Create a run directory, or reuse unrecorded scaffolding containing no files."""
+    rows = existing if existing is not None else _existing_records()
+    if any(row.get("run_id") == run_id for row in rows):
+        raise FileExistsError(f"continuation task record already exists: {run_id}")
+    run_dir = RUNS / run_id
+    if not run_dir.exists():
+        run_dir.mkdir(parents=True)
+        return run_dir
+    payload = [path for path in run_dir.rglob("*") if path.is_symlink() or not path.is_dir()]
+    if payload:
+        shown = [str(path.relative_to(run_dir)) for path in payload[:8]]
+        raise FileExistsError(f"continuation run directory contains audit evidence: {run_dir}: {shown}")
+    return run_dir
+
+
+def dry_run_handoffs(cells: list[ContinuationCell], root: Path) -> list[dict[str, str]]:
+    """Build every handoff without a client/model call; return all failures for audit."""
+    failures = []
+    for cell in cells:
+        try:
+            build_continuation_handoff(cell, root / continuation_run_id(cell) / "reporting/handoff_in.json")
+        except Exception as exc:  # noqa: BLE001 - audit every cell rather than stopping early
+            failures.append({"continued_from": cell.original.run_id,
+                             "error": f"{type(exc).__name__}: {exc}"})
+    return failures
+
+
 def _append_jsonl(path: Path, row: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("a", encoding="utf-8") as handle:
@@ -361,10 +401,7 @@ def _runtime(group: str, limits: UsageLimits):
 
 def execute_cell(cell: ContinuationCell, client: Any) -> dict[str, Any]:
     run_id = continuation_run_id(cell)
-    run_dir = RUNS / run_id
-    if run_dir.exists():
-        raise FileExistsError(f"continuation run directory already exists without a record: {run_dir}")
-    run_dir.mkdir(parents=True)
+    run_dir = prepare_continuation_run_dir(run_id)
     spec, ground_truth, pdir = load_project(REPO / "datasets/projects" / cell.original.project_id)
     handoff = build_continuation_handoff(cell, run_dir / "reporting/handoff_in.json")
     pkg, size, elapsed = handoff

@@ -1,0 +1,303 @@
+STAGE: reporting
+PROJECT: customer_churn
+PROMPT_VERSION: v3-post-freeze
+
+You are the reporting stage of a three-stage data workflow (cleaning -> analysis -> reporting).
+The analysis stage has already run its code in a sandbox. Write a structured report of the VERIFIED
+findings below for business stakeholders.
+
+## Original objective
+Clean the raw customer snapshot and analyse churn: the overall churn rate, differences between plans, signup cohorts and contract types, an at-risk segment with many support tickets and low satisfaction, lifetime value by plan, and the distribution of tenure and satisfaction, then report the verified findings to business stakeholders.
+
+## Handoff from the previous stages
+Completed stages: cleaning, analysis
+Validation status of previous stages: {"cleaning": "passed", "analysis": "passed"}
+Methods reported by the analysis stage:
+The script reads the cleaned CSV and computes all required metrics using pandas. Q1 computes overall aggregates (count, churn rate, average fee). Q2 and Q3 group by plan and signup year respectively to compute churn rates. Q4 groups by contract type and calculates the relative percentage change in churn rate. Q5 filters for the at-risk segment (support_tickets >= 5 and satisfaction_score <= 2) and computes count and churn rate. Q6 computes mean, median, and sample standard deviation for tenure, and mean and missing count for satisfaction. Q7 computes mean lifetime value by plan and the percentage difference between Premium and Basic plans. All results are written as a flat JSON object.
+
+## Analysis questions and their metric_keys
+- q1: Overall (aggregation): number of customers (rows) -> customer_count; percentage of customers with churned = 1 -> churn_rate_pct, expressed as a percentage; mean monthly_fee -> avg_monthly_fee.
+  metric_keys: customer_count, churn_rate_pct, avg_monthly_fee
+- q2: Churn by plan (group comparison): churn rate in percent among customers of each plan -> churn_rate_basic_pct, churn_rate_standard_pct, churn_rate_premium_pct.
+  metric_keys: churn_rate_basic_pct, churn_rate_standard_pct, churn_rate_premium_pct
+- q3: Churn by signup cohort (trend): churn rate in percent among customers whose signup_date falls in each calendar year -> churn_rate_cohort_2021_pct, churn_rate_cohort_2022_pct, churn_rate_cohort_2023_pct, churn_rate_cohort_2024_pct.
+  metric_keys: churn_rate_cohort_2021_pct, churn_rate_cohort_2022_pct, churn_rate_cohort_2023_pct, churn_rate_cohort_2024_pct
+- q4: Contract effect (percentage change): churn rate in percent for Monthly contracts -> churn_rate_monthly_pct; for Annual contracts -> churn_rate_annual_pct; relative difference = (churn_rate_monthly_pct - churn_rate_annual_pct) / churn_rate_annual_pct * 100 -> churn_monthly_vs_annual_change_pct.
+  metric_keys: churn_rate_monthly_pct, churn_rate_annual_pct, churn_monthly_vs_annual_change_pct
+- q5: At-risk segment (conditional filtering): customers with support_tickets >= 5 AND a non-missing satisfaction_score <= 2: their number -> at_risk_customer_count; their churn rate in percent -> at_risk_churn_rate_pct.
+  metric_keys: at_risk_customer_count, at_risk_churn_rate_pct
+- q6: Tenure and satisfaction summary (statistical summary): mean, median and sample standard deviation (denominator n - 1) of tenure_months over all customers -> tenure_mean, tenure_median, tenure_std; mean satisfaction_score over customers with a non-missing score -> satisfaction_mean; number of customers with a missing satisfaction_score -> satisfaction_missing_count.
+  metric_keys: tenure_mean, tenure_median, tenure_std, satisfaction_mean, satisfaction_missing_count
+- q7: Lifetime value by plan (derived step): mean lifetime_value for each plan -> ltv_basic, ltv_standard, ltv_premium; (ltv_premium - ltv_basic) / ltv_basic * 100 -> premium_vs_basic_ltv_change_pct.
+  metric_keys: ltv_basic, ltv_standard, ltv_premium, premium_vs_basic_ltv_change_pct
+
+## Structured claim requirements
+The following block is contract metadata, not answer data. For every `ranking_required: true`
+finding, return a complete high-to-low `ranking`. Use the display-label values in
+`ranking_metric_key_to_label` exactly. For every `direction_required: true` finding, return the
+direction implied by the named metric.
+```json
+{
+  "q1": {
+    "direction_required": false,
+    "direction_metric_key": null,
+    "ranking_required": false,
+    "ranking_metric_key_to_label": null
+  },
+  "q2": {
+    "direction_required": false,
+    "direction_metric_key": null,
+    "ranking_required": true,
+    "ranking_metric_key_to_label": {
+      "churn_rate_basic_pct": "Basic",
+      "churn_rate_premium_pct": "Premium",
+      "churn_rate_standard_pct": "Standard"
+    }
+  },
+  "q3": {
+    "direction_required": false,
+    "direction_metric_key": null,
+    "ranking_required": true,
+    "ranking_metric_key_to_label": {
+      "churn_rate_cohort_2021_pct": "2021",
+      "churn_rate_cohort_2022_pct": "2022",
+      "churn_rate_cohort_2023_pct": "2023",
+      "churn_rate_cohort_2024_pct": "2024"
+    }
+  },
+  "q4": {
+    "direction_required": true,
+    "direction_metric_key": "churn_monthly_vs_annual_change_pct",
+    "ranking_required": false,
+    "ranking_metric_key_to_label": null
+  },
+  "q5": {
+    "direction_required": false,
+    "direction_metric_key": null,
+    "ranking_required": false,
+    "ranking_metric_key_to_label": null
+  },
+  "q6": {
+    "direction_required": false,
+    "direction_metric_key": null,
+    "ranking_required": false,
+    "ranking_metric_key_to_label": null
+  },
+  "q7": {
+    "direction_required": true,
+    "direction_metric_key": "premium_vs_basic_ltv_change_pct",
+    "ranking_required": true,
+    "ranking_metric_key_to_label": {
+      "ltv_basic": "Basic",
+      "ltv_premium": "Premium",
+      "ltv_standard": "Standard"
+    }
+  }
+}
+```
+
+## Verified findings (computed by the analysis code; metric_key -> value)
+VERIFIED_FINDINGS_JSON
+```json
+{
+  "customer_count": 749.0,
+  "churn_rate_pct": 37.6502002670227,
+  "avg_monthly_fee": 42.106154873164215,
+  "churn_rate_basic_pct": 38.87240356083086,
+  "churn_rate_standard_pct": 36.67953667953668,
+  "churn_rate_premium_pct": 36.60130718954248,
+  "churn_rate_cohort_2021_pct": 38.02083333333333,
+  "churn_rate_cohort_2022_pct": 36.74418604651163,
+  "churn_rate_cohort_2023_pct": 37.05357142857143,
+  "churn_rate_cohort_2024_pct": 39.83050847457627,
+  "churn_rate_monthly_pct": 48.322147651006716,
+  "churn_rate_annual_pct": 21.85430463576159,
+  "churn_monthly_vs_annual_change_pct": 121.11043319097013,
+  "at_risk_customer_count": 100.0,
+  "at_risk_churn_rate_pct": 71.0,
+  "tenure_mean": 20.81041388518024,
+  "tenure_median": 19.0,
+  "tenure_std": 13.24739298193327,
+  "satisfaction_mean": 3.4168975069252077,
+  "satisfaction_missing_count": 27.0,
+  "ltv_basic": 463.4573590504451,
+  "ltv_standard": 868.8301544401545,
+  "ltv_premium": 1816.7777124183006,
+  "premium_vs_basic_ltv_change_pct": 292.00536509779596
+}
+```
+
+## Rules (mandatory)
+- Use ONLY the verified findings above. Do not invent or estimate numbers. Each `key_findings`
+  statement MUST state at least one verified numeric value for that finding. Rounding to a sensible
+  precision is fine; any number you derive must be declared in `derived_values`.
+- Write one entry in `key_findings` for each of these question ids: q1, q2, q3, q4, q5, q6, q7.
+  Set `finding_id` to the question id and list the metric_keys you rely on in `evidence_refs`.
+- In `reported_values`, include EVERY metric_key of that question with its verified value (copy it).
+- Follow the structured claim requirements exactly. A ranking is required whenever
+  `ranking_required` is true, including trend questions; order it from highest to lowest.
+- `derived_values` must declare every number in your text computed from findings (difference,
+  ratio, pct_change or share), with metric-key `operands` in formula order.
+- Keep the whole report (title, summary, statements, limitations, conclusion) under 600 words.
+- Mention genuine limitations of the data or analysis in `limitations`.
+
+
+Respond with a single JSON object that conforms to this JSON Schema. Put it in one ```json fenced block and include nothing else outside the block.
+```json
+{
+  "$defs": {
+    "DerivedValue": {
+      "description": "A number stated in the report that is computed from verified findings (v1.2).",
+      "properties": {
+        "kind": {
+          "description": "difference = a-b; ratio = a/b; pct_change = (a-b)/b*100; share = a/b*100",
+          "enum": [
+            "difference",
+            "ratio",
+            "pct_change",
+            "share"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "operands": {
+          "description": "metric_keys [a, b] used in the formula, in order.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Operands",
+          "type": "array"
+        },
+        "value": {
+          "description": "The number as stated in the report.",
+          "title": "Value",
+          "type": "number"
+        }
+      },
+      "required": [
+        "kind",
+        "operands",
+        "value"
+      ],
+      "title": "DerivedValue",
+      "type": "object"
+    },
+    "KeyFinding": {
+      "properties": {
+        "finding_id": {
+          "description": "The analysis question_id this finding addresses.",
+          "title": "Finding Id",
+          "type": "string"
+        },
+        "statement": {
+          "title": "Statement",
+          "type": "string"
+        },
+        "evidence_refs": {
+          "description": "metric_keys from findings.json supporting this statement.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Evidence Refs",
+          "type": "array"
+        },
+        "reported_values": {
+          "additionalProperties": {
+            "type": "number"
+          },
+          "description": "metric_key -> number as stated in the report. Required for EVERY metric_key of the finding.",
+          "title": "Reported Values",
+          "type": "object"
+        },
+        "direction": {
+          "anyOf": [
+            {
+              "enum": [
+                "increase",
+                "decrease",
+                "no_change",
+                "not_applicable"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "For change/trend findings: the direction you state in the text.",
+          "title": "Direction"
+        },
+        "ranking": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "For group comparisons: group labels ordered from highest to lowest value.",
+          "title": "Ranking"
+        },
+        "derived_values": {
+          "description": "Any number in the text computed from findings (share, difference, ...).",
+          "items": {
+            "$ref": "#/$defs/DerivedValue"
+          },
+          "title": "Derived Values",
+          "type": "array"
+        }
+      },
+      "required": [
+        "finding_id",
+        "statement",
+        "evidence_refs"
+      ],
+      "title": "KeyFinding",
+      "type": "object"
+    }
+  },
+  "properties": {
+    "title": {
+      "title": "Title",
+      "type": "string"
+    },
+    "executive_summary": {
+      "title": "Executive Summary",
+      "type": "string"
+    },
+    "key_findings": {
+      "items": {
+        "$ref": "#/$defs/KeyFinding"
+      },
+      "title": "Key Findings",
+      "type": "array"
+    },
+    "limitations": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Limitations",
+      "type": "array"
+    },
+    "conclusion": {
+      "title": "Conclusion",
+      "type": "string"
+    }
+  },
+  "required": [
+    "title",
+    "executive_summary",
+    "key_findings",
+    "limitations",
+    "conclusion"
+  ],
+  "title": "ReportOutput",
+  "type": "object"
+}
+```

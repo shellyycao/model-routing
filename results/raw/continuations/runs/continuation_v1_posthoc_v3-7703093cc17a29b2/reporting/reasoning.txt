@@ -1,0 +1,142 @@
+Let me work through the verified findings and build the report.
+
+Findings:
+- ticket_count: 347.0
+- mean_resolution_minutes: 75.19
+- total_labor_cost: 27422.9
+- labor_cost_alpha: 7787.81
+- labor_cost_beta: 10247.36
+- labor_cost_gamma: 9387.73
+- resolution_email: 73.02
+- resolution_chat: 83.04
+- resolution_phone: 69.25
+- reopen_rate_email_pct: 17.24
+- reopen_rate_chat_pct: 7.84
+- email_vs_chat_reopen_change_pct: 119.83
+- high_cost_low_sat_count: 12.0
+- high_cost_low_sat_reopen_pct: 8.33
+- resolution_median: 65.0
+- resolution_std: 51.93
+- satisfaction_mean: 4.15
+- satisfaction_missing_count: 19.0
+- unique_agent_count: 18.0
+- top_agent_ticket_count: 26.0
+- top_agent_ticket_share_pct: 7.49
+
+q2 ranking (labor cost, highest to lowest): Beta (10247.36), Gamma (9387.73), Alpha (7787.81). Labels: "Beta", "Gamma", "Alpha".
+
+q3 ranking (resolution minutes, highest to lowest): chat (83.04), email (73.02), phone (69.25). Labels: "chat", "email", "phone".
+
+q4 direction: email_vs_chat_reopen_change_pct = +119.83, so increase.
+
+Derived values: if I state differences like Beta minus Alpha = 2459.55, I must declare in derived_values. Let me decide what derived numbers to include in text.
+
+q1: I could state total labor cost and mean resolution directly — no derived needed. Maybe avg cost per ticket? That would be ratio total_labor_cost/ticket_count = 27422.9/347 ≈ 79.03. If I include it, declare as ratio. Let me include it as it adds insight: 27422.9/347 = 79.028... ≈ 79.03.
+
+q2: Could state Beta minus Alpha difference: 10247.36 - 7787.81 = 2459.55. Declare difference. Or Beta share of total: 10247.36/27422.9 = 37.37%. If I state shares, declare each. Keep it simple: state ranking and difference between highest and lowest. Derived: difference [labor_cost_beta, labor_cost_alpha] = 2459.55.
+
+q3: Difference chat vs phone: 83.04 - 69.25 = 13.79 (approximately 13.7857...). Let me compute precisely: 83.03921568627452 - 69.25352112676056 = 13.78569455951396 ≈ 13.79. Declare difference [resolution_chat, resolution_phone].
+
+q4: The change percentage is a verified metric itself (email_vs_chat_reopen_change_pct = 119.83), so it's not derived — it's a reported value. Direction: increase. Statement: email reopen rate 17.24% vs chat 7.84%, email is 119.83% higher. Could also state difference 17.24-7.84=9.40 pp; if I state it, declare difference. I'll mention "about 9.4 percentage points higher" and declare difference [reopen_rate_email_pct, reopen_rate_chat_pct] = 9.398... ≈ 9.4. Compute: 17.24137931034483 - 7.8431372549019605 = 9.398242055442869 ≈ 9.4.
+
+q5: 12 tickets, 8.33% reopen. Could state share of total tickets: 12/347 = 3.46%. If stated, declare share [high_cost_low_sat_count, ticket_count] = 3.458... ≈ 3.46. Compute: 12/347 = 0.034582... *100 = 3.4582 ≈ 3.46.
+
+q6: median 65, std 51.93, satisfaction mean 4.15, missing 19. Could state missing share: 19/347 = 5.48%. Declare share [satisfaction_missing_count, ticket_count] = 5.4755... ≈ 5.48. Compute: 19/347 = 0.054755... = 5.4755 ≈ 5.48.
+
+q7: 18 unique agents, top agent 26 tickets, 7.49% share. Could state average tickets per agent: 347/18 = 19.28. Declare ratio [ticket_count, unique_agent_count] = 19.2778 ≈ 19.28. Compute: 347/18 = 19.2777... ≈ 19.28.
+
+Word count: keep whole report under 650 words. Statements should be concise.
+
+Every key_findings statement must state at least one verified numeric value. reported_values must include every metric_key of the question with its verified value (copy it exactly).
+
+q1 reported_values: ticket_count 347.0, mean_resolution_minutes 75.19308357348703, total_labor_cost 27422.9.
+q2: labor_cost_alpha 7787.81, labor_cost_beta 10247.36, labor_cost_gamma 9387.73.
+q3: resolution_email 73.01724137931035, resolution_chat 83.03921568627452, resolution_phone 69.25352112676056.
+q4: reopen_rate_email_pct 17.24137931034483, reopen_rate_chat_pct 7.8431372549019605, email_vs_chat_reopen_change_pct 119.82758620689657.
+q5: high_cost_low_sat_count 12.0, high_cost_low_sat_reopen_pct 8.333333333333332.
+q6: resolution_median 65.0, resolution_std 51.92574910613114, satisfaction_mean 4.152439024390244, satisfaction_missing_count 19.0.
+q7: unique_agent_count 18.0, top_agent_ticket_count 26.0, top_agent_ticket_share_pct 7.492795389048991.
+
+evidence_refs: the metric keys relied on.
+
+direction for q4: "increase". Others: "not_applicable" or null. The schema default is null; direction is described "For change/trend findings". For non-trend, set "not_applicable" to be safe. Actually the enum allows "not_applicable". I'll set not_applicable for q1-q3, q5-q7 and increase for q4.
+
+ranking for q2: ["Beta", "Gamma", "Alpha"]. q3: ["chat", "email", "phone"]. Others null.
+
+derived_values arrays:
+q1: ratio avg cost per ticket [total_labor_cost, ticket_count] = 79.03. Let me compute: 27422.9/347 = 79.0285... 347*79 = 27413, remainder 9.9, 9.9/347=0.0285 → 79.0285. Round to 79.03.
+
+q2: difference [labor_cost_beta, labor_cost_alpha] = 2459.55.
+
+q3: difference [resolution_chat, resolution_phone] = 13.79.
+
+q4: difference [reopen_rate_email_pct, reopen_rate_chat_pct] = 9.4.
+
+q5: share [high_cost_low_sat_count, ticket_count] = 3.46.
+
+q6: share [satisfaction_missing_count, ticket_count] = 5.48.
+
+q7: ratio [ticket_count, unique_agent_count] = 19.28.
+
+For findings with no derived values in text, provide empty array. q5 statement: "12 tickets (3.46% of all 347) ..." includes derived share 3.46 and verified 347. That's fine.
+
+Word count check — I'll draft and keep it tight. The JSON counts words including statements; aim well under 650 words for title, summary, statements, limitations, conclusion.
+
+Draft:
+
+Title: "Support Ticket Operations: Cost, Speed, Reopening and Workload Report"
+
+Executive summary (~70 words): Analysis of 347 support tickets shows total labor cost of $27,422.90 and mean resolution time of 75.19 minutes. Beta team carries the highest labor cost ($10,247.36). Chat tickets take longest to resolve (83.04 minutes), while phone is fastest (69.25). Email reopen rate (17.24%) is 119.83% higher than chat (7.84%). A small high-cost, low-satisfaction segment (12 tickets) reopens at 8.33%. Workload is spread across 18 agents, with the busiest handling 7.49% of tickets.
+
+q1 statement: "The dataset contains 347 tickets with a mean resolution time of 75.19 minutes and total labor cost of $27,422.90 — about $79.03 per ticket."
+
+q2: "Beta accounts for the most labor cost at $10,247.36, followed by Gamma at $9,387.73 and Alpha at $7,787.81; Beta exceeds Alpha by $2,459.55."
+
+q3: "Average resolution time is highest for chat at 83.04 minutes, then email at 73.02 minutes and phone at 69.25 minutes — chat takes 13.79 minutes longer than phone."
+
+q4: "Email tickets reopen at 17.24% versus 7.84% for chat, an increase of 119.83% (about 9.4 percentage points more), marking email as the reopening hotspot."
+
+q5: "Only 12 tickets (3.46% of all 347) combine labor cost ≥ $100 with satisfaction ≤ 2, and their reopen rate is 8.33% — below the email average."
+
+Hmm, "below the email average" comparison — that's fine as text referencing verified values, no new derived number needed (comparison of two verified numbers, not computed). Actually comparing isn't a derived number. Fine.
+
+q6: "Resolution time is right-skewed: median 65.0 minutes vs mean 75.19, with a standard deviation of 51.93 minutes. Mean satisfaction is 4.15; 19 tickets (5.48%) lack a satisfaction score."
+
+q7: "18 distinct agents handled the workload; the busiest agent closed 26 tickets, a 7.49% share — against an even average of 19.28 tickets per agent."
+
+Limitations:
+- Satisfaction scores missing for 19 tickets, so satisfaction-based metrics cover a subset.
+- Cost data is labor-only; other cost drivers (tooling, overhead) are not captured.
+- Reopening measured only for email and chat in q4; phone reopen rate not compared.
+- High-cost low-satisfaction segment is small (12 tickets), so its reopen rate is unstable.
+- Cross-sectional snapshot; no time trend or seasonality analyzed.
+
+Conclusion (~40 words): Operations are broadly efficient, but email reopening is the clearest quality gap. Prioritize root-cause analysis on email resolutions, monitor the small high-cost low-satisfaction segment, and keep workload balanced across the 18-agent roster.
+
+Word count: Let me roughly count. Summary ~80, statements ~30 each ×7 = 210, limitations ~80, conclusion ~40, title ~10 → ~420. Good, under 650.
+
+Note currency symbol — findings don't specify currency. Labor cost 27422.9 — currency unknown. Using "$" might be inventing. Safer to just say "labor cost of 27,422.90" without currency symbol. I'll avoid currency symbols to not invent units. Or say "cost units". I'll just write numbers without $.
+
+Also "right-skewed" claim: median 65 < mean 75.19 supports right skew — that's an interpretation, acceptable as it derives from verified values. The comparison itself isn't a new number. Fine.
+
+For q6 statement mentioning mean 75.19 — that's from q1 metric (mean_resolution_minutes). If I use it in q6 statement, should I add to evidence_refs? The rules say evidence_refs are metric_keys from findings supporting the statement; reported_values must include every metric_key of that question. I can include mean_resolution_minutes in evidence_refs but reported_values must include at least all of q6's keys. Including extra in reported_values probably okay but "Required for EVERY metric_key of the finding" — minimum. To be safe, avoid cross-referencing mean in q6; instead just say median 65 with std 51.93 indicating wide spread. Drop skew comment or phrase without mean: "Resolution times vary widely: median 65.0 minutes, standard deviation 51.93 minutes." Good.
+
+q5 statement "below the email reopen rate of 17.24%" — cross-references q4 metric. To be safe on evidence refs, I could add reopen_rate_email_pct to evidence_refs of q5. Hmm, "list the metric_keys you rely on in evidence_refs". So if I rely on it, list it. That's allowed — evidence_refs can include keys beyond the question's. But reported_values "include EVERY metric_key of that question" — minimum requirement. Safer to keep statements within their own question's keys. I'll drop the comparison: "their reopen rate is 8.33%, a relatively low level for this costly segment." Actually even "relatively low" implies comparison. Just state plainly: "and 8.33% of them were reopened."
+
+q7: ratio derived uses ticket_count and unique_agent_count — ticket_count is from q1 but it's a findings key, fine to use in derived operands. Evidence refs: unique_agent_count, top_agent_ticket_count, top_agent_ticket_share_pct, and ticket_count? I rely on ticket_count for the derived average. The rules: evidence_refs metric_keys supporting the statement. I'll include ticket_count in evidence_refs for q7. Similarly q1 derived uses its own keys. q5 derived share uses ticket_count — include ticket_count in q5 evidence_refs. q6 derived share uses ticket_count — include it.
+
+Direction fields: set "not_applicable" for non-trend findings.
+
+Rankings use display labels exactly: q2: "Beta", "Gamma", "Alpha". q3: "chat", "email", "phone".
+
+Derived values rounding: state rounded numbers in text and in derived value field as stated. E.g., 79.03, 2459.55, 13.79, 9.4, 3.46, 5.48, 19.28.
+
+Let me finalize JSON.
+
+Also ensure reported_values copy exact verified values (full precision floats as given).
+
+Executive summary word count fine.
+
+Let me count words more carefully to stay under 650 for the textual parts. Rough estimate earlier ~420. Fine.
+
+Final JSON assembly.

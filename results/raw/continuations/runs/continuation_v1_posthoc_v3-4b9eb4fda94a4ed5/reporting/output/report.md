@@ -1,0 +1,30 @@
+# Support Operations Analysis Report
+
+This report presents the findings from the analysis of support operations data, focusing on ticket volume, resolution times, labor costs, and agent performance. Key insights include the overall performance metrics, team and channel comparisons, and identification of high-cost, low-satisfaction tickets.
+
+## Key findings
+- [q1] The overall support operations handled 347 tickets with an average resolution time of 75.2 minutes and a total labor cost of $27,422.90.
+  - Reported values: ticket_count=347.0, mean_resolution_minutes=75.19308357348703, total_labor_cost=27422.9
+- [q2] Team Beta incurred the highest labor cost at $10,247.36, followed by Gamma at $9,387.73, and Alpha at $7,787.81.
+  - Reported values: labor_cost_alpha=7787.81, labor_cost_beta=10247.36, labor_cost_gamma=9387.730000000001
+  - Ranking: Beta, Gamma, Alpha
+- [q3] Chat had the longest average resolution time at 83.0 minutes, followed by email at 73.0 minutes, and phone at 69.3 minutes.
+  - Reported values: resolution_email=73.01724137931035, resolution_chat=83.03921568627452, resolution_phone=69.25352112676056
+  - Ranking: chat, email, phone
+- [q4] Email tickets had a significantly higher reopening rate than chat tickets, with a 119.8% increase.
+  - Reported values: reopen_rate_email_pct=17.24137931034483, reopen_rate_chat_pct=7.8431372549019605, email_vs_chat_reopen_change_pct=119.82758620689657
+  - Direction: increase
+- [q5] There were 12 high-cost, low-satisfaction tickets, representing an 8.33% reopening rate.
+  - Reported values: high_cost_low_sat_count=12.0, high_cost_low_sat_reopen_pct=8.333333333333332
+- [q6] The median resolution time was 65.0 minutes with a standard deviation of 51.9 minutes. The average satisfaction score was 4.15, with 19 missing satisfaction scores.
+  - Reported values: resolution_median=65.0, resolution_std=51.92574910613114, satisfaction_mean=4.152439024390244, satisfaction_missing_count=19.0
+- [q7] There were 18 unique agents handling tickets, with the top agent managing 26 tickets, representing a 7.49% share of total tickets.
+  - Reported values: unique_agent_count=18.0, top_agent_ticket_count=26.0, top_agent_ticket_share_pct=7.492795389048991
+
+## Limitations
+- The analysis is based on a limited dataset and may not represent the entire population of support tickets.
+- The satisfaction scores are missing for 19 tickets, which may affect the accuracy of the average satisfaction score.
+- The reopening rates may be influenced by factors not captured in the data, such as ticket complexity or customer behavior.
+
+## Conclusion
+The analysis provides valuable insights into the performance of support operations, highlighting areas for improvement such as reducing reopening rates and optimizing labor costs. Further analysis with a larger dataset and additional factors could provide more comprehensive insights.

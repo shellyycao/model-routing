@@ -8,17 +8,14 @@ This repository is a fresh-history snapshot of the working repository at commit 
 - Code that gates paid runs on an exact git tag cannot run here.
 - Experiments still in progress when this snapshot was taken are not included.
 
-## Known issue: one frozen hash is not reproducible from tracked files
+## Hash reproducibility (resolved by additive amendment)
 
-The protocol manifests record `dataset_tree_sha256`. It was computed by `hash_tree` over the whole
-dataset directory, which at the time also held untracked Python bytecode (`__pycache__/*.pyc`).
-A fresh checkout has no such files, so the hash comes out different, and 7 tests that re-verify it
-fail in this snapshot (`tests/test_price_matched_v2.py` and `tests/test_price_matched_v2_results.py`).
-All other tests pass.
+The protocol manifests record `dataset_tree_sha256`, computed by `hash_tree` over the dataset directory, which at
+freeze time also held untracked `__pycache__/*.pyc` files. A fresh checkout therefore hashes differently. This was
+fixed additively, without editing any frozen file: see `docs/HASH_REPRODUCIBILITY_AMENDMENT.md`,
+`results/processed/hash_reproducibility_amendment.json` and `experiments/verify_frozen_hashes.py`.
+The equivalence evidence (`git diff <freeze tag> HEAD -- <dataset dir>` is empty) relies on the original
+repository's history, which is not included here.
 
-The dataset files themselves did not change: in the original repository,
-`git diff independent-v2-frozen-v1.1 HEAD -- datasets/independent_v2` is empty, and the same holds
-against `price-matched-v2-frozen-v1.1`. The file hashes in the manifests other than
-`dataset_tree_sha256` were not re-verified against this snapshot, and neither was
-`dataset_tree_sha256` for any dataset directory other than `datasets/independent_v2`. Fixing this properly
-(hashing tracked files only) would be a protocol amendment, so it has not been done here.
+Later work added after the first snapshot: the 40-cell continuation run, corrected Q1/Q2 views, the router
+re-scoring with corrected labels, the failure taxonomy (post-hoc, exploratory), and the hash amendment.
