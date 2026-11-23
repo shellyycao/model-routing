@@ -3,6 +3,8 @@
 An empirical study of model choice in multi-step AI workflows. Real AWS Bedrock runs, sandboxed code execution,
 fixed automatic checks, and cost counted as part of the evaluation.
 
+**Poster:** [poster/poster.pdf](poster/poster.pdf)
+
 **中文简介：** 我们都有自己常用的 AI 模型，但选哪个、怎么搭配往往凭经验。这个项目用真实运行结果回答三个问题：Q1 各模型擅长哪一步；Q2 多模型接力是否优于单模型；Q3 路由器的解释和预测是否可信。成本也作为评价的一部分。详细中文结果见 [docs/RESULTS_REPORT.md](docs/RESULTS_REPORT.md)。
 
 ## Why this matters
@@ -165,6 +167,7 @@ see Part A of [docs/FINAL_REPORT.md](docs/FINAL_REPORT.md).
 | Experiment runners and analyses | `experiments/` |
 | Synthetic projects and ground truth | `datasets/` |
 | Raw records, processed results, reports | `results/raw/`, `results/processed/`, `results/reports/` |
+| Poster (PDF) | [poster/poster.pdf](poster/poster.pdf) |
 | Poster charts and the script that draws them | `poster/charts/` |
 | Tests | `tests/` |
 | Demo site (Next.js) | `web/` |
