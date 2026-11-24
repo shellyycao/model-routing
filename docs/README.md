@@ -8,7 +8,7 @@ Most readers only need the first section.
 | File | What it is |
 |---|---|
 | [FINAL_REPORT.md](FINAL_REPORT.md) | Full report: question, architecture, timeline, all results with sources, limitations, verification guide |
-| [RESULTS_REPORT.md](RESULTS_REPORT.md) | Results write-up in Chinese (motivation, method, results, limits) |
+| [RESULTS_REPORT.md](RESULTS_REPORT.md) | Shorter reader-facing results write-up (motivation, method, results, limits) |
 | [research/COMPETITIVE_LANDSCAPE.md](research/COMPETITIVE_LANDSCAPE.md) | Related products and papers, and the gap this project addresses |
 | [architecture.md](architecture.md) | System design and component ownership |
 | [methodology.md](methodology.md) | Routing and XAI method: leave-one-project-out, decision traces, counterfactual validation (written before results) |

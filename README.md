@@ -5,7 +5,6 @@ fixed automatic checks, and cost counted as part of the evaluation.
 
 **Live demo:** [modelflow-alpha.vercel.app](https://modelflow-alpha.vercel.app) · **Poster:** [poster/poster.pdf](poster/poster.pdf)
 
-**中文简介：** 我们都有自己常用的 AI 模型，但选哪个、怎么搭配往往凭经验。这个项目用真实运行结果回答三个问题：Q1 各模型擅长哪一步；Q2 多模型接力是否优于单模型；Q3 路由器的解释和预测是否可信。成本也作为评价的一部分。详细中文结果见 [docs/RESULTS_REPORT.md](docs/RESULTS_REPORT.md)。
 
 ## Why this matters
 
@@ -161,7 +160,7 @@ see Part A of [docs/FINAL_REPORT.md](docs/FINAL_REPORT.md).
 | Guide to the docs folder (which files to read first) | [docs/README.md](docs/README.md) |
 | Full report: every number with its source, plus a verification guide | [docs/FINAL_REPORT.md](docs/FINAL_REPORT.md) |
 | Literature and product comparison | [docs/research/COMPETITIVE_LANDSCAPE.md](docs/research/COMPETITIVE_LANDSCAPE.md) |
-| Results write-up in Chinese | [docs/RESULTS_REPORT.md](docs/RESULTS_REPORT.md) |
+| Shorter results write-up (motivation, method, results, limits) | [docs/RESULTS_REPORT.md](docs/RESULTS_REPORT.md) |
 | Experiment protocol, amendments, and post-hoc rules | `docs/*PROTOCOL*.md`, `docs/*AMENDMENT*.md`, `docs/*RULES*.md` |
 | Code: Bedrock client, workflow runner, routing | `src/` |
 | Experiment runners and analyses | `experiments/` |

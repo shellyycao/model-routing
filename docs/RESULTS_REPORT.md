@@ -1,95 +1,151 @@
-# 结果报告：动机、方法、结果
+# Results report: motivation, method, results
 
-日期：2026-11-19。这是面向读者的详细说明；每个数字的来源和逐条验证方法见 [FINAL_REPORT.md](FINAL_REPORT.md)（第 6 节有验证指南）。
-证据标签：**预先登记**＝规则在付费运行前冻结；**事后补做**＝结果出来后才加的分析，证据强度更低。
+Date: 2026-11-19. This is the reader-facing write-up. The source of every number, and how to verify each one, is in
+[FINAL_REPORT.md](FINAL_REPORT.md) (section 6 is the verification guide).
+Evidence labels: **pre-registered** = rules frozen before the paid runs; **post-hoc** = analysis added after the
+results were seen, which is weaker evidence.
 
-## 1. 动机
+## 1. Motivation
 
-我在工作中不可避免地同时使用多个 AI，但选哪个、怎么搭配，主要凭个人经验，并不知道这样的选择是不是比别的更好。现有的推荐工具会根据任务给出工作流建议，但大多没有用真实结果来验证这些建议。所以我想自己测：
+In my work I inevitably use several AI models at once, but which one to use and how to combine them is mostly based on
+personal experience, with no way of knowing whether those choices are better than the alternatives. Existing tools
+recommend workflows for a task, but most do not validate their recommendations against real outcomes. So I tested
+it myself:
 
-- **Q1** 不同模型各擅长什么？
-- **Q2** 多模型接力是否优于单模型？
-- **Q3** 推荐系统（路由器）给出的理由和预测能否被检验？
+- **Q1** What is each model good at?
+- **Q2** Does passing work between several models beat using one model?
+- **Q3** Can the reasons and predictions given by a recommender (router) be checked?
 
-三个问题同等重要，成本也算评价的一部分。XAI（解释“为什么”）用在 Q1、Q2 上：每个结论都追问原因，能验证的就用重跑来验证。
+The three questions are equally important, and cost is part of the evaluation. XAI (explaining "why") is also applied
+to Q1 and Q2: every conclusion asks for a cause, and causes that can be tested are tested by re-running.
 
-## 2. 方法
+## 2. Method
 
-- **任务：** 一个数据分析工作流，三步：清洗数据 → 分析 → 写报告。4 个合成项目（客户流失、能源消耗、零售销售、客服运营），有确定的标准答案。
-- **环境：** 在 AWS Bedrock 上做真实调用；模型生成的代码在固定版本的 Docker 沙箱里执行；用固定规则打分；花费按真实价格和每次调用的 token 数计算，每次实验设硬上限（$100），先预留再结算。
-- **实验：**
-  1. 单步测试：每个模型单独做每一步。
-  2. 完整工作流：3 个模型 × 3 步 = 27 条路径，每个项目都跑，部分重复 3 次。
-  3. 找原因：保存每次的代码、错误和输出，归纳失败原因，能验证的重跑验证。
-  4. 补充：3 个独立任务（修 bug、信息提取、文献排序）比较模型，并计入真实花费。
-  5. 路由器（Q3）：按历史数据推荐模型组合的程序（策略 S1–S4），用 3 个项目训练、在第 4 个上检验；解释用固定模板从计算记录生成；“换了会怎样”的预测在知道结果之前锁进防篡改日志，再和真实结果比。
-- **两组模型（别名在两组里指不同模型，不能混用）：**
-  - 第一组：Claude Sonnet 4.6、Amazon Nova Pro、gpt-oss-120b（输出上限 4096）。
-  - 第二组（价格更接近）：Claude Sonnet 4.6、Kimi K3、GLM 5（输出上限 16384）。
-- **规则先冻结：** 评分规则和协议在运行前冻结并打标签；之后发现的问题用追加的“修正版”处理，不改冻结文件，官方数字保留，并排给出修正数字。
-- **关于偏差：** Claude 本身也是被评价的模型之一，所以执行由 Codex 做，Claude 只在检查点审阅；Claude 做的事后分析都先提交规则再计算并披露。
+- **Task:** one data-analysis workflow with three steps: clean the data → analyze → write a report. Four synthetic
+  projects (customer churn, energy consumption, retail sales, support operations) with known correct answers.
+- **Environment:** real calls on AWS Bedrock. Model-written code runs in a pinned Docker sandbox. Scoring uses fixed
+  rules. Cost is computed from real prices and per-call token counts, with a hard cap per experiment ($100), reserved
+  before each call and settled after.
+- **Experiments:**
+  1. Single-step tests: each model does each step on its own.
+  2. Full workflows: 3 models × 3 steps = 27 paths, run on every project, some repeated 3 times.
+  3. Root causes: every run's code, errors and outputs are saved, failure causes are grouped, and testable causes are
+     verified by re-running.
+  4. Supplement: 3 standalone tasks (bug fixing, information extraction, literature ranking) compare the models,
+     including real cost.
+  5. Router (Q3): a program that recommends model combinations from past data (strategies S1–S4), trained on 3
+     projects and tested on the 4th. Explanations are generated from fixed templates over the computation record.
+     "What if you swapped" predictions are locked into a tamper-evident log before the outcomes are known, then
+     compared with the real results.
+- **Two model groups (the aliases A/B/C refer to different models in each group and must not be mixed):**
+  - Group 1: Claude Sonnet 4.6, Amazon Nova Pro, gpt-oss-120b (output limit 4096 tokens).
+  - Group 2 (closer in price): Claude Sonnet 4.6, Kimi K3, GLM 5 (output limit 16384 tokens).
+- **Rules frozen first:** scoring rules and protocols were frozen and tagged before the runs. Problems found later are
+  handled by additive "corrected" versions; frozen files are never edited, the official numbers are kept, and the
+  corrected numbers are shown beside them.
+- **On bias:** Claude is itself one of the models being evaluated, so execution was done by Codex and Claude only
+  reviewed at checkpoints. Every post-hoc analysis Claude did had its rules committed before computing, and is
+  disclosed.
 
-## 3. 结果
+## 3. Results
 
-### Q1：每个模型各有所长
+### Q1: each model has its own strengths
 
-没有一个模型每一步都最好。单步测试（每格 4 个项目）：
+No model is best at every step. Single-step tests (4 projects per cell):
 
-| 模型 | 清洗 | 分析 | 报告 | 特点 |
+| Model | Clean | Analyze | Report | Notes |
 |---|---|---|---|---|
-| Sonnet 4.6（第一组） | 3/4 | 4/4 | 3/4 | 最均衡，但最慢、较贵 |
-| Nova Pro | 0/4 | 0/4 | 2/4 | 最快最省，但写代码常出错 |
-| gpt-oss-120b | 2/4 | 4/4 | 2/4 | 分析强，清洗常因输出被截断 |
-| Sonnet 4.6（第二组） | 3/4 | 4/4 | 2/4 | 稳定、回答快 |
-| Kimi K3 | 4/4 | 4/4 | 1/4 | 清洗、分析强，报告弱；输出大量推理，实际最贵 |
-| GLM 5 | 4/4 | 0/4 | 4/4 | 清洗、报告强，分析全失败；最便宜 |
+| Sonnet 4.6 (Group 1) | 3/4 | 4/4 | 3/4 | Most balanced, but slowest and fairly expensive |
+| Nova Pro | 0/4 | 0/4 | 2/4 | Fastest and cheapest, but its code often has errors |
+| gpt-oss-120b | 2/4 | 4/4 | 2/4 | Strong at analysis; cleaning often cut off by the output limit |
+| Sonnet 4.6 (Group 2) | 3/4 | 4/4 | 2/4 | Stable, fast responses |
+| Kimi K3 | 4/4 | 4/4 | 1/4 | Strong at cleaning and analysis, weak at reporting; outputs long reasoning, so actually the most expensive |
+| GLM 5 | 4/4 | 0/4 | 4/4 | Strong at cleaning and reporting, failed all analyses; cheapest |
 
-**很多“失败”其实是小 bug。** 最后一步把结果存成 JSON 时，pandas 的数字类型存不进去。只修这一处并重跑原代码：GLM 5 的分析 35 次里 33 次是对的（单步测试 0/4 → 4/4）；Nova Pro 分析 12 次里 9 次；gpt-oss 清洗 12 次里 9 次。报告阶段另有 15 次失败只是四舍五入比评分器严，30 次是一个已知误判。
+**Many "failures" are actually small bugs.** In the last step, saving results as JSON, pandas number types could not
+be serialized. Fixing only that and re-running the original code: GLM 5's analysis was correct in 33 of 35 runs
+(single-step test 0/4 → 4/4); Nova Pro's analysis in 9 of 12; gpt-oss's cleaning in 9 of 12. In the reporting step,
+another 15 failures were only rounding being stricter in the scorer, and 30 were one known false rejection.
 
-事后补做的修正版阶段通过率（官方数字保留）：例如第二组 GLM 5 的分析（多次运行）从 27/60 变为 56/60。这是评分和环境问题的敏感性分析，不是新的端到端结论。
+Post-hoc corrected stage pass rates (official numbers kept): for example, Group 2 GLM 5 analysis (repeated runs) goes
+from 27/60 to 56/60. This is a sensitivity analysis of scoring and environment problems, not a new end-to-end
+conclusion.
 
-原因归纳：Nova Pro 反复栽在已弃用函数、日期未解析、调用不存在的函数；gpt-oss 清洗常失败是因为回答太长被 4096 上限截断（14 次），上限放到 16384 后没有；Kimi 贵是因为每次先输出大量推理文本。除 GLM 这条做过重跑验证外，其余原因是从失败记录归纳的，没有逐条反事实验证。
+Grouped causes: Nova Pro repeatedly tripped on deprecated functions, unparsed dates, and calls to functions that do not
+exist. gpt-oss's cleaning failures came from answers too long for the 4096 limit (14 times); with the limit raised to
+16384 this did not happen. Kimi is expensive because it outputs a lot of reasoning text first. Apart from the GLM
+cause, which was verified by re-running, these causes were grouped from failure records and not individually verified
+counterfactually.
 
-### Q2：多模型比单模型好吗？
+### Q2: are multiple models better than one?
 
-**不一定。混用没有稳定地比单模型更好。**
+**Not necessarily. Mixing was not consistently better than a single model.**
 
-| | 第一组 官方 | 第一组 修正 | 第二组 官方 | 第二组 修正 |
+| | Group 1 official | Group 1 corrected | Group 2 official | Group 2 corrected |
 |---|---|---|---|---|
-| 单模型路径跑通 | 2/12 | 2/12 | 3/12 | 6/12 |
-| 混用路径跑通 | 15/96 | 23/96 | 38/96 | 46/96 |
-| 全部 108 条 | 17 | 25 | 41 | 52 |
+| Single-model paths succeeded | 2/12 | 2/12 | 3/12 | 6/12 |
+| Mixed paths succeeded | 15/96 | 23/96 | 38/96 | 46/96 |
+| All 108 paths | 17 | 25 | 41 | 52 |
 
-- 第二组官方数字看起来混用更好（25% 对 40%），**修正后差异消失**：50% 对 48%。
-- 第一组单模型只有 12 个样本；有 2 个项目里单个模型三次都没做成，而某些混用做成了。
-- 清洗是最大瓶颈：第一组 108 次里 64 次最先在清洗失败。上游错误会传给下游：有 20 次分析拿到的数据是错的，对着标准答案的准确率中位数只有 0.10，对着它实际拿到的数据却是 1.00。
-- 修正怎么做的：对被保存 bug 卡住的 40 条路径补跑“写报告”一步（花 $1.40），另有 11 条用已有结果重新判定。修正版是事后补做的，两个比例样本数不同，不能说混用有因果上的好处。
+- Group 2's official numbers seem to favor mixing (25% vs 40%), but **the difference disappears after correction**:
+  50% vs 48%.
+- Group 1 has only 12 single-model samples. In 2 projects no single model succeeded in three tries, while some mixed
+  paths did.
+- Cleaning is the biggest bottleneck: in Group 1, 64 of 108 runs failed first at cleaning. Upstream errors pass
+  downstream: in 20 runs where analysis received wrong data, median accuracy against the true answer was only 0.10,
+  but against the data it actually received it was 1.00.
+- How the correction was done: for 40 paths blocked by the serialization bug, only the "write report" step was re-run
+  (cost $1.40); 11 more were re-judged from existing results. The corrected view is post-hoc and the two rates have
+  different sample sizes, so it cannot show a causal benefit of mixing.
 
-### Q3：路由器的解释和预测可信吗？
+### Q3: can the router's explanations and predictions be trusted?
 
-**解释忠实，预测没有技巧。**
+**Explanations are faithful; predictions show no skill.**
 
-- 解释的句子与计算一致：第一组 429/429，第二组 451/451。解释由模板从计算记录生成，所以几乎必然忠实；“忠实”和“预测准”是两回事。
-- “换了会不会跑通”的预测方向正确：第一组 22/50（44%），第二组 31/64（48%）。
-- **用修正后的标签重新评分（事后补做）：路由器没有变好。** 第一组 21/50，第二组 24/64。什么都不预测的“永远说没变化”基线更准：26/50 和 36/64；8 个对比里有 7 个，它不比路由器差。路由器只比“永远说会变好”强得多。多数情况本来就是“没变化”，所以路由器的正确率主要来自平局。这份重评分依赖那 40 次补跑和 11 条重新判定，是敏感性分析，不是重建。
-- 失败原因归类（事后补做）：约一半直接失败的记录属于已知的评分或环境问题。但“其余”是宽泛的兜底类别，不判定是模型还是评分器的错；残差为 0 是规则推出来的，不代表所有失败都被理解了。
+- Explanation sentences match the computation: 429/429 in Group 1, 451/451 in Group 2. Because explanations are
+  generated from templates over the computation record, they are almost guaranteed to be faithful; "faithful" and
+  "accurate prediction" are two different things.
+- "Will it succeed after a swap" predictions had the right direction in 22/50 (44%) for Group 1 and 31/64 (48%) for
+  Group 2.
+- **Re-scored with corrected labels (post-hoc): the router did not get better.** Group 1 21/50, Group 2 24/64. The
+  baseline that always says "no change" is more accurate: 26/50 and 36/64; in 7 of 8 comparisons it is at least as
+  good as the router. The router is only much better than "always says better". Most cases really are "no change", so
+  the router's correct answers come mainly from ties. This re-scoring depends on the 40 re-runs and 11 re-judgements,
+  so it is a sensitivity analysis, not a reconstruction.
+- Failure-cause classification (post-hoc): about half of directly failed records belong to known scoring or
+  environment problems. But "the rest" is a broad catch-all that does not decide whether the model or the scorer was
+  at fault, and a residual of 0 follows from the rules; it does not mean every failure is understood.
 
-### 成本
+### Cost
 
-- 只看跑不跑得通不够，花费会改变选择。每跑通一次的成本（失败的调用也算在内）：第一组约 $0.27，第二组约 $0.38。
-- 最便宜的组合不一定最划算：有的组合每次不到 1 美分，但第一步就失败，跑通为 0。
-- 单价会误导：Kimi 和 Sonnet 单价相同，实际花费差约 4.5 倍（推理文本按输出计费）。
-- 让路由器按花费来选（事后补做）：第一组 8 条可选决策变了 1 条，第二组变了 7 条。花费的预测比“能不能跑通”准得多：第二组 64/64，比只看单价（56/64）更准。
-- 总花费：两次主要实验各约 $24 和 $26，补跑 $1.40。
+- Looking only at success is not enough; cost changes the choice. Cost per successful run (failed calls included):
+  about $0.27 for Group 1 and $0.38 for Group 2.
+- The cheapest combination is not always the best value: some cost under 1 cent per run but fail at step one, with
+  0 successes.
+- Unit price can mislead: Kimi and Sonnet have the same unit price, but actual spend differs by about 4.5× (reasoning
+  text is billed as output).
+- Letting the router choose by cost (post-hoc): in Group 1, 1 of 8 selectable decisions changed; in Group 2, 7 changed.
+  Cost predictions are far more accurate than success predictions: 64/64 in Group 2, better than unit price alone
+  (56/64).
+- Total spend: about $24 and $26 for the two main experiments, plus $1.40 for the re-runs.
 
-## 4. 修正与局限
+## 4. Corrections and limitations
 
-- **修正：** 官方（冻结）数字从未被修改；修正版另列。发现并修复过的问题：数字类型存 JSON 的 bug、评分器过严、一处误判、Docker 偶发找不到镜像（重跑）、数据集哈希在干净检出里对不上（用追加修正解决，见 `docs/HASH_REPRODUCIBILITY_AMENDMENT.md`）。
-- **样本小：** 4 个合成项目，单步测试每格 4 个，大多数组合只跑 1 次，结论是探索性的。
-- **只测了一种流程：** 清洗 → 分析 → 报告，不能推到任意工作流。
-- **模型选择受账户权限限制：** 是“这几个具体模型”的比较，不是“哪家厂商更好”。
-- **两组设置不同：** 输出上限不同，Kimi 不支持 temperature 设置。
-- **很多失败是小 bug 或评分过严，不是能力问题**；修正版是事后补做，证据强度低于事先登记的部分。
-- **路由器结论仅限这份小数据：** 区间按独立样本算，实际按项目和策略聚类，偏乐观。
-- **题目和分析由 AI 参与编写**（Claude 和 Codex），互相审核不等于独立团队复现。
-- 提交哈希和标签指向原始仓库；公开仓库是新历史的快照（见 `PROVENANCE.md`）。
+- **Corrections:** official (frozen) numbers were never changed; corrected versions are listed separately. Problems
+  found and handled: the number-type JSON bug, an over-strict scorer, one false rejection, Docker occasionally not
+  finding its image (re-run), and dataset hashes not matching on a clean checkout (resolved with an additive amendment;
+  see `docs/HASH_REPRODUCIBILITY_AMENDMENT.md`).
+- **Small sample:** 4 synthetic projects, 4 per cell in single-step tests, and most combinations run only once; the
+  conclusions are exploratory.
+- **Only one workflow shape:** clean → analyze → report; the results do not generalize to arbitrary workflows.
+- **Model choice limited by account access:** this compares these specific models, not which vendor is better.
+- **The two groups had different settings:** different output limits, and Kimi does not support the temperature
+  setting.
+- **Many failures are small bugs or over-strict scoring, not lack of ability**; the corrected view is post-hoc and is
+  weaker evidence than the pre-registered parts.
+- **Router conclusions are limited to this small dataset:** intervals are computed as if samples were independent,
+  but they are actually clustered by project and strategy, so they are optimistic.
+- **Tasks and analysis were written with AI assistance** (Claude and Codex); reviewing each other is not the same as
+  independent replication by a separate team.
+- Commit hashes and tags refer to the original repository; the public repository is a fresh-history snapshot (see
+  `PROVENANCE.md`).
