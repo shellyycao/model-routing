@@ -70,8 +70,8 @@ def test_manifest_freezes_exact_approval_and_verifies_at_required_tag(monkeypatc
     manifest = manifest_builder.build_manifest()
     assert manifest["status"] == "continuation_frozen_paid_execution_approved"
     assert manifest["approval"] == {
-        "question": "花费上限 $15（预计实际约 $1.41），补跑这 40 次，行吗？",
-        "wording": "批准了",
+        "question": "\u82b1\u8d39\u4e0a\u9650 $15\uff08\u9884\u8ba1\u5b9e\u9645\u7ea6 $1.41\uff09\uff0c\u8865\u8dd1\u8fd9 40 \u6b21\uff0c\u884c\u5417\uff1f",
+        "wording": "\u6279\u51c6\u4e86",
         "date": "2026-11-19",
     }
     assert manifest["logical_call_ceiling"] == manifest["complete_record_lines"] == 40

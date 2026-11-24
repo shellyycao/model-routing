@@ -19,3 +19,20 @@ repository's history, which is not included here.
 
 Later work added after the first snapshot: the 40-cell continuation run, corrected Q1/Q2 views, the router
 re-scoring with corrected labels, the failure taxonomy (post-hoc, exploratory), and the hash amendment.
+
+## Post-freeze edit: English-only text (2026-11-24)
+
+To keep the public repository English-only, verbatim Chinese quotations of the author's approval messages were
+replaced after the freeze:
+
+- `docs/CONTINUATION_PROTOCOL.md`, `docs/PRICE_MATCHED_WORKFLOW_PLAN.md` and two review notes in `docs/reviews/`:
+  the quotes were replaced by English translations.
+- `experiments/run_continuations.py`, `experiments/build_price_matched_workflow_main_manifest.py` and two test files:
+  the same strings are now written as Python `\u` escape sequences. The string values, and therefore the code's
+  behavior, are unchanged.
+
+These four protocol and code files are listed by file hash in `results/processed/continuation_protocol_manifest.json`
+and `results/processed/price_matched_workflow_protocol_manifest.json`, so their current hashes no longer match the
+recorded ones. No rule, number, threshold or logic was changed; the exact original wording is still recorded (as JSON
+`\u` escapes) in those manifests. The test suite (584 passed, 23 skipped) and `experiments.verify_frozen_hashes`
+still pass.

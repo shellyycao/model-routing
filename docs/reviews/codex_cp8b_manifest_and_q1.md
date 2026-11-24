@@ -3,8 +3,8 @@
 ## Approval Freeze
 
 Generated `results/processed/continuation_protocol_manifest.json` with status
-`continuation_frozen_paid_execution_approved`. It records Claude's question—“花费上限 $15（预计实际约
-$1.41），补跑这 40 次，行吗？”—and the user's exact reply “批准了” on 2026-11-19. The manifest
+`continuation_frozen_paid_execution_approved`. It records Claude's question (translated: “Spending cap $15, expected actual about
+$1.41; OK to re-run these 40?”) and the user's reply (translated: “Approved”) on 2026-11-19; the exact original wording is in the manifest. The manifest
 freezes 40 logical calls, the separate $15 reserve-then-settle ledger, all 40 eligible replay/code/
 output hashes, the inventory hash, protocol/code/data trees, original settings, and exact required
 tag `continuation-v1`. Simulated verification passes when HEAD is reported at that tag; this turn

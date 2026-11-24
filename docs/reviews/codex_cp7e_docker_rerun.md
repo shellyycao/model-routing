@@ -5,7 +5,8 @@
 The completed main run has 36/36 Part A and 156/156 original Part B records. Five repeat-0 cells
 are `void_infra` solely because an approximately two-minute Docker daemon outage made `docker info`
 time out: energy `C-C-A`, `C-C-B`, `C-C-C`, and retail `A-A-A`, `A-A-B`. On 2026-11-19 the user
-gave standing authorization in the exact words **“可以不用我批准，如果是docker的问题你之间重跑就行”**.
+gave standing authorization (translated: **“No need for my approval; if it's a Docker problem, just re-run it”**;
+the exact original wording is in the manifest).
 No rerun was executed in this turn.
 
 ## Rerun implementation and analysis rule
