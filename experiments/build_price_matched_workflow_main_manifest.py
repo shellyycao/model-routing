@@ -11,7 +11,7 @@ APPROVAL_WORDING = "Approve the main run (504 calls, about $43 expected, $100 ca
 APPROVAL_DATE = "2026-11-19"
 IMAGE_AMENDMENT_DATE = "2026-11-19"
 RERUN_AMENDMENT_DATE = "2026-11-19"
-RERUN_AUTHORIZATION = "可以不用我批准，如果是docker的问题你之间重跑就行"
+RERUN_AUTHORIZATION = "\u53ef\u4ee5\u4e0d\u7528\u6211\u6279\u51c6\uff0c\u5982\u679c\u662fdocker\u7684\u95ee\u9898\u4f60\u4e4b\u95f4\u91cd\u8dd1\u5c31\u884c"
 
 
 def _verified_pilot_outcome() -> dict:

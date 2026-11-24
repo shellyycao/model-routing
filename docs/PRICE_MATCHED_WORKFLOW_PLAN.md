@@ -43,7 +43,7 @@ execution:
 - `retail_sales`: `A-A-A`, `A-A-B`.
 
 The user gave standing authorization on 2026-11-19, in the exact words
-**“可以不用我批准，如果是docker的问题你之间重跑就行”**. The dedicated `--rerun-docker-voids` entry point selects only original
+(translated) **“No need for my approval; if it's a Docker problem, just re-run it”** (exact original wording in the manifest). The dedicated `--rerun-docker-voids` entry point selects only original
 repeat-0 `void_infra` records whose failure detail contains both sandbox-gate refusal and Docker
 daemon/`docker info` failure. The five targets are fixed before execution and each receives exactly
 one logical rerun regardless of earlier rerun outcomes. Models, parameters, prompts, repeat index,

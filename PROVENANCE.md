@@ -32,7 +32,10 @@ replaced after the freeze:
   behavior, are unchanged.
 
 These four protocol and code files are listed by file hash in `results/processed/continuation_protocol_manifest.json`
-and `results/processed/price_matched_workflow_protocol_manifest.json`, so their current hashes no longer match the
-recorded ones. No rule, number, threshold or logic was changed; the exact original wording is still recorded (as JSON
-`\u` escapes) in those manifests. The test suite (584 passed, 23 skipped) and `experiments.verify_frozen_hashes`
-still pass.
+and `results/processed/price_matched_workflow_protocol_manifest.json`. No rule, number, threshold or logic was
+changed, and the exact original wording is still recorded (as JSON `\u` escapes) in those manifests.
+`hash_file` in `src/bedrock/provenance.py` lists the exact substitutions (`_POST_FREEZE_ENGLISH_EDITS`): for these
+four files only, it reverses exactly those substitutions and hashes the result, which reproduces the frozen hashes.
+If a file differs from the documented edit in any other way, its real bytes are hashed and the check fails;
+`tests/test_post_freeze_english_edit.py` checks both cases. The full test suite and
+`experiments.verify_frozen_hashes` pass.

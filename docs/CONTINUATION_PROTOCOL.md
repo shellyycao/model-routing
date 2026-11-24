@@ -3,8 +3,8 @@
 ## Status and Ordering
 
 **Status: post-hoc / exploratory protocol; paid execution approved pending freeze tag, 2026-11-19.**
-Claude asked: **“花费上限 $15（预计实际约 $1.41），补跑这 40 次，行吗？”** The user's exact reply
-was **“批准了”**. The approval covers exactly the 40 reporting calls below and the separate $15
+Claude asked (translated): **“Spending cap $15, expected actual about $1.41; OK to re-run these 40?”** The user's reply
+(translated) was **“Approved”**; the exact original wording is in the manifest. The approval covers exactly the 40 reporting calls below and the separate $15
 reserve-then-settle ledger; it does not authorize a larger inventory or cap. These rules and runner
 were committed before approval. The amended manifest preserves that approval and freezes all
 replacement hashes, but Claude must still commit it and create exact tag `continuation-v1.1`
